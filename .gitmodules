@@ -1,0 +1,3 @@
+[submodule "projects/mars/merchanthub"]
+	path = projects/mars/merchanthub
+	url = git@github.com:mentisVeritas/uzcard-merchanthub.git

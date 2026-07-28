@@ -1,0 +1,14 @@
+[project]
+name = "uzcard-academy"
+version = "0.1.0"
+description = "Uzcard Academy — внутренняя программа обучения data science"
+requires-python = ">=3.11"
+dependencies = [
+    "ipykernel>=7.3.0",
+    "matplotlib>=3.10.0",
+    "numpy>=2.4.6",
+    "pandas>=3.0.3",
+    "pandas-stubs~=3.0.3",
+    "psycopg2-binary>=2.9.12",
+    "scikit-learn>=1.9.0",
+]
