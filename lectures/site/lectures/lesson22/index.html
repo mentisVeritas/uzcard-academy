@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SQL в бизнесе · Лекция 22</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Inter',-apple-system,sans-serif;background:#fcfcfd;color:#16171a;overflow:hidden;-webkit-font-smoothing:antialiased;}
+.deck{width:100vw;height:100vh;position:relative;}
+.slide{width:100%;height:100%;display:none;flex-direction:column;align-items:center;justify-content:center;position:absolute;inset:0;padding:clamp(12px,2vh,28px) clamp(32px,5vw,72px);}
+.slide.active{display:flex;}
+.sc{max-width:1200px;width:100%;margin:0 auto;opacity:0;transform:translateY(16px);animation:up .4s ease-out forwards;display:flex;flex-direction:column;align-items:center;}
+@keyframes up{to{opacity:1;transform:translateY(0);}}
+h1{font-size:clamp(36px,5.2vw,80px);font-weight:900;letter-spacing:-.04em;line-height:.95;margin-bottom:clamp(10px,1.8vh,22px);}
+h2{font-size:clamp(18px,2.4vw,36px);font-weight:800;letter-spacing:-.025em;line-height:1.08;margin-bottom:clamp(4px,.7vh,10px);}
+.eyebrow{font-size:clamp(10px,.95vw,12px);font-weight:700;text-transform:uppercase;letter-spacing:.2em;color:#1a9d4a;margin-bottom:clamp(5px,.9vh,12px);}
+.sub{font-size:clamp(13px,1.7vw,21px);color:#6b6f76;line-height:1.45;max-width:720px;margin-top:clamp(5px,.9vh,12px);}
+.cr{display:grid;grid-template-columns:1fr 1fr;gap:clamp(12px,1.6vw,22px);width:100%;max-width:1200px;margin-top:clamp(8px,1.2vh,16px);align-items:start;}
+.lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.16em;color:#888;margin-bottom:5px;}
+.code{font-family:'SF Mono','Menlo','Consolas',monospace;font-size:clamp(10.5px,1.02vw,13.5px);background:#141618;color:#e8eaf0;padding:clamp(12px,1.5vw,18px) clamp(14px,1.7vw,20px);border-radius:12px;width:100%;text-align:left;line-height:1.7;border:1px solid #252830;white-space:pre;overflow-x:auto;}
+.code .kw{color:#5ab0ff;}.code .fn{color:#e2c08d;}.code .st{color:#ffa657;}.code .cm{color:#5a9a5a;font-style:italic;}
+.result{width:100%;border-radius:12px;overflow:hidden;border:1.5px solid #e2e4ea;background:#fff;}
+.result table{width:100%;border-collapse:collapse;font-size:clamp(10.5px,1.02vw,13px);}
+.result thead tr{background:#f4f5f8;}
+.result th{padding:clamp(6px,.8vw,10px) clamp(8px,1vw,12px);font-weight:700;color:#4a4d53;border-bottom:1.5px solid #e2e4ea;white-space:nowrap;text-align:left;}
+.result td{padding:clamp(5px,.7vw,9px) clamp(8px,1vw,12px);border-bottom:1px solid #f0f1f4;color:#2a2c30;white-space:nowrap;}
+.result tr:last-child td{border-bottom:none;}
+.result .foot{text-align:center;font-size:11px;color:#b0b3bb;padding:6px 0;border-top:1px solid #f0f1f4;}
+.hi{color:#0064d6;font-weight:600;}.ok{color:#1a9d4a;font-weight:600;}.ng{color:#e02d20;font-weight:600;}.nil{color:#b8bbc2;font-style:italic;}.num{text-align:right;font-variant-numeric:tabular-nums;}
+.note{padding:clamp(8px,1vw,12px) clamp(12px,1.4vw,17px);border-radius:10px;text-align:left;width:100%;margin-top:clamp(7px,1vh,12px);}
+.note p{font-size:clamp(11px,1.1vw,14px);color:#2a2c30;line-height:1.5;font-weight:500;}
+.note b{font-weight:700;color:#0b0c0e;}
+.note.blue{background:#eef4fc;}.note.green{background:#e8f5eb;}.note.orange{background:#fff3e6;}.note.purple{background:#f3efff;}
+.mono{font-family:'SF Mono','Consolas',monospace;font-size:.92em;background:#f0f1f4;padding:1px 6px;border-radius:5px;color:#0b0c0e;}
+.tslide .eyebrow{color:#1a9d4a;}
+.mslide h2{font-size:clamp(30px,4.4vw,62px);font-weight:900;color:#1a9d4a;}
+.mslide .eyebrow{opacity:.6;}
+.divider{width:44px;height:4px;border-radius:99px;margin:clamp(8px,1.4vh,16px) auto;background:#1a9d4a;}
+.pills{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:clamp(12px,1.8vh,24px);}
+.pill{font-size:clamp(11px,1.1vw,13px);font-weight:600;padding:4px 13px;border-radius:99px;border:1.5px solid transparent;}
+.prog{position:fixed;top:0;left:0;height:3px;background:#1a9d4a;z-index:200;transition:width .28s ease;}
+.ind{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);font-size:12px;color:#b8bbc2;z-index:100;}
+.hint{position:fixed;bottom:16px;right:20px;font-size:11px;color:#d0d3da;z-index:100;}
+.tag{position:fixed;top:16px;left:20px;font-size:10px;font-weight:700;color:#c8cace;text-transform:uppercase;letter-spacing:.16em;z-index:100;}
+.cards{display:grid;gap:clamp(8px,1vw,12px);width:100%;margin-top:clamp(8px,1.2vh,14px);}
+.cards.c2{grid-template-columns:1fr 1fr;max-width:1000px;}.cards.c3{grid-template-columns:1fr 1fr 1fr;max-width:1040px;}
+.card{background:#fff;border:1px solid #edeef2;border-radius:12px;padding:clamp(11px,1.3vw,16px);text-align:left;box-shadow:0 1px 2px rgba(18,20,28,.04),0 8px 20px -12px rgba(18,20,28,.12);}
+.card h4{font-size:clamp(12px,1.2vw,15px);font-weight:700;margin-bottom:4px;}
+.card p{font-size:clamp(11px,1.02vw,13px);color:#4a4d53;line-height:1.55;}
+.card.acc-blue h4{color:#0064d6;}.card.acc-orange h4{color:#b3660a;}.card.acc-purple h4{color:#7c3aed;}.card.acc-green h4{color:#1a9d4a;}
+.badge{display:inline-block;font-size:10px;font-weight:700;padding:2px 9px;border-radius:99px;margin-bottom:6px;}
+ul.facts{list-style:none;text-align:left;max-width:760px;margin-top:14px;}
+ul.facts li{font-size:clamp(13px,1.4vw,18px);color:#2a2c30;line-height:1.5;padding:7px 0 7px 22px;position:relative;border-bottom:1px solid #f0f1f4;}
+ul.facts li:before{content:'';position:absolute;left:0;top:15px;width:8px;height:8px;border-radius:2px;background:#1a9d4a;}
+ul.facts b{color:#0b0c0e;}
+@media(max-width:860px){.cr,.cards.c3,.cards.c2{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<div class="tag" id="ltag">SQL · Лекция 22</div>
+<div class="prog" id="prog"></div>
+<div class="deck" id="deck">
+
+<!-- 01 TITLE -->
+<div class="slide tslide" style="text-align:center;">
+<div class="sc">
+  <p class="eyebrow">Лекция 22 · SQL в бизнесе</p>
+  <h1>Сводная таблица,<br>скользящее среднее, воронка</h1>
+  <p class="sub">Три приёма аналитики на данных payments и olist.</p>
+  <div class="pills" style="margin-top:18px;">
+    <span class="pill" style="background:#eef4fc;border-color:#cfe0f7;color:#0c447c">Сводная таблица</span>
+    <span class="pill" style="background:#fff3e6;border-color:#f0ccaa;color:#7a3c00">Скользящее среднее</span>
+    <span class="pill" style="background:#f3efff;border-color:#d0c4f8;color:#4a1a8e">Воронка</span>
+  </div>
+</div>
+</div>
+
+<!-- 02 CONTEXT -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Контекст</p>
+  <h2>Где применяется SQL в бизнесе</h2>
+  <div class="cards c3" style="margin-top:16px">
+    <div class="card acc-blue"><h4>BI-дашборды</h4><p>Metabase, Tableau, Power BI генерируют SQL. Каждый график на дашборде это SQL-запрос.</p></div>
+    <div class="card acc-orange"><h4>Отчёты</h4><p>Оборот по регионам, где теряются клиенты. Аналитик отвечает на вопрос бизнеса запросом.</p></div>
+    <div class="card acc-purple"><h4>Роль аналитика</h4><p>Analytics engineer превращает вопрос в запрос и в вывод.</p></div>
+  </div>
+  <div class="note blue"><p>Три приёма ниже покрывают частые бизнес-отчёты: <b>сводная таблица</b>, <b>скользящее среднее</b>, <b>воронка</b>. Все строятся на изученном.</p></div>
+</div>
+</div>
+
+<!-- 03 TODAY -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">План</p>
+  <h2>Что сегодня</h2>
+  <ul class="facts">
+    <li><b>Задача 1.</b> Сводная таблица: оборот по категориям, где месяцы это колонки.</li>
+    <li><b>Задача 2.</b> Скользящее среднее: сгладить дневной оборот, увидеть тренд.</li>
+    <li><b>Задача 3.</b> Воронка: где заказы теряются в процессе доставки.</li>
+    <li><b>Классворк.</b> Те же приёмы на ваших данных, самостоятельно.</li>
+  </ul>
+</div>
+</div>
+
+<!-- MODULE -->
+<div class="slide mslide"><div class="sc"><p class="eyebrow">Часть 1</p><div class="divider"></div><h2>Разбор задач</h2><p class="sub">Вопрос бизнеса, затем запрос и вывод.</p></div></div>
+
+<!-- 04 PIVOT problem -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Задача 1 · Сводная таблица</p>
+  <h2>Оборот по категориям и месяцам</h2>
+  <p class="sub" style="text-align:center;max-width:760px">Вопрос от маркетинга: таблица, где строки это категории, колонки это месяцы, в клетках оборот.</p>
+  <div class="note purple"><p>Обычный <span class="mono">GROUP BY category, month</span> даёт длинный список. Нужно, чтобы месяцы стали <b>колонками</b>. Это сводная таблица (pivot).</p></div>
+  <div class="note blue"><p>Приём: <b>CASE внутри SUM</b>. Каждая колонка это отдельный <span class="mono">SUM(CASE WHEN месяц = N ...)</span>, по одной колонке на месяц.</p></div>
+</div>
+</div>
+
+<!-- 05 PIVOT solution -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Задача 1 · Решение</p>
+  <h2>SUM(CASE ...) на каждый месяц</h2>
+  <div class="cr">
+    <div>
+      <div class="lbl">Запрос</div>
+      <div class="code"><span class="kw">SELECT</span> m.category,
+  <span class="fn">SUM</span>(<span class="kw">CASE WHEN</span> <span class="fn">EXTRACT</span>(<span class="kw">MONTH FROM</span> t.txn_ts)=<span class="st">2</span>
+           <span class="kw">THEN</span> t.amount <span class="kw">ELSE</span> <span class="st">0</span> <span class="kw">END</span>) <span class="kw">AS</span> feb,
+  <span class="fn">SUM</span>(<span class="kw">CASE WHEN</span> <span class="fn">EXTRACT</span>(<span class="kw">MONTH FROM</span> t.txn_ts)=<span class="st">3</span>
+           <span class="kw">THEN</span> t.amount <span class="kw">ELSE</span> <span class="st">0</span> <span class="kw">END</span>) <span class="kw">AS</span> mar,
+  <span class="fn">SUM</span>(<span class="kw">CASE WHEN</span> <span class="fn">EXTRACT</span>(<span class="kw">MONTH FROM</span> t.txn_ts)=<span class="st">4</span>
+           <span class="kw">THEN</span> t.amount <span class="kw">ELSE</span> <span class="st">0</span> <span class="kw">END</span>) <span class="kw">AS</span> apr,
+  <span class="fn">SUM</span>(<span class="kw">CASE WHEN</span> <span class="fn">EXTRACT</span>(<span class="kw">MONTH FROM</span> t.txn_ts)=<span class="st">5</span>
+           <span class="kw">THEN</span> t.amount <span class="kw">ELSE</span> <span class="st">0</span> <span class="kw">END</span>) <span class="kw">AS</span> may
+<span class="kw">FROM</span> transactions t
+<span class="kw">JOIN</span> merchants m <span class="kw">ON</span> t.merchant_id = m.merchant_id
+<span class="kw">WHERE</span> t.status = <span class="st">'success'</span>
+<span class="kw">GROUP BY</span> m.category
+<span class="kw">ORDER BY</span> feb+mar+apr+may <span class="kw">DESC</span>;</div>
+    </div>
+    <div>
+      <div class="lbl">Результат</div>
+      <div class="result">
+        <table>
+          <thead><tr><th>category</th><th class="num">feb</th><th class="num">mar</th><th class="num">apr</th><th class="num">may</th></tr></thead>
+          <tbody>
+            <tr><td class="hi">Electronics</td><td class="num">354 125 500</td><td class="num">468 522 000</td><td class="num">368 231 500</td><td class="num">403 765 500</td></tr>
+            <tr><td>Online</td><td class="num">80 213 500</td><td class="num">84 898 500</td><td class="num">61 274 000</td><td class="num ng">44 850 500</td></tr>
+            <tr><td>Clothing</td><td class="num">64 144 500</td><td class="num">70 348 000</td><td class="num">71 196 000</td><td class="num">58 331 000</td></tr>
+            <tr><td>Supermarket</td><td class="num">32 761 500</td><td class="num">37 055 000</td><td class="num">34 560 000</td><td class="num">30 753 500</td></tr>
+            <tr><td>Restaurant</td><td class="num">26 909 500</td><td class="num">26 022 500</td><td class="num">26 930 000</td><td class="num">19 478 500</td></tr>
+          </tbody>
+        </table>
+        <div class="foot">строки категории, колонки месяцы, в клетках оборот</div>
+      </div>
+      <div class="note orange"><p>По строке видно тренд: у <b>Online</b> оборот падает от марта к маю.</p></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- 06 MA problem -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Задача 2 · Скользящее среднее</p>
+  <h2>Сгладить дневной оборот</h2>
+  <p class="sub" style="text-align:center;max-width:760px">Вопрос: дневной оборот скачет вверх-вниз, тренд не виден. Нужна сглаженная линия.</p>
+  <div class="note purple"><p>Скользящее среднее это среднее за последние 7 дней в каждой точке. Дневной шум усредняется, тренд проявляется.</p></div>
+  <div class="note blue"><p>Новое в оконных функциях: <b>рамка окна</b> <span class="mono">ROWS BETWEEN 6 PRECEDING AND CURRENT ROW</span> это текущая строка и 6 предыдущих, то есть 7 дней.</p></div>
+</div>
+</div>
+
+<!-- 07 MA solution -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Задача 2 · Решение</p>
+  <h2>AVG OVER с рамкой из 7 дней</h2>
+  <div class="cr">
+    <div>
+      <div class="lbl">Запрос</div>
+      <div class="code"><span class="kw">WITH</span> daily <span class="kw">AS</span> (
+  <span class="kw">SELECT</span> t.txn_ts::<span class="kw">date</span> <span class="kw">AS</span> day,
+         <span class="fn">SUM</span>(t.amount) <span class="kw">AS</span> revenue
+  <span class="kw">FROM</span> transactions t
+  <span class="kw">WHERE</span> t.status = <span class="st">'success'</span>
+  <span class="kw">GROUP BY</span> day
+)
+<span class="kw">SELECT</span> day, revenue,
+  <span class="fn">ROUND</span>(<span class="fn">AVG</span>(revenue) <span class="kw">OVER</span> (
+    <span class="kw">ORDER BY</span> day
+    <span class="kw">ROWS BETWEEN</span> <span class="st">6</span> <span class="kw">PRECEDING AND CURRENT ROW</span>
+  )) <span class="kw">AS</span> ma7
+<span class="kw">FROM</span> daily
+<span class="kw">ORDER BY</span> day;</div>
+      <div class="note blue"><p>Сначала CTE сворачивает транзакции в дневной оборот. Затем окно считает среднее по скользящему интервалу из 7 строк.</p></div>
+    </div>
+    <div>
+      <div class="lbl">Результат (фрагмент)</div>
+      <div class="result">
+        <table>
+          <thead><tr><th>day</th><th class="num">revenue</th><th class="num">ma7</th></tr></thead>
+          <tbody>
+            <tr><td>2025-02-22</td><td class="num">16 133 000</td><td class="num ok">15 073 643</td></tr>
+            <tr><td>2025-02-23</td><td class="num">37 069 000</td><td class="num ok">19 209 786</td></tr>
+            <tr><td>2025-02-24</td><td class="num">23 410 000</td><td class="num ok">20 127 929</td></tr>
+            <tr><td>2025-02-25</td><td class="num">13 283 000</td><td class="num ok">18 358 643</td></tr>
+            <tr><td>2025-02-26</td><td class="num">25 418 000</td><td class="num ok">20 357 643</td></tr>
+            <tr><td>2025-02-27</td><td class="num">20 991 500</td><td class="num ok">20 913 643</td></tr>
+          </tbody>
+        </table>
+        <div class="foot">revenue меняется от 13 до 37 млн, ma7 держится около 20 млн</div>
+      </div>
+      <div class="note orange"><p>Колонка <b>revenue</b> скачет, <b>ma7</b> ровная около 20 млн. Это тренд без дневного шума.</p></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- 08 FUNNEL problem -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Задача 3 · Воронка</p>
+  <h2>Где теряются заказы</h2>
+  <p class="sub" style="text-align:center;max-width:760px">Вопрос (данные olist, интернет-магазин): заказ проходит этапы оформлен, подтверждён, отправлен, доставлен. На каком шаге теряется больше всего.</p>
+  <div class="note purple"><p>Воронка это счётчик заказов, дошедших до каждого этапа, и процент отвала между этапами.</p></div>
+  <div class="note blue"><p>Приём: у каждого этапа своя дата (<span class="mono">order_approved_at</span>, <span class="mono">..._delivered_customer_date</span>). Если даты нет, этап не пройден. <span class="mono">COUNT(колонка)</span> считает только непустые.</p></div>
+</div>
+</div>
+
+<!-- 09 FUNNEL solution -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Задача 3 · Решение</p>
+  <h2>COUNT по колонке этапа</h2>
+  <div class="cr">
+    <div>
+      <div class="lbl">Запрос</div>
+      <div class="code"><span class="kw">SELECT</span>
+  <span class="fn">COUNT</span>(*)                              <span class="kw">AS</span> purchased,
+  <span class="fn">COUNT</span>(order_approved_at)             <span class="kw">AS</span> approved,
+  <span class="fn">COUNT</span>(order_delivered_carrier_date)  <span class="kw">AS</span> shipped,
+  <span class="fn">COUNT</span>(order_delivered_customer_date) <span class="kw">AS</span> delivered
+<span class="kw">FROM</span> olist_orders;</div>
+      <div class="note blue"><p><span class="mono">COUNT(*)</span> считает все строки, <span class="mono">COUNT(колонка)</span> только те, где колонка не NULL. Разница между этапами это потери.</p></div>
+    </div>
+    <div>
+      <div class="lbl">Результат как воронка</div>
+      <div class="result">
+        <table>
+          <thead><tr><th>этап</th><th class="num">заказов</th><th class="num">%</th><th class="num">отвал</th></tr></thead>
+          <tbody>
+            <tr><td class="hi">Оформлен</td><td class="num">99 441</td><td class="num">100.0%</td><td class="num nil">старт</td></tr>
+            <tr><td>Подтверждён</td><td class="num">99 281</td><td class="num">99.8%</td><td class="num ng">-0.2%</td></tr>
+            <tr><td>Отправлен</td><td class="num">97 658</td><td class="num">98.2%</td><td class="num ng">-1.6%</td></tr>
+            <tr><td>Доставлен</td><td class="num">96 476</td><td class="num">97.0%</td><td class="num ng">-1.2%</td></tr>
+          </tbody>
+        </table>
+        <div class="foot">до клиента доходит 97% заказов</div>
+      </div>
+      <div class="note orange"><p>Больше всего теряется на шаге отправки (отвал 1.6%). Вывод: смотреть логистику между подтверждением и отгрузкой.</p></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- MODULE tasks -->
+<div class="slide mslide"><div class="sc"><p class="eyebrow">Часть 2</p><div class="divider"></div><h2>Задания</h2><p class="sub">Те же приёмы на ваших данных. Файл classwork.</p></div></div>
+
+<!-- 10 TASKS -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Классворк</p>
+  <h2>Бизнес-задачи</h2>
+  <div class="cards c3" style="margin-top:14px">
+    <div class="card acc-blue"><span class="badge" style="background:#eef4fc;color:#0c447c">Сводная</span><h4>Оборот по каналам и месяцам</h4><p>payments: строки channel (POS/online/ATM/P2P), колонки месяцы.</p></div>
+    <div class="card acc-orange"><span class="badge" style="background:#fff3e6;color:#7a3c00">Скользящее</span><h4>7-дневное среднее числа платежей</h4><p>payments: дневное число транзакций и его сглаженная линия.</p></div>
+    <div class="card acc-purple"><span class="badge" style="background:#f3efff;color:#5b21b6">Воронка</span><h4>Доставка по регионам</h4><p>olist: доля доставленных заказов по штатам.</p></div>
+  </div>
+  <div class="note green"><p>Под каждой задачей: запрос и один вывод в markdown. Отвечаем на вопрос числом.</p></div>
+</div>
+</div>
+
+<!-- 11 SUMMARY -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Итог</p>
+  <h2>Что отработали</h2>
+  <ul class="facts">
+    <li><b>Сводная таблица.</b> SUM(CASE ...) превращает строки в колонки.</li>
+    <li><b>Скользящее среднее.</b> Рамка окна ROWS BETWEEN N PRECEDING AND CURRENT ROW.</li>
+    <li><b>Воронка.</b> COUNT по колонкам этапов и процент отвала.</li>
+    <li><b>Дальше по курсу.</b> ML: предсказание того, что научились доставать из данных.</li>
+  </ul>
+</div>
+</div>
+
+</div>
+<div class="ind"><span id="cur">1</span> / <span id="tot"></span></div>
+<div class="hint">← → space</div>
+<script>
+const slides=document.querySelectorAll('.slide');let cur=0;
+document.getElementById('tot').textContent=slides.length;
+function go(n){slides[cur].classList.remove('active');cur=(n+slides.length)%slides.length;slides[cur].classList.add('active');
+const sc=slides[cur].querySelector('.sc');if(sc){sc.style.animation='none';void sc.offsetWidth;sc.style.animation='';}
+document.getElementById('cur').textContent=cur+1;document.getElementById('prog').style.width=((cur+1)/slides.length*100)+'%';
+document.getElementById('ltag').textContent=slides[cur].classList.contains('mslide')?'Часть':'SQL · Лекция 22';}
+document.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key===' '){e.preventDefault();go(cur+1);}if(e.key==='ArrowLeft'){e.preventDefault();go(cur-1);}});
+let tx=0;document.addEventListener('touchstart',e=>{tx=e.touches[0].clientX;},{passive:true});
+document.addEventListener('touchend',e=>{const dx=e.changedTouches[0].clientX-tx;if(Math.abs(dx)>40)go(cur+(dx<0?1:-1));},{passive:true});
+const h=parseInt((location.hash||'').slice(1));go(h>=1&&h<=slides.length?h-1:0);
+</script>
+</body>
+</html>

@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Виды визуализации · Лекция 18</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#fcfcfd;color:#16171a;overflow:hidden;-webkit-font-smoothing:antialiased;}
+.presentation{width:100vw;height:100vh;position:relative;}
+.slide{width:100%;height:100%;display:none;align-items:center;justify-content:center;position:absolute;top:0;left:0;padding:clamp(20px,3.4vh,46px) clamp(36px,5vw,72px);text-align:center;}
+.slide.active{display:flex;flex-direction:column;}
+.sc{max-width:1180px;width:100%;margin:0 auto;opacity:0;transform:translateY(16px);animation:up .55s ease-out .1s forwards;display:flex;flex-direction:column;align-items:center;}
+@keyframes up{to{opacity:1;transform:translateY(0);}}
+
+h1{font-size:clamp(36px,5.6vw,82px);font-weight:800;letter-spacing:-.03em;line-height:.95;margin-bottom:clamp(12px,2vh,24px);}
+h2{font-size:clamp(20px,2.9vw,40px);font-weight:700;letter-spacing:-.025em;line-height:1.08;margin-bottom:clamp(7px,1.2vh,15px);max-width:1040px;}
+.ey{font-size:clamp(10px,1vw,13px);font-weight:700;color:#0064d6;text-transform:uppercase;letter-spacing:.16em;margin-bottom:10px;}
+.ey.cmp{color:#e0820a;}.ey.rel{color:#e02d20;}.ey.dist{color:#0e9aa7;}.ey.comp{color:#0064d6;}
+.sub{font-size:clamp(15px,1.9vw,24px);color:#6b6f76;line-height:1.35;max-width:840px;}
+
+code{font-family:'SF Mono','Menlo','Consolas',monospace;font-size:.86em;background:rgba(0,100,214,.08);padding:1px 6px;border-radius:4px;color:#0050ad;}
+.note{margin-top:clamp(8px,1.3vh,15px);padding:clamp(9px,1.3vw,15px) clamp(15px,1.9vw,24px);border-radius:10px;text-align:left;max-width:900px;width:100%;background:#eef4fc;}
+.note.ok{background:#e9f7ee;}
+.note p{font-size:clamp(12px,1.3vw,15.5px);color:#2a2c30;line-height:1.42;font-weight:500;}
+.note b{font-weight:700;color:#0b0c0e;}
+
+.chartbox{background:#fff;border:1px solid #e7e9ee;border-radius:16px;padding:clamp(12px,1.6vw,20px);margin-top:clamp(6px,1vh,13px);max-width:580px;width:100%;box-shadow:0 8px 26px rgba(20,22,30,.06);}
+.chartbox .cap{font-size:clamp(11px,1.25vw,15px);color:#16171a;margin-bottom:8px;text-align:left;font-weight:700;}
+.chart{width:100%;height:auto;display:block;}
+.legend{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-top:10px;font-size:clamp(11px,1.25vw,14px);color:#4a4d53;font-weight:500;}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:middle;}
+
+.dt{width:100%;max-width:780px;margin-top:clamp(7px,1.1vh,14px);border-collapse:collapse;font-size:clamp(11px,1.25vw,15px);}
+.dt th,.dt td{padding:clamp(6px,1vw,11px) clamp(8px,1.2vw,15px);border-bottom:1px solid #e7e9ee;text-align:center;}
+.dt th{font-weight:700;background:#f3f5f8;text-align:center;}
+.dt td:first-child,.dt th:first-child{text-align:left;font-weight:600;}
+.dt td.pc{color:#0064d6;font-weight:700;}
+
+.svgt{fill:#9a9da3;font-size:12px;font-family:'Inter',sans-serif;}
+.gl{stroke:#f0f1f4;stroke-width:1;}
+.ax{stroke:#d6d8de;stroke-width:1.5;}
+
+/* decision tree */
+.tree{display:flex;flex-direction:column;align-items:center;gap:clamp(10px,1.8vh,22px);width:100%;}
+.root{background:#16171a;color:#fff;font-weight:700;font-size:clamp(13px,1.5vw,18px);padding:12px 24px;border-radius:12px;}
+.branches{display:grid;grid-template-columns:repeat(4,1fr);gap:clamp(10px,1.5vw,16px);width:100%;max-width:1060px;}
+.branch{border-radius:14px;padding:clamp(12px,1.5vw,18px);text-align:left;color:#fff;}
+.branch h3{font-size:clamp(13px,1.5vw,18px);font-weight:800;margin-bottom:8px;}
+.branch ul{list-style:none;display:flex;flex-direction:column;gap:5px;}
+.branch li{font-size:clamp(10px,1.15vw,13px);font-weight:500;background:rgba(255,255,255,.18);padding:4px 9px;border-radius:7px;}
+.b-cmp{background:#e0820a;}.b-rel{background:#e02d20;}.b-dist{background:#0e9aa7;}.b-comp{background:#0064d6;}
+
+.slide-ind{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);font-size:12px;color:#9a9da3;z-index:100;}
+.nav-hint{position:fixed;bottom:18px;right:18px;font-size:11px;color:#cdcfd5;z-index:100;}
+.ltag{position:fixed;top:18px;left:18px;font-size:10px;font-weight:700;color:#9a9da3;text-transform:uppercase;letter-spacing:.16em;z-index:100;}
+@media(max-width:768px){.branches{grid-template-columns:1fr 1fr;}}
+.libcode{margin-top:clamp(6px,1vh,12px);font-family:'SF Mono','Menlo','Consolas',monospace;font-size:clamp(10.5px,1.2vw,14px);background:#16171a;color:#e8eaf0;padding:8px 15px;border-radius:9px;max-width:580px;width:100%;text-align:left;}
+.libcode .lib{color:#5ab0ff;font-weight:700;}
+.libcode .cm{color:#7fd88f;}
+.bicon{width:40px;height:40px;border-radius:11px;background:rgba(255,255,255,.22);display:flex;align-items:center;justify-content:center;margin-bottom:10px;}
+.bicon svg{width:23px;height:23px;}
+.bq{font-size:clamp(11px,1.25vw,14px);color:rgba(255,255,255,.92);font-weight:600;margin-bottom:11px;}
+.branch{box-shadow:0 10px 28px rgba(20,22,30,.12);}
+.ctx{font-size:clamp(14px,1.7vw,20px);color:#4a4d53;line-height:1.5;max-width:760px;margin-top:clamp(8px,1.4vh,16px);}
+.scenario{background:#f6f7f9;border-radius:14px;padding:clamp(14px,1.9vw,22px) clamp(18px,2.3vw,30px);max-width:720px;width:100%;text-align:left;border-left:4px solid #c7cad0;margin-top:clamp(8px,1.4vh,16px);box-shadow:0 4px 16px rgba(20,22,30,.04);}
+.scenario p{font-size:clamp(14px,1.7vw,19.5px);color:#3a3d42;line-height:1.5;font-weight:500;}
+.scenario.cmp{border-left-color:#e0820a;}.scenario.rel{border-left-color:#e02d20;}.scenario.dist{border-left-color:#0e9aa7;}.scenario.comp{border-left-color:#0064d6;}
+.qst{font-size:clamp(22px,3vw,35px);font-weight:800;letter-spacing:-.02em;line-height:1.12;color:#16171a;margin-top:clamp(13px,2vh,24px);max-width:820px;}
+</style>
+</head>
+<body>
+<div class="ltag">Виды визуализации</div>
+<div class="presentation">
+
+<!-- 1 TITLE -->
+<div class="slide active">
+<div class="sc">
+  <p class="ey">Визуализация · Лекция 18</p>
+  <h1>Виды визуализации</h1>
+</div>
+</div>
+
+<!-- 2 DECISION TREE -->
+<div class="slide">
+<div class="sc">
+  <p class="ey">Классификация</p>
+  <h2>Четыре семейства графиков</h2>
+  <div class="branches">
+    <div class="branch b-cmp">
+      <div class="bicon"><svg viewBox="0 0 32 32"><g fill="#fff"><rect x="5" y="14" width="5" height="14" rx="1"/><rect x="14" y="7" width="5" height="21" rx="1"/><rect x="23" y="18" width="5" height="10" rx="1"/></g></svg></div>
+      <h3>Сравнение</h3><p class="bq">что больше или меньше</p>
+      <ul><li>столбчатый</li><li>лепестковый</li><li>таблица с заливкой</li><li>линейный</li></ul>
+    </div>
+    <div class="branch b-rel">
+      <div class="bicon"><svg viewBox="0 0 32 32"><g fill="#fff"><circle cx="7" cy="23" r="2.4"/><circle cx="13" cy="16" r="2.4"/><circle cx="17" cy="20" r="2.4"/><circle cx="22" cy="11" r="2.4"/><circle cx="27" cy="8" r="2.4"/></g></svg></div>
+      <h3>Отношение</h3><p class="bq">связаны ли величины</p>
+      <ul><li>точечный (2 признака)</li><li>пузырьковый (3 признака)</li></ul>
+    </div>
+    <div class="branch b-dist">
+      <div class="bicon"><svg viewBox="0 0 32 32"><g fill="#fff"><rect x="4" y="17" width="4" height="11"/><rect x="9" y="9" width="4" height="19"/><rect x="14" y="5" width="4" height="23"/><rect x="19" y="12" width="4" height="16"/><rect x="24" y="20" width="4" height="8"/></g></svg></div>
+      <h3>Распределение</h3><p class="bq">как разбросаны значения</p>
+      <ul><li>гистограмма, ящик</li><li>ящик по группам</li></ul>
+    </div>
+    <div class="branch b-comp">
+      <div class="bicon"><svg viewBox="0 0 32 32"><rect x="12" y="6" width="9" height="7" fill="#fff" opacity=".7"/><rect x="12" y="13" width="9" height="7" fill="#fff" opacity=".85"/><rect x="12" y="20" width="9" height="7" fill="#fff"/></svg></div>
+      <h3>Структура</h3><p class="bq">из чего состоит целое</p>
+      <ul><li>стопкой и 100%</li><li>каскадная, круговая</li><li>Sankey, дерево</li></ul>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ===== СРАВНЕНИЕ ===== -->
+<!-- PROBLEM 3 BAR -->
+<div class="slide">
+<div class="sc">
+  <p class="ey cmp">Проблема · Сравнение</p>
+  <div class="scenario cmp"><p>За квартал отток вырос, а бюджет на удержание ограничен: тратить на всех нельзя. У нас 10 000 клиентов, у каждого от 1 до 4 продуктов. Нужно понять, в какой группе риск ухода выше всего, и направить усилия туда.</p></div>
+  <h2 class="qst">На каких клиентах сосредоточить удержание?</h2>
+</div>
+</div>
+
+<!-- 3 BAR -->
+<div class="slide">
+<div class="sc">
+  <p class="ey cmp">Сравнение · Bar chart (столбчатый)</p>
+  <h2>Кто больше: сравнить категории</h2>
+  <div class="chartbox"><div class="cap">Отток по числу продуктов · банк, 10 000 клиентов</div><svg class="chart" viewBox="0 0 440 190">
+    <g class="gl"><line x1="55" y1="50" x2="415" y2="50"/><line x1="55" y1="92" x2="415" y2="92"/><line x1="55" y1="134" x2="415" y2="134"/></g>
+    <line class="ax" x1="55" y1="20" x2="55" y2="158"/><line class="ax" x1="55" y1="158" x2="415" y2="158"/>
+    <rect x="88" y="121" width="64" height="37" rx="3" fill="#0064d6"/><text x="120" y="115" fill="#0064d6" font-size="13" font-weight="700" text-anchor="middle" font-family="Inter,sans-serif">28%</text>
+    <rect x="168" y="147" width="64" height="11" rx="3" fill="#0064d6"/><text x="200" y="141" fill="#0064d6" font-size="13" font-weight="700" text-anchor="middle" font-family="Inter,sans-serif">8%</text>
+    <rect x="248" y="48" width="64" height="110" rx="3" fill="#e02d20"/><text x="280" y="42" fill="#e02d20" font-size="13" font-weight="700" text-anchor="middle" font-family="Inter,sans-serif">83%</text>
+    <rect x="328" y="26" width="64" height="132" rx="3" fill="#e02d20"/><text x="360" y="20" fill="#e02d20" font-size="13" font-weight="700" text-anchor="middle" font-family="Inter,sans-serif">100%</text>
+    <g class="svgt" text-anchor="middle"><text x="120" y="174">1 продукт</text><text x="200" y="174">2</text><text x="280" y="174">3</text><text x="360" y="174">4</text></g>
+  </svg></div>
+  <div class="libcode"><span class="lib">matplotlib</span> · ax.<span class="cm">bar</span>(products, churn)</div>
+  <div class="note ok"><p>Сравнение категорий по величине. С 3-4 продуктами уходит почти 100%. Ось Y от нуля.</p></div>
+</div>
+</div>
+
+<!-- PROBLEM 4 RADAR -->
+<div class="slide">
+<div class="sc">
+  <p class="ey cmp">Проблема · Сравнение</p>
+  <div class="scenario cmp"><p>Маркетинг сравнивает два тарифа, Старт и Премиум, по шести характеристикам: цена, лимит, кэшбэк, скорость выпуска, поддержка, комиссия. Клиенту нужно показать профиль каждого тарифа целиком, а не шесть отдельных чисел.</p></div>
+  <h2 class="qst">Какой из двух тарифов сильнее?</h2>
+</div>
+</div>
+
+<!-- 4 RADAR -->
+<div class="slide">
+<div class="sc">
+  <p class="ey cmp">Сравнение · Radar chart (лепестковый)</p>
+  <h2>Сравнить объекты по многим параметрам</h2>
+  <div class="chartbox" style="max-width:420px"><div class="cap">Два тарифа по 6 характеристикам (шкала 1-5)</div><svg class="chart" viewBox="0 0 320 200">
+    <line x1="160" y1="100" x2="160" y2="25" stroke="#e7e9ee" stroke-width="1"/><text x="160" y="13" class="svgt" font-size="9" text-anchor="middle">Цена</text>
+    <line x1="160" y1="100" x2="225" y2="63" stroke="#e7e9ee" stroke-width="1"/><text x="245" y="58" class="svgt" font-size="9" text-anchor="middle">Лимит</text>
+    <line x1="160" y1="100" x2="225" y2="138" stroke="#e7e9ee" stroke-width="1"/><text x="245" y="146" class="svgt" font-size="9" text-anchor="middle">Кэшбэк</text>
+    <line x1="160" y1="100" x2="160" y2="175" stroke="#e7e9ee" stroke-width="1"/><text x="160" y="191" class="svgt" font-size="9" text-anchor="middle">Скорость</text>
+    <line x1="160" y1="100" x2="95" y2="138" stroke="#e7e9ee" stroke-width="1"/><text x="72" y="146" class="svgt" font-size="9" text-anchor="middle">Поддержка</text>
+    <line x1="160" y1="100" x2="95" y2="62" stroke="#e7e9ee" stroke-width="1"/><text x="74" y="54" class="svgt" font-size="9" text-anchor="middle">Комиссия</text>
+    <polygon points="160,55 212,70 186,115 160,175 121,122 108,70" fill="rgba(0,100,214,.18)" stroke="#0064d6" stroke-width="2.5"/>
+    <polygon points="160,25 225,63 225,138 160,160 95,138 121,78" fill="rgba(224,130,10,.15)" stroke="#e0820a" stroke-width="2.5"/>
+  </svg></div>
+  <div class="legend"><span><i style="background:#0064d6"></i>Старт</span><span><i style="background:#e0820a"></i>Премиум</span></div>
+  <div class="libcode"><span class="lib">matplotlib</span> · subplot(polar=True); ax.<span class="cm">plot</span>(angles, vals)</div>
+  <div class="note ok"><p>Сравнение объектов сразу по многим параметрам. Подходит при 4-8 осях.</p></div>
+</div>
+</div>
+
+<!-- PROBLEM 5 CONDITIONAL FORMAT TABLE -->
+<div class="slide">
+<div class="sc">
+  <p class="ey cmp">Проблема · Сравнение</p>
+  <div class="scenario cmp"><p>У банка четыре продукта и по каждому пять метрик: прибыль, удержание, оценка, жалобы. Менеджеру нужно за секунды увидеть, какой продукт где проседает, не вчитываясь в два десятка чисел.</p></div>
+  <h2 class="qst">Где у продуктов слабые места?</h2>
+</div>
+</div>
+
+<!-- 5 CONDITIONAL FORMAT TABLE -->
+<div class="slide">
+<div class="sc">
+  <p class="ey cmp">Сравнение · Heatmap table (таблица с заливкой)</p>
+  <h2>Много объектов и метрик на одном экране</h2>
+  <table class="dt" style="max-width:720px">
+    <tr><th>Продукт</th><th>Прибыль</th><th>Удержание</th><th>Оценка</th><th>Жалобы</th></tr>
+    <tr><td>Карта Стандарт</td><td style="background:#cdebd5">62</td><td style="background:#cdebd5">88%</td><td style="background:#cdebd5">4.2</td><td style="background:#cdebd5">3%</td></tr>
+    <tr><td>Карта Голд</td><td style="background:#a8ddb8">91</td><td style="background:#fdf0c4">79%</td><td style="background:#fdf0c4">4.0</td><td style="background:#fdf0c4">6%</td></tr>
+    <tr><td>Кредит</td><td style="background:#8ed1a4">120</td><td style="background:#f6c9c4">64%</td><td style="background:#f6c9c4">3.4</td><td style="background:#f0a9a2">14%</td></tr>
+    <tr><td>Депозит</td><td style="background:#fdf0c4">45</td><td style="background:#a8ddb8">92%</td><td style="background:#a8ddb8">4.5</td><td style="background:#cdebd5">2%</td></tr>
+  </table>
+  <div class="libcode"><span class="lib">pandas</span> · df.style.<span class="cm">background_gradient</span>(cmap="RdYlGn")</div>
+  <div class="note ok"><p>Много объектов и метрик в одной таблице. Цвет ячейки заменяет чтение чисел.</p></div>
+</div>
+</div>
+
+<!-- PROBLEM 6 LINE SINGLE -->
+<div class="slide">
+<div class="sc">
+  <p class="ey cmp">Проблема · Сравнение</p>
+  <div class="scenario cmp"><p>Диспетчер планирует смены водителей. Спрос в течение суток неравномерен: в одни часы машины простаивают, в другие их не хватает. На руках 7700 поездок за квартал с временем заказа. Нужно увидеть, когда спрос пиковый.</p></div>
+  <h2 class="qst">Когда выводить на линию больше водителей?</h2>
+</div>
+</div>
+
+<!-- 6 LINE SINGLE -->
+<div class="slide">
+<div class="sc">
+  <p class="ey cmp">Сравнение · Line chart (линейный)</p>
+  <h2>Как величина меняется со временем</h2>
+  <div class="chartbox"><div class="cap">Поездки такси по часам · янв-мар 2024 (7700 поездок)</div><svg class="chart" viewBox="0 0 440 190">
+    <g class="gl"><line x1="55" y1="50" x2="415" y2="50"/><line x1="55" y1="92" x2="415" y2="92"/><line x1="55" y1="134" x2="415" y2="134"/></g>
+    <line class="ax" x1="55" y1="20" x2="55" y2="158"/><line class="ax" x1="55" y1="158" x2="415" y2="158"/>
+    <polyline points="55,142 71,141 86,142 102,142 118,142 133,141 149,141 165,72 180,73 196,79 212,81 227,139 243,143 258,144 274,142 290,144 305,139 321,42 337,20 352,41 368,44 384,142 399,141 415,140" fill="none" stroke="#0064d6" stroke-width="3"/>
+    <circle cx="337" cy="20" r="5" fill="#0064d6"/><text x="337" y="14" fill="#0064d6" font-size="11" font-weight="700" text-anchor="middle" font-family="Inter,sans-serif">пик 18:00</text>
+    <g class="svgt" text-anchor="middle"><text x="55" y="174">0</text><text x="149" y="174">6</text><text x="243" y="174">12</text><text x="337" y="174">18</text><text x="415" y="174">23</text></g>
+  </svg></div>
+  <div class="libcode"><span class="lib">matplotlib</span> · ax.<span class="cm">plot</span>(hours, trips)</div>
+  <div class="note ok"><p>Тренд по упорядоченной оси. Здесь два пика: утренний и вечерний в 18:00.</p></div>
+</div>
+</div>
+
+<!-- PROBLEM 7 LINE MULTI -->
+<div class="slide">
+<div class="sc">
+  <p class="ey cmp">Проблема · Сравнение</p>
+  <div class="scenario cmp"><p>Региональный менеджер сравнивает три города по числу поездок за январь, февраль и март. Нужно понять, где спрос растёт, где падает и кто кого обгоняет, чтобы перераспределить водителей.</p></div>
+  <h2 class="qst">Какой город растёт быстрее?</h2>
+</div>
+</div>
+
+<!-- 7 LINE MULTI -->
+<div class="slide">
+<div class="sc">
+  <p class="ey cmp">Сравнение · Multi-line chart (несколько линий)</p>
+  <h2>Сравнить динамику нескольких рядов</h2>
+  <div class="chartbox"><div class="cap">Поездки по месяцам 2024: три города</div><svg class="chart" viewBox="0 0 440 190">
+    <g class="gl"><line x1="55" y1="50" x2="415" y2="50"/><line x1="55" y1="92" x2="415" y2="92"/><line x1="55" y1="134" x2="415" y2="134"/></g>
+    <line class="ax" x1="55" y1="20" x2="55" y2="158"/><line class="ax" x1="55" y1="158" x2="415" y2="158"/>
+    <polyline points="120,23 235,30 350,38" fill="none" stroke="#0064d6" stroke-width="3"/><circle cx="120" cy="23" r="4" fill="#0064d6"/><circle cx="235" cy="30" r="4" fill="#0064d6"/><circle cx="350" cy="38" r="4" fill="#0064d6"/>
+    <polyline points="120,114 235,116 350,113" fill="none" stroke="#e0820a" stroke-width="3"/><circle cx="120" cy="114" r="4" fill="#e0820a"/><circle cx="235" cy="116" r="4" fill="#e0820a"/><circle cx="350" cy="113" r="4" fill="#e0820a"/>
+    <polyline points="120,112 235,120 350,114" fill="none" stroke="#1a9d4a" stroke-width="3"/><circle cx="120" cy="112" r="4" fill="#1a9d4a"/><circle cx="235" cy="120" r="4" fill="#1a9d4a"/><circle cx="350" cy="114" r="4" fill="#1a9d4a"/>
+    <g class="svgt" text-anchor="middle"><text x="120" y="174">Янв</text><text x="235" y="174">Фев</text><text x="350" y="174">Мар</text></g>
+  </svg></div>
+  <div class="legend"><span><i style="background:#0064d6"></i>Toshkent</span><span><i style="background:#e0820a"></i>Samarqand</span><span><i style="background:#1a9d4a"></i>Andijon</span></div>
+  <div class="libcode"><span class="lib">matplotlib</span> · for city in cols: ax.<span class="cm">plot</span>(x, df[city])</div>
+  <div class="note ok"><p>Сравнение динамики нескольких рядов. До 4-5 линий.</p></div>
+</div>
+</div>
+
+<!-- ===== ОТНОШЕНИЕ ===== -->
+<!-- PROBLEM 8 SCATTER -->
+<div class="slide">
+<div class="sc">
+  <p class="ey rel">Проблема · Отношение</p>
+  <div class="scenario rel"><p>В части записей длительность поездки пропущена. Если время надёжно связано с расстоянием, пропуски можно восстановить по формуле. Берём завершённые поездки с известными расстоянием и временем и проверяем, есть ли связь.</p></div>
+  <h2 class="qst">Можно ли по расстоянию оценить время поездки?</h2>
+</div>
+</div>
+
+<!-- 8 SCATTER -->
+<div class="slide">
+<div class="sc">
+  <p class="ey rel">Отношение · Scatter plot (точечный)</p>
+  <h2>Связаны ли две величины</h2>
+  <div class="chartbox"><div class="cap">Расстояние и длительность поездки (r = 0.87)</div><svg class="chart" viewBox="0 0 440 190">
+    <g class="gl"><line x1="55" y1="50" x2="415" y2="50"/><line x1="55" y1="92" x2="415" y2="92"/><line x1="55" y1="134" x2="415" y2="134"/></g>
+    <line class="ax" x1="55" y1="20" x2="55" y2="158"/><line class="ax" x1="55" y1="158" x2="415" y2="158"/>
+    <g fill="#e0820a" fill-opacity="0.75"><circle cx="115" cy="137" r="5"/><circle cx="184" cy="116" r="5"/><circle cx="235" cy="94" r="5"/><circle cx="352" cy="31" r="5"/><circle cx="271" cy="73" r="5"/><circle cx="157" cy="121" r="5"/><circle cx="307" cy="52" r="5"/><circle cx="223" cy="94" r="5"/><circle cx="154" cy="121" r="5"/><circle cx="136" cy="131" r="5"/><circle cx="139" cy="121" r="5"/><circle cx="199" cy="110" r="5"/></g>
+    <g class="svgt"><text x="234" y="174" text-anchor="middle">Расстояние, км →</text><text transform="rotate(-90 18 88)" x="18" y="88" text-anchor="middle">Длительность</text></g>
+  </svg></div>
+  <div class="libcode"><span class="lib">matplotlib</span> · ax.<span class="cm">scatter</span>(dist, dur, alpha=0.3)</div>
+  <div class="note ok"><p>Связь двух числовых величин. Облако вверх = сильная связь, r=0.87.</p></div>
+</div>
+</div>
+
+<!-- PROBLEM 9 BUBBLE -->
+<div class="slide">
+<div class="sc">
+  <p class="ey rel">Проблема · Отношение</p>
+  <div class="scenario rel"><p>Нужно за один взгляд оценить группы клиентов сразу по трём осям: средний баланс, доля оттока и размер группы. Так видно не только где отток высокий, но и насколько группа большая, то есть стоит ли вообще вмешиваться.</p></div>
+  <h2 class="qst">Где сидит главный риск оттока?</h2>
+</div>
+</div>
+
+<!-- 9 BUBBLE -->
+<div class="slide">
+<div class="sc">
+  <p class="ey rel">Отношение · Bubble chart (пузырьковый)</p>
+  <h2>Три величины на одном графике</h2>
+  <div class="chartbox"><div class="cap">Группы по числу продуктов: баланс (X), отток (Y), размер = число клиентов</div><svg class="chart" viewBox="0 0 440 190">
+    <g class="gl"><line x1="55" y1="50" x2="415" y2="50"/><line x1="55" y1="92" x2="415" y2="92"/><line x1="55" y1="134" x2="415" y2="134"/></g>
+    <line class="ax" x1="55" y1="20" x2="55" y2="158"/><line class="ax" x1="55" y1="158" x2="415" y2="158"/>
+    <circle cx="379" cy="119" r="30" fill="#0064d6" fill-opacity="0.5"/><text x="379" y="123" text-anchor="middle" font-size="10" font-weight="700" fill="#0050ad" font-family="Inter,sans-serif">1 прод</text>
+    <circle cx="225" cy="147" r="28" fill="#1a9d4a" fill-opacity="0.5"/><text x="225" y="151" text-anchor="middle" font-size="10" font-weight="700" fill="#117a39" font-family="Inter,sans-serif">2</text>
+    <circle cx="300" cy="43" r="7" fill="#e0820a" fill-opacity="0.75"/><text x="300" y="28" text-anchor="middle" font-size="10" font-weight="700" fill="#e0820a" font-family="Inter,sans-serif">3</text>
+    <circle cx="363" cy="24" r="3" fill="#e02d20" fill-opacity="0.85"/><text x="363" y="14" text-anchor="middle" font-size="10" font-weight="700" fill="#e02d20" font-family="Inter,sans-serif">4</text>
+    <g class="svgt"><text x="234" y="174" text-anchor="middle">Средний баланс →</text><text transform="rotate(-90 18 88)" x="18" y="88" text-anchor="middle">Отток %</text></g>
+  </svg></div>
+  <div class="libcode"><span class="lib">matplotlib</span> · ax.<span class="cm">scatter</span>(x, y, s=clients)   # s = размер</div>
+  <div class="note ok"><p>Три величины сразу: две оси плюс размер точки. Групп с 3-4 продуктами мало, отток почти полный.</p></div>
+</div>
+</div>
+
+<!-- ===== РАСПРЕДЕЛЕНИЕ ===== -->
+<!-- PROBLEM 11 HISTOGRAM -->
+<div class="slide">
+<div class="sc">
+  <p class="ey dist">Проблема · Распределение</p>
+  <div class="scenario dist"><p>Сервис такси хочет задать одну «среднюю» цену и спланировать парк под типичную поездку. Аналитик берёт среднюю длину поездки по 7700 заказам и предлагает считать её эталоном: есть среднее, значит есть и типичный клиент.</p></div>
+  <h2 class="qst">Какая поездка по длине типичная?</h2>
+</div>
+</div>
+
+<!-- 11 HISTOGRAM -->
+<div class="slide">
+<div class="sc">
+  <p class="ey dist">Распределение · Histogram (гистограмма)</p>
+  <h2>Среднее попадает в пустоту</h2>
+  <div class="chartbox"><div class="cap">Длина поездки, км · 7700 поездок</div><svg class="chart" viewBox="0 0 440 190">
+    <g class="gl"><line x1="55" y1="50" x2="415" y2="50"/><line x1="55" y1="92" x2="415" y2="92"/><line x1="55" y1="134" x2="415" y2="134"/></g>
+    <line class="ax" x1="55" y1="20" x2="55" y2="158"/><line class="ax" x1="55" y1="158" x2="415" y2="158"/>
+    <g fill="#1a9d4a"><rect x="57" y="123" width="28" height="35"/><rect x="87" y="50" width="28" height="108"/><rect x="117" y="38" width="28" height="120"/><rect x="147" y="78" width="28" height="80"/><rect x="177" y="120" width="28" height="38"/><rect x="207" y="140" width="28" height="18"/><rect x="237" y="143" width="28" height="15"/><rect x="267" y="130" width="28" height="28"/><rect x="297" y="90" width="28" height="68"/><rect x="327" y="70" width="28" height="88"/><rect x="357" y="100" width="28" height="58"/><rect x="387" y="130" width="28" height="28"/></g>
+    <line x1="216" y1="22" x2="216" y2="158" stroke="#e02d20" stroke-width="2" stroke-dasharray="5 4"/>
+    <text x="216" y="15" fill="#e02d20" font-size="11" font-weight="700" text-anchor="middle" font-family="Inter,sans-serif">среднее 13 км</text>
+    <text x="118" y="32" fill="#117a39" font-size="11" font-weight="700" text-anchor="middle" font-family="Inter,sans-serif">город</text>
+    <text x="341" y="64" fill="#117a39" font-size="11" font-weight="700" text-anchor="middle" font-family="Inter,sans-serif">аэропорт</text>
+    <g class="svgt" text-anchor="middle"><text x="55" y="174">0</text><text x="175" y="174">10</text><text x="295" y="174">20</text><text x="415" y="174">30 км</text></g>
+  </svg></div>
+  <div class="libcode"><span class="lib">matplotlib</span> · ax.<span class="cm">hist</span>(distance, bins=30)</div>
+  <div class="note ok"><p>Ждёшь один пик у среднего, а пиков два: короткие поездки по городу (~3 км) и длинные в аэропорт (~25 км). Среднее 13 км попадает в провал, где поездок почти нет. «Типичной» поездки на 13 км не существует, среднее тут обманывает.</p></div>
+</div>
+</div>
+
+<!-- PROBLEM 12 BOXPLOT -->
+<div class="slide">
+<div class="sc">
+  <p class="ey dist">Проблема · Распределение</p>
+  <div class="scenario dist"><p>Гипотеза: уходят клиенты определённого возраста. Чтобы проверить, сравниваем распределение возраста у двух групп, оставшихся и ушедших, по 10 000 клиентов: медиана, разброс, выбросы.</p></div>
+  <h2 class="qst">Возраст ушедших отличается от оставшихся?</h2>
+</div>
+</div>
+
+<!-- 12 BOXPLOT -->
+<div class="slide">
+<div class="sc">
+  <p class="ey dist">Распределение · Box plot (ящик с усами)</p>
+  <h2>Сравнить распределение двух групп</h2>
+  <div class="chartbox"><div class="cap">Возраст клиентов банка (10 000): остались и ушли</div><svg class="chart" viewBox="0 0 440 190">
+    <g class="gl"><line x1="55" y1="50" x2="415" y2="50"/><line x1="55" y1="92" x2="415" y2="92"/><line x1="55" y1="134" x2="415" y2="134"/></g>
+    <line class="ax" x1="55" y1="20" x2="55" y2="158"/><line class="ax" x1="55" y1="158" x2="415" y2="158"/>
+    <g stroke="#1a9d4a" stroke-width="2.5" fill="rgba(26,157,74,.13)"><line x1="150" y1="57" x2="150" y2="158"/><line x1="134" y1="57" x2="166" y2="57"/><line x1="134" y1="158" x2="166" y2="158"/><rect x="118" y="97" width="64" height="27"/><line x1="118" y1="110" x2="182" y2="110"/></g>
+    <text x="150" y="92" fill="#1a9d4a" font-size="12" font-weight="700" text-anchor="middle" font-family="Inter,sans-serif">медиана 36</text>
+    <g stroke="#e02d20" stroke-width="2.5" fill="rgba(224,45,32,.1)"><line x1="300" y1="19" x2="300" y2="157"/><line x1="284" y1="19" x2="316" y2="19"/><line x1="284" y1="157" x2="316" y2="157"/><rect x="268" y="70" width="64" height="35"/><line x1="268" y1="86" x2="332" y2="86"/></g>
+    <text x="300" y="64" fill="#e02d20" font-size="12" font-weight="700" text-anchor="middle" font-family="Inter,sans-serif">медиана 45</text>
+    <g class="svgt" text-anchor="middle"><text x="150" y="174">Остались</text><text x="300" y="174">Ушли</text></g>
+  </svg></div>
+  <div class="libcode"><span class="lib">seaborn</span> · sns.<span class="cm">boxplot</span>(data=df, x="exited", y="age")</div>
+  <div class="note ok"><p>Сравнение распределений двух групп. Ушедшие старше: медиана 45 против 36.</p></div>
+</div>
+</div>
+
+<!-- PROBLEM 13 BOX MANY -->
+<div class="slide">
+<div class="sc">
+  <p class="ey dist">Проблема · Распределение</p>
+  <div class="scenario dist"><p>Нужно сравнить сумму поездки сразу по пяти городам: важен не только средний чек, но и стабильность. Где-то поездки ровные, где-то разброс большой, и это меняет тарифную политику.</p></div>
+  <h2 class="qst">Где чеки выше и разброс шире?</h2>
+</div>
+</div>
+
+<!-- 13 BOX MANY -->
+<div class="slide">
+<div class="sc">
+  <p class="ey dist">Распределение · Grouped box plot (ящики по группам)</p>
+  <h2>Распределение по многим группам сразу</h2>
+  <div class="chartbox"><div class="cap">Сумма поездки по городам</div><svg class="chart" viewBox="0 0 440 190">
+    <g class="gl"><line x1="55" y1="50" x2="415" y2="50"/><line x1="55" y1="92" x2="415" y2="92"/><line x1="55" y1="134" x2="415" y2="134"/></g>
+    <line class="ax" x1="55" y1="20" x2="55" y2="158"/><line class="ax" x1="55" y1="158" x2="415" y2="158"/>
+    <g stroke="#0064d6" stroke-width="2" fill="rgba(0,100,214,.13)">
+      <line x1="95" y1="20" x2="95" y2="135"/><rect x="77" y="43" width="36" height="56"/><line x1="77" y1="77" x2="113" y2="77"/>
+      <line x1="160" y1="25" x2="160" y2="135"/><rect x="142" y="54" width="36" height="46"/><line x1="142" y1="84" x2="178" y2="84"/>
+      <line x1="225" y1="20" x2="225" y2="130"/><rect x="207" y="44" width="36" height="54"/><line x1="207" y1="75" x2="243" y2="75"/>
+      <line x1="290" y1="20" x2="290" y2="130"/><rect x="272" y="43" width="36" height="51"/><line x1="272" y1="73" x2="308" y2="73"/>
+      <line x1="355" y1="20" x2="355" y2="130"/><rect x="337" y="42" width="36" height="53"/><line x1="337" y1="73" x2="373" y2="73"/>
+    </g>
+    <g class="svgt" text-anchor="middle"><text x="95" y="174">Тош</text><text x="160" y="174">Сам</text><text x="225" y="174">Анд</text><text x="290" y="174">Нам</text><text x="355" y="174">Бух</text></g>
+  </svg></div>
+  <div class="libcode"><span class="lib">seaborn</span> · sns.<span class="cm">boxplot</span>(data=df, x="city", y="fare")</div>
+  <div class="note ok"><p>Распределение по многим группам разом. Коробка = средняя половина, точки за усами = выбросы.</p></div>
+</div>
+</div>
+
+<!-- ===== СТРУКТУРА ===== -->
+<!-- PROBLEM 14 STACKED 100% -->
+<div class="slide">
+<div class="sc">
+  <p class="ey comp">Проблема · Структура</p>
+  <div class="scenario comp"><p>Банк продвигает оплату картой и кошельком. Нужно понять, растёт ли их доля от месяца к месяцу за счёт наличных. Важны именно проценты, а не абсолютные суммы.</p></div>
+  <h2 class="qst">Меняется ли структура оплат со временем?</h2>
+</div>
+</div>
+
+<!-- 14 STACKED 100% -->
+<div class="slide">
+<div class="sc">
+  <p class="ey comp">Структура · 100% stacked bar (100% стопкой)</p>
+  <h2>Как менялись доли во времени</h2>
+  <div class="chartbox" style="max-width:460px"><div class="cap">Доли способов оплаты по месяцам</div><svg class="chart" viewBox="0 0 440 190">
+    <line class="ax" x1="55" y1="20" x2="55" y2="158"/><line class="ax" x1="55" y1="158" x2="415" y2="158"/>
+    <rect x="100" y="93" width="60" height="65" fill="#0064d6"/><rect x="100" y="48" width="60" height="46" fill="#e0820a"/><rect x="100" y="20" width="60" height="28" fill="#1a9d4a"/><text x="130" y="174" class="svgt" text-anchor="middle">Янв</text>
+    <rect x="205" y="88" width="60" height="70" fill="#0064d6"/><rect x="205" y="49" width="60" height="39" fill="#e0820a"/><rect x="205" y="20" width="60" height="29" fill="#1a9d4a"/><text x="235" y="174" class="svgt" text-anchor="middle">Фев</text>
+    <rect x="310" y="90" width="60" height="68" fill="#0064d6"/><rect x="310" y="49" width="60" height="41" fill="#e0820a"/><rect x="310" y="20" width="60" height="29" fill="#1a9d4a"/><text x="340" y="174" class="svgt" text-anchor="middle">Мар</text>
+  </svg></div>
+  <div class="legend"><span><i style="background:#0064d6"></i>Карта</span><span><i style="background:#e0820a"></i>Наличные</span><span><i style="background:#1a9d4a"></i>Кошелёк</span></div>
+  <div class="libcode"><span class="lib">pandas</span> · df.div(df.sum(1), axis=0).<span class="cm">plot.bar</span>(stacked=True)</div>
+  <div class="note ok"><p>Изменение долей во времени. Каждый столбец = 100%, абсолютный объём не виден.</p></div>
+</div>
+</div>
+
+<!-- PROBLEM 15 STACKED AREA -->
+<div class="slide">
+<div class="sc">
+  <p class="ey comp">Проблема · Структура</p>
+  <div class="scenario comp"><p>Руководству нужны сразу две вещи: общий рост выручки по месяцам и вклад каждой категории товаров. Нужно показать и итог, и состав на одном графике.</p></div>
+  <h2 class="qst">Как растёт выручка и из чего складывается?</h2>
+</div>
+</div>
+
+<!-- 15 STACKED AREA -->
+<div class="slide">
+<div class="sc">
+  <p class="ey comp">Структура · Stacked area (области стопкой)</p>
+  <h2>Состав и общий объём во времени</h2>
+  <div class="chartbox"><div class="cap">Выручка по категориям по месяцам</div><svg class="chart" viewBox="0 0 440 190">
+    <g class="gl"><line x1="55" y1="50" x2="415" y2="50"/><line x1="55" y1="92" x2="415" y2="92"/><line x1="55" y1="134" x2="415" y2="134"/></g>
+    <line class="ax" x1="55" y1="20" x2="55" y2="158"/><line class="ax" x1="55" y1="158" x2="415" y2="158"/>
+    <path d="M55,158 L55,115 145,110 235,105 325,107 415,100 L415,158 Z" fill="#0064d6" fill-opacity="0.75"/>
+    <path d="M55,115 145,110 235,105 325,107 415,100 L415,57 325,67 235,68 145,76 55,84 Z" fill="#e0820a" fill-opacity="0.7"/>
+    <path d="M55,84 145,76 235,68 325,67 415,57 L415,31 325,43 235,47 145,57 55,68 Z" fill="#1a9d4a" fill-opacity="0.7"/>
+    <g class="svgt" text-anchor="middle"><text x="55" y="174">Янв</text><text x="235" y="174">Мар</text><text x="415" y="174">Май</text></g>
+  </svg></div>
+  <div class="legend"><span><i style="background:#0064d6"></i>Электроника</span><span><i style="background:#e0820a"></i>Одежда</span><span><i style="background:#1a9d4a"></i>Дом</span></div>
+  <div class="libcode"><span class="lib">matplotlib</span> · ax.<span class="cm">stackplot</span>(months, *categories)</div>
+  <div class="note ok"><p>Состав и общий объём во времени. До 3-4 слоёв.</p></div>
+</div>
+</div>
+
+<!-- PROBLEM 16 WATERFALL -->
+<div class="slide">
+<div class="sc">
+  <p class="ey comp">Проблема · Структура</p>
+  <div class="scenario comp"><p>Из выручки вычитают себестоимость, маркетинг и налоги, остаётся прибыль. Финдиректору нужно наглядно показать, какой шаг съедает больше всего, чтобы понять, где резать расходы.</p></div>
+  <h2 class="qst">Куда уходит выручка по пути к прибыли?</h2>
+</div>
+</div>
+
+<!-- 16 WATERFALL -->
+<div class="slide">
+<div class="sc">
+  <p class="ey comp">Структура · Waterfall (каскадная)</p>
+  <h2>Из чего сложился итог</h2>
+  <div class="chartbox"><div class="cap">От выручки к прибыли</div><svg class="chart" viewBox="0 0 440 190">
+    <g class="gl"><line x1="55" y1="50" x2="415" y2="50"/><line x1="55" y1="92" x2="415" y2="92"/><line x1="55" y1="134" x2="415" y2="134"/></g>
+    <line class="ax" x1="55" y1="20" x2="55" y2="158"/><line class="ax" x1="55" y1="158" x2="415" y2="158"/>
+    <rect x="53" y="20" width="54" height="138" fill="#0064d6"/><text x="80" y="174" class="svgt" text-anchor="middle">Выручка</text>
+    <rect x="123" y="20" width="54" height="55" fill="#e02d20"/><text x="150" y="174" class="svgt" text-anchor="middle">Себест.</text>
+    <rect x="193" y="75" width="54" height="21" fill="#e02d20"/><text x="220" y="174" class="svgt" text-anchor="middle">Маркет.</text>
+    <rect x="263" y="96" width="54" height="17" fill="#e02d20"/><text x="290" y="174" class="svgt" text-anchor="middle">Налоги</text>
+    <rect x="333" y="112" width="54" height="46" fill="#1a9d4a"/><text x="360" y="174" class="svgt" text-anchor="middle">Прибыль</text>
+  </svg></div>
+  <div class="libcode"><span class="lib">plotly</span> · go.<span class="cm">Waterfall</span>(x=steps, y=values)</div>
+  <div class="note ok"><p>Вклад каждого шага в итог. Видно, что съедает прибыль.</p></div>
+</div>
+</div>
+
+<!-- PROBLEM 17 PIE -->
+<div class="slide">
+<div class="sc">
+  <p class="ey comp">Проблема · Структура</p>
+  <div class="scenario comp"><p>На совете директоров нужно одной картинкой показать структуру платежей сейчас: какая часть приходится на карту, наличные и кошелёк. Частей немного, важна общая пропорция.</p></div>
+  <h2 class="qst">Какова доля каждого способа оплаты?</h2>
+</div>
+</div>
+
+<!-- 17 PIE -->
+<div class="slide">
+<div class="sc">
+  <p class="ey comp">Структура · Pie chart (круговая)</p>
+  <h2>Доля целого здесь и сейчас</h2>
+  <div class="chartbox" style="max-width:340px"><div class="cap">Способы оплаты в такси</div><svg class="chart" viewBox="0 0 220 200">
+    <path d="M110,100 L110.0,20.0 A80,80 0 0 1 115.0,179.8 Z" fill="#0064d6"/>
+    <path d="M110,100 L115.0,179.8 A80,80 0 0 1 33.9,75.3 Z" fill="#e0820a"/>
+    <path d="M110,100 L33.9,75.3 A80,80 0 0 1 115.0,20.2 Z" fill="#1a9d4a"/>
+  </svg></div>
+  <div class="legend"><span><i style="background:#0064d6"></i>Карта 49%</span><span><i style="background:#e0820a"></i>Наличные 31%</span><span><i style="background:#1a9d4a"></i>Кошелёк 21%</span></div>
+  <div class="libcode"><span class="lib">matplotlib</span> · ax.<span class="cm">pie</span>(sizes, labels=names, autopct="%1.0f%%")</div>
+  <div class="note ok"><p>Доли целого при 2-4 частях, без 3D. Для точного сравнения лучше столбцы.</p></div>
+</div>
+</div>
+
+<!-- PROBLEM 18 SANKEY -->
+<div class="slide">
+<div class="sc">
+  <p class="ey comp">Проблема · Структура</p>
+  <div class="scenario comp"><p>За квартал клиенты переходят между статусами: активный, спящий, ушёл. Нужно увидеть не только сколько в каждом статусе, но и сами потоки: сколько активных уснуло и сколько спящих ушло насовсем.</p></div>
+  <h2 class="qst">Как клиенты перетекают между статусами?</h2>
+</div>
+</div>
+
+<!-- 18 SANKEY -->
+<div class="slide">
+<div class="sc">
+  <p class="ey comp">Структура · Sankey diagram (Sankey)</p>
+  <h2>Потоки и переходы между состояниями</h2>
+  <div class="chartbox"><div class="cap">Переходы клиентов за квартал</div><svg class="chart" viewBox="0 0 440 190">
+    <path d="M70,30 C200,30 240,40 370,40 L370,86 C240,86 200,86 70,86 Z" fill="#1a9d4a" fill-opacity="0.4"/>
+    <path d="M70,90 C200,90 240,110 370,110 L370,128 C240,128 200,110 70,108 Z" fill="#e0820a" fill-opacity="0.45"/>
+    <path d="M70,112 C200,114 240,150 370,150 L370,172 C240,172 200,140 70,150 Z" fill="#e02d20" fill-opacity="0.4"/>
+    <rect x="56" y="28" width="14" height="82" fill="#1a9d4a"/><rect x="56" y="112" width="14" height="40" fill="#e0820a"/>
+    <rect x="370" y="38" width="14" height="50" fill="#1a9d4a"/><rect x="370" y="108" width="14" height="44" fill="#e0820a"/><rect x="370" y="150" width="14" height="24" fill="#e02d20"/>
+    <g font-family="Inter,sans-serif" font-size="11" font-weight="600" fill="#4a4d53"><text x="48" y="72" text-anchor="end">Активные</text><text x="48" y="135" text-anchor="end">Спящие</text><text x="392" y="66">Активные</text><text x="392" y="134">Спящие</text><text x="392" y="166">Ушли</text></g>
+  </svg></div>
+  <div class="libcode"><span class="lib">plotly</span> · go.<span class="cm">Sankey</span>(node=..., link=...)</div>
+  <div class="note ok"><p>Потоки между состояниями. Ширина ленты = объём перехода.</p></div>
+</div>
+</div>
+
+<!-- PROBLEM 19 TREEMAP -->
+<div class="slide">
+<div class="sc">
+  <p class="ey comp">Проблема · Структура</p>
+  <div class="scenario comp"><p>Кафе хочет понять структуру заказов: какие приёмы пищи и какие блюда внутри них дают основной объём, чтобы спланировать закупки и меню. Нужно видеть сразу два уровня: группы и блюда внутри них.</p></div>
+  <h2 class="qst">Из чего складывается спрос?</h2>
+</div>
+</div>
+
+<!-- 19 TREEMAP -->
+<div class="slide">
+<div class="sc">
+  <p class="ey comp">Структура · Treemap (дерево)</p>
+  <h2>Доли вложенной структуры</h2>
+  <div class="chartbox" style="max-width:480px"><div class="cap">Заказы кафе: приём пищи и блюдо, площадь = объём</div><svg class="chart" viewBox="0 0 460 220">
+    <g stroke="#fff" stroke-width="2">
+      <rect x="4" y="4" width="92" height="144" fill="#e0820a"/>
+      <rect x="4" y="148" width="92" height="66" fill="#e0820a"/>
+      <rect x="96" y="4" width="82" height="144" fill="#e0820a"/>
+      <rect x="96" y="148" width="42" height="66" fill="#e0820a"/>
+      <rect x="138" y="148" width="40" height="66" fill="#e0820a"/>
+      <rect x="178" y="4" width="84" height="112" fill="#e0820a"/>
+      <rect x="178" y="116" width="44" height="98" fill="#e0820a"/>
+      <rect x="222" y="116" width="40" height="98" fill="#e0820a"/>
+      <rect x="262" y="4" width="102" height="116" fill="#0064d6"/>
+      <rect x="262" y="120" width="51" height="60" fill="#0064d6"/>
+      <rect x="313" y="120" width="51" height="60" fill="#0064d6"/>
+      <rect x="262" y="180" width="51" height="34" fill="#0064d6"/>
+      <rect x="313" y="180" width="51" height="34" fill="#0064d6"/>
+      <rect x="364" y="4" width="92" height="96" fill="#0064d6"/>
+      <rect x="364" y="100" width="92" height="72" fill="#0064d6"/>
+      <rect x="364" y="172" width="92" height="42" fill="#0064d6"/>
+    </g>
+    <g fill="#fff" font-family="Inter,sans-serif" font-weight="700">
+      <text x="12" y="24" font-size="14">Обед</text>
+      <text x="270" y="24" font-size="14">Завтрак</text>
+    </g>
+    <g fill="#fff" font-family="Inter,sans-serif" font-weight="600" text-anchor="middle">
+      <text x="50" y="142" font-size="12">Вода</text>
+      <text x="50" y="186" font-size="12">Сок</text>
+      <text x="137" y="120" font-size="12">Кофе</text>
+      <text x="117" y="185" font-size="8">Трав.</text>
+      <text x="158" y="185" font-size="8">Чёрн.</text>
+      <text x="220" y="64" font-size="12">Пирог</text>
+      <text x="200" y="168" font-size="9">Рыба</text>
+      <text x="242" y="168" font-size="9">Паста</text>
+      <text x="313" y="112" font-size="12">Кофе</text>
+      <text x="287" y="154" font-size="10">Сок</text>
+      <text x="338" y="154" font-size="10">Вода</text>
+      <text x="287" y="201" font-size="8">Трав. чай</text>
+      <text x="338" y="201" font-size="8">Чёрн. чай</text>
+      <text x="410" y="56" font-size="12">Горячее</text>
+      <text x="410" y="140" font-size="11">Хлопья</text>
+      <text x="410" y="197" font-size="11">Тост</text>
+    </g>
+  </svg></div>
+  <div class="libcode"><span class="lib">plotly</span> · px.<span class="cm">treemap</span>(df, path=["meal", "dish"], values="orders")</div>
+  <div class="legend"><span><i style="background:#0064d6"></i>Завтрак</span><span><i style="background:#e0820a"></i>Обед</span></div>
+  <div class="note ok"><p>Площадь = число заказов. Внешние блоки это приёмы пищи, внутри блюда. Дерево показывает вложенную структуру сразу на двух уровнях: и доли групп, и доли блюд внутри каждой.</p></div>
+</div>
+</div>
+
+<!-- 20 CHEATSHEET -->
+<div class="slide">
+<div class="sc">
+  <p class="ey">Справочник</p>
+  <h2>Вопрос → график</h2>
+  <table class="dt" style="max-width:820px">
+    <tr><th>Что показать</th><th>График</th></tr>
+    <tr><td>Сравнить категории</td><td class="pc">столбчатый, radar, таблица с заливкой</td></tr>
+    <tr><td>Динамику во времени</td><td class="pc">линейный, несколько линий</td></tr>
+    <tr><td>Связь двух или трёх величин</td><td class="pc">точечный, пузырьковый</td></tr>
+    <tr><td>Распределение величины</td><td class="pc">гистограмма, ящик</td></tr>
+    <tr><td>Состав целого</td><td class="pc">стопкой, 100%, круговая, дерево</td></tr>
+    <tr><td>Как сложился итог</td><td class="pc">каскадная</td></tr>
+    <tr><td>Потоки между состояниями</td><td class="pc">Sankey</td></tr>
+  </table>
+</div>
+</div>
+
+<!-- 21 YOUR TURN -->
+<div class="slide">
+<div class="sc">
+  <p class="ey">Ваш ход</p>
+  <h2>Подберите тип графика к вопросу</h2>
+  <table class="dt" style="max-width:840px">
+    <tr><th>Вопрос бизнеса</th><th>Ваш график</th></tr>
+    <tr><td>Растут ли продажи по неделям</td><td class="pc">?</td></tr>
+    <tr><td>Сравнить 3 тарифа по 5 параметрам</td><td class="pc">?</td></tr>
+    <tr><td>Связан ли доход клиента с тратами</td><td class="pc">?</td></tr>
+    <tr><td>Из чего сложилась прибыль</td><td class="pc">?</td></tr>
+    <tr><td>Как клиенты переходят между статусами</td><td class="pc">?</td></tr>
+  </table>
+</div>
+</div>
+
+
+<!-- ===== БОНУС: ПАРАДОКС СИМПСОНА ===== -->
+<!-- 22 SIMPSON SETUP -->
+<div class="slide">
+<div class="sc">
+  <p class="ey" style="color:#7c3aed">Ловушка · Парадокс Симпсона</p>
+  <div class="scenario" style="border-left-color:#7c3aed"><p>Маркетолог сравнивает два канала привлечения. Партнёры дают конверсию 16%, реклама только 10%. Напрашивается вывод: урезать рекламу и вложиться в партнёров.</p></div>
+  <h2 class="qst">Реклама правда хуже?</h2>
+</div>
+</div>
+
+<!-- 23 SIMPSON AGGREGATE -->
+<div class="slide">
+<div class="sc">
+  <p class="ey" style="color:#7c3aed">Парадокс Симпсона · в среднем</p>
+  <h2>В среднем партнёры впереди</h2>
+  <div class="chartbox" style="max-width:400px"><div class="cap">Конверсия по каналу, в среднем по всем клиентам</div><svg class="chart" viewBox="0 0 360 190">
+    <g class="gl"><line x1="55" y1="54" x2="320" y2="54"/><line x1="55" y1="89" x2="320" y2="89"/><line x1="55" y1="124" x2="320" y2="124"/></g>
+    <line class="ax" x1="55" y1="20" x2="55" y2="158"/><line class="ax" x1="55" y1="158" x2="320" y2="158"/>
+    <rect x="110" y="89" width="70" height="69" rx="3" fill="#9a9da3"/><text x="145" y="82" fill="#6b6f76" font-size="14" font-weight="700" text-anchor="middle" font-family="Inter,sans-serif">10%</text>
+    <rect x="210" y="48" width="70" height="110" rx="3" fill="#1a9d4a"/><text x="245" y="41" fill="#117a39" font-size="14" font-weight="700" text-anchor="middle" font-family="Inter,sans-serif">16%</text>
+    <g class="svgt" text-anchor="middle"><text x="145" y="174">Реклама</text><text x="245" y="174">Партнёры</text></g>
+  </svg></div>
+  <div class="note"><p>На агрегате вывод кажется очевидным: партнёры заметно сильнее. Но это среднее, смешанное по всем клиентам сразу.</p></div>
+</div>
+</div>
+
+<!-- 24 SIMPSON GROUPED -->
+<div class="slide">
+<div class="sc">
+  <p class="ey" style="color:#7c3aed">Парадокс Симпсона · по сегментам</p>
+  <h2 class="qst">Но в каждом сегменте наоборот</h2>
+  <div class="chartbox"><div class="cap">Конверсия по сегментам клиентов</div><svg class="chart" viewBox="0 0 440 190">
+    <g class="gl"><line x1="55" y1="64" x2="415" y2="64"/><line x1="55" y1="95" x2="415" y2="95"/><line x1="55" y1="127" x2="415" y2="127"/></g>
+    <line class="ax" x1="55" y1="20" x2="55" y2="158"/><line class="ax" x1="55" y1="158" x2="415" y2="158"/>
+    <rect x="115" y="33" width="42" height="125" rx="3" fill="#0064d6"/><text x="136" y="27" fill="#0064d6" font-size="13" font-weight="700" text-anchor="middle" font-family="Inter,sans-serif">20%</text>
+    <rect x="159" y="45" width="42" height="113" rx="3" fill="#e0820a"/><text x="180" y="39" fill="#e0820a" font-size="13" font-weight="700" text-anchor="middle" font-family="Inter,sans-serif">18%</text>
+    <rect x="285" y="108" width="42" height="50" rx="3" fill="#0064d6"/><text x="306" y="102" fill="#0064d6" font-size="13" font-weight="700" text-anchor="middle" font-family="Inter,sans-serif">8%</text>
+    <rect x="329" y="120" width="42" height="38" rx="3" fill="#e0820a"/><text x="350" y="114" fill="#e0820a" font-size="13" font-weight="700" text-anchor="middle" font-family="Inter,sans-serif">6%</text>
+    <g class="svgt" text-anchor="middle" font-size="13"><text x="180" y="176">B2C, лёгкие</text><text x="350" y="176">B2B, трудные</text></g>
+  </svg></div>
+  <div class="legend"><span><i style="background:#0064d6"></i>Реклама</span><span><i style="background:#e0820a"></i>Партнёры</span></div>
+  <div class="note ok"><p>Реклама эффективнее и в B2C (20% против 18%), и в B2B (8% против 6%). В обоих сегментах она впереди. Так почему же в среднем она ниже?</p></div>
+</div>
+</div>
+
+<!-- 25 SIMPSON EXPLAIN -->
+<div class="slide">
+<div class="sc">
+  <p class="ey" style="color:#7c3aed">Парадокс Симпсона · разгадка</p>
+  <h2>Дело в объёме, а не в канале</h2>
+  <div class="chartbox" style="max-width:420px"><div class="cap">Из каких клиентов состоит каждый канал</div><svg class="chart" viewBox="0 0 360 190">
+    <line class="ax" x1="55" y1="20" x2="55" y2="158"/><line class="ax" x1="55" y1="158" x2="320" y2="158"/>
+    <rect x="90" y="20" width="80" height="110" fill="#9a9da3"/><text x="130" y="80" fill="#fff" font-size="13" font-weight="700" text-anchor="middle" font-family="Inter,sans-serif">80%</text>
+    <rect x="90" y="130" width="80" height="28" fill="#1a9d4a"/><text x="130" y="149" fill="#fff" font-size="12" font-weight="700" text-anchor="middle" font-family="Inter,sans-serif">20%</text>
+    <rect x="200" y="20" width="80" height="28" fill="#9a9da3"/><text x="240" y="39" fill="#fff" font-size="12" font-weight="700" text-anchor="middle" font-family="Inter,sans-serif">20%</text>
+    <rect x="200" y="48" width="80" height="110" fill="#1a9d4a"/><text x="240" y="108" fill="#fff" font-size="13" font-weight="700" text-anchor="middle" font-family="Inter,sans-serif">80%</text>
+    <g class="svgt" text-anchor="middle"><text x="130" y="174">Реклама</text><text x="240" y="174">Партнёры</text></g>
+  </svg></div>
+  <div class="legend"><span><i style="background:#1a9d4a"></i>B2C, лёгкие</span><span><i style="background:#9a9da3"></i>B2B, трудные</span></div>
+  <div class="note ok"><p>Партнёры приводят в основном лёгких B2C-клиентов (80% своего объёма), а реклама трудных B2B. Среднее смешивает сегменты разного размера и переворачивает вывод. Правило: прежде чем сравнивать средние, разбей данные на группы.</p></div>
+</div>
+</div>
+
+</div><!-- end presentation -->
+
+<div class="slide-ind"><span id="cur">1</span> / <span id="tot"></span></div>
+<div class="nav-hint">&#8592; &#8594; / пробел</div>
+
+<script>
+const slides = document.querySelectorAll('.slide');
+let cur = 0;
+document.getElementById('tot').textContent = slides.length;
+function go(n){
+  slides[cur].classList.remove('active');
+  cur=(n+slides.length)%slides.length;
+  slides[cur].classList.add('active');
+  const sc=slides[cur].querySelector('.sc');
+  if(sc){sc.style.animation='none';sc.offsetHeight;sc.style.animation='';}
+  document.getElementById('cur').textContent=cur+1;
+}
+document.addEventListener('keydown',e=>{
+  if(e.key==='ArrowRight'||e.key===' '){e.preventDefault();go(cur+1);}
+  if(e.key==='ArrowLeft'){e.preventDefault();go(cur-1);}
+});
+let tx=0;
+document.addEventListener('touchstart',e=>{tx=e.touches[0].clientX;});
+document.addEventListener('touchend',e=>{const dx=e.changedTouches[0].clientX-tx;if(Math.abs(dx)>40)go(cur+(dx<0?1:-1));});
+</script>
+</body>
+</html>

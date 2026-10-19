@@ -1,0 +1,1762 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Defensive Programming · Лекция 9</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700;800&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+            background: #FFFFFF;
+            color: #1d1d1f;
+            line-height: 1.1;
+            overflow: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .presentation { width: 100vw; height: 100vh; position: relative; }
+
+        .slide {
+            width: 100%; height: 100%;
+            display: none;
+            align-items: center; justify-content: center;
+            position: absolute; top: 0; left: 0;
+            padding: clamp(40px, 6vh, 80px) clamp(40px, 6vw, 80px);
+            text-align: center;
+        }
+        .slide.active { display: flex; flex-direction: column; }
+
+        .slide-content {
+            max-width: 1200px; width: 100%; margin: 0 auto;
+            opacity: 0; transform: translateY(20px);
+            animation: fadeInUp 0.8s ease-out 0.2s forwards;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+        }
+
+        @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
+
+        h1 {
+            font-size: clamp(40px, 6.5vw, 96px);
+            font-weight: 700;
+            letter-spacing: -0.025em;
+            line-height: 0.95;
+            margin-bottom: clamp(16px, 2.5vh, 32px);
+            color: #1d1d1f;
+        }
+
+        h2 {
+            font-size: clamp(28px, 4vw, 56px);
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            line-height: 1.05;
+            margin-bottom: clamp(16px, 2vh, 28px);
+            color: #1d1d1f;
+        }
+
+        .subtitle {
+            font-size: clamp(18px, 2.2vw, 28px);
+            font-weight: 400;
+            color: #86868b;
+            margin-bottom: clamp(24px, 4vh, 48px);
+            line-height: 1.3;
+            max-width: 900px;
+        }
+
+        .eyebrow {
+            font-size: clamp(13px, 1.2vw, 16px);
+            font-weight: 600;
+            color: #007aff;
+            text-transform: uppercase;
+            letter-spacing: 0.18em;
+            margin-bottom: 18px;
+        }
+
+        .body-text {
+            font-size: clamp(15px, 1.8vw, 22px);
+            font-weight: 400;
+            color: #515154;
+            line-height: 1.45;
+            max-width: 820px;
+            margin: 0 auto;
+        }
+
+        code { font-family: 'SF Mono','Menlo','Monaco','Consolas',monospace; font-size: 0.9em; }
+
+        .highlight { color: #007aff; font-weight: 500; }
+        .accent-green { color: #34c759; font-weight: 500; }
+        .accent-red { color: #ff3b30; font-weight: 500; }
+        .accent-purple { color: #af52de; font-weight: 500; }
+
+        .cards-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: clamp(16px, 2.5vw, 28px);
+            margin-top: clamp(24px, 4vh, 40px);
+            max-width: 1100px; width: 100%;
+        }
+
+        .card {
+            background: rgba(0, 0, 0, 0.025);
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            border-radius: 14px;
+            padding: clamp(20px, 2.5vw, 32px);
+            text-align: left;
+            opacity: 0; transform: translateY(24px);
+            animation: cardSlideUp 0.55s ease-out forwards;
+            transition: all 0.3s ease;
+        }
+        .card:nth-child(1) { animation-delay: 0.4s; }
+        .card:nth-child(2) { animation-delay: 0.5s; }
+        .card:nth-child(3) { animation-delay: 0.6s; }
+        .card:nth-child(4) { animation-delay: 0.7s; }
+        @keyframes cardSlideUp { to { opacity: 1; transform: translateY(0); } }
+        .card .num {
+            font-size: clamp(28px, 3vw, 36px);
+            font-weight: 700;
+            color: #007aff;
+            line-height: 1;
+            margin-bottom: 12px;
+        }
+        .card h3 {
+            font-size: clamp(17px, 2vw, 22px);
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #1d1d1f;
+        }
+        .card p {
+            font-size: clamp(13px, 1.55vw, 16px);
+            color: #6e6e73;
+            line-height: 1.45;
+        }
+
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: clamp(24px, 4vw, 56px);
+            max-width: 1100px;
+            width: 100%;
+            margin-top: clamp(24px, 4vh, 40px);
+            align-items: stretch;
+        }
+        .comparison-item {
+            text-align: left;
+            opacity: 0; transform: scale(0.96);
+            animation: scaleIn 0.6s ease-out forwards;
+            padding: clamp(20px, 2.5vw, 32px);
+            border-radius: 16px;
+            background: rgba(0,0,0,0.02);
+            border: 1px solid rgba(0,0,0,0.06);
+        }
+        .comparison-item:nth-child(1) { animation-delay: 0.4s; }
+        .comparison-item:nth-child(2) { animation-delay: 0.55s; }
+        @keyframes scaleIn { to { opacity: 1; transform: scale(1); } }
+        .comparison-item .label {
+            font-size: clamp(12px, 1.1vw, 14px);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.16em;
+            margin-bottom: 12px;
+        }
+        .comparison-item.old .label { color: #ff3b30; }
+        .comparison-item.new .label { color: #34c759; }
+        .comparison-item h3 {
+            font-size: clamp(20px, 2.4vw, 28px);
+            font-weight: 600;
+            margin-bottom: 14px;
+            color: #1d1d1f;
+            line-height: 1.15;
+        }
+        .comparison-item p, .comparison-item li {
+            font-size: clamp(13px, 1.6vw, 17px);
+            color: #515154;
+            line-height: 1.45;
+        }
+
+        .quote-card {
+            margin-top: clamp(20px, 3vh, 32px);
+            padding: clamp(18px, 2.2vw, 26px) clamp(22px, 2.8vw, 32px);
+            border-left: 3px solid #007aff;
+            background: rgba(0, 122, 255, 0.04);
+            border-radius: 8px;
+            text-align: left;
+            max-width: 820px;
+        }
+        .quote-card.warning {
+            border-left-color: #ff3b30;
+            background: rgba(255, 59, 48, 0.04);
+        }
+        .quote-card.success {
+            border-left-color: #34c759;
+            background: rgba(52, 199, 89, 0.05);
+        }
+        .quote-card .label {
+            font-size: 12px; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 0.16em;
+            color: #007aff; margin-bottom: 8px;
+        }
+        .quote-card.warning .label { color: #ff3b30; }
+        .quote-card.success .label { color: #34c759; }
+        .quote-card p {
+            font-size: clamp(14px, 1.7vw, 19px);
+            color: #1d1d1f; line-height: 1.4; font-weight: 500;
+        }
+
+        .code-block {
+            background: #1d1d1f;
+            color: #f5f5f7;
+            border-radius: 12px;
+            padding: clamp(16px, 1.8vw, 24px);
+            font-family: 'SF Mono', 'Menlo', 'Monaco', 'Consolas', monospace;
+            font-size: clamp(12px, 1.4vw, 16px);
+            line-height: 1.6;
+            text-align: left;
+            margin-top: 18px;
+            max-width: 920px;
+            width: 100%;
+            white-space: pre;
+            overflow-x: auto;
+        }
+        .code-block.tight { padding: clamp(14px, 1.6vw, 20px); font-size: clamp(11px, 1.3vw, 14px); line-height: 1.5; }
+        .code-block .ck { color: #ff79c6; }
+        .code-block .cs { color: #f1fa8c; }
+        .code-block .cn { color: #f8f8f2; }
+        .code-block .co { color: #6272a4; font-style: italic; }
+        .code-block .cf { color: #8be9fd; }
+        .code-block .cm { color: #bd93f9; }
+        .code-block .ce { color: #ff5555; }
+        .code-block .cc { color: #50fa7b; }
+
+        .term {
+            background: #1d1d1f; color: #f5f5f7;
+            border-radius: 12px;
+            padding: clamp(13px,1.7vw,20px);
+            font-family: 'SF Mono','Menlo','Monaco','Consolas',monospace;
+            font-size: clamp(10px,1.3vw,15px);
+            line-height: 1.55; text-align: left;
+            white-space: pre; overflow-x: auto;
+            margin-top: 14px; max-width: 920px; width: 100%;
+        }
+        .term .out { color: #50fa7b; }
+        .term .err { color: #ff5555; }
+
+        .checklist {
+            list-style: none;
+            padding: 0;
+            margin-top: 18px;
+            max-width: 860px;
+            text-align: left;
+        }
+        .checklist li {
+            font-size: clamp(15px, 1.8vw, 19px);
+            color: #1d1d1f;
+            line-height: 1.5;
+            padding: 11px 0 11px 40px;
+            position: relative;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+        .checklist li:last-child { border-bottom: none; }
+        .checklist li::before {
+            content: "✓";
+            position: absolute;
+            left: 0; top: 50%;
+            transform: translateY(-50%);
+            width: 26px; height: 26px;
+            border-radius: 50%;
+            background: rgba(0, 122, 255, 0.1);
+            color: #007aff;
+            font-size: 13px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .options-list {
+            list-style: none; padding: 0; margin-top: 18px;
+            max-width: 820px; text-align: left;
+        }
+        .options-list li {
+            font-size: clamp(15px, 1.7vw, 19px);
+            color: #1d1d1f;
+            line-height: 1.5;
+            padding: 14px 18px;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            background: rgba(0,0,0,0.03);
+            border: 1px solid rgba(0,0,0,0.06);
+        }
+        .options-list li b { color: #007aff; margin-right: 8px; }
+
+        .slide-indicator {
+            position: fixed;
+            bottom: 28px; left: 50%;
+            transform: translateX(-50%);
+            font-size: 13px; color: #86868b;
+            font-weight: 400; z-index: 100;
+            letter-spacing: 0.04em;
+        }
+        .nav-hint {
+            position: fixed;
+            bottom: 28px; right: 28px;
+            font-size: 12px; color: #c7c7cc;
+            font-weight: 400; text-align: right;
+            z-index: 100;
+        }
+        .lesson-tag {
+            position: fixed;
+            top: 28px; left: 28px;
+            font-size: 11px; font-weight: 600;
+            color: #86868b; text-transform: uppercase;
+            letter-spacing: 0.18em;
+            z-index: 100;
+        }
+
+        @media (max-width: 768px) {
+            .comparison-grid, .cards-container {
+                grid-template-columns: 1fr; gap: 18px;
+            }
+        }
+
+        .data-table {
+            width: 100%; max-width: 1050px;
+            margin-top: clamp(16px, 3vh, 30px);
+            border-collapse: collapse;
+            font-size: clamp(11px, 1.5vw, 17px);
+        }
+        .data-table th, .data-table td {
+            text-align: left;
+            padding: clamp(7px,1.3vw,13px) clamp(9px,1.5vw,16px);
+            border-bottom: 1px solid rgba(0,0,0,0.08);
+            vertical-align: top;
+        }
+        .data-table th {
+            font-weight: 600; color: #1d1d1f;
+            border-bottom: 2px solid rgba(0,0,0,0.14);
+        }
+        .data-table td { color: #515154; line-height: 1.4; }
+        .data-table tr:last-child td { border-bottom: none; }
+
+            .lang-switcher {
+            position: fixed;
+            top: 22px; right: 28px;
+            z-index: 100;
+            display: flex;
+            gap: 2px;
+            background: rgba(255,255,255,0.95);
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0,0,0,0.06);
+            border-radius: 50px;
+            padding: 3px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        .lang-switcher a {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: #86868b;
+            text-decoration: none;
+            padding: 5px 12px;
+            border-radius: 50px;
+            transition: all 0.2s ease;
+        }
+        .lang-switcher a.active {
+            color: #fff;
+            background: #007aff;
+        }
+        .lang-switcher a:not(.active):hover {
+            color: #1d1d1f;
+        }
+
+</style>
+</head>
+<body>
+    <div class="lang-switcher">
+        <a href="index.html" class="active">RU</a>
+        <a href="index-uz.html">UZ</a>
+        <a href="index-en.html">EN</a>
+    </div>
+
+    <div class="presentation">
+
+        <!-- 1: Title -->
+        <div class="slide active">
+            <div class="slide-content">
+                <p class="eyebrow">Лекция 9</p>
+                <h1>Defensive Programming</h1>
+                <p class="subtitle">Обработка ошибок, try/except, logging, debugging</p>
+            </div>
+        </div>
+
+        <!-- 2: Lecture plan -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">План лекции</p>
+                <h2>Семь разделов</h2>
+                <table class="data-table">
+                    <tr><th>Секция</th><th>Тема</th><th>Чему научимся</th></tr>
+                    <tr><td>A</td><td>Контекст и мотивация</td><td>Понимать, зачем это нужно</td></tr>
+                    <tr><td>B</td><td>Основы исключений</td><td>Читать ошибки, ловить через <code>try/except</code></td></tr>
+                    <tr><td>C</td><td>Углубление <code>try/except</code></td><td><code>else</code>, <code>finally</code>, типичные ловушки</td></tr>
+                    <tr><td>D</td><td><code>raise</code></td><td>Выбрасывать свои исключения по бизнес-правилам</td></tr>
+                    <tr><td>E</td><td>Контекстные менеджеры (<code>with</code>)</td><td>Безопасно работать с ресурсами</td></tr>
+                    <tr><td>F</td><td>Модуль <code>logging</code></td><td>Писать нормальные логи вместо <code>print()</code></td></tr>
+                    <tr><td>G</td><td>Финальная практика</td><td>Собрать всё вместе на реальной задаче</td></tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- 3: Defensive programming map -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Концепция</p>
+                <h2>Карта уровней Defensive Programming</h2>
+                <table class="data-table" style="max-width: 980px;">
+                    <tr><th>Уровень</th><th>Инструмент</th><th>Что защищает</th></tr>
+                    <tr><td>1</td><td><code>if / raise</code></td><td>Входные аргументы. Блокируем мусор сразу</td></tr>
+                    <tr><td>2</td><td><code>try / except</code></td><td>Внешние ресурсы, сеть, I/O, парсинг</td></tr>
+                    <tr><td>3</td><td><code>with / contextmanager</code></td><td>Ресурсы: файлы, БД, локи</td></tr>
+                    <tr><td>4</td><td><code>logging</code></td><td>Мониторинг и аудит в продакшне</td></tr>
+                </table>
+                <div class="quote-card" style="margin-top: 22px;">
+                    <p>Принцип: чем раньше поймана ошибка, тем дешевле её исправить. В реальной системе все уровни работают вместе.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4: Story - one renamed key -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Контекст</p>
+                <h2>Один изменённый ключ</h2>
+                <p class="body-text" style="margin-bottom: 4px;">Пятница, 18:32, день зарплат. Сервис обрабатывает переводы через Humo. Партнёр обновил API: переименовал один атрибут в JSON-ответе.</p>
+                <div class="comparison-grid">
+                    <div class="comparison-item old">
+                        <div class="label">До обновления</div>
+                        <div class="term" style="margin-top: 0;"><span class="out">{
+  "transaction_id": "HM-88912",
+  "status": "SUCCESS",
+  "currency": "UZS",
+  "amount": 350000.00
+}</span></div>
+                    </div>
+                    <div class="comparison-item new">
+                        <div class="label">После обновления</div>
+                        <div class="term" style="margin-top: 0;"><span class="out">{
+  "transaction_id": "HM-88912",
+  "status": "SUCCESS",
+  "currency_code": "UZS",
+  "amount": 350000.00
+}</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5: What happened, SLA impact -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Контекст</p>
+                <h2>Каскад от <code>KeyError</code> до outage</h2>
+                <ul class="checklist" style="max-width: 880px;">
+                    <li>Код читает <code>response["currency"]</code>. Ключа больше нет: <code>KeyError</code>.</li>
+                    <li>Воркер падает. Celery поднимает новый, тот падает тоже.</li>
+                    <li>Очередь растёт. Через 4 минуты сервис полностью лежит.</li>
+                </ul>
+                <div class="quote-card warning" style="margin-top: 22px;">
+                    <p>SLA банка 99.99% uptime = максимум 52 минуты простоя в год. Один необработанный <code>KeyError</code> сжигает половину годового лимита за вечер.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 6: What is defensive programming -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Концепция</p>
+                <h2>Что такое Defensive Programming</h2>
+                <p class="body-text">Это подход, при котором код пишут с предположением «всё может пойти не так»: сеть упадёт, БД лагает, партнёрский API вернёт мусор, кто-то напишет опечатку.</p>
+                <div class="cards-container" style="grid-template-columns: repeat(3, 1fr);">
+                    <div class="card"><div class="num">1</div><h3>Валидация на входе</h3><p>Не доверяем входным данным.</p></div>
+                    <div class="card"><div class="num">2</div><h3>Обработка ошибок</h3><p>Не даём упавшему ресурсу убить процесс.</p></div>
+                    <div class="card"><div class="num">3</div><h3>Логирование</h3><p>Знаем, что упало и когда.</p></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 7: Link to previous lecture - Duck Typing -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Связь с лекцией 7</p>
+                <h2>Где Duck Typing не помогает</h2>
+                <p class="body-text" style="margin-bottom: 4px;">На прошлой лекции мы писали полиморфные шлюзы: <code>UzCardGateway</code>, <code>HumoGateway</code>. Через Duck Typing вызываем <code>gateway.process_settlement()</code>. Одна опечатка ломает прод.</p>
+                <div class="code-block tight"><span class="ck">class</span> <span class="cf">UzCardGateway</span>:
+    <span class="ck">def</span> <span class="cf">process_settlement</span>(<span class="cn">self</span>, amount: <span class="cf">float</span>) -&gt; <span class="cf">bool</span>:
+        <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"[UzCard] Проводим {amount} UZS"</span>)
+        <span class="ck">return</span> <span class="ck">True</span>
+
+<span class="co"># Интеграция в конце рабочего дня:</span>
+<span class="ck">class</span> <span class="cf">HumoGateway</span>:
+    <span class="ck">def</span> <span class="cf">process_settlemant</span>(<span class="cn">self</span>, amount: <span class="cf">float</span>) -&gt; <span class="cf">bool</span>:   <span class="co"># опечатка</span>
+        <span class="ck">return</span> <span class="ck">True</span>
+
+gateways = [<span class="cf">UzCardGateway</span>(), <span class="cf">HumoGateway</span>()]
+<span class="ck">for</span> gw <span class="ck">in</span> gateways:
+    gw.<span class="cf">process_settlement</span>(<span class="cm">350_000.0</span>)</div>
+                <div class="term"><span class="out">[UzCard] Проводим 350000.0 UZS
+</span><span class="err">AttributeError: 'HumoGateway' object has no attribute 'process_settlement'</span></div>
+                <p class="body-text" style="margin-top: 10px; color: #86868b;">UzCard прошёл, Humo упал. Часть клиентов получила зарплату, часть нет.</p>
+            </div>
+        </div>
+
+        <!-- 8: What is an exception -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Основы исключений</p>
+                <h2>Что такое исключение</h2>
+                <p class="body-text" style="margin-bottom: 4px;">Исключение: сигнал «что-то пошло не так», который Python отправляет, когда не может выполнить операцию. Без обработки программа падает.</p>
+                <div class="code-block">data = {<span class="cs">"name"</span>: <span class="cs">"Aziz"</span>, <span class="cs">"balance"</span>: <span class="cm">350_000</span>}
+
+<span class="co"># Пытаемся получить ключ, которого нет</span>
+value = data[<span class="cs">"account_id"</span>]   <span class="co"># здесь Python бросает исключение</span>
+<span class="cf">print</span>(<span class="cs">"Эта строка никогда не выполнится"</span>)</div>
+                <div class="term"><span class="err">Traceback (most recent call last):
+  File "demo.py", line 5, in &lt;module&gt;
+    value = data["account_id"]
+KeyError: 'account_id'</span></div>
+                <p class="body-text" style="margin-top: 10px; color: #86868b;">Python создал объект <code>KeyError</code>, никто его не обработал, программа упала с Traceback.</p>
+            </div>
+        </div>
+
+        <!-- 9: How to read a traceback -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Основы исключений</p>
+                <h2>Как читать Traceback</h2>
+                <p class="body-text" style="margin-bottom: 4px;">Traceback читается снизу вверх. Нижняя строка: суть проблемы. Строки выше: путь, по которому пришли.</p>
+                <div class="code-block tight"><span class="ck">def</span> <span class="cf">extract_rate</span>(api_response: <span class="cf">dict</span>) -&gt; <span class="cf">float</span>:
+    <span class="ck">return</span> <span class="cf">float</span>(api_response[<span class="cs">"data"</span>][<span class="cs">"rate"</span>])
+
+<span class="ck">def</span> <span class="cf">calculate_amount</span>(amount_uzs: <span class="cf">float</span>, api_response: <span class="cf">dict</span>) -&gt; <span class="cf">float</span>:
+    rate = <span class="cf">extract_rate</span>(api_response)
+    <span class="ck">return</span> amount_uzs / rate
+
+<span class="ck">def</span> <span class="cf">process_order</span>(order: <span class="cf">dict</span>) -&gt; <span class="cf">float</span>:
+    cbu_response = {
+        <span class="cs">"status"</span>: <span class="cs">"OK"</span>,
+        <span class="cs">"data"</span>: {<span class="cs">"exchange_rate"</span>: <span class="cm">12550.0</span>}          <span class="co"># ключ переименован</span>
+    }
+    <span class="ck">return</span> <span class="cf">calculate_amount</span>(order[<span class="cs">"amount"</span>], cbu_response)
+
+<span class="cf">process_order</span>({<span class="cs">"amount"</span>: <span class="cm">5_000_000.0</span>})</div>
+            </div>
+        </div>
+
+        <!-- 10: Traceback broken down line by line -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Основы исключений</p>
+                <h2>Разбор Traceback построчно</h2>
+                <div class="term" style="margin-top: 0;"><span class="err">KeyError: 'rate'                                         &lt;-- ЧТО упало
+  File "demo.py", line 2, in extract_rate                &lt;-- ГДЕ упало
+    return float(api_response["data"]["rate"])
+
+  File "demo.py", line 6, in calculate_amount            &lt;-- КТО вызвал
+    rate = extract_rate(api_response)
+
+  File "demo.py", line 12, in process_order              &lt;-- выше по стеку
+    return calculate_amount(order["amount"], cbu_response)
+
+  File "demo.py", line 13, in &lt;module&gt;                  &lt;-- точка входа
+    process_order({"amount": 5_000_000.0})</span></div>
+                <table class="data-table" style="margin-top: 18px; max-width: 880px;">
+                    <tr><th>Шаг</th><th>Что делаем</th></tr>
+                    <tr><td>1</td><td>Читаем последнюю строку: <code>KeyError: 'rate'</code>, ключ <code>rate</code> отсутствует</td></tr>
+                    <tr><td>2</td><td>Смотрим строку выше: <code>extract_rate</code>, строка 2, там падение</td></tr>
+                    <tr><td>3</td><td>Идём в код, проверяем строку 2: <code>api_response["data"]["rate"]</code></td></tr>
+                    <tr><td>4</td><td>Проверяем содержимое <code>api_response</code>: там <code>exchange_rate</code>, а мы ищем <code>rate</code></td></tr>
+                    <tr><td>5</td><td>Готово: партнёр переименовал ключ</td></tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- 11: try/except basic syntax -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Основы исключений</p>
+                <h2>Базовый синтаксис <code>try/except</code></h2>
+                <p class="body-text" style="margin-bottom: 4px;">Чтобы поймать исключение и не дать программе упасть.</p>
+                <div class="code-block">data = {<span class="cs">"currency"</span>: <span class="cs">"UZS"</span>, <span class="cs">"amount"</span>: <span class="cm">350_000</span>}
+
+<span class="ck">try</span>:
+    value = data[<span class="cs">"currency_code"</span>]      <span class="co"># KeyError: такого ключа нет</span>
+    <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Получили: {value}"</span>)        <span class="co"># не выполнится</span>
+<span class="ck">except</span> <span class="cf">KeyError</span> <span class="ck">as</span> e:
+    <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Ключ не найден: {e}"</span>)      <span class="co"># выполнится это</span>
+
+<span class="cf">print</span>(<span class="cs">"Программа продолжает работать"</span>)</div>
+                <div class="term"><span class="out">Ключ не найден: 'currency_code'
+Программа продолжает работать</span></div>
+                <p class="body-text" style="margin-top: 10px; color: #86868b;"><code>try</code> оборачивает опасный код, <code>except</code> ловит конкретный тип ошибки. Программа не падает.</p>
+            </div>
+        </div>
+
+        <!-- 12: KeyError and ValueError -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Основы исключений · Типичные ошибки</p>
+                <h2><code>KeyError</code> и <code>ValueError</code></h2>
+                <div class="code-block tight">fee_config = {<span class="cs">"P2P_TRANSFER"</span>: <span class="cm">1000.0</span>, <span class="cs">"UTILITY_PAYMENT"</span>: <span class="cm">500.0</span>}
+
+<span class="ck">def</span> <span class="cf">get_fee</span>(tx_type: <span class="cf">str</span>) -&gt; <span class="cf">float</span>:
+    <span class="ck">return</span> fee_config[tx_type]   <span class="co"># KeyError если нет ключа</span>
+
+<span class="ck">try</span>:
+    fee = <span class="cf">get_fee</span>(<span class="cs">"CRYPTO_SWAP"</span>)
+<span class="ck">except</span> <span class="cf">KeyError</span> <span class="ck">as</span> e:
+    <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"[KeyError] Тип операции {e} не настроен"</span>)
+    fee = <span class="cm">0.0</span>
+
+
+<span class="ck">def</span> <span class="cf">set_daily_limit</span>(limit: <span class="cf">float</span>) -&gt; <span class="ck">None</span>:
+    <span class="ck">if</span> limit &lt;= <span class="cm">0</span>:
+        <span class="ck">raise</span> <span class="cf">ValueError</span>(<span class="cf">f</span><span class="cs">"Лимит должен быть положительным: {limit}"</span>)
+    <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Лимит установлен: {limit:,.0f} UZS"</span>)
+
+<span class="ck">try</span>:
+    <span class="cf">set_daily_limit</span>(-<span class="cm">5_000_000.0</span>)   <span class="co"># тип float, но значение недопустимое</span>
+<span class="ck">except</span> <span class="cf">ValueError</span> <span class="ck">as</span> e:
+    <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"[ValueError] {e}"</span>)</div>
+                <div class="term"><span class="out">[KeyError] Тип операции 'CRYPTO_SWAP' не настроен
+[ValueError] Лимит должен быть положительным: -5000000.0</span></div>
+            </div>
+        </div>
+
+        <!-- 13: TypeError and AttributeError -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Основы исключений · Типичные ошибки</p>
+                <h2><code>TypeError</code> и <code>AttributeError</code></h2>
+                <div class="code-block tight"><span class="ck">def</span> <span class="cf">calculate_interest</span>(principal: <span class="cf">float</span>, rate: <span class="cf">float</span>) -&gt; <span class="cf">float</span>:
+    <span class="ck">return</span> principal * rate
+
+<span class="ck">try</span>:
+    result = <span class="cf">calculate_interest</span>(<span class="cs">"1000000"</span>, <span class="cm">0.18</span>)   <span class="co"># строка вместо float</span>
+<span class="ck">except</span> <span class="cf">TypeError</span> <span class="ck">as</span> e:
+    <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"[TypeError] {e}"</span>)
+
+
+<span class="ck">class</span> <span class="cf">LegacyConnector</span>:
+    <span class="ck">def</span> <span class="cf">send</span>(<span class="cn">self</span>, data: <span class="cf">str</span>) -&gt; <span class="ck">None</span>:
+        <span class="ck">pass</span>
+
+connector = <span class="cf">LegacyConnector</span>()
+<span class="ck">try</span>:
+    connector.<span class="cf">process_payment</span>(<span class="cm">50_000.0</span>)   <span class="co"># такого метода нет</span>
+<span class="ck">except</span> <span class="cf">AttributeError</span> <span class="ck">as</span> e:
+    <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"[AttributeError] {e}"</span>)</div>
+                <div class="term"><span class="out">[TypeError] can't multiply sequence by non-int of type 'float'
+[AttributeError] 'LegacyConnector' object has no attribute 'process_payment'</span></div>
+                <p class="body-text" style="margin-top: 10px; color: #86868b;"><code>TypeError</code>: <code>"1000000"</code> это строка (sequence), её нельзя умножить на <code>float</code>. <code>AttributeError</code>: опечатка в имени метода или метод не реализован.</p>
+            </div>
+        </div>
+
+        <!-- 14: Exception hierarchy - it's OOP -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Основы исключений</p>
+                <h2>Иерархия исключений: это тоже ООП</h2>
+                <p class="body-text" style="margin-bottom: 4px;">Исключения в Python это обычные классы. <code>KeyError</code> наследует <code>LookupError</code>, тот наследует <code>Exception</code>. Каждый <code>except SomeError</code> работает как <code>isinstance()</code>: ловит сам класс и любого его потомка.</p>
+                <div class="code-block"><span class="co"># Базовые исключения определены так:</span>
+<span class="ck">class</span> <span class="cf">BaseException</span>: ...
+<span class="ck">class</span> <span class="cf">Exception</span>(<span class="cf">BaseException</span>): ...
+<span class="ck">class</span> <span class="cf">LookupError</span>(<span class="cf">Exception</span>): ...
+<span class="ck">class</span> <span class="cf">KeyError</span>(<span class="cf">LookupError</span>): ...      <span class="co"># KeyError IS-A LookupError</span>
+
+<span class="ck">try</span>:
+    <span class="ck">raise</span> <span class="cf">KeyError</span>(<span class="cs">"нет ключа"</span>)
+<span class="ck">except</span> <span class="cf">LookupError</span>:                   <span class="co"># поймает через родителя</span>
+    <span class="cf">print</span>(<span class="cs">"поймали через родителя"</span>)</div>
+                <div class="term"><span class="out">поймали через родителя</span></div>
+            </div>
+        </div>
+
+        <!-- 15: Standard exception tree -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Основы исключений</p>
+                <h2>Дерево стандартных исключений</h2>
+                <div class="code-block" style="font-size: clamp(9px, 1.1vw, 13px); max-width: 880px;">BaseException
+├── SystemExit              <span class="co">sys.exit() - НЕ перехватывать</span>
+├── KeyboardInterrupt       <span class="co">Ctrl+C - НЕ перехватывать</span>
+└── Exception               <span class="co">всё, что можно обрабатывать</span>
+    ├── ArithmeticError
+    │   └── ZeroDivisionError    <span class="co">деление на ноль</span>
+    ├── AttributeError           <span class="co">obj.method() - нет метода</span>
+    ├── LookupError
+    │   ├── KeyError             <span class="co">dict["missing"]</span>
+    │   └── IndexError           <span class="co">list[999]</span>
+    ├── OSError
+    │   └── ConnectionError
+    │       └── ConnectionRefusedError
+    ├── TypeError                <span class="co">неверный тип</span>
+    └── ValueError               <span class="co">правильный тип, неверное значение</span></div>
+                <div class="quote-card warning" style="margin-top: 16px;">
+                    <p>Не перехватывайте <code>BaseException</code>: туда входят <code>SystemExit</code> и <code>KeyboardInterrupt</code>. Иначе нельзя будет даже корректно остановить программу.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 15b: Visual exception hierarchy map -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Основы исключений</p>
+                <h2>Визуальная карта иерархии</h2>
+                <img src="python_exception_hierarchy.svg" alt="Иерархия исключений Python: BaseException, Exception, и их потомки"
+                     style="max-width: 100%; max-height: 72vh; width: auto; height: auto; margin-top: 8px; display: block;">
+            </div>
+        </div>
+
+        <!-- 16: Exception object attributes -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Основы исключений</p>
+                <h2>Объект исключения: полезные атрибуты</h2>
+                <p class="body-text" style="margin-bottom: 4px;">Исключение это обычный объект. Полезно знать, что у него внутри, чтобы писать осмысленные логи.</p>
+                <div class="code-block"><span class="ck">def</span> <span class="cf">simulate_error</span>(account_id: <span class="cf">str</span>) -&gt; <span class="ck">None</span>:
+    <span class="ck">raise</span> <span class="cf">ConnectionRefusedError</span>(
+        <span class="cf">f</span><span class="cs">"PostgreSQL недоступен. account_id={account_id}"</span>
+    )
+
+<span class="ck">try</span>:
+    <span class="cf">simulate_error</span>(<span class="cs">"UZ_ACC_9912"</span>)
+
+<span class="ck">except</span> <span class="cf">ConnectionRefusedError</span> <span class="ck">as</span> exc:
+    <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Тип:         {type(exc).__name__}"</span>)
+    <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Сообщение:   {exc}"</span>)
+    <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"args:        {exc.args}"</span>)</div>
+                <div class="term"><span class="out">Тип:         ConnectionRefusedError
+Сообщение:   PostgreSQL недоступен. account_id=UZ_ACC_9912
+args:        ('PostgreSQL недоступен. account_id=UZ_ACC_9912',)</span></div>
+                <p class="body-text" style="margin-top: 10px; color: #86868b;"><code>type(exc).__name__</code> идёт в систему мониторинга: по нему фильтруют инциденты.</p>
+            </div>
+        </div>
+
+        <!-- 17: Open question - except order -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow" style="color:#ff9500;">Вопрос аудитории</p>
+                <h2>Что напечатает этот код?</h2>
+                <div class="code-block"><span class="ck">try</span>:
+    <span class="ck">raise</span> <span class="cf">KeyError</span>(<span class="cs">"нет ключа"</span>)
+<span class="ck">except</span> <span class="cf">Exception</span> <span class="ck">as</span> e:
+    <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"[Exception] поймали: {e}"</span>)
+<span class="ck">except</span> <span class="cf">KeyError</span> <span class="ck">as</span> e:
+    <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"[KeyError] поймали: {e}"</span>)</div>
+                <ul class="options-list">
+                    <li><b>А)</b> <code>[KeyError] поймали: 'нет ключа'</code></li>
+                    <li><b>Б)</b> <code>[Exception] поймали: 'нет ключа'</code></li>
+                    <li><b>В)</b> Оба блока выполнятся</li>
+                </ul>
+                <p class="body-text" style="margin-top: 14px; color: #86868b;">Подумайте 30 секунд. Ответ на следующем слайде.</p>
+            </div>
+        </div>
+
+        <!-- 18: Answer - except order rule -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow" style="color:#34c759;">Ответ</p>
+                <h2>Б: <code>[Exception] поймали</code></h2>
+                <p class="body-text" style="margin-bottom: 4px;">Python проверяет блоки <code>except</code> сверху вниз и останавливается на первом совпадении. <code>KeyError</code> это потомок <code>Exception</code>, поэтому первый блок ловит ошибку, а второй уже не выполнится.</p>
+                <p class="body-text" style="margin-top: 12px;"><span class="highlight">Правило</span>: от конкретного к общему. Специфичные <code>except</code> сверху, общие снизу.</p>
+                <div class="code-block tight"><span class="co"># Правильно</span>
+<span class="ck">try</span>:
+    <span class="cf">operation</span>()
+<span class="ck">except</span> <span class="cf">KeyError</span> <span class="ck">as</span> e:        <span class="co"># сначала самый конкретный</span>
+    <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Нет ключа: {e}"</span>)
+<span class="ck">except</span> <span class="cf">LookupError</span> <span class="ck">as</span> e:     <span class="co"># потом родитель</span>
+    <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Ошибка поиска: {e}"</span>)
+<span class="ck">except</span> <span class="cf">Exception</span> <span class="ck">as</span> e:       <span class="co"># последним общий</span>
+    <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Неожиданная ошибка: {e}"</span>)
+
+
+<span class="co"># Неправильно: Exception поглотит всё</span>
+<span class="ck">try</span>:
+    <span class="cf">operation</span>()
+<span class="ck">except</span> <span class="cf">Exception</span> <span class="ck">as</span> e:       <span class="co"># поймает всё</span>
+    <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Ошибка: {e}"</span>)
+<span class="ck">except</span> <span class="cf">KeyError</span>:             <span class="co"># никогда не выполнится</span>
+    ...</div>
+            </div>
+        </div>
+
+        <!-- 19: Minimum code in try -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Углубление <code>try/except</code></p>
+                <h2>Минимум кода в <code>try</code></h2>
+                <p class="body-text" style="margin-bottom: 4px;">Чем меньше кода в <code>try</code>, тем точнее вы понимаете, где упало. Заворачивайте только опасные операции.</p>
+                <div class="code-block tight"><span class="co"># Плохо: весь метод в try</span>
+<span class="ck">def</span> <span class="cf">bad_process</span>(payload: <span class="cf">dict</span>) -&gt; <span class="cf">float</span> | <span class="ck">None</span>:
+    <span class="ck">try</span>:
+        user_id = payload[<span class="cs">"user_id"</span>]
+        amount = <span class="cf">float</span>(payload[<span class="cs">"amount"</span>])
+        currency = payload[<span class="cs">"currency"</span>]
+        <span class="ck">return</span> amount * <span class="cm">1.02</span>
+    <span class="ck">except</span> <span class="cf">Exception</span>:
+        <span class="ck">return</span> <span class="ck">None</span>     <span class="co"># что упало и где - непонятно</span>
+
+
+<span class="co"># Хорошо: каждая опасная зона отдельно</span>
+<span class="ck">def</span> <span class="cf">good_process</span>(payload: <span class="cf">dict</span>) -&gt; <span class="cf">float</span> | <span class="ck">None</span>:
+    <span class="ck">try</span>:
+        user_id = payload[<span class="cs">"user_id"</span>]
+        raw_amount = payload[<span class="cs">"amount"</span>]
+        currency = payload[<span class="cs">"currency"</span>]
+    <span class="ck">except</span> <span class="cf">KeyError</span> <span class="ck">as</span> missing:
+        <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"[REJECT] Нет поля: {missing}"</span>)
+        <span class="ck">return</span> <span class="ck">None</span>
+
+    <span class="ck">try</span>:
+        amount = <span class="cf">float</span>(raw_amount)
+    <span class="ck">except</span> <span class="cf">ValueError</span>:
+        <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"[REJECT] Сумма не число: '{raw_amount}'"</span>)
+        <span class="ck">return</span> <span class="ck">None</span>
+
+    <span class="ck">return</span> amount * <span class="cm">1.02</span></div>
+            </div>
+        </div>
+
+        <!-- 20: Multiple excepts - routing -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Углубление <code>try/except</code></p>
+                <h2>Множественные <code>except</code>: разные ошибки, разные реакции</h2>
+                <p class="body-text" style="margin-bottom: 4px;">Один <code>except Exception</code> на всё это одна кнопка для всех ситуаций. Гранулярные <code>except</code> позволяют реагировать по-разному.</p>
+                <table class="data-table" style="max-width: 880px;">
+                    <tr><th>Тип ошибки</th><th>Реакция</th></tr>
+                    <tr><td>Сеть упала (<code>Timeout</code>)</td><td>Ретрай через несколько секунд</td></tr>
+                    <tr><td>Невалидные данные (<code>ValueError</code>)</td><td>Отклонить с кодом 422</td></tr>
+                    <tr><td>Превышен лимит</td><td>Уведомить комплаенс</td></tr>
+                    <tr><td>Битый JSON от партнёра</td><td>Залогировать, вернуть <code>PARTNER_ERROR</code></td></tr>
+                </table>
+                <div class="quote-card" style="margin-top: 18px;">
+                    <p>В Python нет страховочной сетки компилятора, который заставит обработать исключения, как в Java. За это отвечаете вы.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 21: Multiple excepts - Kapitalbank example -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Углубление <code>try/except</code></p>
+                <h2>Пример: шлюз Kapitalbank</h2>
+                <div class="code-block tight"><span class="ck">import</span> json
+
+<span class="ck">class</span> <span class="cf">KapitalbankTimeout</span>(<span class="cf">ConnectionError</span>): <span class="ck">pass</span>
+<span class="ck">class</span> <span class="cf">KapitalbankSignatureError</span>(<span class="cf">ValueError</span>): <span class="ck">pass</span>
+
+
+<span class="ck">def</span> <span class="cf">call_api</span>(simulate: <span class="cf">str</span> | <span class="ck">None</span>) -&gt; <span class="cf">dict</span>:
+    <span class="ck">if</span> simulate == <span class="cs">"timeout"</span>:    <span class="ck">raise</span> <span class="cf">KapitalbankTimeout</span>(<span class="cs">"Таймаут"</span>)
+    <span class="ck">if</span> simulate == <span class="cs">"signature"</span>:  <span class="ck">raise</span> <span class="cf">KapitalbankSignatureError</span>(<span class="cs">"HMAC не совпал"</span>)
+    <span class="ck">if</span> simulate == <span class="cs">"json"</span>:       <span class="ck">return</span> json.<span class="cf">loads</span>(<span class="cs">"{broken}"</span>)
+    <span class="ck">return</span> {<span class="cs">"status"</span>: <span class="cs">"OK"</span>}
+
+
+<span class="ck">def</span> <span class="cf">process</span>(simulate: <span class="cf">str</span> | <span class="ck">None</span>) -&gt; <span class="cf">dict</span>:
+    <span class="ck">try</span>:
+        <span class="ck">return</span> <span class="cf">call_api</span>(simulate)
+
+    <span class="ck">except</span> <span class="cf">KapitalbankTimeout</span> <span class="ck">as</span> err:
+        <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"[RETRY] Таймаут, в очередь ретрая: {err}"</span>)
+        <span class="ck">return</span> {<span class="cs">"status"</span>: <span class="cs">"RETRY_SCHEDULED"</span>}
+
+    <span class="ck">except</span> <span class="cf">KapitalbankSignatureError</span> <span class="ck">as</span> err:
+        <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"[SECURITY] Подпись не совпала: {err}"</span>)
+        <span class="ck">return</span> {<span class="cs">"status"</span>: <span class="cs">"BLOCKED"</span>}
+
+    <span class="ck">except</span> json.<span class="cf">JSONDecodeError</span> <span class="ck">as</span> err:
+        <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"[BAD_RESPONSE] Партнёр прислал мусор: {err}"</span>)
+        <span class="ck">return</span> {<span class="cs">"status"</span>: <span class="cs">"PARTNER_ERROR"</span>}
+
+    <span class="ck">except</span> <span class="cf">Exception</span> <span class="ck">as</span> err:
+        <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"[UNKNOWN] Эскалация дежурному: {err}"</span>)
+        <span class="ck">return</span> {<span class="cs">"status"</span>: <span class="cs">"ESCALATED"</span>}</div>
+            </div>
+        </div>
+
+        <!-- 22: Open question - missed antifraud -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow" style="color:#ff9500;">Вопрос аудитории</p>
+                <h2>Что вернёт <code>process()</code> для фродовой транзакции?</h2>
+                <div class="code-block tight"><span class="ck">def</span> <span class="cf">check_fraud</span>(tx: <span class="cf">dict</span>) -&gt; <span class="cf">bool</span>:
+    score = <span class="cm">8500</span>
+    <span class="ck">if</span> scor &gt; <span class="cm">9000</span>:
+        <span class="ck">return</span> <span class="ck">True</span>
+    <span class="ck">return</span> <span class="ck">False</span>
+
+<span class="ck">def</span> <span class="cf">process</span>(tx: <span class="cf">dict</span>) -&gt; <span class="cf">dict</span>:
+    <span class="ck">try</span>:
+        is_fraud = <span class="cf">check_fraud</span>(tx)
+        <span class="ck">return</span> {<span class="cs">"status"</span>: <span class="cs">"BLOCKED"</span> <span class="ck">if</span> is_fraud <span class="ck">else</span> <span class="cs">"APPROVED"</span>}
+    <span class="ck">except</span> <span class="cf">Exception</span>:
+        <span class="ck">return</span> {<span class="cs">"status"</span>: <span class="cs">"APPROVED"</span>}</div>
+                <ul class="options-list">
+                    <li><b>А)</b> <code>BLOCKED</code>: антифрод сработал правильно</li>
+                    <li><b>Б)</b> <code>APPROVED</code>: антифрод не отработал, программа не упала</li>
+                    <li><b>В)</b> Программа упадёт с <code>NameError</code></li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 23: Answer - blanket except, silent death -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow" style="color:#34c759;">Ответ</p>
+                <h2>Б: <code>APPROVED</code>, антифрод не отработал</h2>
+                <ul class="checklist" style="max-width: 860px;">
+                    <li><code>scor</code> это опечатка. Python бросает <code>NameError: name 'scor' is not defined</code>.</li>
+                    <li><code>except Exception</code> ловит всё, включая <code>NameError</code>.</li>
+                    <li>Функция возвращает <code>APPROVED</code>. Мошенник провёл транзакцию.</li>
+                </ul>
+                <div class="quote-card warning" style="margin-top: 16px;">
+                    <p>Это самая опасная конструкция в коде. Широкий <code>except Exception</code> без логирования прячет любые баги, включая опечатки в коде.</p>
+                </div>
+                <div class="code-block tight" style="margin-top: 16px;"><span class="co"># Правильное решение</span>
+<span class="ck">def</span> <span class="cf">process</span>(tx: <span class="cf">dict</span>) -&gt; <span class="cf">dict</span>:
+    <span class="ck">try</span>:
+        is_fraud = <span class="cf">check_fraud</span>(tx)
+        <span class="ck">return</span> {<span class="cs">"status"</span>: <span class="cs">"BLOCKED"</span> <span class="ck">if</span> is_fraud <span class="ck">else</span> <span class="cs">"APPROVED"</span>}
+
+    <span class="ck">except</span> <span class="cf">KeyError</span> <span class="ck">as</span> e:                       <span class="co"># ожидаемая ошибка</span>
+        <span class="ck">return</span> {<span class="cs">"status"</span>: <span class="cs">"REJECTED"</span>, <span class="cs">"reason"</span>: <span class="cf">f</span><span class="cs">"Missing field: {e}"</span>}
+
+    <span class="co"># NameError здесь НЕ перехватывается, падает наружу,</span>
+    <span class="co"># попадает в логи, дежурный увидит и исправит опечатку.</span></div>
+                <p class="body-text" style="margin-top: 12px;"><span class="highlight">Правило</span>: перехватывайте только то, что вы ожидаете и умеете обработать.</p>
+            </div>
+        </div>
+
+        <!-- 24: else block concept -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Углубление <code>try/except</code></p>
+                <h2>Блок <code>else</code>: выполняется только при успехе</h2>
+                <p class="body-text" style="margin-bottom: 4px;">Чёткое разделение: «опасная операция», «обработка ошибки» и «код при успехе» лежат в разных блоках.</p>
+                <div class="code-block"><span class="ck">try</span>:
+    <span class="cf">опасная_операция</span>()       <span class="co"># может бросить исключение</span>
+
+<span class="ck">except</span> <span class="cf">SomeError</span>:
+    <span class="cf">обработка_ошибки</span>()       <span class="co"># только если было исключение</span>
+
+<span class="ck">else</span>:
+    <span class="cf">при_успехе</span>()             <span class="co"># только если исключения НЕ было</span>
+
+<span class="ck">finally</span>:
+    <span class="cf">всегда</span>()                 <span class="co"># выполняется в любом случае</span></div>
+                <div class="quote-card warning" style="margin-top: 18px;">
+                    <p>Если положить «код при успехе» внутрь <code>try</code>, его ошибки тоже поймает <code>except</code> и обработает их как ошибки опасной операции. Это путаница в логах.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 25a: else in practice - the code -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Углубление <code>try/except</code></p>
+                <h2><code>else</code> на практике: COMMIT только при успехе</h2>
+                <div class="code-block tight"><span class="ck">class</span> <span class="cf">MockDB</span>:
+    <span class="ck">def</span> <span class="cf">execute</span>(<span class="cn">self</span>, query: <span class="cf">str</span>, params: <span class="cf">dict</span>) -&gt; <span class="ck">None</span>:
+        <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"  [SQL] {query[:40]}..."</span>)
+    <span class="ck">def</span> <span class="cf">commit</span>(<span class="cn">self</span>) -&gt; <span class="ck">None</span>: <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"  [SQL] COMMIT"</span>)
+    <span class="ck">def</span> <span class="cf">close</span>(<span class="cn">self</span>) -&gt; <span class="ck">None</span>:  <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"  [SQL] Соединение закрыто"</span>)
+
+
+<span class="ck">def</span> <span class="cf">save_payment</span>(db: <span class="cf">MockDB</span>, tx_data: <span class="cf">dict</span>) -&gt; <span class="cf">str</span> | <span class="ck">None</span>:
+    <span class="ck">try</span>:
+        tx_id = tx_data[<span class="cs">"tx_id"</span>]
+        amount = <span class="cf">float</span>(tx_data[<span class="cs">"amount"</span>])
+        <span class="ck">if</span> amount &lt;= <span class="cm">0</span>:
+            <span class="ck">raise</span> <span class="cf">ValueError</span>(<span class="cf">f</span><span class="cs">"Сумма должна быть &gt; 0: {amount}"</span>)
+        db.<span class="cf">execute</span>(<span class="cs">"INSERT INTO ledger ..."</span>, {<span class="cs">"tx_id"</span>: tx_id, <span class="cs">"amount"</span>: amount})
+
+    <span class="ck">except</span> <span class="cf">KeyError</span> <span class="ck">as</span> e:
+        <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"[EXCEPT] Нет поля: {e}"</span>)
+        <span class="ck">return</span> <span class="ck">None</span>
+    <span class="ck">except</span> <span class="cf">ValueError</span> <span class="ck">as</span> e:
+        <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"[EXCEPT] {e}"</span>)
+        <span class="ck">return</span> <span class="ck">None</span>
+
+    <span class="ck">else</span>:
+        <span class="cf">print</span>(<span class="cs">"[ELSE] Запись прошла, делаем COMMIT"</span>)
+        db.<span class="cf">commit</span>()
+        <span class="ck">return</span> tx_id
+
+    <span class="ck">finally</span>:
+        <span class="cf">print</span>(<span class="cs">"[FINALLY] Закрываем соединение"</span>)
+        db.<span class="cf">close</span>()</div>
+                <p class="body-text" style="margin-top: 10px; color: #86868b;"><code>try</code> делает запись, <code>except</code> ловит ошибки, <code>else</code> подтверждает транзакцию, <code>finally</code> закрывает соединение в любом случае.</p>
+            </div>
+        </div>
+
+        <!-- 25b: else in practice - run on success and error -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Углубление <code>try/except</code></p>
+                <h2><code>else</code> на практике: запуск и вывод</h2>
+                <div class="code-block tight"><span class="cf">print</span>(<span class="cs">"=== Успех ==="</span>)
+<span class="cf">save_payment</span>(<span class="cf">MockDB</span>(), {<span class="cs">"tx_id"</span>: <span class="cs">"TX_001"</span>, <span class="cs">"amount"</span>: <span class="cs">"450000"</span>})
+
+<span class="cf">print</span>(<span class="cs">"=== Ошибка ==="</span>)
+<span class="cf">save_payment</span>(<span class="cf">MockDB</span>(), {<span class="cs">"tx_id"</span>: <span class="cs">"TX_002"</span>, <span class="cs">"amount"</span>: <span class="cs">"-500"</span>})</div>
+                <div class="term"><span class="out">=== Успех ===
+  [SQL] INSERT INTO ledger ...
+[ELSE] Запись прошла, делаем COMMIT
+  [SQL] COMMIT
+[FINALLY] Закрываем соединение
+  [SQL] Соединение закрыто
+=== Ошибка ===
+[EXCEPT] Сумма должна быть &gt; 0: -500.0
+[FINALLY] Закрываем соединение
+  [SQL] Соединение закрыто</span></div>
+                <p class="body-text" style="margin-top: 10px; color: #86868b;">В успехе срабатывают <code>try → else → finally</code>. В ошибке: <code>try → except → finally</code>. Блок <code>finally</code> отрабатывает оба раза.</p>
+            </div>
+        </div>
+
+        <!-- 26: finally block - always runs -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Углубление <code>try/except</code></p>
+                <h2>Блок <code>finally</code>: выполняется всегда</h2>
+                <p class="body-text" style="margin-bottom: 4px;">Для гарантированного освобождения ресурсов: закрыть файл, снять блокировку, закрыть соединение с БД. <code>finally</code> срабатывает даже когда внутри <code>try</code> был <code>return</code>.</p>
+                <div class="code-block tight"><span class="ck">def</span> <span class="cf">deduct_funds</span>(account_id: <span class="cf">str</span>, amount: <span class="cf">float</span>) -&gt; <span class="cf">str</span> | <span class="ck">None</span>:
+    <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"  [LOCK] Захват лока для {account_id}"</span>)
+
+    <span class="ck">try</span>:
+        <span class="ck">if</span> amount &gt; <span class="cm">5_000_000</span>:
+            <span class="ck">raise</span> <span class="cf">ValueError</span>(<span class="cs">"Превышение лимита"</span>)
+        <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"  [OK] Списали {amount} UZS"</span>)
+        <span class="ck">return</span> <span class="cf">f</span><span class="cs">"TX_{account_id}"</span>           <span class="co"># finally сработает ДО return</span>
+
+    <span class="ck">except</span> <span class="cf">ValueError</span> <span class="ck">as</span> e:
+        <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"  [ERROR] {e}"</span>)
+        <span class="ck">return</span> <span class="ck">None</span>
+
+    <span class="ck">finally</span>:
+        <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"  [LOCK] Снят лок для {account_id}"</span>)
+
+
+<span class="cf">deduct_funds</span>(<span class="cs">"UZ_5521"</span>, <span class="cm">500_000.0</span>)
+<span class="cf">deduct_funds</span>(<span class="cs">"UZ_5521"</span>, <span class="cm">8_000_000.0</span>)</div>
+                <div class="term"><span class="out">  [LOCK] Захват лока для UZ_5521
+  [OK] Списали 500000.0 UZS
+  [LOCK] Снят лок для UZ_5521
+  [LOCK] Захват лока для UZ_5521
+  [ERROR] Превышение лимита
+  [LOCK] Снят лок для UZ_5521</span></div>
+                <p class="body-text" style="margin-top: 10px; color: #86868b;">Лок снимается всегда. Без <code>finally</code> блокировка могла бы остаться навсегда.</p>
+            </div>
+        </div>
+
+        <!-- 27: Open question - UnboundLocalError in finally -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow" style="color:#ff9500;">Вопрос аудитории</p>
+                <h2>Что напечатает этот код?</h2>
+                <div class="code-block tight"><span class="ck">def</span> <span class="cf">connect_to_db</span>() -&gt; <span class="ck">None</span>:
+    <span class="ck">try</span>:
+        <span class="ck">raise</span> <span class="cf">ConnectionRefusedError</span>(<span class="cs">"PostgreSQL упал"</span>)
+        db_conn = {<span class="cs">"session"</span>: <span class="cs">"active"</span>}
+    <span class="ck">except</span> <span class="cf">ConnectionRefusedError</span> <span class="ck">as</span> e:
+        <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"[EXCEPT] {e}"</span>)
+    <span class="ck">finally</span>:
+        <span class="cf">print</span>(<span class="cs">"[FINALLY] Закрываем..."</span>)
+        db_conn.<span class="cf">close</span>()
+
+<span class="cf">connect_to_db</span>()</div>
+                <ul class="options-list">
+                    <li><b>А)</b> Напечатает <code>[EXCEPT]</code>, потом <code>[FINALLY]</code>, и спокойно завершится</li>
+                    <li><b>Б)</b> Напечатает <code>[EXCEPT]</code>, <code>[FINALLY]</code>, потом упадёт с <code>UnboundLocalError</code></li>
+                    <li><b>В)</b> Напечатает только <code>[EXCEPT]</code>, до <code>finally</code> не дойдёт</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 28: Answer - UnboundLocalError masks the real error -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow" style="color:#34c759;">Ответ</p>
+                <h2>Б: <code>UnboundLocalError</code> поверх оригинальной ошибки</h2>
+                <ul class="checklist" style="max-width: 880px;">
+                    <li>В <code>try</code> выбросилось <code>ConnectionRefusedError</code>.</li>
+                    <li>Строка <code>db_conn = ...</code> не выполнилась, переменной не существует.</li>
+                    <li><code>except</code> отработал. <code>finally</code> вызвал <code>db_conn.close()</code>.</li>
+                    <li>Переменная не определена. Python бросает <code>UnboundLocalError</code>.</li>
+                    <li>Новая ошибка затирает оригинальную в логах. Дежурный чинит не то.</li>
+                </ul>
+                <p class="body-text" style="margin-top: 14px;"><span class="highlight">Исправление</span>: инициализируйте ресурс <code>None</code> до <code>try</code>.</p>
+                <div class="code-block tight"><span class="ck">def</span> <span class="cf">connect_to_db</span>() -&gt; <span class="ck">None</span>:
+    db_conn = <span class="ck">None</span>                          <span class="co"># инициализация ДО try</span>
+
+    <span class="ck">try</span>:
+        <span class="ck">raise</span> <span class="cf">ConnectionRefusedError</span>(<span class="cs">"PostgreSQL упал"</span>)
+        db_conn = {<span class="cs">"session"</span>: <span class="cs">"active"</span>}
+
+    <span class="ck">except</span> <span class="cf">ConnectionRefusedError</span> <span class="ck">as</span> e:
+        <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"[EXCEPT] {e}"</span>)
+        <span class="ck">return</span>
+
+    <span class="ck">finally</span>:
+        <span class="ck">if</span> db_conn <span class="ck">is</span> <span class="ck">not</span> <span class="ck">None</span>:             <span class="co"># безопасная проверка</span>
+            db_conn.<span class="cf">close</span>()</div>
+            </div>
+        </div>
+
+        <!-- 29: raise - throw your own exceptions -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow"><code>raise</code></p>
+                <h2>Выбрасываем исключение сами</h2>
+                <p class="body-text" style="margin-bottom: 4px;"><code>raise</code> переводит бизнес-правила на язык исключений. То, что синтаксически корректно, может быть бизнес-ошибкой: <code>amount = -50000</code>, перевод на тот же счёт, превышение лимита.</p>
+                <div class="code-block tight">MAX_TX = <span class="cm">10_000_000.0</span>   <span class="co"># лимит ЦБ</span>
+
+<span class="ck">def</span> <span class="cf">validate_payment</span>(sender: <span class="cf">dict</span>, recipient: <span class="cf">dict</span>, amount: <span class="cf">float</span>) -&gt; <span class="ck">None</span>:
+    <span class="ck">if</span> amount &lt;= <span class="cm">0</span>:
+        <span class="ck">raise</span> <span class="cf">ValueError</span>(<span class="cf">f</span><span class="cs">"Сумма должна быть положительной: {amount}"</span>)
+
+    <span class="ck">if</span> sender[<span class="cs">"account_id"</span>] == recipient[<span class="cs">"account_id"</span>]:
+        <span class="ck">raise</span> <span class="cf">ValueError</span>(<span class="cf">f</span><span class="cs">"Перевод на тот же счёт: {sender['account_id']}"</span>)
+
+    <span class="ck">if</span> amount &gt; MAX_TX:
+        <span class="ck">raise</span> <span class="cf">PermissionError</span>(<span class="cf">f</span><span class="cs">"Сумма {amount:,.0f} &gt; лимит {MAX_TX:,.0f}"</span>)
+
+    <span class="ck">if</span> sender[<span class="cs">"balance"</span>] &lt; amount:
+        <span class="ck">raise</span> <span class="cf">ArithmeticError</span>(
+            <span class="cf">f</span><span class="cs">"Недостаточно: запрос {amount:,.0f}, баланс {sender['balance']:,.0f}"</span>
+        )
+
+
+sender = {<span class="cs">"account_id"</span>: <span class="cs">"UZ_A"</span>, <span class="cs">"balance"</span>: <span class="cm">100_000.0</span>}
+recipient = {<span class="cs">"account_id"</span>: <span class="cs">"UZ_B"</span>}
+
+<span class="ck">try</span>:
+    <span class="cf">validate_payment</span>(sender, recipient, <span class="cm">500_000.0</span>)
+<span class="ck">except</span> (<span class="cf">ValueError</span>, <span class="cf">PermissionError</span>, <span class="cf">ArithmeticError</span>) <span class="ck">as</span> e:
+    <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"[{type(e).__name__}] {e}"</span>)</div>
+                <div class="term"><span class="out">[ArithmeticError] Недостаточно: запрос 500,000, баланс 100,000</span></div>
+            </div>
+        </div>
+
+        <!-- 30a: Problem - resource leak without with -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Контекстные менеджеры</p>
+                <h2>Проблема: ресурс не закрылся</h2>
+                <p class="body-text" style="margin-bottom: 4px;">Каждый ресурс (файл, соединение, лок) нужно закрыть после работы. Если между открытием и закрытием произойдёт исключение, строка <code>f.close()</code> просто не выполнится.</p>
+                <div class="code-block">f = <span class="cf">open</span>(<span class="cs">"payments.txt"</span>, <span class="cs">"r"</span>)
+data = f.<span class="cf">read</span>()
+<span class="cf">int</span>(<span class="cs">"abc"</span>)   <span class="co"># здесь упало ValueError</span>
+f.<span class="cf">close</span>()    <span class="co"># эта строка не выполнится</span></div>
+                <div class="quote-card warning" style="margin-top: 14px;">
+                    <p>Это утечка ресурсов: файл занят, память не освобождена. На сервере с тысячами запросов такие утечки накапливаются и валят процесс.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 30: What is `with` -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Контекстные менеджеры</p>
+                <h2>Что такое <code>with</code></h2>
+                <p class="body-text" style="margin-bottom: 4px;"><code>with</code> говорит Python: «открой это, дай мне поработать, закрой это сам, даже если случится ошибка». То же самое короче и надёжнее, чем <code>try/finally</code>.</p>
+                <div class="comparison-grid">
+                    <div class="comparison-item old">
+                        <div class="label">Через try/finally</div>
+                        <div class="code-block tight" style="margin-top: 0;">f = <span class="cf">open</span>(<span class="cs">"payments.txt"</span>, <span class="cs">"r"</span>)
+<span class="ck">try</span>:
+    data = f.<span class="cf">read</span>()
+<span class="ck">finally</span>:
+    f.<span class="cf">close</span>()</div>
+                    </div>
+                    <div class="comparison-item new">
+                        <div class="label">Через with</div>
+                        <div class="code-block tight" style="margin-top: 0;"><span class="ck">with</span> <span class="cf">open</span>(<span class="cs">"payments.txt"</span>, <span class="cs">"r"</span>) <span class="ck">as</span> f:
+    data = f.<span class="cf">read</span>()
+<span class="co"># close() вызовется автоматически</span></div>
+                    </div>
+                </div>
+                <div class="quote-card" style="margin-top: 16px;">
+                    <p>Класс с методами <code>__enter__</code> и <code>__exit__</code> работает с <code>with</code>. <code>__exit__</code> вызывается всегда, даже если внутри блока было исключение. В этом и есть гарантия освобождения ресурса.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 30b: How with works internally -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Контекстные менеджеры</p>
+                <h2>Как <code>with</code> работает внутри</h2>
+                <p class="body-text" style="margin-bottom: 4px;">Объект, переданный в <code>with</code>, обязан иметь два метода: <code>__enter__</code> (вход в блок) и <code>__exit__</code> (выход). Python вызывает их за вас.</p>
+                <div class="code-block" style="font-size: clamp(9px,1.15vw,14px); max-width: 880px;"><span class="ck">with</span> <span class="cf">open</span>(<span class="cs">"payments.txt"</span>) <span class="ck">as</span> f:
+   |
+   +-- 1. __enter__()     открывает файл, возвращает f
+   |
+   +-- 2. выполняется тело блока with
+   |        |
+   |        +-- всё ок          вызывается __exit__(), файл закрывается
+   |        +-- было исключение вызывается __exit__(), файл закрывается,
+   |                            затем исключение летит дальше
+   |
+   +-- 3. ресурс гарантированно освобождён</div>
+                <div class="quote-card" style="margin-top: 16px;">
+                    <p>Главная ценность <code>with</code>: <code>__exit__()</code> вызывается всегда. Даже если внутри блока было исключение, ресурс будет освобождён.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 30c: Real-world examples (files, DB, lock) -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Контекстные менеджеры</p>
+                <h2>Реальные примеры</h2>
+                <p class="body-text" style="margin-bottom: 4px;">Один и тот же синтаксис <code>with</code> работает для файлов, баз данных, блокировок, сокетов, временных директорий.</p>
+                <div class="code-block tight"><span class="co"># Файлы</span>
+<span class="ck">with</span> <span class="cf">open</span>(<span class="cs">"payments.txt"</span>, <span class="cs">"r"</span>) <span class="ck">as</span> f:
+    data = f.<span class="cf">read</span>()
+
+<span class="ck">with</span> <span class="cf">open</span>(<span class="cs">"report.txt"</span>, <span class="cs">"w"</span>) <span class="ck">as</span> f:
+    f.<span class="cf">write</span>(<span class="cs">"Отчёт по транзакциям"</span>)
+
+
+<span class="co"># База данных</span>
+<span class="ck">import</span> psycopg2
+
+<span class="ck">with</span> psycopg2.<span class="cf">connect</span>(database=<span class="cs">"payments"</span>) <span class="ck">as</span> conn:
+    <span class="ck">with</span> conn.<span class="cf">cursor</span>() <span class="ck">as</span> cursor:
+        cursor.<span class="cf">execute</span>(<span class="cs">"SELECT * FROM transactions"</span>)
+        rows = cursor.<span class="cf">fetchall</span>()
+
+
+<span class="co"># Блокировка потока</span>
+<span class="ck">import</span> threading
+lock = threading.<span class="cf">Lock</span>()
+
+<span class="ck">with</span> lock:
+    <span class="co"># только один поток здесь одновременно</span>
+    balance += amount</div>
+            </div>
+        </div>
+
+        <!-- 30c+: DB transaction example with Celery note -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Контекстные менеджеры</p>
+                <h2>Реальный пример: транзакция в БД</h2>
+                <p class="body-text" style="margin-bottom: 4px;">При работе с базой данных <code>with</code> делает сразу две вещи: ведёт транзакцию (commit на успехе, rollback на ошибке) и закрывает соединение в конце.</p>
+                <div class="code-block tight"><span class="ck">import</span> psycopg2
+
+<span class="ck">def</span> <span class="cf">transfer</span>(from_id: <span class="cf">str</span>, to_id: <span class="cf">str</span>, amount: <span class="cf">float</span>) -&gt; <span class="ck">None</span>:
+    <span class="ck">with</span> psycopg2.<span class="cf">connect</span>(database=<span class="cs">"payments"</span>) <span class="ck">as</span> conn:
+        <span class="ck">with</span> conn.<span class="cf">cursor</span>() <span class="ck">as</span> cur:
+            cur.<span class="cf">execute</span>(
+                <span class="cs">"UPDATE accounts SET balance = balance - %s WHERE id = %s"</span>,
+                (amount, from_id),
+            )
+            cur.<span class="cf">execute</span>(
+                <span class="cs">"UPDATE accounts SET balance = balance + %s WHERE id = %s"</span>,
+                (amount, to_id),
+            )
+
+<span class="co"># На выходе из with:</span>
+<span class="co">#   успех    -> conn.commit(), cur.close(), conn.close()</span>
+<span class="co">#   ошибка   -> conn.rollback(), cur.close(), conn.close()</span></div>
+                <div class="quote-card" style="margin-top: 14px;">
+                    <p>В фоновой задаче Celery такая же конструкция гарантирует, что после выполнения задачи в БД не останется зависших транзакций и незакрытых соединений между задачами воркера.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 30d: with + try/except together -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Контекстные менеджеры</p>
+                <h2><code>with</code> и <code>try/except</code> вместе</h2>
+                <p class="body-text" style="margin-bottom: 4px;"><code>with</code> отвечает за ресурсы, <code>try/except</code> отвечает за ошибки. Часто их используют вместе.</p>
+                <div class="code-block tight"><span class="ck">try</span>:
+    <span class="ck">with</span> <span class="cf">open</span>(<span class="cs">"payments.txt"</span>, <span class="cs">"r"</span>) <span class="ck">as</span> f:
+        data = f.<span class="cf">read</span>()
+        <span class="cf">process</span>(data)
+
+<span class="ck">except</span> <span class="cf">FileNotFoundError</span> <span class="ck">as</span> e:
+    <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Файл не найден: {e}"</span>)
+
+<span class="ck">except</span> <span class="cf">ValueError</span> <span class="ck">as</span> e:
+    <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Ошибка обработки: {e}"</span>)
+
+<span class="co"># Файл закрыт в любом случае.</span>
+<span class="co"># Исключение поймано и обработано.</span></div>
+                <div class="quote-card success" style="margin-top: 14px;">
+                    <p>Файл закрывается автоматически, даже когда исключение поймано блоком <code>try/except</code> снаружи.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 31: DBTransaction class - auto COMMIT or ROLLBACK -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Контекстные менеджеры</p>
+                <h2><code>DBTransaction</code>: автоматический COMMIT или ROLLBACK</h2>
+                <div class="code-block tight"><span class="ck">class</span> <span class="cf">DBTransaction</span>:
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, session_id: <span class="cf">str</span>):
+        <span class="cn">self</span>.session_id = session_id
+
+    <span class="ck">def</span> <span class="cf">__enter__</span>(<span class="cn">self</span>) -&gt; <span class="cs">"DBTransaction"</span>:
+        <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"[BEGIN] Сессия {self.session_id}"</span>)
+        <span class="ck">return</span> <span class="cn">self</span>
+
+    <span class="ck">def</span> <span class="cf">__exit__</span>(<span class="cn">self</span>, exc_type, exc_val, exc_tb) -&gt; <span class="cf">bool</span>:
+        <span class="ck">if</span> exc_type <span class="ck">is</span> <span class="ck">None</span>:
+            <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"[COMMIT] Сессия {self.session_id}, данные сохранены"</span>)
+        <span class="ck">else</span>:
+            <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"[ROLLBACK] {exc_type.__name__}: {exc_val}"</span>)
+        <span class="ck">return</span> <span class="ck">False</span>    <span class="co"># пробрасываем исключение наружу</span>
+
+    <span class="ck">def</span> <span class="cf">execute</span>(<span class="cn">self</span>, query: <span class="cf">str</span>) -&gt; <span class="ck">None</span>:
+        <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"  [SQL] {query}"</span>)
+
+
+<span class="co"># Успех: автоматический COMMIT</span>
+<span class="ck">with</span> <span class="cf">DBTransaction</span>(<span class="cs">"SES_001"</span>) <span class="ck">as</span> tx:
+    tx.<span class="cf">execute</span>(<span class="cs">"UPDATE accounts SET balance = balance - 350000 WHERE id = 'A'"</span>)
+    tx.<span class="cf">execute</span>(<span class="cs">"UPDATE accounts SET balance = balance + 350000 WHERE id = 'B'"</span>)
+
+<span class="co"># Ошибка: автоматический ROLLBACK</span>
+<span class="ck">try</span>:
+    <span class="ck">with</span> <span class="cf">DBTransaction</span>(<span class="cs">"SES_002"</span>) <span class="ck">as</span> tx:
+        tx.<span class="cf">execute</span>(<span class="cs">"UPDATE accounts SET balance = balance - 999999 WHERE id = 'A'"</span>)
+        <span class="ck">raise</span> <span class="cf">ValueError</span>(<span class="cs">"CHECK constraint: balance &lt; 0"</span>)
+<span class="ck">except</span> <span class="cf">ValueError</span> <span class="ck">as</span> e:
+    <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"[API] {e}"</span>)</div>
+            </div>
+        </div>
+
+        <!-- 32: @contextmanager via generator -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Контекстные менеджеры</p>
+                <h2><code>@contextmanager</code>: менеджер через генератор</h2>
+                <p class="body-text" style="margin-bottom: 4px;">Не всегда нужен целый класс. Для простых случаев есть декоратор <code>@contextmanager</code> из <code>contextlib</code>: код до <code>yield</code> это <code>__enter__</code>, после <code>yield</code> это <code>__exit__</code>.</p>
+                <div class="code-block tight"><span class="ck">from</span> contextlib <span class="ck">import</span> contextmanager
+<span class="ck">import</span> time
+
+<span class="cm">@contextmanager</span>
+<span class="ck">def</span> <span class="cf">measure_time</span>(operation: <span class="cf">str</span>):
+    <span class="cs">"""Измеряет время выполнения"""</span>
+    start = time.<span class="cf">perf_counter</span>()
+    <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"[TIMER] Старт: {operation}"</span>)
+    <span class="ck">try</span>:
+        <span class="ck">yield</span>               <span class="co"># здесь выполняется код внутри with</span>
+    <span class="ck">finally</span>:
+        ms = (time.<span class="cf">perf_counter</span>() - start) * <span class="cm">1000</span>
+        <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"[TIMER] {operation}: {ms:.1f}мс"</span>)
+
+
+<span class="cm">@contextmanager</span>
+<span class="ck">def</span> <span class="cf">redis_lock</span>(resource_id: <span class="cf">str</span>):
+    <span class="cs">"""Имитация распределённого лока"""</span>
+    key = <span class="cf">f</span><span class="cs">"lock:{resource_id}"</span>
+    <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"[REDIS] Захват {key}"</span>)
+    <span class="ck">try</span>:
+        <span class="ck">yield</span> key
+    <span class="ck">finally</span>:
+        <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"[REDIS] Освобождение {key}"</span>)
+
+
+<span class="ck">with</span> <span class="cf">measure_time</span>(<span class="cs">"payment"</span>):
+    <span class="ck">with</span> <span class="cf">redis_lock</span>(<span class="cs">"account:UZ_5521"</span>) <span class="ck">as</span> lock:
+        <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"  Работаем (lock={lock})"</span>)
+        time.<span class="cf">sleep</span>(<span class="cm">0.03</span>)</div>
+                <p class="body-text" style="margin-top: 10px; color: #86868b;">Порядок выхода обратен порядку входа. Внутренний лок снимается первым.</p>
+            </div>
+        </div>
+
+        <!-- 32a: Summary - with vs without with -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Контекстные менеджеры</p>
+                <h2>Без <code>with</code> и с <code>with</code></h2>
+                <table class="data-table" style="max-width: 980px;">
+                    <tr><th></th><th>Без <code>with</code></th><th>С <code>with</code></th></tr>
+                    <tr><td>Закрытие ресурса</td><td>Вручную</td><td>Автоматически</td></tr>
+                    <tr><td>При ошибке</td><td>Ресурс остаётся открытым</td><td>Всё равно закрывается</td></tr>
+                    <tr><td>Читаемость</td><td>Больше кода</td><td>Чище и короче</td></tr>
+                    <tr><td>Утечки памяти</td><td>Возможны</td><td>Исключены</td></tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- 32b: Section divider - logging -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Новый раздел</p>
+                <h1>Модуль <code>logging</code></h1>
+                <p class="subtitle">Логи: то, что остаётся после сбоя</p>
+            </div>
+        </div>
+
+        <!-- 32c: What is logging - definition and analogy -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Модуль <code>logging</code></p>
+                <h2>Что такое логирование</h2>
+                <p class="body-text" style="margin-bottom: 4px;">Логирование: запись событий программы во время её работы. Что произошло, когда, на каком сервере, в какой функции.</p>
+                <div class="quote-card" style="margin-top: 14px;">
+                    <p>Аналогия: бортовой самописец самолёта. После любого инцидента инженер открывает запись и видит, что происходило в системе перед сбоем.</p>
+                </div>
+                <ul class="checklist" style="max-width: 880px; margin-top: 14px;">
+                    <li>В продакшне нет дебаггера. Доступно только то, что попало в логи.</li>
+                    <li>В микросервисах транзакция проходит через несколько сервисов: без логов не найти, где она застряла.</li>
+                    <li>Аудит. Банк обязан хранить, кто и что делал в системе.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 33: Why print() is not enough -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Модуль <code>logging</code></p>
+                <h2>Почему <code>print()</code> в продакшне не годится</h2>
+                <table class="data-table" style="max-width: 880px;">
+                    <tr><th>Проблема</th><th>Почему важно</th></tr>
+                    <tr><td>Нет уровня важности</td><td>Не понимаем, это DEBUG или CRITICAL</td></tr>
+                    <tr><td>Нет временной метки</td><td>Когда это случилось?</td></tr>
+                    <tr><td>Нет файла и строки</td><td>Откуда это в коде?</td></tr>
+                    <tr><td>Нельзя фильтровать</td><td>Не агрегируется в ELK Stack</td></tr>
+                    <tr><td>Нельзя ротировать</td><td>Файл растёт бесконечно</td></tr>
+                </table>
+                <table class="data-table" style="max-width: 880px; margin-top: 22px;">
+                    <tr><th>Уровень</th><th>Когда использовать</th></tr>
+                    <tr><td><code>DEBUG</code></td><td>Детальный трейс для отладки. В продакшне выключен</td></tr>
+                    <tr><td><code>INFO</code></td><td>Стандартные события: транзакция создана, запрос принят</td></tr>
+                    <tr><td><code>WARNING</code></td><td>Нештатно, но система работает: retry #2, медленный запрос</td></tr>
+                    <tr><td><code>ERROR</code></td><td>Одна операция упала, система продолжает работу</td></tr>
+                    <tr><td><code>CRITICAL</code></td><td>Серьёзно: база недоступна, под угрозой весь сервис</td></tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- 34: Logger setup (minimal) -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Модуль <code>logging</code></p>
+                <h2>Настройка логгера</h2>
+                <p class="body-text" style="margin-bottom: 4px;">Три шага: получить логгер по имени, задать уровень, добавить обработчик с форматом.</p>
+                <div class="code-block"><span class="ck">import</span> logging
+<span class="ck">import</span> sys
+
+logger = logging.<span class="cf">getLogger</span>(<span class="cs">"PaymentService"</span>)
+logger.<span class="cf">setLevel</span>(logging.DEBUG)
+
+handler = logging.<span class="cf">StreamHandler</span>(sys.stdout)
+handler.<span class="cf">setFormatter</span>(logging.<span class="cf">Formatter</span>(
+    <span class="cs">'%(asctime)s [%(levelname)s] %(message)s'</span>
+))
+logger.<span class="cf">addHandler</span>(handler)</div>
+                <p class="body-text" style="margin-top: 10px; color: #86868b;">В продакшне дополнительно добавляют <code>RotatingFileHandler</code>: пишет в файл и ротирует его по размеру, чтобы лог не съел диск.</p>
+            </div>
+        </div>
+
+        <!-- 35: Using the logger - five levels -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Модуль <code>logging</code></p>
+                <h2>Использование: пять уровней</h2>
+                <div class="code-block">logger.<span class="cf">debug</span>(<span class="cs">"Старт обработки tx=TX_001"</span>)
+logger.<span class="cf">info</span>(<span class="cs">"TX обработана. Сумма: 500_000 UZS"</span>)
+logger.<span class="cf">warning</span>(<span class="cs">"Медленный запрос: 120мс"</span>)
+logger.<span class="cf">error</span>(<span class="cs">"TX отклонена: превышен лимит"</span>)
+logger.<span class="cf">critical</span>(<span class="cs">"База недоступна, очередь ретрая полна"</span>)</div>
+                <div class="term"><span class="out">10:30:00 [DEBUG] Старт обработки tx=TX_001
+10:30:00 [INFO] TX обработана. Сумма: 500_000 UZS
+10:30:00 [WARNING] Медленный запрос: 120мс
+10:30:00 [ERROR] TX отклонена: превышен лимит
+10:30:00 [CRITICAL] База недоступна, очередь ретрая полна</span></div>
+                <p class="body-text" style="margin-top: 10px; color: #86868b;">Уровень выбирается под событие. В продакшне обычно фильтруют от <code>INFO</code> и выше: <code>DEBUG</code> слишком шумный.</p>
+            </div>
+        </div>
+
+        <!-- 36: exc_info=True -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Модуль <code>logging</code></p>
+                <h2><code>exc_info=True</code>: добавляет traceback в лог</h2>
+                <p class="body-text" style="margin-bottom: 4px;">Без <code>exc_info=True</code> лог покажет только сообщение об ошибке. С <code>exc_info=True</code> добавит полный traceback. Это критично для дебага.</p>
+                <div class="code-block tight"><span class="co"># Без exc_info</span>
+logger.<span class="cf">error</span>(<span class="cf">f</span><span class="cs">"TX упала: {e}"</span>)
+<span class="co"># В логе:</span>
+<span class="co">#   "TX упала: Превышен лимит"</span>
+<span class="co"># Нет файла, нет строки, нет стека вызовов.</span>
+
+
+<span class="co"># С exc_info=True</span>
+logger.<span class="cf">error</span>(<span class="cf">f</span><span class="cs">"TX упала: {e}"</span>, exc_info=<span class="ck">True</span>)
+<span class="co"># В логе:</span>
+<span class="co">#   ERROR - TX упала: Превышен лимит</span>
+<span class="co">#   Traceback (most recent call last):</span>
+<span class="co">#     File "payment.py", line 30, in process</span>
+<span class="co">#       raise ValueError(...)</span>
+<span class="co">#   ValueError: Превышен лимит: 100000000</span></div>
+                <table class="data-table" style="margin-top: 18px; max-width: 720px;">
+                    <tr><th>Уровень</th><th><code>exc_info=True</code>?</th></tr>
+                    <tr><td><code>logger.error()</code></td><td>Всегда</td></tr>
+                    <tr><td><code>logger.critical()</code></td><td>Всегда</td></tr>
+                    <tr><td><code>logger.warning()</code></td><td>Если предупреждение связано с исключением</td></tr>
+                    <tr><td><code>logger.info()</code></td><td>Не нужно</td></tr>
+                    <tr><td><code>logger.debug()</code></td><td>Не нужно</td></tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- 37: Wide except with mandatory logging -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Модуль <code>logging</code></p>
+                <h2>Широкий <code>except</code> + обязательное логирование</h2>
+                <p class="body-text" style="margin-bottom: 4px;">Иногда нельзя предугадать все ошибки, тогда используют <code>except Exception</code>. Но это не оправдание молчать: ловишь всё, обязан записать всё.</p>
+                <div class="code-block tight"><span class="ck">import</span> logging
+logger = logging.<span class="cf">getLogger</span>(<span class="cn">__name__</span>)   <span class="co"># стандарт: один логгер на модуль</span>
+
+<span class="ck">def</span> <span class="cf">safe_check_fraud</span>(tx: <span class="cf">dict</span>) -&gt; <span class="cf">dict</span>:
+    <span class="ck">try</span>:
+        is_fraud = <span class="cf">check_fraud</span>(tx)
+        <span class="ck">return</span> {<span class="cs">"status"</span>: <span class="cs">"BLOCKED"</span> <span class="ck">if</span> is_fraud <span class="ck">else</span> <span class="cs">"APPROVED"</span>}
+
+    <span class="ck">except</span> <span class="cf">Exception</span> <span class="ck">as</span> e:
+        logger.<span class="cf">error</span>(
+            <span class="cf">f</span><span class="cs">"Неожиданная ошибка антифрода: {type(e).__name__}: {e}"</span>,
+            exc_info=<span class="ck">True</span>
+        )
+        <span class="ck">return</span> {<span class="cs">"status"</span>: <span class="cs">"ERROR"</span>, <span class="cs">"reason"</span>: <span class="cs">"Fraud check failed"</span>}</div>
+                <table class="data-table" style="margin-top: 18px; max-width: 880px;">
+                    <tr><th>Часть сообщения</th><th>Что даёт</th></tr>
+                    <tr><td><code>"Неожиданная ошибка антифрода"</code></td><td>Контекст: где именно упало</td></tr>
+                    <tr><td><code>{type(e).__name__}</code></td><td>Имя класса ошибки, для фильтрации в Sentry</td></tr>
+                    <tr><td><code>{e}</code></td><td>Текст ошибки, для понимания что случилось</td></tr>
+                    <tr><td><code>exc_info=True</code></td><td>Полный traceback, для понимания где в коде</td></tr>
+                </table>
+                <p class="body-text" style="margin-top: 14px; color: #86868b;">Это называется graceful degradation: сервис не падает, но ошибка зафиксирована.</p>
+            </div>
+        </div>
+
+        <!-- 38: Three catch levels comparison -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Модуль <code>logging</code></p>
+                <h2>Три уровня перехвата</h2>
+                <div class="code-block tight"><span class="co"># Идеально: конкретные исключения, своя реакция на каждое</span>
+<span class="ck">try</span>:
+    response = external_api.<span class="cf">call</span>()
+<span class="ck">except</span> <span class="cf">TimeoutError</span>:
+    <span class="cf">retry_later</span>()
+<span class="ck">except</span> <span class="cf">ValueError</span>:
+    <span class="ck">return</span> {<span class="cs">"status"</span>: <span class="cs">"INVALID_INPUT"</span>}
+
+
+<span class="co"># Допустимо: широкий перехват с обязательным логированием</span>
+<span class="ck">try</span>:
+    is_fraud = <span class="cf">check_fraud</span>(tx)
+<span class="ck">except</span> <span class="cf">Exception</span> <span class="ck">as</span> e:
+    logger.<span class="cf">error</span>(
+        <span class="cf">f</span><span class="cs">"Неожиданная ошибка: {type(e).__name__}: {e}"</span>,
+        exc_info=<span class="ck">True</span>
+    )
+    <span class="ck">return</span> {<span class="cs">"status"</span>: <span class="cs">"ERROR"</span>}
+
+
+<span class="co"># Запрещено: широкий перехват без логирования</span>
+<span class="ck">try</span>:
+    is_fraud = <span class="cf">check_fraud</span>(tx)
+<span class="ck">except</span> <span class="cf">Exception</span>:
+    <span class="ck">pass</span>   <span class="co"># ошибка исчезла, никто не узнает</span></div>
+                <div class="quote-card warning" style="margin-top: 16px;">
+                    <p>Без лога ошибка тихо проглочена. Сервис продолжает «работать», бизнес-логика даёт неверный ответ, данные портятся. Это сокрытие улик, а не защита.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 40: Summary - what we learned -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Итоги</p>
+                <h2>Что освоили на лекции</h2>
+                <table class="data-table" style="max-width: 980px;">
+                    <tr><th>Концепция</th><th>Ключевой вывод</th></tr>
+                    <tr><td>Чтение Traceback</td><td>Снизу вверх: тип, место, путь</td></tr>
+                    <tr><td>Иерархия исключений</td><td>Это ООП: конкретные <code>except</code> сверху, общие снизу</td></tr>
+                    <tr><td><code>try / except / else / finally</code></td><td>В <code>try</code> минимум кода; <code>else</code> при успехе; <code>finally</code> всегда</td></tr>
+                    <tr><td>Blanket <code>except</code></td><td><code>except Exception</code> без логирования = тихая смерть</td></tr>
+                    <tr><td><code>UnboundLocalError</code></td><td>Инициализируй ресурсы <code>None</code> до <code>try</code></td></tr>
+                    <tr><td><code>raise</code></td><td>Переводим бизнес-правила на язык исключений</td></tr>
+                    <tr><td><code>with / contextmanager</code></td><td>Гарантированное освобождение ресурсов</td></tr>
+                    <tr><td><code>logging</code></td><td>5 уровней, <code>exc_info=True</code>, понятный формат сообщений</td></tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- 50: Final task statement -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Финальная задача</p>
+                <h2>SWIFT-процессор</h2>
+                <p class="body-text" style="margin-bottom: 4px;">Дано: список платежей. Часть с битыми полями, часть нарушает бизнес-правила, среди получателей есть санкционный. Задача: процессор не падает на любом входе, считает ошибки по трём категориям.</p>
+                <div class="code-block tight">RAW_LEDGER = [
+    {<span class="cs">"id"</span>: <span class="cs">"SW_001"</span>, <span class="cs">"from"</span>: <span class="cs">"UZ_A"</span>, <span class="cs">"to"</span>: <span class="cs">"UZ_B"</span>, <span class="cs">"amount"</span>: <span class="cs">"350000"</span>},    <span class="co"># OK</span>
+    {<span class="cs">"id"</span>: <span class="cs">"SW_002"</span>, <span class="cs">"from"</span>: <span class="cs">"UZ_C"</span>, <span class="cs">"to"</span>: <span class="cs">"UZ_C"</span>, <span class="cs">"amount"</span>: <span class="cs">"90000"</span>},     <span class="co"># сам себе</span>
+    {<span class="cs">"id"</span>: <span class="cs">"SW_003"</span>, <span class="cs">"from"</span>: <span class="cs">"UZ_D"</span>, <span class="cs">"amount"</span>: <span class="cs">"120000"</span>},                  <span class="co"># нет 'to'</span>
+    {<span class="cs">"id"</span>: <span class="cs">"SW_004"</span>, <span class="cs">"from"</span>: <span class="cs">"UZ_E"</span>, <span class="cs">"to"</span>: <span class="cs">"UZ_F"</span>, <span class="cs">"amount"</span>: <span class="cs">"БИТЫЕ"</span>},     <span class="co"># не число</span>
+    <span class="ck">None</span>,                                                                    <span class="co"># не словарь</span>
+    {<span class="cs">"id"</span>: <span class="cs">"SW_005"</span>, <span class="cs">"from"</span>: <span class="cs">"UZ_G"</span>, <span class="cs">"to"</span>: <span class="cs">"UZ_H"</span>, <span class="cs">"amount"</span>: <span class="cs">"75000000"</span>},  <span class="co"># превышен лимит</span>
+    {<span class="cs">"id"</span>: <span class="cs">"SW_006"</span>, <span class="cs">"from"</span>: <span class="cs">"UZ_I"</span>, <span class="cs">"to"</span>: <span class="cs">"SANCTION"</span>, <span class="cs">"amount"</span>: <span class="cs">"10000"</span>}, <span class="co"># санкции</span>
+]</div>
+            </div>
+        </div>
+
+        <!-- 51: Solution part 1 - exception classes and validator -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Финальная задача</p>
+                <h2>Решение: валидатор</h2>
+                <p class="body-text" style="margin-bottom: 4px;">Три класса ошибок по категориям. Один валидатор: либо OK, либо <code>raise</code> нужного типа.</p>
+                <div class="code-block tight"><span class="ck">import</span> logging
+logger = logging.<span class="cf">getLogger</span>(<span class="cs">"swift"</span>)
+
+MAX = <span class="cm">10_000_000</span>
+SANCTIONED = {<span class="cs">"SANCTION"</span>}
+
+
+<span class="ck">class</span> <span class="cf">StructureError</span>(<span class="cf">Exception</span>): <span class="ck">pass</span>    <span class="co"># битые данные</span>
+<span class="ck">class</span> <span class="cf">BusinessError</span>(<span class="cf">Exception</span>): <span class="ck">pass</span>     <span class="co"># правила бизнеса</span>
+<span class="ck">class</span> <span class="cf">ComplianceError</span>(<span class="cf">Exception</span>): <span class="ck">pass</span>   <span class="co"># санкции</span>
+
+
+<span class="ck">def</span> <span class="cf">process_payment</span>(p):
+    <span class="ck">if</span> <span class="ck">not</span> <span class="cf">isinstance</span>(p, <span class="cf">dict</span>):
+        <span class="ck">raise</span> <span class="cf">StructureError</span>(<span class="cf">f</span><span class="cs">"Не словарь: {type(p).__name__}"</span>)
+    <span class="ck">for</span> field <span class="ck">in</span> (<span class="cs">"from"</span>, <span class="cs">"to"</span>, <span class="cs">"amount"</span>):
+        <span class="ck">if</span> field <span class="ck">not</span> <span class="ck">in</span> p:
+            <span class="ck">raise</span> <span class="cf">StructureError</span>(<span class="cf">f</span><span class="cs">"Нет поля: {field}"</span>)
+    <span class="ck">try</span>:
+        amount = <span class="cf">float</span>(p[<span class="cs">"amount"</span>])
+    <span class="ck">except</span> <span class="cf">ValueError</span>:
+        <span class="ck">raise</span> <span class="cf">StructureError</span>(<span class="cf">f</span><span class="cs">"Сумма не число: {p['amount']}"</span>)
+
+    <span class="ck">if</span> p[<span class="cs">"from"</span>] == p[<span class="cs">"to"</span>]:
+        <span class="ck">raise</span> <span class="cf">BusinessError</span>(<span class="cf">f</span><span class="cs">"Тот же счёт: {p['from']}"</span>)
+    <span class="ck">if</span> amount &gt; MAX:
+        <span class="ck">raise</span> <span class="cf">BusinessError</span>(<span class="cf">f</span><span class="cs">"Лимит: {amount}"</span>)
+
+    <span class="ck">if</span> p[<span class="cs">"to"</span>] <span class="ck">in</span> SANCTIONED:
+        <span class="ck">raise</span> <span class="cf">ComplianceError</span>(<span class="cf">f</span><span class="cs">"Санкции: {p['to']}"</span>)</div>
+            </div>
+        </div>
+
+        <!-- 52: Solution part 2 - batch processor with routing -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Финальная задача</p>
+                <h2>Решение: пакетная обработка</h2>
+                <p class="body-text" style="margin-bottom: 4px;">Один <code>try/except</code> с тремя ветками. Каждый тип ошибки идёт в свой счётчик и в свой уровень лога. Программа не падает ни на чём.</p>
+                <div class="code-block tight"><span class="ck">def</span> <span class="cf">process_batch</span>(payments):
+    report = {<span class="cs">"ok"</span>: <span class="cm">0</span>, <span class="cs">"structure"</span>: <span class="cm">0</span>, <span class="cs">"business"</span>: <span class="cm">0</span>, <span class="cs">"compliance"</span>: <span class="cm">0</span>}
+    <span class="ck">for</span> p <span class="ck">in</span> payments:
+        <span class="ck">try</span>:
+            <span class="cf">process_payment</span>(p)
+            report[<span class="cs">"ok"</span>] += <span class="cm">1</span>
+        <span class="ck">except</span> <span class="cf">StructureError</span> <span class="ck">as</span> e:
+            report[<span class="cs">"structure"</span>] += <span class="cm">1</span>
+            logger.<span class="cf">warning</span>(<span class="cf">f</span><span class="cs">"[STRUCT] {e}"</span>)
+        <span class="ck">except</span> <span class="cf">BusinessError</span> <span class="ck">as</span> e:
+            report[<span class="cs">"business"</span>] += <span class="cm">1</span>
+            logger.<span class="cf">warning</span>(<span class="cf">f</span><span class="cs">"[BIZ] {e}"</span>)
+        <span class="ck">except</span> <span class="cf">ComplianceError</span> <span class="ck">as</span> e:
+            report[<span class="cs">"compliance"</span>] += <span class="cm">1</span>
+            logger.<span class="cf">error</span>(<span class="cf">f</span><span class="cs">"[COMP] {e}"</span>)
+    <span class="ck">return</span> report
+
+
+<span class="cf">print</span>(<span class="cf">process_batch</span>(RAW_LEDGER))</div>
+                <div class="term"><span class="out">{'ok': 1, 'structure': 3, 'business': 2, 'compliance': 1}</span></div>
+            </div>
+        </div>
+
+        <!-- 43: Tasks download -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Материалы</p>
+                <h2>Задачи</h2>
+                <a href="lecture09_tasks.ipynb" download style="display: inline-flex; align-items: center; gap: 8px; padding: 14px 26px; background: #007aff; color: #fff; border-radius: 50px; font-size: clamp(14px, 1.6vw, 18px); font-weight: 600; text-decoration: none; box-shadow: 0 6px 20px rgba(0,122,255,0.25); margin-top: 12px;">↓ Скачать</a>
+                <p class="body-text" style="margin-top: 22px; color: #86868b;">15 заданий и финальная задача «Платёжный процессор». Открывается в Jupyter, VS Code или Google Colab.</p>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="lesson-tag">Python · Лекция 9 · Defensive Programming</div>
+    <div class="slide-indicator">
+        <span id="current-slide">1</span> / <span id="total-slides">53</span>
+    </div>
+    <div class="nav-hint">→ или Space - далее<br/>← - назад</div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+        document.getElementById('total-slides').textContent = totalSlides;
+
+        function showSlide(n) {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (n + totalSlides) % totalSlides;
+            slides[currentSlide].classList.add('active');
+            document.getElementById('current-slide').textContent = currentSlide + 1;
+
+            const slideContent = slides[currentSlide].querySelector('.slide-content');
+            slideContent.style.animation = 'none';
+            void slideContent.offsetHeight;
+            slideContent.style.animation = null;
+
+            const animated = slides[currentSlide].querySelectorAll('.card, .comparison-item');
+            animated.forEach(el => {
+                el.style.animation = 'none';
+                void el.offsetHeight;
+                el.style.animation = null;
+            });
+        }
+
+        function nextSlide() { showSlide(currentSlide + 1); }
+        function prevSlide() { showSlide(currentSlide - 1); }
+
+        document.addEventListener('keydown', (e) => {
+            const tag = (e.target.tagName || '').toLowerCase();
+            if (tag === 'textarea' || tag === 'input') return;
+            if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); nextSlide(); }
+            else if (e.key === 'ArrowLeft') { e.preventDefault(); prevSlide(); }
+        });
+
+        let touchStartX = 0;
+        document.addEventListener('touchstart', (e) => { touchStartX = e.changedTouches[0].screenX; });
+        document.addEventListener('touchend', (e) => {
+            const dx = e.changedTouches[0].screenX - touchStartX;
+            if (dx < -50) nextSlide();
+            else if (dx > 50) prevSlide();
+        });
+    </script>
+</body>
+</html>

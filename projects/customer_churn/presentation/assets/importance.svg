@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 360" role="img" aria-label="Gain importance">
+  <rect width="100%" height="100%" fill="#f0eee9"/>
+  <g font-family="system-ui, sans-serif" font-size="13" fill="#2d3038">
+    <text x="268" y="28" text-anchor="end">Активность за 30 дней</text>
+    <rect x="280" y="16" width="404" height="16" fill="#355f8c"/>
+    <text x="268" y="60" text-anchor="end">Регион</text>
+    <rect x="280" y="48" width="184" height="16" fill="#355f8c"/>
+    <text x="268" y="92" text-anchor="end">Стаж в банке</text>
+    <rect x="280" y="80" width="137" height="16" fill="#355f8c"/>
+    <text x="268" y="124" text-anchor="end">Дней без приложения</text>
+    <rect x="280" y="112" width="124" height="16" fill="#355f8c"/>
+    <text x="268" y="156" text-anchor="end">Динамика оборота 30д</text>
+    <rect x="280" y="144" width="120" height="16" fill="#355f8c"/>
+    <text x="268" y="188" text-anchor="end">Динамика операций 60д</text>
+    <rect x="280" y="176" width="117" height="16" fill="#355f8c"/>
+    <text x="268" y="220" text-anchor="end">Заявленный доход</text>
+    <rect x="280" y="208" width="112" height="16" fill="#355f8c"/>
+    <text x="268" y="252" text-anchor="end">Возраст</text>
+    <rect x="280" y="240" width="106" height="16" fill="#355f8c"/>
+    <text x="268" y="284" text-anchor="end">Оборот за 30 дней</text>
+    <rect x="280" y="272" width="104" height="16" fill="#355f8c"/>
+    <text x="268" y="316" text-anchor="end">События в приложении</text>
+    <rect x="280" y="304" width="93" height="16" fill="#355f8c"/>
+  </g>
+  <text x="280" y="348" fill="#7a7f88" font-size="12" font-family="system-ui">LightGBM gain · обучение на июле</text>
+</svg>

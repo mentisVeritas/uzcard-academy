@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NumPy · Lecture 11</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700;800&display=swap');
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system,BlinkMacSystemFont,'Inter','SF Pro Display','Segoe UI',Roboto,sans-serif; background:#FFFFFF; color:#1d1d1f; line-height:1.1; overflow:hidden; -webkit-font-smoothing:antialiased; }
+.presentation { width:100vw; height:100vh; position:relative; }
+.slide { width:100%; height:100%; display:none; align-items:center; justify-content:center; position:absolute; top:0; left:0; padding:clamp(40px,6vh,80px) clamp(40px,6vw,80px); text-align:center; }
+.slide.active { display:flex; flex-direction:column; }
+.slide-content { max-width:1200px; width:100%; margin:0 auto; opacity:0; transform:translateY(20px); animation:fadeInUp 0.7s ease-out 0.15s forwards; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+@keyframes fadeInUp { to { opacity:1; transform:translateY(0); } }
+h1 { font-size:clamp(40px,6.5vw,96px); font-weight:700; letter-spacing:-0.025em; line-height:0.95; margin-bottom:clamp(16px,2.5vh,32px); }
+h2 { font-size:clamp(28px,4vw,56px); font-weight:600; letter-spacing:-0.02em; line-height:1.05; margin-bottom:clamp(16px,2vh,28px); }
+.subtitle { font-size:clamp(18px,2.2vw,28px); font-weight:400; color:#86868b; margin-bottom:clamp(20px,3vh,40px); line-height:1.3; max-width:900px; }
+.eyebrow { font-size:clamp(13px,1.2vw,16px); font-weight:600; color:#007aff; text-transform:uppercase; letter-spacing:0.18em; margin-bottom:18px; }
+.body-text { font-size:clamp(15px,1.8vw,22px); font-weight:400; color:#515154; line-height:1.45; max-width:820px; margin:0 auto; }
+code { font-family:'SF Mono','Menlo','Monaco','Consolas',monospace; font-size:0.9em; }
+.highlight { color:#007aff; font-weight:500; }
+.cards-container { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:clamp(14px,2vw,22px); margin-top:clamp(20px,3vh,36px); max-width:1100px; width:100%; }
+.card { background:rgba(0,0,0,0.025); border:1px solid rgba(0,0,0,0.06); border-radius:14px; padding:clamp(18px,2.2vw,26px); text-align:left; opacity:0; transform:translateY(20px); animation:cardSlideUp 0.55s ease-out forwards; }
+.card:nth-child(1){animation-delay:.35s}.card:nth-child(2){animation-delay:.45s}.card:nth-child(3){animation-delay:.55s}.card:nth-child(4){animation-delay:.65s}.card:nth-child(5){animation-delay:.75s}.card:nth-child(6){animation-delay:.85s}
+@keyframes cardSlideUp { to { opacity:1; transform:translateY(0); } }
+.card h3 { font-size:clamp(15px,1.8vw,20px); font-weight:600; margin-bottom:7px; color:#1d1d1f; }
+.card p { font-size:clamp(12px,1.45vw,15px); color:#6e6e73; line-height:1.4; }
+.card .mono { font-family:'SF Mono','Menlo','Monaco','Consolas',monospace; font-size:clamp(11px,1.3vw,13px); background:rgba(0,0,0,0.05); padding:2px 6px; border-radius:3px; display:block; margin-top:6px; color:#007aff; }
+.comparison-grid { display:grid; grid-template-columns:1fr 1fr; gap:clamp(20px,3vw,40px); max-width:1100px; width:100%; margin-top:clamp(20px,3vh,36px); align-items:stretch; }
+.comparison-item { text-align:left; padding:clamp(18px,2.2vw,28px); border-radius:14px; background:rgba(0,0,0,0.02); border:1px solid rgba(0,0,0,0.06); opacity:0; transform:scale(0.96); animation:scaleIn 0.6s ease-out forwards; }
+.comparison-item:nth-child(1){animation-delay:.35s}.comparison-item:nth-child(2){animation-delay:.5s}
+@keyframes scaleIn { to { opacity:1; transform:scale(1); } }
+.comparison-item .label { font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:0.14em; margin-bottom:10px; }
+.comparison-item.bad .label { color:#ff3b30; }
+.comparison-item.good .label { color:#34c759; }
+.comparison-item h3 { font-size:clamp(18px,2.2vw,24px); font-weight:600; margin-bottom:10px; }
+.comparison-item p { font-size:clamp(13px,1.6vw,17px); color:#515154; line-height:1.45; margin-bottom:8px; }
+.comparison-item ul { list-style:none; padding:0; }
+.comparison-item ul li { font-size:clamp(13px,1.55vw,16px); color:#515154; line-height:1.5; padding:4px 0 4px 16px; position:relative; }
+.comparison-item.bad ul li::before { content:"-"; position:absolute; left:0; color:#ff3b30; font-weight:600; }
+.comparison-item.good ul li::before { content:"+"; position:absolute; left:0; color:#34c759; font-weight:600; }
+.quote-card { margin-top:clamp(18px,2.5vh,28px); padding:clamp(16px,2vw,24px) clamp(20px,2.5vw,30px); border-left:3px solid #007aff; background:rgba(0,122,255,0.04); border-radius:8px; text-align:left; max-width:860px; }
+.quote-card.success { border-left-color:#34c759; background:rgba(52,199,89,0.05); }
+.quote-card.warning { border-left-color:#ff3b30; background:rgba(255,59,48,0.04); }
+.quote-card p { font-size:clamp(14px,1.6vw,18px); color:#1d1d1f; line-height:1.4; font-weight:500; }
+.code-block { background:#1d1d1f; color:#f5f5f7; border-radius:12px; padding:clamp(14px,1.7vw,22px); font-family:'SF Mono','Menlo','Monaco','Consolas',monospace; font-size:clamp(11px,1.35vw,15px); line-height:1.6; text-align:left; margin-top:14px; max-width:920px; width:100%; white-space:pre; overflow-x:auto; }
+.code-block .ck { color:#ff79c6; }
+.code-block .cs { color:#f1fa8c; }
+.code-block .cn { color:#f8f8f2; }
+.code-block .co { color:#6272a4; font-style:italic; }
+.code-block .cf { color:#8be9fd; }
+.code-block .cm { color:#bd93f9; }
+.code-block .cc { color:#50fa7b; }
+.term { background:#1d1d1f; color:#f5f5f7; border-radius:12px; padding:clamp(12px,1.6vw,18px); font-family:'SF Mono','Menlo','Monaco','Consolas',monospace; font-size:clamp(10px,1.25vw,14px); line-height:1.6; text-align:left; white-space:pre; overflow-x:auto; margin-top:12px; max-width:920px; width:100%; }
+.term .out { color:#50fa7b; }
+.term .err { color:#ff5555; }
+.checklist { list-style:none; padding:0; margin-top:16px; max-width:860px; text-align:left; }
+.checklist li { font-size:clamp(14px,1.65vw,18px); line-height:1.45; padding:9px 0 9px 36px; position:relative; border-bottom:1px solid rgba(0,0,0,0.05); }
+.checklist li:last-child { border-bottom:none; }
+.checklist li::before { content:"✓"; position:absolute; left:0; top:50%; transform:translateY(-50%); width:24px; height:24px; border-radius:50%; background:rgba(0,122,255,0.1); color:#007aff; font-size:12px; font-weight:700; display:flex; align-items:center; justify-content:center; }
+.data-table { width:100%; max-width:1000px; margin-top:clamp(14px,2vh,24px); border-collapse:collapse; font-size:clamp(11px,1.4vw,16px); }
+.data-table th,.data-table td { text-align:left; padding:clamp(7px,1.2vw,12px) clamp(9px,1.4vw,15px); border-bottom:1px solid rgba(0,0,0,0.08); vertical-align:top; }
+.data-table th { font-weight:600; border-bottom:2px solid rgba(0,0,0,0.14); }
+.data-table td { color:#515154; line-height:1.4; }
+.data-table tr.hl td { background:rgba(52,199,89,0.07); color:#1d1d1f; font-weight:500; }
+.lang-switcher { position:fixed; top:22px; right:28px; z-index:100; display:flex; gap:2px; background:rgba(255,255,255,0.95); -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px); border:1px solid rgba(0,0,0,0.06); border-radius:50px; padding:3px; box-shadow:0 2px 8px rgba(0,0,0,0.04); }
+.lang-switcher a { font-size:11px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:#86868b; text-decoration:none; padding:5px 12px; border-radius:50px; transition:all 0.2s ease; }
+.lang-switcher a.active { color:#fff; background:#007aff; }
+.lang-switcher a:not(.active):hover { color:#1d1d1f; }
+.slide-indicator { position:fixed; bottom:24px; left:50%; transform:translateX(-50%); font-size:13px; color:#86868b; z-index:100; letter-spacing:0.04em; }
+.nav-hint { position:fixed; bottom:24px; right:24px; font-size:12px; color:#c7c7cc; text-align:right; z-index:100; }
+.lesson-tag { position:fixed; top:24px; left:24px; font-size:11px; font-weight:600; color:#86868b; text-transform:uppercase; letter-spacing:0.16em; z-index:100; }
+.bar-wrap { display:flex; flex-direction:column; gap:12px; max-width:720px; width:100%; margin-top:clamp(18px,2.5vh,28px); }
+.bar-row { display:grid; grid-template-columns:200px 1fr 60px; align-items:center; gap:14px; }
+.bar-row .lbl { font-size:clamp(13px,1.5vw,16px); color:#515154; text-align:left; }
+.bar-track { height:10px; background:rgba(0,0,0,0.06); border-radius:999px; overflow:hidden; }
+.bar-fill { height:100%; width:0; border-radius:999px; transition:width 1.4s cubic-bezier(0.16,1,0.3,1) 0.4s; }
+.slide.active .bar-fill { width:var(--w,0%); }
+.bar-row .pct { text-align:right; font-weight:700; color:#1d1d1f; font-size:clamp(13px,1.5vw,16px); }
+.matrix-grid { display:grid; gap:3px; justify-content:center; margin-top:12px; }
+.m-cell { width:48px; height:38px; border-radius:5px; display:flex; align-items:center; justify-content:center; font-family:'SF Mono','Menlo','Monaco','Consolas',monospace; font-size:13px; font-weight:600; background:rgba(0,122,255,0.08); border:1px solid rgba(0,122,255,0.18); color:#007aff; }
+.m-cell.hl { background:rgba(52,199,89,0.15); border-color:rgba(52,199,89,0.35); color:#34c759; }
+.bc-cell { width:44px; height:34px; border-radius:4px; display:flex; align-items:center; justify-content:center; font-family:'SF Mono','Menlo','Monaco','Consolas',monospace; font-size:11px; font-weight:600; }
+.bc-cell.a { background:rgba(0,122,255,0.1); border:1px solid rgba(0,122,255,0.2); color:#007aff; }
+.bc-cell.b { background:rgba(255,149,0,0.1); border:1px solid rgba(255,149,0,0.25); color:#ff9500; }
+.bc-cell.bd { background:rgba(255,149,0,0.05); border:1px dashed rgba(255,149,0,0.3); color:#ff9500; }
+.bc-cell.r { background:rgba(52,199,89,0.1); border:1px solid rgba(52,199,89,0.25); color:#34c759; }
+.bc-lbl { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.12em; color:#86868b; text-align:center; margin-bottom:5px; }
+@media (max-width:768px) { .comparison-grid { grid-template-columns:1fr; gap:16px; } .cards-container { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+<div class="lang-switcher">
+  <a href="index.html">RU</a>
+  <a href="index-uz.html">UZ</a>
+  <a href="index-en.html" class="active">EN</a>
+</div>
+<div class="presentation">
+
+<div class="slide active">
+<div class="slide-content">
+<p class="eyebrow">Lecture 11</p>
+<h1>NumPy</h1>
+<p class="subtitle">ndarray · vectorization · broadcasting · statistics</p>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Why This</p>
+<h2>Same result. 500x difference.</h2>
+<p class="body-text">Add a million numbers. Python loop vs NumPy.</p>
+<div class="comparison-grid" style="margin-top:clamp(16px,2.5vh,28px)">
+  <div class="comparison-item bad">
+    <div class="label">Python for loop</div>
+    <div style="font-size:clamp(44px,5.5vw,72px);font-weight:700;color:#ff3b30;line-height:1;margin:12px 0;">500 ms</div>
+    <p>1,000,000 additions, one at a time</p>
+    <div class="code-block" style="font-size:12px;margin-top:12px;">total = <span class="cm">0</span>
+<span class="ck">for</span> x <span class="ck">in</span> data:
+    total += x</div>
+  </div>
+  <div class="comparison-item good">
+    <div class="label">NumPy</div>
+    <div style="font-size:clamp(44px,5.5vw,72px);font-weight:700;color:#34c759;line-height:1;margin:12px 0;">1 ms</div>
+    <p>one operation over the entire array</p>
+    <div class="code-block" style="font-size:12px;margin-top:12px;">total = np.<span class="cf">sum</span>(data)</div>
+  </div>
+</div>
+<div class="quote-card">
+<p>NumPy operates on whole arrays: one operation applied to all elements at once, without an explicit loop.</p>
+</div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">The Foundation</p>
+<h2>NumPy as the foundation of ML libraries</h2>
+<p class="body-text">TensorFlow, PyTorch, scikit-learn, and pandas use NumPy as their primary data format.</p>
+<div class="cards-container" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr))">
+  <div class="card"><h3>pandas</h3><p>DataFrames store data in NumPy arrays</p></div>
+  <div class="card"><h3>scikit-learn</h3><p>All models accept and return ndarray</p></div>
+  <div class="card"><h3>TensorFlow</h3><p>Tensors are directly compatible with NumPy</p></div>
+  <div class="card"><h3>PyTorch</h3><p>torch.from_numpy() in one line</p></div>
+  <div class="card"><h3>OpenCV</h3><p>Images are NumPy arrays with shape (h,w,3)</p></div>
+</div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Applications</p>
+<h2>Where NumPy is used in practice</h2>
+<div class="cards-container" style="grid-template-columns:repeat(3,1fr);margin-top:clamp(16px,2.5vh,28px)">
+  <div class="card"><h3>Banking & Fintech</h3><p>Transaction scoring, risk calculation, fraud detection — all operations on arrays of numerical data</p></div>
+  <div class="card"><h3>Computer Vision</h3><p>An image is a pixel matrix. OCR, face recognition, medical diagnosis from MRI scans</p></div>
+  <div class="card"><h3>Machine Learning</h3><p>Training data stored as ndarray (X_train, X_test). sklearn, TF, PyTorch all operate on top of NumPy</p></div>
+  <div class="card"><h3>Signal Processing</h3><p>Audio, ECG, Wi-Fi — one-dimensional time series. Spectral analysis via FFT</p></div>
+  <div class="card"><h3>Geospatial Analysis</h3><p>GPS coordinates, distance matrices, routing — operations on float64 arrays</p></div>
+  <div class="card"><h3>Financial Analysis</h3><p>Volatility, portfolio returns, Monte Carlo risk simulations — industry standard</p></div>
+</div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">ndarray</p>
+<h2>ndarray: the type for storing numerical data</h2>
+<p class="body-text"><code>str</code> stores text, <code>int</code> stores one number. A <em>collection</em> of numbers goes into a <code>list</code>. NumPy replaces exactly that - when your data is numerical, ndarray stores it more efficiently and operates on it faster.</p>
+<div class="comparison-grid" style="margin-top:clamp(14px,2vh,24px)">
+  <div class="comparison-item bad">
+    <div class="label">Python list: [1, 2, 3.0, 'two']</div>
+    <h3>Flexible, but slow</h3>
+    <ul>
+      <li>Each element is a separate Python object in memory</li>
+      <li>Elements scattered at different memory addresses</li>
+      <li>Can mix types: int, str, float together</li>
+      <li>Every operation requires a Python loop</li>
+    </ul>
+  </div>
+  <div class="comparison-item good">
+    <div class="label">NumPy ndarray: np.array([1, 2, 3, 4])</div>
+    <h3>Strict, but fast</h3>
+    <ul>
+      <li>All elements are one type: float64, int32...</li>
+      <li>One contiguous block of memory</li>
+      <li>CPU reads data sequentially - no pointer jumps</li>
+      <li>Operations without loops: <code>a + b</code>, <code>a * 2</code>, <code>np.sum(a)</code></li>
+    </ul>
+  </div>
+</div>
+<div class="quote-card"><p>ndarray = N-dimensional array. 1D - vector, 2D - matrix, 3D - cube (e.g. RGB image). One data type for the entire array.</p></div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">First Array</p>
+<h2>Creating an ndarray from a Python list</h2>
+<p class="body-text">Creating an array from real data - transaction amounts for a single day.</p>
+<div class="code-block"><span class="ck">import</span> numpy <span class="ck">as</span> np
+
+<span class="co"># 10 transaction amounts (in sums)</span>
+amounts = np.<span class="cf">array</span>([<span class="cm">125000</span>, <span class="cm">450000</span>, <span class="cm">89000</span>, <span class="cm">1200000</span>, <span class="cm">67000</span>,
+                  <span class="cm">980000</span>, <span class="cm">150000</span>, <span class="cm">2100000</span>, <span class="cm">320000</span>, <span class="cm">78000</span>])
+
+<span class="cf">print</span>(amounts)
+<span class="cf">print</span>(<span class="cs">"Type:"</span>,  amounts.dtype)   <span class="co"># int64</span>
+<span class="cf">print</span>(<span class="cs">"Shape:"</span>, amounts.shape)  <span class="co"># (10,)</span>
+<span class="cf">print</span>(<span class="cs">"Size:"</span>,  amounts.size)   <span class="co"># 10</span></div>
+<div class="term"><span class="out">[ 125000  450000   89000 1200000   67000  980000  150000 2100000  320000   78000]</span>
+Type: int64
+Shape: (10,)
+Size: 10</div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Under the Hood</p>
+<h2>Contiguous block of memory</h2>
+<p class="body-text">This is why NumPy is 500x faster than a Python list.</p>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:clamp(20px,3vw,40px);max-width:1000px;width:100%;margin-top:clamp(16px,2.5vh,24px)">
+  <div style="background:rgba(0,0,0,0.02);border:1px solid rgba(0,0,0,0.06);border-radius:14px;padding:clamp(16px,2vw,24px);text-align:left">
+    <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.14em;color:#ff3b30;margin-bottom:14px">Python list [1, 2, 3, 4, 5]</div>
+    <div style="display:flex;gap:5px;margin-bottom:10px">
+      <div style="width:54px;height:30px;background:rgba(0,122,255,0.1);border:1px solid rgba(0,122,255,0.2);border-radius:5px;display:flex;align-items:center;justify-content:center;font-family:monospace;font-size:11px;font-weight:600;color:#007aff;">ptr0</div>
+      <div style="width:54px;height:30px;background:rgba(0,122,255,0.1);border:1px solid rgba(0,122,255,0.2);border-radius:5px;display:flex;align-items:center;justify-content:center;font-family:monospace;font-size:11px;font-weight:600;color:#007aff;">ptr1</div>
+      <div style="width:54px;height:30px;background:rgba(0,122,255,0.1);border:1px solid rgba(0,122,255,0.2);border-radius:5px;display:flex;align-items:center;justify-content:center;font-family:monospace;font-size:11px;font-weight:600;color:#007aff;">ptr2</div>
+      <div style="width:54px;height:30px;background:rgba(0,122,255,0.1);border:1px solid rgba(0,122,255,0.2);border-radius:5px;display:flex;align-items:center;justify-content:center;font-family:monospace;font-size:11px;font-weight:600;color:#007aff;">ptr3</div>
+      <div style="width:54px;height:30px;background:rgba(0,122,255,0.1);border:1px solid rgba(0,122,255,0.2);border-radius:5px;display:flex;align-items:center;justify-content:center;font-family:monospace;font-size:11px;font-weight:600;color:#007aff;">ptr4</div>
+    </div>
+    <div style="font-size:11px;color:#86868b;margin-bottom:10px">↓ each pointer leads to a different memory location</div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px">
+      <div style="width:60px;height:30px;background:rgba(255,59,48,0.08);border:1px solid rgba(255,59,48,0.2);border-radius:5px;display:flex;align-items:center;justify-content:center;font-family:monospace;font-size:11px;color:#ff3b30;margin-top:6px">125k</div>
+      <div style="width:60px;height:30px;background:rgba(255,59,48,0.08);border:1px solid rgba(255,59,48,0.2);border-radius:5px;display:flex;align-items:center;justify-content:center;font-family:monospace;font-size:11px;color:#ff3b30;margin-top:18px">450k</div>
+      <div style="width:60px;height:30px;background:rgba(255,59,48,0.08);border:1px solid rgba(255,59,48,0.2);border-radius:5px;display:flex;align-items:center;justify-content:center;font-family:monospace;font-size:11px;color:#ff3b30;margin-top:0px">89k</div>
+      <div style="width:60px;height:30px;background:rgba(255,59,48,0.08);border:1px solid rgba(255,59,48,0.2);border-radius:5px;display:flex;align-items:center;justify-content:center;font-family:monospace;font-size:11px;color:#ff3b30;margin-top:12px">1.2M</div>
+      <div style="width:60px;height:30px;background:rgba(255,59,48,0.08);border:1px solid rgba(255,59,48,0.2);border-radius:5px;display:flex;align-items:center;justify-content:center;font-family:monospace;font-size:11px;color:#ff3b30;margin-top:24px">67k</div>
+    </div>
+    <div style="font-size:11px;color:#86868b;margin-top:10px">Objects scattered on the heap</div>
+  </div>
+  <div style="background:rgba(0,0,0,0.02);border:1px solid rgba(0,0,0,0.06);border-radius:14px;padding:clamp(16px,2vw,24px);text-align:left">
+    <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.14em;color:#34c759;margin-bottom:14px">NumPy ndarray</div>
+    <div style="display:flex;margin-bottom:8px">
+      <div style="flex:1;height:40px;background:rgba(52,199,89,0.1);border:1px solid rgba(52,199,89,0.3);display:flex;align-items:center;justify-content:center;font-family:monospace;font-size:11px;font-weight:600;color:#34c759;border-right:none;border-radius:6px 0 0 6px">125k</div>
+      <div style="flex:1;height:40px;background:rgba(52,199,89,0.1);border:1px solid rgba(52,199,89,0.3);display:flex;align-items:center;justify-content:center;font-family:monospace;font-size:11px;font-weight:600;color:#34c759;border-right:none">450k</div>
+      <div style="flex:1;height:40px;background:rgba(52,199,89,0.1);border:1px solid rgba(52,199,89,0.3);display:flex;align-items:center;justify-content:center;font-family:monospace;font-size:11px;font-weight:600;color:#34c759;border-right:none">89k</div>
+      <div style="flex:1;height:40px;background:rgba(52,199,89,0.1);border:1px solid rgba(52,199,89,0.3);display:flex;align-items:center;justify-content:center;font-family:monospace;font-size:11px;font-weight:600;color:#34c759;border-right:none">1.2M</div>
+      <div style="flex:1;height:40px;background:rgba(52,199,89,0.1);border:1px solid rgba(52,199,89,0.3);display:flex;align-items:center;justify-content:center;font-family:monospace;font-size:11px;font-weight:600;color:#34c759;border-radius:0 6px 6px 0">67k</div>
+    </div>
+    <div style="font-size:11px;color:#86868b;margin-bottom:12px">One contiguous block - int64 - 8 bytes each</div>
+    <div style="font-size:13px;color:#34c759;font-weight:500">CPU reads sequentially - cache works at 100%</div>
+  </div>
+</div>
+<div class="quote-card"><p>A Python list stores pointers to objects. NumPy stores the values themselves contiguously - the CPU cache works maximally efficiently.</p></div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow" style="color:#ff9500">Question</p>
+<h2>Why does NumPy require all elements to be the same type?</h2>
+<p class="body-text">A Python list can hold [1, 'two', 3.0, True]. NumPy refuses. Why is this restriction actually an advantage?</p>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow" style="color:#34c759">Answer</p>
+<h2>Same type = predictable size = fast math</h2>
+<p class="body-text">If every element takes exactly 8 bytes (int64), the CPU knows in advance where any element is: address = start + index * 8.</p>
+<div class="quote-card success"><p>NumPy uses SIMD processor instructions: 4-8 numbers are added in a single clock cycle. A Python list processes one number at a time.</p></div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Under the Hood</p>
+<h2>np.sum(): one C function call instead of a million interpreter steps</h2>
+<p class="body-text">The math is identical. The difference is what happens around each addition.</p>
+<div class="comparison-grid" style="margin-top:clamp(14px,2vh,22px)">
+  <div class="comparison-item bad">
+    <div class="label">for x in data: total += x</div>
+    <h3>On each of 1,000,000 iterations:</h3>
+    <ul>
+      <li>Interpreter reads bytecode</li>
+      <li>Looks up variable <code>x</code> by name in memory</li>
+      <li>Checks the type of the object</li>
+      <li>Extracts the number from the Python object</li>
+      <li>Performs the addition</li>
+      <li>Creates a new Python object with the result</li>
+    </ul>
+  </div>
+  <div class="comparison-item good">
+    <div class="label">np.sum(a)</div>
+    <h3>One C function call:</h3>
+    <ul>
+      <li>Gets a pointer to the start of the memory block</li>
+      <li>CPU uses a SIMD instruction (AVX2)</li>
+      <li>Adds 4-8 numbers simultaneously in one clock cycle</li>
+      <li>No Python objects, no type checks</li>
+      <li>No intermediate objects created</li>
+    </ul>
+  </div>
+</div>
+<div class="quote-card success"><p>Analogy: counting 1000 coins one by one vs pouring them into a counting machine. Same operation - counting. But the machine processes several at once and never asks "is this a coin?"</p></div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Creating Arrays</p>
+<h2>Six ways to create an ndarray</h2>
+<div class="cards-container" style="grid-template-columns:repeat(3,1fr)">
+  <div class="card"><h3>np.array()</h3><div class="mono">np.array([1,2,3])</div><p>From a Python list. The basic way.</p></div>
+  <div class="card"><h3>np.zeros()</h3><div class="mono">np.zeros(5)</div><p>Zeros. Initialize before filling.</p></div>
+  <div class="card"><h3>np.ones()</h3><div class="mono">np.ones((3,4))</div><p>Ones. Masks, initial weights.</p></div>
+  <div class="card"><h3>np.arange()</h3><div class="mono">np.arange(0,10,2)</div><p>Range with step: [0,2,4,6,8]</p></div>
+  <div class="card"><h3>np.linspace()</h3><div class="mono">np.linspace(0,1,100)</div><p>100 evenly spaced points from 0 to 1.</p></div>
+  <div class="card"><h3>np.random.randn()</h3><div class="mono">np.random.randn(1000)</div><p>Normal distribution. Data simulation.</p></div>
+</div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Practice</p>
+<h2>Creation examples: zeros, ones, arange, linspace, randn</h2>
+<div class="code-block"><span class="ck">import</span> numpy <span class="ck">as</span> np
+
+zeros  = np.<span class="cf">zeros</span>(<span class="cm">5</span>)              <span class="co"># [0. 0. 0. 0. 0.]</span>
+ones   = np.<span class="cf">ones</span>((<span class="cm">2</span>, <span class="cm">3</span>))         <span class="co"># 2x3 matrix of ones</span>
+rng    = np.<span class="cf">arange</span>(<span class="cm">0</span>, <span class="cm">10</span>, <span class="cm">2</span>)     <span class="co"># [0 2 4 6 8]</span>
+pts    = np.<span class="cf">linspace</span>(<span class="cm">0</span>, <span class="cm">1</span>, <span class="cm">5</span>)    <span class="co"># [0.   0.25 0.5  0.75 1. ]</span>
+
+<span class="co"># Simulate 1000 transactions: mean 300,000, std 150,000</span>
+simulated = np.random.randn(<span class="cm">1000</span>) * <span class="cm">150_000</span> + <span class="cm">300_000</span>
+<span class="cf">print</span>(f<span class="cs">"Mean: {simulated.mean():.0f}"</span>)
+<span class="cf">print</span>(f<span class="cs">"Std:  {simulated.std():.0f}"</span>)</div>
+<div class="term">Mean: 299847
+Std:  149923</div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Indexing</p>
+<h2>Indexing and slices</h2>
+<div style="display:grid;grid-template-columns:1.3fr 1fr;gap:24px;max-width:1050px;width:100%;margin-top:clamp(16px,2.5vh,24px);align-items:start">
+<div class="code-block" style="margin-top:0">a = np.<span class="cf">arange</span>(<span class="cm">10</span>)
+<span class="co"># [0 1 2 3 4 5 6 7 8 9]</span>
+
+a[<span class="cm">0</span>]       <span class="co"># 0  - first</span>
+a[-<span class="cm">1</span>]      <span class="co"># 9  - last</span>
+a[<span class="cm">2</span>:<span class="cm">5</span>]    <span class="co"># [2, 3, 4]</span>
+a[:<span class="cm">3</span>]      <span class="co"># [0, 1, 2]</span>
+a[<span class="cm">6</span>:]      <span class="co"># [6, 7, 8, 9]</span>
+a[::<span class="cm">2</span>]     <span class="co"># [0, 2, 4, 6, 8]</span>
+a[::-<span class="cm">1</span>]    <span class="co"># [9, 8, 7 ...] reversed</span></div>
+<table class="data-table" style="margin-top:0;font-size:clamp(12px,1.4vw,15px)">
+<thead><tr><th>Notation</th><th>Result</th></tr></thead>
+<tbody>
+<tr><td><code>a[0]</code></td><td>first element</td></tr>
+<tr><td><code>a[-1]</code></td><td>last</td></tr>
+<tr><td><code>a[2:5]</code></td><td>indices 2, 3, 4</td></tr>
+<tr><td><code>a[:3]</code></td><td>first three</td></tr>
+<tr><td><code>a[::2]</code></td><td>every other</td></tr>
+<tr class="hl"><td><code>a[::-1]</code></td><td>all in reverse order</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Filtering</p>
+<h2>Boolean mask: conditional selection</h2>
+<p class="body-text">We create a True/False array and use it as a mask. NumPy returns only the elements where True.</p>
+<div class="code-block">scores = np.<span class="cf">array</span>([<span class="cm">85</span>, <span class="cm">42</span>, <span class="cm">91</span>, <span class="cm">38</span>, <span class="cm">76</span>, <span class="cm">55</span>, <span class="cm">99</span>, <span class="cm">20</span>])
+
+mask = scores > <span class="cm">60</span>
+<span class="co"># [True, False, True, False, True, False, True, False]</span>
+
+passing = scores[mask]         <span class="co"># array([85, 91, 76, 99])</span>
+
+<span class="co"># In one line:</span>
+passing = scores[scores > <span class="cm">60</span>]</div>
+<div class="quote-card"><p>The condition <code>scores > 60</code> doesn't return True/False - it returns an array of boolean values. That array is used as a filter.</p></div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Example</p>
+<h2>Find large transactions for the day</h2>
+<p class="body-text">10,000 transactions. Find all amounts above 1,000,000 - monitoring large payments.</p>
+<div class="code-block"><span class="ck">import</span> numpy <span class="ck">as</span> np
+
+np.random.seed(<span class="cm">42</span>)
+transactions = np.<span class="cf">abs</span>(np.random.randn(<span class="cm">10_000</span>) * <span class="cm">200_000</span> + <span class="cm">300_000</span>).astype(<span class="cf">int</span>)
+
+large = transactions[transactions > <span class="cm">1_000_000</span>]
+<span class="cf">print</span>(f<span class="cs">"Total transactions: {len(transactions):,}"</span>)
+<span class="cf">print</span>(f<span class="cs">"Large (>1M):        {len(large):,}"</span>)
+<span class="cf">print</span>(f<span class="cs">"Share:              {len(large)/len(transactions)*100:.1f}%"</span>)
+<span class="cf">print</span>(f<span class="cs">"Top-3 amounts:      {np.sort(large)[-3:]}"</span>)</div>
+<div class="term"><span class="out">Total transactions: 10,000
+Large (>1M):        87
+Share:              0.9%
+Top-3 amounts:      [1878432 1921045 2014567]</span></div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow" style="color:#ff9500">Question</p>
+<h2>You have an array of transaction amounts. How do you find all amounts above the mean in one line?</h2>
+<p class="body-text">Hint: the mean can be computed right inside the filter condition.</p>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow" style="color:#34c759">Answer</p>
+<h2>amounts[amounts > amounts.mean()]</h2>
+<div class="code-block">amounts = np.<span class="cf">array</span>([<span class="cm">125000</span>, <span class="cm">450000</span>, <span class="cm">89000</span>, <span class="cm">1200000</span>, <span class="cm">67000</span>,
+                  <span class="cm">980000</span>, <span class="cm">150000</span>, <span class="cm">2100000</span>, <span class="cm">320000</span>, <span class="cm">78000</span>])
+
+above_avg = amounts[amounts > amounts.<span class="cf">mean</span>()]
+<span class="cf">print</span>(f<span class="cs">"Mean:        {amounts.mean():,.0f}"</span>)
+<span class="cf">print</span>(f<span class="cs">"Above mean:  {above_avg}"</span>)</div>
+<div class="term"><span class="out">Mean:        555,900
+Above mean:  [ 980000 1200000 2100000]</span></div>
+<div class="quote-card success"><p>amounts.mean() is evaluated first, returning a single number. Then amounts > 555900 creates a mask. Then amounts[mask] returns the elements - three steps in one expression.</p></div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Vectorization</p>
+<h2>Vector operations: arithmetic without loops</h2>
+<div class="comparison-grid">
+  <div class="comparison-item bad">
+    <div class="label">Python for-loop</div>
+    <div class="code-block" style="font-size:12px;margin-top:8px">result = []
+<span class="ck">for</span> x <span class="ck">in</span> prices:
+    result.<span class="cf">append</span>(
+        x * <span class="cm">1.12</span>  <span class="co"># VAT 12%</span>
+    )</div>
+    <p style="margin-top:10px">1M records = 1M Python calls</p>
+  </div>
+  <div class="comparison-item good">
+    <div class="label">NumPy vectorization</div>
+    <div class="code-block" style="font-size:12px;margin-top:8px">result = prices * <span class="cm">1.12</span></div>
+    <p style="margin-top:10px">One operation. Compiled C code.</p>
+  </div>
+</div>
+<div style="margin-top:clamp(16px,2vh,24px);max-width:680px;width:100%">
+  <div class="bar-wrap">
+    <div class="bar-row"><div class="lbl">for-loop (1M numbers)</div><div class="bar-track"><div class="bar-fill" style="--w:100%;background:#ff3b30"></div></div><div class="pct">500 ms</div></div>
+    <div class="bar-row"><div class="lbl">NumPy (1M numbers)</div><div class="bar-track"><div class="bar-fill" style="--w:2%;background:#34c759"></div></div><div class="pct">~1 ms</div></div>
+  </div>
+</div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Math Operations</p>
+<h2>Operations apply to every element</h2>
+<div class="code-block">prices = np.<span class="cf">array</span>([<span class="cm">10.0</span>, <span class="cm">25.0</span>, <span class="cm">50.0</span>, <span class="cm">100.0</span>])
+
+<span class="co"># Scalar arithmetic</span>
+prices * <span class="cm">1.12</span>       <span class="co"># [11.2  28.0  56.0 112.0] - with VAT</span>
+prices + <span class="cm">5.0</span>        <span class="co"># [15.0  30.0  55.0 105.0]</span>
+prices ** <span class="cm">2</span>         <span class="co"># [100. 625. 2500. 10000.]</span>
+
+<span class="co"># Element-wise operations between arrays</span>
+a = np.<span class="cf">array</span>([<span class="cm">1</span>, <span class="cm">2</span>, <span class="cm">3</span>])
+b = np.<span class="cf">array</span>([<span class="cm">10</span>, <span class="cm">20</span>, <span class="cm">30</span>])
+a + b   <span class="co"># [11 22 33]</span>
+a * b   <span class="co"># [10 40 90]</span>
+
+<span class="co"># Universal functions (ufuncs)</span>
+np.<span class="cf">sqrt</span>(prices)      <span class="co"># [3.16 5.0  7.07 10.0 ]</span>
+np.<span class="cf">log</span>(prices)       <span class="co"># natural logarithm</span>
+np.<span class="cf">abs</span>([-<span class="cm">3</span>, <span class="cm">4</span>, -<span class="cm">1</span>])  <span class="co"># [3 4 1]</span></div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Aggregates</p>
+<h2>Aggregate functions</h2>
+<div class="cards-container" style="grid-template-columns:repeat(3,1fr)">
+  <div class="card"><h3>np.sum()</h3><div class="mono">np.sum(a)</div><p>Sum. Total transactions for the day.</p></div>
+  <div class="card"><h3>np.mean()</h3><div class="mono">np.mean(a)</div><p>Mean. Average transaction per customer.</p></div>
+  <div class="card"><h3>np.std()</h3><div class="mono">np.std(a)</div><p>Standard deviation. Spread of the data.</p></div>
+  <div class="card"><h3>np.min() / max()</h3><div class="mono">np.min(a)</div><p>Extremes. Minimum and maximum values.</p></div>
+  <div class="card"><h3>np.median()</h3><div class="mono">np.median(a)</div><p>Median. Robust to outliers unlike mean.</p></div>
+  <div class="card"><h3>np.percentile()</h3><div class="mono">np.percentile(a, 95)</div><p>95th percentile. Threshold for anomaly detection.</p></div>
+</div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Example</p>
+<h2>Statistics on 10,000 transactions</h2>
+<div class="code-block">np.random.seed(<span class="cm">0</span>)
+txn = np.<span class="cf">abs</span>(np.random.randn(<span class="cm">10_000</span>) * <span class="cm">200_000</span> + <span class="cm">350_000</span>)
+
+<span class="cf">print</span>(f<span class="cs">"Daily total:     {txn.sum():>15,.0f}"</span>)
+<span class="cf">print</span>(f<span class="cs">"Mean:            {txn.mean():>15,.0f}"</span>)
+<span class="cf">print</span>(f<span class="cs">"Median:          {np.median(txn):>15,.0f}"</span>)
+<span class="cf">print</span>(f<span class="cs">"Std:             {txn.std():>15,.0f}"</span>)
+<span class="cf">print</span>(f<span class="cs">"Min:             {txn.min():>15,.0f}"</span>)
+<span class="cf">print</span>(f<span class="cs">"Max:             {txn.max():>15,.0f}"</span>)
+<span class="cf">print</span>(f<span class="cs">"95th percentile: {np.percentile(txn,95):>15,.0f}"</span>)</div>
+<div class="term"><span class="out">Daily total:       3,499,872,000
+Mean:                    349,987
+Median:                  349,534
+Std:                     200,241
+Min:                         512
+Max:                   1,413,928
+95th percentile:         679,888</span></div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Anomaly Detection</p>
+<h2>Z-score - how far from normal</h2>
+<p class="body-text">Z-score shows how many standard deviations an element differs from the mean.</p>
+<div style="margin-top:clamp(16px,2.5vh,28px);padding:clamp(20px,2.5vw,32px);background:rgba(0,0,0,0.02);border:1px solid rgba(0,0,0,0.07);border-radius:14px;max-width:600px;text-align:center">
+  <div style="font-family:'SF Mono','Menlo','Monaco','Consolas',monospace;font-size:clamp(24px,3.5vw,44px);font-weight:700;color:#1d1d1f;letter-spacing:-0.02em">z = (x - μ) / σ</div>
+  <div style="display:flex;justify-content:center;gap:clamp(20px,3vw,40px);margin-top:16px;font-size:clamp(13px,1.5vw,16px);color:#515154">
+    <div><span style="color:#007aff;font-weight:600">x</span> - value</div>
+    <div><span style="color:#af52de;font-weight:600">μ</span> - mean</div>
+    <div><span style="color:#ff9500;font-weight:600">σ</span> - std</div>
+  </div>
+</div>
+<div style="display:flex;gap:clamp(12px,2vw,24px);margin-top:clamp(14px,2vh,22px);max-width:680px;width:100%">
+  <div style="flex:1;padding:clamp(12px,1.5vw,18px);border-radius:10px;background:rgba(52,199,89,0.08);border:1px solid rgba(52,199,89,0.25);text-align:center"><div style="font-size:clamp(16px,2vw,22px);font-weight:700;color:#34c759">|z| &lt; 2</div><div style="font-size:13px;color:#515154;margin-top:4px">normal</div></div>
+  <div style="flex:1;padding:clamp(12px,1.5vw,18px);border-radius:10px;background:rgba(255,149,0,0.08);border:1px solid rgba(255,149,0,0.25);text-align:center"><div style="font-size:clamp(16px,2vw,22px);font-weight:700;color:#ff9500">2 ≤ |z| &lt; 3</div><div style="font-size:13px;color:#515154;margin-top:4px">attention</div></div>
+  <div style="flex:1;padding:clamp(12px,1.5vw,18px);border-radius:10px;background:rgba(255,59,48,0.08);border:1px solid rgba(255,59,48,0.25);text-align:center"><div style="font-size:clamp(16px,2vw,22px);font-weight:700;color:#ff3b30">|z| ≥ 3</div><div style="font-size:13px;color:#515154;margin-top:4px">anomaly</div></div>
+</div>
+<div class="quote-card"><p>In a normal distribution: 68% within ±1σ, 95% within ±2σ, 99.7% within ±3σ. A transaction with z > 3 is one in 370 cases.</p></div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Normal Distribution</p>
+<h2>Three zones: normal - attention - anomaly</h2>
+<p class="body-text">An outlier with z > 3 occurs in fewer than 0.3% of cases.</p>
+<svg viewBox="0 0 820 250" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:800px;margin-top:16px">
+  <defs><clipPath id="bell11en"><path d="M 60,215 C 90,215 115,212 130,209 C 155,205 185,196 210,183 C 235,169 262,144 295,113 C 328,81 363,44 410,27 C 457,44 492,81 525,113 C 558,144 585,169 610,183 C 635,196 665,205 690,209 C 705,212 730,215 760,215 Z"/></clipPath></defs>
+  <rect x="60" y="0" width="70" height="215" fill="rgba(255,59,48,0.14)" clip-path="url(#bell11en)"/>
+  <rect x="690" y="0" width="70" height="215" fill="rgba(255,59,48,0.14)" clip-path="url(#bell11en)"/>
+  <rect x="130" y="0" width="80" height="215" fill="rgba(255,149,0,0.11)" clip-path="url(#bell11en)"/>
+  <rect x="610" y="0" width="80" height="215" fill="rgba(255,149,0,0.11)" clip-path="url(#bell11en)"/>
+  <rect x="295" y="0" width="230" height="215" fill="rgba(52,199,89,0.11)" clip-path="url(#bell11en)"/>
+  <path d="M 60,215 C 90,215 115,212 130,209 C 155,205 185,196 210,183 C 235,169 262,144 295,113 C 328,81 363,44 410,27 C 457,44 492,81 525,113 C 558,144 585,169 610,183 C 635,196 665,205 690,209 C 705,212 730,215 760,215" fill="none" stroke="#007aff" stroke-width="2.5"/>
+  <line x1="50" y1="215" x2="770" y2="215" stroke="rgba(0,0,0,0.15)" stroke-width="1"/>
+  <line x1="295" y1="113" x2="295" y2="215" stroke="rgba(52,199,89,0.5)" stroke-width="1.5" stroke-dasharray="5,4"/>
+  <line x1="525" y1="113" x2="525" y2="215" stroke="rgba(52,199,89,0.5)" stroke-width="1.5" stroke-dasharray="5,4"/>
+  <line x1="210" y1="183" x2="210" y2="215" stroke="rgba(255,149,0,0.6)" stroke-width="1.5" stroke-dasharray="5,4"/>
+  <line x1="610" y1="183" x2="610" y2="215" stroke="rgba(255,149,0,0.6)" stroke-width="1.5" stroke-dasharray="5,4"/>
+  <line x1="130" y1="209" x2="130" y2="215" stroke="rgba(255,59,48,0.7)" stroke-width="1.5" stroke-dasharray="5,4"/>
+  <line x1="690" y1="209" x2="690" y2="215" stroke="rgba(255,59,48,0.7)" stroke-width="1.5" stroke-dasharray="5,4"/>
+  <text x="130" y="233" text-anchor="middle" font-size="12" fill="#ff3b30" font-family="monospace" font-weight="700">-3σ</text>
+  <text x="210" y="233" text-anchor="middle" font-size="12" fill="#ff9500" font-family="monospace" font-weight="700">-2σ</text>
+  <text x="295" y="233" text-anchor="middle" font-size="12" fill="#34c759" font-family="monospace" font-weight="700">-1σ</text>
+  <text x="410" y="233" text-anchor="middle" font-size="12" fill="#86868b" font-family="monospace" font-weight="700">μ</text>
+  <text x="525" y="233" text-anchor="middle" font-size="12" fill="#34c759" font-family="monospace" font-weight="700">+1σ</text>
+  <text x="610" y="233" text-anchor="middle" font-size="12" fill="#ff9500" font-family="monospace" font-weight="700">+2σ</text>
+  <text x="690" y="233" text-anchor="middle" font-size="12" fill="#ff3b30" font-family="monospace" font-weight="700">+3σ</text>
+  <text x="410" y="178" text-anchor="middle" font-size="11" fill="#34c759" font-family="sans-serif" font-weight="600">68% normal</text>
+  <text x="168" y="205" text-anchor="middle" font-size="10" fill="#ff9500" font-family="sans-serif">attention</text>
+  <text x="648" y="205" text-anchor="middle" font-size="10" fill="#ff9500" font-family="sans-serif">attention</text>
+  <text x="95" y="213" text-anchor="middle" font-size="10" fill="#ff3b30" font-family="sans-serif">outlier</text>
+  <text x="725" y="213" text-anchor="middle" font-size="10" fill="#ff3b30" font-family="sans-serif">outlier</text>
+  <circle cx="726" cy="214" r="7" fill="#ff3b30" opacity="0.9"/>
+  <text x="726" y="218" text-anchor="middle" font-size="10" fill="white" font-weight="700">!</text>
+</svg>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Fraud Detection</p>
+<h2>Detecting suspicious transactions</h2>
+<div class="code-block"><span class="ck">def</span> <span class="cf">find_anomalies</span>(transactions, threshold=<span class="cm">3.0</span>):
+    mean = transactions.<span class="cf">mean</span>()
+    std  = transactions.<span class="cf">std</span>()
+    z_scores = (transactions - mean) / std
+    mask = np.<span class="cf">abs</span>(z_scores) > threshold
+    <span class="ck">return</span> transactions[mask], z_scores[mask]
+
+np.random.seed(<span class="cm">1</span>)
+txn = np.<span class="cf">abs</span>(np.random.randn(<span class="cm">10_000</span>) * <span class="cm">200_000</span> + <span class="cm">350_000</span>)
+txn[<span class="cm">42</span>]  = <span class="cm">2_800_000</span>  <span class="co"># suspicious transactions</span>
+txn[<span class="cm">777</span>] = <span class="cm">3_100_000</span>
+
+anomalies, z_vals = <span class="cf">find_anomalies</span>(txn)
+<span class="cf">print</span>(f<span class="cs">"Anomalies found: {len(anomalies)}"</span>)
+<span class="ck">for</span> amt, z <span class="ck">in</span> <span class="cf">zip</span>(anomalies[:<span class="cm">5</span>], z_vals[:<span class="cm">5</span>]):
+    <span class="cf">print</span>(f<span class="cs">"  {amt:>10,.0f}  z={z:.1f}"</span>)</div>
+<div class="term"><span class="out">Anomalies found: 7
+   2,800,000  z=12.2
+   3,100,000  z=13.7
+   1,422,503  z=5.4
+   1,398,211  z=5.2
+   1,367,889  z=5.0</span></div>
+<div class="quote-card"><p>This is a simplified version of real fraud detection systems. Production versions use z-score with a sliding window: by time and by merchant category.</p></div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Array Shape</p>
+<h2>The shape attribute and reshape method</h2>
+<div class="code-block">a = np.<span class="cf">arange</span>(<span class="cm">12</span>)
+<span class="cf">print</span>(a)          <span class="co"># [ 0  1  2  3  4  5  6  7  8  9 10 11]</span>
+<span class="cf">print</span>(a.shape)    <span class="co"># (12,) - one-dimensional</span>
+
+<span class="co"># Transform into a 3x4 matrix</span>
+matrix = a.<span class="cf">reshape</span>(<span class="cm">3</span>, <span class="cm">4</span>)
+<span class="cf">print</span>(matrix)
+<span class="co"># [[ 0  1  2  3]</span>
+<span class="co">#  [ 4  5  6  7]</span>
+<span class="co">#  [ 8  9 10 11]]</span>
+<span class="cf">print</span>(matrix.shape)  <span class="co"># (3, 4)</span>
+
+<span class="co"># -1 means "figure it out yourself"</span>
+a.<span class="cf">reshape</span>(<span class="cm">2</span>, -<span class="cm">1</span>)   <span class="co"># (2, 6)</span>
+a.<span class="cf">reshape</span>(-<span class="cm">1</span>, <span class="cm">3</span>)   <span class="co"># (4, 3)</span></div>
+<div class="quote-card"><p>reshape does not copy data - both arrays look at the same memory location. Changing an element in matrix also changes a.</p></div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">2D Arrays</p>
+<h2>A matrix is a table of numbers</h2>
+<div style="display:grid;grid-template-columns:1.3fr 1fr;gap:24px;max-width:1050px;width:100%;margin-top:clamp(16px,2.5vh,24px);align-items:center">
+<div class="code-block" style="margin-top:0">M = np.<span class="cf">array</span>([
+    [<span class="cm">1</span>, <span class="cm">2</span>, <span class="cm">3</span>],
+    [<span class="cm">4</span>, <span class="cm">5</span>, <span class="cm">6</span>],
+    [<span class="cm">7</span>, <span class="cm">8</span>, <span class="cm">9</span>]
+])
+M[<span class="cm">0</span>]         <span class="co"># [1 2 3] - row 0</span>
+M[<span class="cm">1</span>, <span class="cm">2</span>]     <span class="co"># 6 - row 1, column 2</span>
+M[:<span class="cm">2</span>, <span class="cm">1</span>:]   <span class="co"># rows 0-1, columns 1-2</span>
+M.T           <span class="co"># transpose (3,3)->(3,3)</span></div>
+<div>
+  <div class="matrix-grid" style="grid-template-columns:repeat(3,48px)">
+    <div class="m-cell">1</div><div class="m-cell">2</div><div class="m-cell">3</div>
+    <div class="m-cell">4</div><div class="m-cell">5</div><div class="m-cell hl">6</div>
+    <div class="m-cell">7</div><div class="m-cell">8</div><div class="m-cell">9</div>
+  </div>
+  <div style="font-size:12px;color:#86868b;margin-top:8px;font-family:monospace">shape: (3, 3) · dtype: int64</div>
+  <div style="font-size:12px;color:#34c759;margin-top:6px;font-weight:600">M[1,2] = 6</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Axes</p>
+<h2>axis=0 goes along rows. axis=1 goes along columns.</h2>
+<div style="display:flex;flex-direction:column;align-items:center;gap:16px;margin-top:clamp(14px,2vh,22px)">
+  <div style="display:flex;align-items:center;gap:20px;max-width:920px;width:100%">
+    <div style="text-align:center;min-width:100px">
+      <div style="font-size:11px;font-weight:700;color:#ff9500;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:6px">axis=1</div>
+      <div style="font-size:13px;color:#515154">→ along columns</div>
+      <div style="font-size:12px;color:#86868b;margin-top:4px">np.sum(M,axis=1)</div>
+      <div style="font-size:11px;color:#86868b">[row sum]</div>
+    </div>
+    <div>
+      <div style="text-align:center;margin-bottom:8px">
+        <span style="font-size:11px;font-weight:700;color:#007aff;text-transform:uppercase;letter-spacing:0.12em">axis=0 - along rows (np.sum(M,axis=0))</span>
+      </div>
+      <div class="matrix-grid" style="grid-template-columns:repeat(4,48px)">
+        <div class="m-cell">1</div><div class="m-cell">2</div><div class="m-cell">3</div><div class="m-cell">4</div>
+        <div class="m-cell">5</div><div class="m-cell">6</div><div class="m-cell">7</div><div class="m-cell">8</div>
+        <div class="m-cell">9</div><div class="m-cell">10</div><div class="m-cell">11</div><div class="m-cell">12</div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="code-block" style="margin-top:16px">M = np.<span class="cf">ones</span>((<span class="cm">3</span>, <span class="cm">4</span>))
+np.<span class="cf">sum</span>(M)           <span class="co"># 12.0     - all elements</span>
+np.<span class="cf">sum</span>(M, axis=<span class="cm">0</span>)  <span class="co"># [3. 3. 3. 3.] - column sums, 4 numbers</span>
+np.<span class="cf">sum</span>(M, axis=<span class="cm">1</span>)  <span class="co"># [4. 4. 4.]    - row sums, 3 numbers</span></div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow" style="color:#ff9500">Question</p>
+<h2>Matrix 5x3: five customers, three months of spending. What does np.mean(M, axis=0) return?</h2>
+<p class="body-text">Hint: axis=0 "falls through" rows. What does averaging 5 customers for each of 3 months mean?</p>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow" style="color:#34c759">Answer</p>
+<h2>Average spending per month - an array of 3 numbers</h2>
+<div class="code-block"><span class="co"># 5 customers, 3 months of spending (thousands)</span>
+M = np.<span class="cf">array</span>([
+    [<span class="cm">200</span>, <span class="cm">150</span>, <span class="cm">300</span>],  <span class="co"># customer 1</span>
+    [<span class="cm">120</span>, <span class="cm">180</span>, <span class="cm">220</span>],  <span class="co"># customer 2</span>
+    [<span class="cm">350</span>, <span class="cm">290</span>, <span class="cm">410</span>],  <span class="co"># customer 3</span>
+    [<span class="cm">80</span>,  <span class="cm">95</span>,  <span class="cm">110</span>],  <span class="co"># customer 4</span>
+    [<span class="cm">440</span>, <span class="cm">380</span>, <span class="cm">500</span>]   <span class="co"># customer 5</span>
+])
+np.<span class="cf">mean</span>(M, axis=<span class="cm">0</span>)  <span class="co"># [238. 219. 308.] - monthly averages</span>
+np.<span class="cf">mean</span>(M, axis=<span class="cm">1</span>)  <span class="co"># [217. 173. 350.  95. 440.] - customer averages</span></div>
+<div class="quote-card success"><p>axis=0 reduces the first dimension: (5,3) → (3,). axis=1 reduces the second: (5,3) → (5,). Rule: axis specifies which dimension disappears.</p></div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Broadcasting</p>
+<h2>Broadcasting: operations on arrays of different shapes</h2>
+<div style="display:flex;align-items:flex-start;gap:clamp(10px,1.8vw,20px);margin-top:clamp(14px,2vh,22px);justify-content:center;flex-wrap:wrap">
+  <div>
+    <div class="bc-lbl">A (3,3)</div>
+    <div style="display:grid;grid-template-columns:repeat(3,44px);gap:2px">
+      <div class="bc-cell a">1</div><div class="bc-cell a">2</div><div class="bc-cell a">3</div>
+      <div class="bc-cell a">4</div><div class="bc-cell a">5</div><div class="bc-cell a">6</div>
+      <div class="bc-cell a">7</div><div class="bc-cell a">8</div><div class="bc-cell a">9</div>
+    </div>
+  </div>
+  <div style="font-size:28px;color:#86868b;padding-top:28px">+</div>
+  <div>
+    <div class="bc-lbl">b (3,)</div>
+    <div style="display:grid;grid-template-columns:repeat(3,44px);gap:2px">
+      <div class="bc-cell b">10</div><div class="bc-cell b">20</div><div class="bc-cell b">30</div>
+    </div>
+    <div style="font-size:11px;color:#ff9500;margin-top:6px;text-align:center">stretches →</div>
+    <div style="display:grid;grid-template-columns:repeat(3,44px);gap:2px;margin-top:4px">
+      <div class="bc-cell bd">10</div><div class="bc-cell bd">20</div><div class="bc-cell bd">30</div>
+      <div class="bc-cell bd">10</div><div class="bc-cell bd">20</div><div class="bc-cell bd">30</div>
+      <div class="bc-cell bd">10</div><div class="bc-cell bd">20</div><div class="bc-cell bd">30</div>
+    </div>
+  </div>
+  <div style="font-size:28px;color:#86868b;padding-top:28px">=</div>
+  <div>
+    <div class="bc-lbl">result (3,3)</div>
+    <div style="display:grid;grid-template-columns:repeat(3,44px);gap:2px">
+      <div class="bc-cell r">11</div><div class="bc-cell r">22</div><div class="bc-cell r">33</div>
+      <div class="bc-cell r">14</div><div class="bc-cell r">25</div><div class="bc-cell r">36</div>
+      <div class="bc-cell r">17</div><div class="bc-cell r">28</div><div class="bc-cell r">39</div>
+    </div>
+  </div>
+</div>
+<div class="code-block" style="margin-top:14px">A = np.<span class="cf">array</span>([[<span class="cm">1</span>,<span class="cm">2</span>,<span class="cm">3</span>],[<span class="cm">4</span>,<span class="cm">5</span>,<span class="cm">6</span>],[<span class="cm">7</span>,<span class="cm">8</span>,<span class="cm">9</span>]])  <span class="co"># shape (3,3)</span>
+b = np.<span class="cf">array</span>([<span class="cm">10</span>, <span class="cm">20</span>, <span class="cm">30</span>])                        <span class="co"># shape (3,)</span>
+A + b  <span class="co"># [[11,22,33],[14,25,36],[17,28,39]]</span></div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Images</p>
+<h2>Every photograph is a three-dimensional array of numbers</h2>
+<p class="body-text">A 1080x1920 photo is an array with shape (1080, 1920, 3), where 3 is RGB channels. Each pixel is stored as three numbers from 0 to 255.</p>
+<div style="display:flex;align-items:center;gap:clamp(16px,2.5vw,32px);margin-top:clamp(14px,2vh,22px);justify-content:center;flex-wrap:wrap">
+  <div style="text-align:center">
+    <div style="width:150px;height:110px;border-radius:10px;background:linear-gradient(135deg,#667eea,#764ba2,#f093fb);display:flex;align-items:center;justify-content:center;color:white;font-size:12px;font-weight:600;box-shadow:0 8px 24px rgba(118,75,162,0.3)">photo<br/>1080x1920</div>
+    <div style="font-size:11px;color:#86868b;margin-top:6px">shape: (1080, 1920, 3)</div>
+  </div>
+  <div style="font-size:24px;color:#86868b">=</div>
+  <div style="display:flex;flex-direction:column;gap:8px">
+    <div>
+      <div style="font-size:11px;font-weight:700;color:#ff3b30;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px">R channel</div>
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:2px">
+        <div style="width:32px;height:24px;background:rgba(255,59,48,0.7);border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;color:white">142</div>
+        <div style="width:32px;height:24px;background:rgba(255,59,48,0.6);border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;color:white">98</div>
+        <div style="width:32px;height:24px;background:rgba(255,59,48,0.8);border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;color:white">201</div>
+        <div style="width:32px;height:24px;background:rgba(255,59,48,0.5);border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;color:white">67</div>
+        <div style="width:32px;height:24px;background:rgba(255,59,48,0.75);border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;color:white">189</div>
+      </div>
+    </div>
+    <div>
+      <div style="font-size:11px;font-weight:700;color:#34c759;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px">G channel</div>
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:2px">
+        <div style="width:32px;height:24px;background:rgba(52,199,89,0.6);border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;color:white">88</div>
+        <div style="width:32px;height:24px;background:rgba(52,199,89,0.75);border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;color:white">156</div>
+        <div style="width:32px;height:24px;background:rgba(52,199,89,0.5);border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;color:white">71</div>
+        <div style="width:32px;height:24px;background:rgba(52,199,89,0.85);border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;color:white">218</div>
+        <div style="width:32px;height:24px;background:rgba(52,199,89,0.65);border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;color:white">112</div>
+      </div>
+    </div>
+    <div>
+      <div style="font-size:11px;font-weight:700;color:#007aff;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px">B channel</div>
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:2px">
+        <div style="width:32px;height:24px;background:rgba(0,122,255,0.7);border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;color:white">178</div>
+        <div style="width:32px;height:24px;background:rgba(0,122,255,0.5);border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;color:white">63</div>
+        <div style="width:32px;height:24px;background:rgba(0,122,255,0.8);border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;color:white">204</div>
+        <div style="width:32px;height:24px;background:rgba(0,122,255,0.6);border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;color:white">128</div>
+        <div style="width:32px;height:24px;background:rgba(0,122,255,0.45);border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;color:white">44</div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="code-block" style="margin-top:14px"><span class="ck">from</span> PIL <span class="ck">import</span> Image
+img = np.<span class="cf">array</span>(Image.<span class="cf">open</span>(<span class="cs">"photo.jpg"</span>))
+<span class="cf">print</span>(img.shape)   <span class="co"># (1080, 1920, 3)</span>
+negative = <span class="cm">255</span> - img       <span class="co"># inversion: one line</span>
+red_only = img.copy(); red_only[:,:,<span class="cm">1</span>] = <span class="cm">0</span>; red_only[:,:,<span class="cm">2</span>] = <span class="cm">0</span></div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Finance</p>
+<h2>Portfolio volatility over 90 days - 5 lines</h2>
+<p class="body-text">Standard deviation of daily returns multiplied by sqrt(252) gives annual volatility. This is a standard formula in financial analysis.</p>
+<div class="code-block">np.random.seed(<span class="cm">7</span>)
+
+<span class="co"># Simulate stock prices for 90 days</span>
+prices = np.<span class="cf">cumprod</span>(<span class="cm">1</span> + np.random.randn(<span class="cm">90</span>) * <span class="cm">0.02</span>) * <span class="cm">10_000</span>
+
+<span class="co"># Daily returns (%)</span>
+returns = np.<span class="cf">diff</span>(prices) / prices[:-<span class="cm">1</span>] * <span class="cm">100</span>
+
+<span class="cf">print</span>(f<span class="cs">"Average daily return:  {returns.mean():.2f}%"</span>)
+<span class="cf">print</span>(f<span class="cs">"Daily volatility:      {returns.std():.2f}%"</span>)
+<span class="cf">print</span>(f<span class="cs">"Annual volatility:     {returns.std() * np.sqrt(252):.1f}%"</span>)
+<span class="cf">print</span>(f<span class="cs">"Max drawdown:          {returns.min():.2f}%"</span>)
+<span class="cf">print</span>(f<span class="cs">"Max gain:              {returns.max():.2f}%"</span>)</div>
+<div class="term"><span class="out">Average daily return:   0.07%
+Daily volatility:       2.04%
+Annual volatility:     32.4%
+Max drawdown:          -5.82%
+Max gain:               4.91%</span></div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Simulation</p>
+<h2>Estimate Pi in 3 lines - Monte Carlo method</h2>
+<p class="body-text">Throw 1,000,000 random points into a square. Count those that land inside the unit circle. Share × 4 = Pi.</p>
+<div class="code-block">np.random.seed(<span class="cm">0</span>)
+N = <span class="cm">1_000_000</span>
+
+<span class="co"># Random points in the square [-1,1] x [-1,1]</span>
+x = np.random.uniform(-<span class="cm">1</span>, <span class="cm">1</span>, N)
+y = np.random.uniform(-<span class="cm">1</span>, <span class="cm">1</span>, N)
+
+<span class="co"># Did the point land inside the unit circle?</span>
+inside = (x**<span class="cm">2</span> + y**<span class="cm">2</span>) <= <span class="cm">1.0</span>
+
+pi_estimate = <span class="cm">4.0</span> * inside.<span class="cf">sum</span>() / N
+<span class="cf">print</span>(f<span class="cs">"Pi estimate:  {pi_estimate:.5f}"</span>)
+<span class="cf">print</span>(f<span class="cs">"Actual Pi:    {np.pi:.5f}"</span>)
+<span class="cf">print</span>(f<span class="cs">"Error:        {abs(pi_estimate - np.pi):.5f}"</span>)</div>
+<div class="term"><span class="out">Pi estimate:  3.14136
+Actual Pi:    3.14159
+Error:        0.00023</span></div>
+<div class="quote-card"><p>This isn't a toy - financial companies use Monte Carlo to assess portfolio risk. NumPy performs 1,000,000 operations in milliseconds.</p></div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Cheat Sheet</p>
+<h2>Everything key on one slide</h2>
+<div class="cards-container" style="grid-template-columns:repeat(4,1fr)">
+  <div class="card"><h3>ndarray</h3><p>N-dimensional array of one type. The foundation of all ML.</p><div class="mono">np.array([1,2,3])</div></div>
+  <div class="card"><h3>Creation</h3><p>zeros, ones, arange, linspace, random.randn</p><div class="mono">np.zeros((3,4))</div></div>
+  <div class="card"><h3>Slicing</h3><p>Like Python, but on millions of rows instantly</p><div class="mono">a[1:5:2]</div></div>
+  <div class="card"><h3>Boolean mask</h3><p>Filtering without for-loop</p><div class="mono">a[a > 0]</div></div>
+  <div class="card"><h3>Vectorization</h3><p>Arithmetic applies to every element</p><div class="mono">a * 1.12</div></div>
+  <div class="card"><h3>Aggregates</h3><p>sum, mean, std, min, max, median, percentile</p><div class="mono">np.std(a)</div></div>
+  <div class="card"><h3>Shape</h3><p>Array shape. reshape does not copy data.</p><div class="mono">a.reshape(3,-1)</div></div>
+  <div class="card"><h3>Broadcasting</h3><p>Operations between arrays of different shapes</p><div class="mono">M + np.array([1,2,3])</div></div>
+</div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Self Check</p>
+<h2>Eight questions</h2>
+<ol style="text-align:left;max-width:880px;padding-left:24px;font-size:clamp(14px,1.55vw,17px);line-height:1.7">
+  <li>What is the main memory difference between ndarray and a Python list?</li>
+  <li>What is the dtype of np.array([1, 2, 3])? And np.array([1.0, 2, 3])?</li>
+  <li>What happens when reshape(3, 5) is called on an array of 12 elements?</li>
+  <li>How does np.mean(M, axis=0) differ from np.mean(M, axis=1)?</li>
+  <li>Mask [True, False, True] is applied to [10, 20, 30]. What do we get?</li>
+  <li>In one line: from array amounts keep only values in the range [100_000, 500_000].</li>
+  <li>Can arrays of shapes (3,4) and (4,) be added? What about (3,4) and (3,)?</li>
+  <li>How do you compute the z-score for an array in one line?</li>
+</ol>
+<div style="margin-top:24px"><h2 style="font-size:clamp(28px,4vw,44px)">Questions?</h2></div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<h2 style="font-size:clamp(40px,6vw,80px)">Questions?</h2>
+</div>
+</div>
+
+</div>
+<div class="lesson-tag">Lecture 11 · NumPy</div>
+<div class="slide-indicator"><span id="current-slide">1</span> / <span id="total-slides">34</span></div>
+<div class="nav-hint">→ or Space next<br/>← back</div>
+<script>
+let currentSlide=0;const slides=document.querySelectorAll('.slide');const totalSlides=slides.length;document.getElementById('total-slides').textContent=totalSlides;function showSlide(n){slides[currentSlide].classList.remove('active');currentSlide=(n+totalSlides)%totalSlides;slides[currentSlide].classList.add('active');document.getElementById('current-slide').textContent=currentSlide+1;const sc=slides[currentSlide].querySelector('.slide-content');sc.style.animation='none';void sc.offsetHeight;sc.style.animation=null;slides[currentSlide].querySelectorAll('.card,.comparison-item,.replay-anim').forEach(el=>{const o=el.style.animation;el.style.animation='none';void el.offsetHeight;el.style.animation=o;});}function nextSlide(){showSlide(currentSlide+1);}function prevSlide(){showSlide(currentSlide-1);}document.addEventListener('keydown',e=>{if(['textarea','input'].includes((e.target.tagName||'').toLowerCase()))return;if(e.key==='ArrowRight'||e.key===' '){e.preventDefault();nextSlide();}else if(e.key==='ArrowLeft'){e.preventDefault();prevSlide();}});let tX=0;document.addEventListener('touchstart',e=>{tX=e.changedTouches[0].screenX;});document.addEventListener('touchend',e=>{const dx=e.changedTouches[0].screenX-tX;if(dx<-50)nextSlide();else if(dx>50)prevSlide();});
+</script>
+</body>
+</html>

@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>pandas: данные и типы · Лекция 12</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700;800&display=swap');
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system,BlinkMacSystemFont,'Inter','SF Pro Display','Segoe UI',Roboto,sans-serif; background:#FFFFFF; color:#1d1d1f; line-height:1.1; overflow:hidden; -webkit-font-smoothing:antialiased; }
+.presentation { width:100vw; height:100vh; position:relative; }
+.slide { width:100%; height:100%; display:none; align-items:center; justify-content:center; position:absolute; top:0; left:0; padding:clamp(40px,6vh,80px) clamp(40px,6vw,80px); text-align:center; }
+.slide.active { display:flex; flex-direction:column; }
+.slide-content { max-width:1200px; width:100%; margin:0 auto; opacity:0; transform:translateY(20px); animation:fadeInUp 0.7s ease-out 0.15s forwards; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+@keyframes fadeInUp { to { opacity:1; transform:translateY(0); } }
+h1 { font-size:clamp(40px,6.5vw,96px); font-weight:700; letter-spacing:-0.025em; line-height:0.95; margin-bottom:clamp(16px,2.5vh,32px); }
+h2 { font-size:clamp(28px,4vw,56px); font-weight:600; letter-spacing:-0.02em; line-height:1.05; margin-bottom:clamp(16px,2vh,28px); }
+.subtitle { font-size:clamp(18px,2.2vw,28px); font-weight:400; color:#86868b; margin-bottom:clamp(20px,3vh,40px); line-height:1.3; max-width:900px; }
+.eyebrow { font-size:clamp(13px,1.2vw,16px); font-weight:600; color:#007aff; text-transform:uppercase; letter-spacing:0.18em; margin-bottom:18px; }
+.body-text { font-size:clamp(15px,1.8vw,22px); font-weight:400; color:#515154; line-height:1.45; max-width:820px; margin:0 auto; }
+code { font-family:'SF Mono','Menlo','Monaco','Consolas',monospace; font-size:0.9em; }
+.highlight { color:#007aff; font-weight:500; }
+.cards-container { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:clamp(14px,2vw,22px); margin-top:clamp(20px,3vh,36px); max-width:1100px; width:100%; }
+.card { background:rgba(0,0,0,0.025); border:1px solid rgba(0,0,0,0.06); border-radius:14px; padding:clamp(18px,2.2vw,26px); text-align:left; opacity:0; transform:translateY(20px); animation:cardSlideUp 0.55s ease-out forwards; }
+.card:nth-child(1){animation-delay:.35s}.card:nth-child(2){animation-delay:.42s}.card:nth-child(3){animation-delay:.5s}.card:nth-child(4){animation-delay:.58s}.card:nth-child(5){animation-delay:.66s}.card:nth-child(6){animation-delay:.74s}
+@keyframes cardSlideUp { to { opacity:1; transform:translateY(0); } }
+.card h3 { font-size:clamp(15px,1.8vw,20px); font-weight:600; margin-bottom:7px; color:#1d1d1f; }
+.card p { font-size:clamp(12px,1.45vw,15px); color:#6e6e73; line-height:1.4; }
+.card .mono { font-family:'SF Mono','Menlo','Monaco','Consolas',monospace; font-size:clamp(11px,1.3vw,13px); background:rgba(0,0,0,0.05); padding:2px 6px; border-radius:3px; display:block; margin-top:6px; color:#007aff; }
+.comparison-grid { display:grid; grid-template-columns:1fr 1fr; gap:clamp(20px,3vw,40px); max-width:1100px; width:100%; margin-top:clamp(20px,3vh,36px); align-items:stretch; }
+.comparison-item { text-align:left; padding:clamp(18px,2.2vw,28px); border-radius:14px; background:rgba(0,0,0,0.02); border:1px solid rgba(0,0,0,0.06); opacity:0; transform:scale(0.96); animation:scaleIn 0.6s ease-out forwards; }
+.comparison-item:nth-child(1){animation-delay:.35s}.comparison-item:nth-child(2){animation-delay:.5s}
+@keyframes scaleIn { to { opacity:1; transform:scale(1); } }
+.comparison-item .label { font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:0.14em; margin-bottom:10px; }
+.comparison-item.bad .label, .comparison-item.old .label { color:#ff3b30; }
+.comparison-item.good .label, .comparison-item.new .label { color:#34c759; }
+.comparison-item h3 { font-size:clamp(18px,2.2vw,24px); font-weight:600; margin-bottom:10px; }
+.comparison-item p { font-size:clamp(13px,1.6vw,17px); color:#515154; line-height:1.45; margin-bottom:8px; }
+.comparison-item ul { list-style:none; padding:0; }
+.comparison-item ul li { font-size:clamp(13px,1.55vw,16px); color:#515154; line-height:1.5; padding:4px 0 4px 16px; position:relative; }
+.comparison-item.bad ul li::before, .comparison-item.old ul li::before { content:"-"; position:absolute; left:0; color:#ff3b30; font-weight:600; }
+.comparison-item.good ul li::before, .comparison-item.new ul li::before { content:"+"; position:absolute; left:0; color:#34c759; font-weight:600; }
+.quote-card { margin-top:clamp(18px,2.5vh,28px); padding:clamp(16px,2vw,24px) clamp(20px,2.5vw,30px); border-left:3px solid #007aff; background:rgba(0,122,255,0.04); border-radius:8px; text-align:left; max-width:860px; }
+.quote-card.success { border-left-color:#34c759; background:rgba(52,199,89,0.05); }
+.quote-card.warning { border-left-color:#ff3b30; background:rgba(255,59,48,0.04); }
+.quote-card p { font-size:clamp(14px,1.6vw,18px); color:#1d1d1f; line-height:1.4; font-weight:500; }
+.code-block { background:#1d1d1f; color:#f5f5f7; border-radius:12px; padding:clamp(14px,1.7vw,22px); font-family:'SF Mono','Menlo','Monaco','Consolas',monospace; font-size:clamp(11px,1.35vw,15px); line-height:1.6; text-align:left; margin-top:14px; max-width:920px; width:100%; white-space:pre; overflow-x:auto; }
+.code-block .ck { color:#ff79c6; }
+.code-block .cs { color:#f1fa8c; }
+.code-block .cn { color:#f8f8f2; }
+.code-block .co { color:#6272a4; font-style:italic; }
+.code-block .cf { color:#8be9fd; }
+.code-block .cm { color:#bd93f9; }
+.code-block .cc { color:#50fa7b; }
+.checklist { list-style:none; padding:0; margin-top:16px; max-width:860px; text-align:left; }
+.checklist li { font-size:clamp(14px,1.65vw,18px); line-height:1.45; padding:9px 0 9px 36px; position:relative; border-bottom:1px solid rgba(0,0,0,0.05); }
+.checklist li:last-child { border-bottom:none; }
+.checklist li::before { content:"✓"; position:absolute; left:0; top:50%; transform:translateY(-50%); width:24px; height:24px; border-radius:50%; background:rgba(0,122,255,0.1); color:#007aff; font-size:12px; font-weight:700; display:flex; align-items:center; justify-content:center; }
+.steps-row { display:grid; grid-template-columns:repeat(3,1fr); gap:clamp(20px,3vw,40px); max-width:1000px; margin-top:clamp(24px,4vh,40px); }
+.step { text-align:center; opacity:0; transform:translateY(20px); animation:cardSlideUp 0.55s ease-out forwards; }
+.step:nth-child(1){animation-delay:.35s}.step:nth-child(2){animation-delay:.5s}.step:nth-child(3){animation-delay:.65s}
+.step .step-num { display:inline-flex; width:52px; height:52px; border-radius:50%; background:#007aff; color:#fff; font-size:20px; font-weight:700; align-items:center; justify-content:center; margin-bottom:14px; }
+.step h3 { font-size:clamp(17px,2vw,22px); font-weight:600; margin-bottom:8px; }
+.step p { font-size:clamp(13px,1.5vw,16px); color:#6e6e73; line-height:1.45; }
+.flow { display:grid; grid-template-columns:1fr 1fr; gap:10px 48px; max-width:900px; width:100%; margin-top:clamp(20px,3vh,32px); text-align:left; }
+.flow .it { display:flex; align-items:center; gap:12px; font-size:clamp(14px,1.6vw,19px); color:#1d1d1f; }
+.flow .it b { display:inline-flex; width:30px; height:30px; border-radius:50%; background:rgba(0,122,255,0.1); color:#007aff; font-size:14px; font-weight:700; align-items:center; justify-content:center; flex:0 0 auto; }
+.flow .it i { color:#86868b; font-size:0.82em; font-style:normal; margin-left:auto; font-family:'SF Mono','Menlo','Monaco','Consolas',monospace; }
+.layer-stack { display:flex; flex-direction:column; gap:8px; max-width:560px; width:100%; margin-top:clamp(18px,2.5vh,28px); }
+.layer { padding:13px 22px; border-radius:12px; background:rgba(0,0,0,0.03); border:1px solid rgba(0,0,0,0.06); font-size:clamp(13px,1.55vw,17px); color:#515154; text-align:left; }
+.layer.top { background:rgba(0,122,255,0.08); border-color:rgba(0,122,255,0.18); color:#1d1d1f; font-weight:500; }
+.lang-switcher { position:fixed; top:22px; right:28px; z-index:100; display:flex; gap:2px; background:rgba(255,255,255,0.95); -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px); border:1px solid rgba(0,0,0,0.06); border-radius:50px; padding:3px; box-shadow:0 2px 8px rgba(0,0,0,0.04); }
+.lang-switcher a { font-size:11px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:#86868b; text-decoration:none; padding:5px 12px; border-radius:50px; transition:all 0.2s ease; }
+.lang-switcher a.active { color:#fff; background:#007aff; }
+.lang-switcher a:not(.active):hover { color:#1d1d1f; }
+.slide-indicator { position:fixed; bottom:24px; left:50%; transform:translateX(-50%); font-size:13px; color:#86868b; z-index:100; letter-spacing:0.04em; }
+.nav-hint { position:fixed; bottom:24px; right:24px; font-size:12px; color:#c7c7cc; text-align:right; z-index:100; }
+.lesson-tag { position:fixed; top:24px; left:24px; font-size:11px; font-weight:600; color:#86868b; text-transform:uppercase; letter-spacing:0.16em; z-index:100; }
+.arr-box { display:inline-flex; gap:5px; align-items:center; justify-content:center; margin-top:12px; }
+.arr-cell { width:54px; height:40px; border:1px solid rgba(0,0,0,0.1); border-radius:8px; display:flex; align-items:center; justify-content:center; font-family:'SF Mono','Menlo','Monaco','Consolas',monospace; font-size:13px; background:#f5f5f7; color:#1d1d1f; }
+.ser-list { display:flex; flex-direction:column; gap:3px; align-items:center; margin-top:12px; }
+.ser-row { display:flex; border-radius:6px; overflow:hidden; border:1px solid rgba(0,0,0,0.09); }
+.ser-idx { padding:5px 14px; background:rgba(0,122,255,0.08); color:#007aff; font-family:'SF Mono','Menlo','Monaco','Consolas',monospace; font-size:12px; font-weight:600; border-right:1px solid rgba(0,122,255,0.12); min-width:32px; text-align:center; }
+.ser-val { padding:5px 16px; background:#f5f5f7; font-family:'SF Mono','Menlo','Monaco','Consolas',monospace; font-size:12px; color:#1d1d1f; }
+.df-viz { border-collapse:collapse; font-family:'SF Mono','Menlo','Monaco','Consolas',monospace; font-size:12px; margin-top:12px; }
+.df-viz th { background:rgba(0,122,255,0.08); color:#007aff; padding:5px 16px; font-weight:600; border:1px solid rgba(0,122,255,0.15); }
+.df-viz td { padding:5px 16px; border:1px solid rgba(0,0,0,0.07); background:#f5f5f7; color:#1d1d1f; }
+.df-viz .idx { background:rgba(0,0,0,0.03); color:#86868b; font-weight:500; }
+@media (max-width:768px) { .comparison-grid { grid-template-columns:1fr; gap:16px; } .cards-container { grid-template-columns:1fr; } .flow { grid-template-columns:1fr; } .steps-row { grid-template-columns:1fr; gap:16px; } }
+.data-table { width:100%; max-width:980px; margin-top:clamp(12px,1.8vh,20px); border-collapse:collapse; font-size:clamp(11px,1.3vw,14px); }
+.data-table th,.data-table td { text-align:left; padding:clamp(6px,1vw,10px) clamp(8px,1.2vw,13px); border-bottom:1px solid rgba(0,0,0,0.07); vertical-align:middle; }
+.data-table th { font-weight:600; border-bottom:2px solid rgba(0,0,0,0.13); background:rgba(0,0,0,0.025); }
+.data-table td { color:#515154; line-height:1.35; }
+.data-table tr:last-child td { border-bottom:none; }
+.data-table td code { background:rgba(0,0,0,0.06); padding:1px 5px; border-radius:3px; font-family:'SF Mono','Menlo','Monaco','Consolas',monospace; font-size:0.95em; color:#1d1d1f; }
+.tag-np { color:#ff9500; font-weight:700; font-size:0.82em; text-transform:uppercase; letter-spacing:0.06em; }
+.tag-pd { color:#007aff; font-weight:700; font-size:0.82em; text-transform:uppercase; letter-spacing:0.06em; }
+</style>
+</head>
+<body>
+<div class="lang-switcher"><a href="index.html" class="active">RU</a><a href="index-uz.html">UZ</a><a href="index-en.html">EN</a></div>
+<div class="presentation">
+
+<div class="slide active">
+<div class="slide-content">
+<p class="eyebrow">Лекция 12</p><h1>pandas</h1><p class="subtitle">Series · DataFrame · типы данных · загрузка · очистка</p>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">История</p>
+<h2>pandas создан в 2008 году для анализа финансовых данных</h2>
+<p class="body-text">Уэс Маккини написал pandas, работая в инвестиционном фонде. Python умел считать числа, но не имел удобного инструмента для таблиц. Сегодня pandas установлен почти на каждой машине, где работают с данными.</p>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Определение</p>
+<h2>pandas это программируемая таблица</h2>
+<p class="body-text">Таблица с именами столбцов, метками строк, разными типами данных в одной структуре и большим набором операций над ними. То, что в Excel делают мышкой, здесь делают кодом и сразу на миллионах строк.</p>
+<div class="quote-card"><p>Строка это запись (одна транзакция). Столбец это признак (сумма, регион, мерчант). Ячейка это одно значение.</p></div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Зачем это</p>
+<h2>Сто миллионов транзакций в месяц лежат в таблицах, а не в массивах</h2>
+<p class="body-text">UZCARD обрабатывает около 100 млн операций в месяц. У каждой есть сумма, регион, мерчант, время и статус. NumPy-массив хранит числа одного типа и не помнит имён столбцов. pandas хранит именно таблицу.</p>
+<div class="comparison-grid">
+  <div class="comparison-item bad"><div class="label">NumPy-массив</div><h3>Только числа</h3>
+    <ul><li>Один тип данных на весь массив</li><li>Нет имён столбцов</li><li>Регион и сумма не лежат рядом</li></ul></div>
+  <div class="comparison-item good"><div class="label">pandas DataFrame</div><h3>Таблица</h3>
+    <ul><li>Столбцы разных типов: число, текст, дата</li><li>У каждого столбца есть имя</li><li>Строка = одна транзакция целиком</li></ul></div>
+</div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Экосистема</p>
+<h2>pandas стоит поверх NumPy</h2>
+<p class="body-text">Внутри каждый столбец pandas хранится как NumPy-массив. NumPy даёт скорость, pandas добавляет сверху имена столбцов, индекс строк и разные типы в одной таблице.</p>
+<div class="layer-stack">
+  <div class="layer top">pandas - таблицы: имена столбцов, индекс, разные типы</div>
+  <div class="layer">NumPy - массивы: векторизация, скорость</div>
+  <div class="layer">C и память - быстрые циклы под капотом</div>
+</div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Три объекта</p>
+<h2>NumPy массив, Series, DataFrame</h2>
+<p class="body-text">Каждый следующий объект строится на предыдущем.</p>
+<div class="cards-container" style="grid-template-columns:repeat(3,1fr)">
+  <div class="card"><h3>NumPy массив</h3><p>Числа одного типа, без подписей. Чистая скорость.</p></div>
+  <div class="card"><h3>Series</h3><p>Одномерный массив плюс индекс (метки строк). Один столбец.</p></div>
+  <div class="card"><h3>DataFrame</h3><p>Таблица: набор столбцов Series с общим индексом. Основной объект.</p></div>
+</div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Как они выглядят</p>
+<h2>NumPy, Series и DataFrame рядом</h2>
+<div class="cards-container" style="grid-template-columns:repeat(3,1fr);align-items:start;margin-top:clamp(20px,3vh,32px)">
+  <div class="card" style="text-align:center">
+    <h3>NumPy array</h3>
+    <p>Плоский массив без меток</p>
+    <div class="arr-box">
+      <div class="arr-cell">125к</div><div class="arr-cell">45к</div><div class="arr-cell">230к</div><div class="arr-cell">89к</div>
+    </div>
+    <div class="mono" style="margin-top:8px">dtype: int64</div>
+  </div>
+  <div class="card" style="text-align:center">
+    <h3>Series</h3>
+    <p>Массив + индекс строк</p>
+    <div class="ser-list">
+      <div class="ser-row"><span class="ser-idx">0</span><span class="ser-val">125 000</span></div>
+      <div class="ser-row"><span class="ser-idx">1</span><span class="ser-val"> 45 000</span></div>
+      <div class="ser-row"><span class="ser-idx">2</span><span class="ser-val">230 000</span></div>
+      <div class="ser-row"><span class="ser-idx">3</span><span class="ser-val"> 89 000</span></div>
+    </div>
+    <div class="mono" style="margin-top:6px">Name: amount</div>
+  </div>
+  <div class="card" style="text-align:center">
+    <h3>DataFrame</h3>
+    <p>Таблица из нескольких столбцов</p>
+    <table class="df-viz" style="margin:10px auto 0">
+      <tr><th class="idx"></th><th>merchant</th><th>amount</th></tr>
+      <tr><td class="idx">0</td><td>Korzinka</td><td>125 000</td></tr>
+      <tr><td class="idx">1</td><td>Evos</td><td>45 000</td></tr>
+      <tr><td class="idx">2</td><td>Texnomart</td><td>230 000</td></tr>
+    </table>
+  </div>
+</div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Series</p>
+<h2>Series: столбец с подписанными строками</h2>
+<div class="comparison-grid" style="align-items:start">
+  <div style="text-align:left">
+    <p class="body-text" style="margin:0 0 14px">Series это одномерный массив NumPy плюс индекс (метки строк). У него есть имя, тип и те же векторные операции, что в Лекции 11.</p>
+    <div class="quote-card"><p>Один столбец таблицы это Series. Его значения это NumPy-массив, а индекс задаёт метки строк.</p></div>
+  </div>
+  <div style="text-align:center">
+    <p style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.12em;color:#86868b;margin-bottom:8px">df["amount"]</p>
+    <div class="ser-list">
+      <div class="ser-row"><span class="ser-idx">0</span><span class="ser-val">125 000</span></div>
+      <div class="ser-row"><span class="ser-idx">1</span><span class="ser-val"> 45 000</span></div>
+      <div class="ser-row"><span class="ser-idx">2</span><span class="ser-val">2 300 000</span></div>
+    </div>
+    <p style="font-size:11px;color:#86868b;margin-top:8px;font-family:'SF Mono','Menlo',monospace">Name: amount, dtype: int64</p>
+  </div>
+</div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">DataFrame</p>
+<h2>DataFrame: набор столбцов с общим индексом</h2>
+<div class="comparison-grid" style="align-items:start">
+  <div style="text-align:left">
+    <p class="body-text" style="margin:0 0 14px">DataFrame это таблица. Каждый столбец это Series, все одной длины и с общим индексом строк. Доступ к одному столбцу возвращает Series.</p>
+    <div class="quote-card success"><p>Строки это транзакции, столбцы это признаки. Таблица, столбец и ячейка это три уровня одного объекта.</p></div>
+  </div>
+  <div style="text-align:center">
+    <p style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.12em;color:#86868b;margin-bottom:8px">df</p>
+    <table class="df-viz" style="margin:0 auto">
+      <tr><th class="idx"></th><th>merchant</th><th>amount</th><th>region</th></tr>
+      <tr><td class="idx">0</td><td>Korzinka</td><td>125 000</td><td>Ташкент</td></tr>
+      <tr><td class="idx">1</td><td>Evos</td><td>45 000</td><td>Самарканд</td></tr>
+      <tr><td class="idx">2</td><td>Texnomart</td><td>2 300 000</td><td>Ташкент</td></tr>
+    </table>
+  </div>
+</div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Пример</p>
+<h2>Таблица в коде</h2>
+<div class="code-block">df = pd.<span class="cf">DataFrame</span>({
+    <span class="cs">"merchant"</span>: [<span class="cs">"Korzinka"</span>, <span class="cs">"Evos"</span>, <span class="cs">"Texnomart"</span>],
+    <span class="cs">"amount"</span>:   [<span class="cm">125000</span>, <span class="cm">45000</span>, <span class="cm">2300000</span>],
+    <span class="cs">"region"</span>:   [<span class="cs">"Ташкент"</span>, <span class="cs">"Самарканд"</span>, <span class="cs">"Ташкент"</span>],
+})
+<span class="cf">print</span>(df.shape)      <span class="co"># (3, 3): строки, столбцы</span></div>
+<p class="body-text" style="margin-top:14px">Словарь столбцов превращается в таблицу. Каждый ключ это имя столбца, каждый список это его значения.</p>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Под капотом</p>
+<h2>Каждый столбец это отдельный типизированный массив</h2>
+<p class="body-text">DataFrame хранит столбцы как отдельные типизированные массивы NumPy. Поэтому операция над столбцом идёт со скоростью NumPy, а в разных столбцах могут быть разные типы.</p>
+<div class="code-block"><span class="cf">print</span>(df.dtypes)
+<span class="co"># merchant    object   (текст)</span>
+<span class="co"># amount      int64    (число)</span>
+<span class="co"># region      object   (текст)</span></div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Когда что</p>
+<h2>NumPy, Series или DataFrame</h2>
+<div class="cards-container" style="grid-template-columns:repeat(3,1fr)">
+  <div class="card"><h3>NumPy</h3><p>Чистые числа, матрицы, линейная алгебра, максимум скорости.</p></div>
+  <div class="card"><h3>Series</h3><p>Один подписанный столбец, быстрый поиск по метке, один признак.</p></div>
+  <div class="card"><h3>DataFrame</h3><p>Таблица со смешанными типами, любой реальный анализ данных.</p></div>
+</div>
+<div class="quote-card"><p>В большинстве реальных задач работают с DataFrame. Series получают, когда берут один столбец. NumPy считает математику под капотом.</p></div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Типы данных</p>
+<h2>У каждого столбца один тип</h2>
+<p class="body-text">Тип столбца решает три вещи: сколько памяти он занимает, как быстро идут операции и какие действия возможны. pandas выбирает тип сам при чтении файла, но часто его приходится исправлять.</p>
+<div class="quote-card"><p>Число, текст и дата это разные типы. Сложить можно числа, привести к верхнему регистру можно текст, вычесть одну дату из другой можно даты.</p></div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">NumPy</p>
+<h2>Числовые типы: один размер - один блок памяти</h2>
+<p class="body-text">Скорость NumPy держится на одном принципе: все значения одного типа занимают ровно одинаковое число байт и лежат в памяти сплошным непрерывным блоком. Процессор знает, где следующее значение, и шагает по блоку без участия Python.</p>
+<div class="cards-container" style="grid-template-columns:repeat(3,1fr)">
+  <div class="card"><h3>int8 / 16 / 32 / 64</h3><p>Целые числа. 1, 2, 4 или 8 байт на значение. Диапазон зависит от размера.</p></div>
+  <div class="card"><h3>float32 / float64</h3><p>Числа с дробной частью. 4 или 8 байт. float64 это стандарт в науке о данных.</p></div>
+  <div class="card"><h3>bool</h3><p>True или False. 1 байт. Основа булевых масок из Лекции 11.</p></div>
+</div>
+<div class="quote-card"><p>С текстом этот принцип ломается: строки бывают разной длины. NumPy решает задачу тремя способами - и у каждого своя цена.</p></div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">NumPy: текст</p>
+<h2>Три способа хранить текст в NumPy</h2>
+<p class="body-text">Каждый подход решает проблему длины по-своему. Выбор влияет на память, скорость и то, какие языки вообще можно хранить.</p>
+<div class="cards-container" style="grid-template-columns:repeat(3,1fr)">
+  <div class="card"><h3>U - Unicode</h3><p>Фиксированная ширина. 4 байта на символ. Любой язык, включая русский. Слишком длинная строка молча обрезается.</p></div>
+  <div class="card"><h3>S - байты</h3><p>Фиксированная ширина. 1 байт на символ. Только латиница. В 4 раза экономнее U, но кириллица вызывает ошибку.</p></div>
+  <div class="card"><h3>object</h3><p>Не само значение, а адрес (указатель) на строку в памяти. Гибко, но медленно: векторизация не работает.</p></div>
+</div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">U в действии</p>
+<h2>U: фиксированная ширина и молчаливое обрезание</h2>
+<div class="comparison-grid" style="align-items:start">
+  <div class="code-block" style="margin-top:0"><span class="cc">&gt;&gt;&gt;</span> a = np.<span class="cf">array</span>([<span class="cs">"Korzinka"</span>, <span class="cs">"Evos"</span>, <span class="cs">"Texnomart"</span>])
+<span class="cc">&gt;&gt;&gt;</span> a.dtype
+dtype(<span class="cs">'&lt;U9'</span>)        <span class="co"># ширина = самая длинная (9)</span>
+<span class="cc">&gt;&gt;&gt;</span> a[<span class="cm">0</span>] = <span class="cs">"Texnomart Plaza"</span>   <span class="co"># 15 символов</span>
+<span class="cc">&gt;&gt;&gt;</span> a
+array([<span class="cs">'Texnomart'</span>, <span class="cs">'Evos'</span>, <span class="cs">'Texnomart'</span>], dtype=<span class="cs">'&lt;U9'</span>)
+<span class="co">#       ↑ обрезано до 9 — молча, без ошибки</span></div>
+  <div style="text-align:center">
+    <p style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.12em;color:#86868b;margin-bottom:12px">a[0] = "Texnomart Plaza"</p>
+    <div style="display:inline-flex;gap:3px;flex-wrap:wrap;align-items:center;justify-content:center;max-width:360px">
+      <span style="width:26px;height:34px;border-radius:5px;display:inline-flex;align-items:center;justify-content:center;font-family:'SF Mono',monospace;font-size:14px;font-weight:600;background:rgba(0,122,255,0.1);border:1px solid rgba(0,122,255,0.28);color:#007aff">T</span><span style="width:26px;height:34px;border-radius:5px;display:inline-flex;align-items:center;justify-content:center;font-family:'SF Mono',monospace;font-size:14px;font-weight:600;background:rgba(0,122,255,0.1);border:1px solid rgba(0,122,255,0.28);color:#007aff">e</span><span style="width:26px;height:34px;border-radius:5px;display:inline-flex;align-items:center;justify-content:center;font-family:'SF Mono',monospace;font-size:14px;font-weight:600;background:rgba(0,122,255,0.1);border:1px solid rgba(0,122,255,0.28);color:#007aff">x</span><span style="width:26px;height:34px;border-radius:5px;display:inline-flex;align-items:center;justify-content:center;font-family:'SF Mono',monospace;font-size:14px;font-weight:600;background:rgba(0,122,255,0.1);border:1px solid rgba(0,122,255,0.28);color:#007aff">n</span><span style="width:26px;height:34px;border-radius:5px;display:inline-flex;align-items:center;justify-content:center;font-family:'SF Mono',monospace;font-size:14px;font-weight:600;background:rgba(0,122,255,0.1);border:1px solid rgba(0,122,255,0.28);color:#007aff">o</span><span style="width:26px;height:34px;border-radius:5px;display:inline-flex;align-items:center;justify-content:center;font-family:'SF Mono',monospace;font-size:14px;font-weight:600;background:rgba(0,122,255,0.1);border:1px solid rgba(0,122,255,0.28);color:#007aff">m</span><span style="width:26px;height:34px;border-radius:5px;display:inline-flex;align-items:center;justify-content:center;font-family:'SF Mono',monospace;font-size:14px;font-weight:600;background:rgba(0,122,255,0.1);border:1px solid rgba(0,122,255,0.28);color:#007aff">a</span><span style="width:26px;height:34px;border-radius:5px;display:inline-flex;align-items:center;justify-content:center;font-family:'SF Mono',monospace;font-size:14px;font-weight:600;background:rgba(0,122,255,0.1);border:1px solid rgba(0,122,255,0.28);color:#007aff">r</span><span style="width:26px;height:34px;border-radius:5px;display:inline-flex;align-items:center;justify-content:center;font-family:'SF Mono',monospace;font-size:14px;font-weight:600;background:rgba(0,122,255,0.1);border:1px solid rgba(0,122,255,0.28);color:#007aff">t</span><span style="display:inline-flex;align-items:center;color:#ff3b30;font-size:18px;padding:0 4px">✂</span><span style="height:34px;padding:0 12px;border-radius:5px;display:inline-flex;align-items:center;font-family:'SF Mono',monospace;font-size:14px;background:rgba(255,59,48,0.06);border:1px dashed rgba(255,59,48,0.35);color:#ff3b30;text-decoration:line-through">·Plaza</span>
+    </div>
+    <p style="margin-top:14px;font-size:14px;color:#515154;line-height:1.45;max-width:340px;margin-left:auto;margin-right:auto">Ячейка вмещает ровно <b style="color:#007aff">9 символов</b>. Лишнее отброшено <b style="color:#ff3b30">без ошибки</b> — данные теряются тихо.</p>
+  </div>
+</div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">S в действии</p>
+<h2>S: один байт на символ — и падение на кириллице</h2>
+<div class="comparison-grid" style="align-items:start">
+  <div class="code-block" style="margin-top:0"><span class="cc">&gt;&gt;&gt;</span> b = np.<span class="cf">array</span>([<span class="cs">"Tashkent"</span>, <span class="cs">"Evos"</span>], dtype=<span class="cs">"S"</span>)
+<span class="cc">&gt;&gt;&gt;</span> b
+array([b<span class="cs">'Tashkent'</span>, b<span class="cs">'Evos'</span>], dtype=<span class="cs">'|S8'</span>)   <span class="co"># 1 байт/символ</span>
+<span class="cc">&gt;&gt;&gt;</span> np.<span class="cf">array</span>([<span class="cs">"Ташкент"</span>], dtype=<span class="cs">"S"</span>)
+<span style="color:#ff5555">UnicodeEncodeError: 'ascii' codec can't</span>
+<span style="color:#ff5555">encode characters in position 0-6</span></div>
+  <div style="text-align:center;display:flex;flex-direction:column;gap:16px;justify-content:center">
+    <div>
+      <div style="display:flex;align-items:center;justify-content:center;gap:10px;padding:13px 18px;border-radius:10px;background:rgba(52,199,89,0.06);border:1px solid rgba(52,199,89,0.22)">
+        <span style="font-family:'SF Mono',monospace;font-size:14px;color:#1d1d1f">"Tashkent"</span><span style="color:#34c759;font-size:16px">→</span><span style="font-family:'SF Mono',monospace;font-size:14px;color:#1d1d1f">b'Tashkent'</span><span style="color:#34c759;font-weight:700;font-size:16px">✓</span>
+      </div>
+      <p style="font-size:12px;color:#86868b;margin-top:6px">латиница: каждый символ — 1 байт ASCII</p>
+    </div>
+    <div>
+      <div style="display:flex;align-items:center;justify-content:center;gap:10px;padding:13px 18px;border-radius:10px;background:rgba(255,59,48,0.05);border:1px solid rgba(255,59,48,0.22)">
+        <span style="font-family:'SF Mono',monospace;font-size:14px;color:#1d1d1f">"Ташкент"</span><span style="color:#ff3b30;font-size:16px">→</span><span style="color:#ff3b30;font-weight:700;font-size:14px">✗ UnicodeEncodeError</span>
+      </div>
+      <p style="font-size:12px;color:#86868b;margin-top:6px">кириллица не помещается в ASCII</p>
+    </div>
+  </div>
+</div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">object в действии</p>
+<h2>object: 8 байт указателя вместо строки</h2>
+<div class="comparison-grid" style="align-items:start">
+  <div class="code-block" style="margin-top:0"><span class="cc">&gt;&gt;&gt;</span> o = np.<span class="cf">array</span>([<span class="cs">"Ташкент"</span>, <span class="cs">"Самарканд"</span>], dtype=object)
+<span class="cc">&gt;&gt;&gt;</span> o.dtype
+dtype(<span class="cs">'O'</span>)
+<span class="cc">&gt;&gt;&gt;</span> o.itemsize
+<span class="cm">8</span>        <span class="co"># 8 байт = указатель, не строка</span></div>
+  <div style="text-align:center">
+    <p style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:#86868b;margin-bottom:8px">массив object: указатели подряд</p>
+    <div style="display:inline-flex;gap:3px">
+      <span style="font-family:'SF Mono',monospace;font-size:12px;padding:8px 10px;border-radius:6px;background:rgba(0,122,255,0.1);border:1px solid rgba(0,122,255,0.28);color:#007aff">0x··a1</span><span style="font-family:'SF Mono',monospace;font-size:12px;padding:8px 10px;border-radius:6px;background:rgba(0,122,255,0.1);border:1px solid rgba(0,122,255,0.28);color:#007aff">0x··c8</span><span style="font-family:'SF Mono',monospace;font-size:12px;padding:8px 10px;border-radius:6px;background:rgba(0,122,255,0.1);border:1px solid rgba(0,122,255,0.28);color:#007aff">0x··04</span>
+    </div>
+    <div style="color:#c7c7cc;font-size:16px;letter-spacing:18px;margin:6px 0 2px;padding-left:18px">↓↓↓</div>
+    <p style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:#86868b;margin-bottom:8px">строки разбросаны по куче</p>
+    <div style="position:relative;height:78px;max-width:340px;margin:0 auto">
+      <span style="position:absolute;left:6%;top:0;font-family:'SF Mono',monospace;font-size:12px;padding:6px 12px;border-radius:6px;background:#f5f5f7;border:1px solid rgba(0,0,0,0.1);color:#1d1d1f">"Самарканд"</span>
+      <span style="position:absolute;right:0;top:24px;font-family:'SF Mono',monospace;font-size:12px;padding:6px 12px;border-radius:6px;background:#f5f5f7;border:1px solid rgba(0,0,0,0.1);color:#1d1d1f">"Ташкент"</span>
+      <span style="position:absolute;left:24%;top:52px;font-family:'SF Mono',monospace;font-size:12px;padding:6px 12px;border-radius:6px;background:#f5f5f7;border:1px solid rgba(0,0,0,0.1);color:#1d1d1f">"Бухара"</span>
+    </div>
+  </div>
+</div>
+<div class="quote-card"><p>Массив указателей занимает мало (50 000 регионов — всего 0.4 МБ), но сами строки лежат отдельными Python-объектами. Процессор прыгает за каждым: cache miss на каждом элементе, векторизация не работает.</p></div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">NumPy</p>
+<h2>Текстовые типы: U и S</h2>
+<p class="body-text">В NumPy текст это тип фиксированной ширины: ширина равна самой длинной строке, и слишком длинное значение молча обрезается.</p>
+<div class="comparison-grid">
+  <div class="comparison-item old"><div class="label">S - байты</div><h3>1 байт на символ</h3>
+    <ul><li>Только латиница (ASCII)</li><li>На кириллице падает с ошибкой</li><li>Экономит память</li></ul></div>
+  <div class="comparison-item new"><div class="label">U - Unicode</div><h3>4 байта на символ</h3>
+    <ul><li>Любой язык, включая русский</li><li>Занимает больше памяти</li><li>Выбор по умолчанию для текста</li></ul></div>
+</div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Под капотом</p>
+<h2>object: массив указателей, не значений</h2>
+<p class="body-text">Тип object хранит не сами строки, а 64-битные адреса: указатели на места в оперативной памяти, где строки реально лежат. Сами строки при этом разбросаны по памяти как попало.</p>
+<div class="comparison-grid">
+  <div class="comparison-item bad"><div class="label">object - указатели</div><h3>Cache miss на каждом элементе</h3>
+    <ul><li>CPU читает адрес</li><li>Прыгает в другую часть памяти</li><li>Читает строку</li><li>Возвращается за следующим адресом</li></ul></div>
+  <div class="comparison-item good"><div class="label">int64 - значения</div><h3>Процессор шагает по блоку</h3>
+    <ul><li>Все значения лежат рядом</li><li>Следующее = +8 байт</li><li>Кэш процессора не сбрасывается</li><li>Векторизация работает</li></ul></div>
+</div>
+<div class="quote-card success"><p>В pandas 3.0 чистый текстовый столбец по умолчанию получает тип str, а не object - это первый шаг к возврату скорости.</p></div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Умные типы pandas</p>
+<h2>Extension types: пропуски и экономия</h2>
+<p class="body-text">pandas добавил расширенные типы поверх NumPy. Они хранят пропуски прямо в столбце и экономят память.</p>
+<div class="cards-container" style="grid-template-columns:repeat(3,1fr)">
+  <div class="card"><h3>string</h3><p>Отдельный тип для текстовых столбцов. Поддерживает NA. Не допускает смешивания с числами или списками.</p></div>
+  <div class="card"><h3>Int64, boolean</h3><p>Целые числа и логический тип с поддержкой NA. Заглавная буква отличает их от NumPy-аналогов.</p></div>
+  <div class="card"><h3>category</h3><p>Уникальные значения хранятся один раз. В столбце стоят числовые коды. Экономит память в 10-100 раз.</p></div>
+  <div class="card"><h3>datetime (TZ)</h3><p>Момент времени с часовым поясом.</p></div>
+  <div class="card"><h3>Period</h3><p>Отрезок календаря: квартал, месяц.</p></div>
+  <div class="card"><h3>Interval</h3><p>Числовой диапазон, например (0, 10].</p></div>
+</div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Пропуски в целых</p>
+<h2>Int64: целое с пропуском</h2>
+<p class="body-text">Обычное целое NumPy не хранит NaN, поэтому один пропуск превращает столбец в дроби и портит числовые id.</p>
+<div class="comparison-grid">
+  <div class="comparison-item bad"><div class="label">обычный int + NaN</div><h3>Уходит в float</h3>
+    <ul><li>101 становится 101.0</li><li>числовой id испорчен</li></ul></div>
+  <div class="comparison-item good"><div class="label">Int64</div><h3>Остаётся целым</h3>
+    <ul><li>101 остаётся 101</li><li>пропуск это &lt;NA&gt;</li></ul></div>
+</div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Память</p>
+<h2>category: числовые коды вместо строк</h2>
+<p class="body-text">Когда в столбце мало разных значений, повторяющихся много раз (города, статусы), тип category хранит каждую строку один раз в словаре, а в столбце держит маленькие коды. На столбце из тысяч повторов это уменьшает память в десятки раз.</p>
+<div class="quote-card"><p>Измерить память столбца: memory_usage(deep=True). Параметр deep обязателен для текста, иначе считается только размер ссылок.</p></div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Типы данных</p>
+<h2>NumPy и pandas: таблица типов</h2>
+<table class="data-table">
+<thead><tr><th>Тип</th><th>Где</th><th>Что хранит</th><th>Пропуск</th></tr></thead>
+<tbody>
+<tr><td><code>int8 / 16 / 32 / 64</code></td><td><span class="tag-np">NumPy</span></td><td>Целые числа</td><td>нет (NaN переводит в float)</td></tr>
+<tr><td><code>float32 / float64</code></td><td><span class="tag-np">NumPy</span></td><td>Числа с дробной частью</td><td>NaN</td></tr>
+<tr><td><code>bool</code></td><td><span class="tag-np">NumPy</span></td><td>True / False</td><td>нет</td></tr>
+<tr><td><code>U</code> (Unicode)</td><td><span class="tag-np">NumPy</span></td><td>Текст, фикс. ширина, любой язык</td><td>нет</td></tr>
+<tr><td><code>S</code> (bytes)</td><td><span class="tag-np">NumPy</span></td><td>Текст, фикс. ширина, только ASCII</td><td>нет</td></tr>
+<tr><td><code>object</code></td><td><span class="tag-np">NumPy</span> / <span class="tag-pd">pandas</span></td><td>Указатели на Python-объекты</td><td>NaN</td></tr>
+<tr><td><code>Int8 / 16 / 32 / 64</code></td><td><span class="tag-pd">pandas</span></td><td>Целые числа</td><td>pd.NA</td></tr>
+<tr><td><code>Float32 / Float64</code></td><td><span class="tag-pd">pandas</span></td><td>Числа с дробной частью</td><td>pd.NA</td></tr>
+<tr><td><code>boolean</code></td><td><span class="tag-pd">pandas</span></td><td>True / False</td><td>pd.NA</td></tr>
+<tr><td><code>string</code></td><td><span class="tag-pd">pandas</span></td><td>Текстовые данные</td><td>pd.NA</td></tr>
+<tr><td><code>category</code></td><td><span class="tag-pd">pandas</span></td><td>Повторяющиеся значения (словарь + коды)</td><td>pd.NA</td></tr>
+<tr><td><code>datetime (TZ)</code></td><td><span class="tag-pd">pandas</span></td><td>Дата и время с часовым поясом</td><td>pd.NA</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow" style="color:#ff9500">Вопрос</p>
+<h2>Столбец status имеет тип string. df[df["status"].str.contains("success")] падает с ошибкой. Тот же код работал, когда тип был object. Почему?</h2>
+<p class="body-text">str.contains() отработал без ошибки и вернул результат. Ошибка возникла при использовании результата как маски для индексации.</p>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow" style="color:#34c759">Ответ</p>
+<h2>string возвращает NA вместо False на пустых ячейках - маска с NA не работает</h2>
+<div class="quote-card success"><p>С типом object пустая ячейка даёт False в str.contains(). С типом string - NA. pandas не может использовать маску с NA для индексации. Решение: <code>df["status"].str.contains("success", na=False)</code> - параметр na=False заменяет NA на False.</p></div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Рабочий процесс</p>
+<h2>Последовательность шагов: от сырого файла до отчёта</h2>
+<p class="body-text">У реального проекта всегда одна последовательность шагов. Этот маршрут мы проходим за две лекции: Лекция 12 (эта) готовит данные, Лекция 13 их анализирует.</p>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">10 шагов</p>
+<h2>От сырого файла до отчёта</h2>
+<div class="flow">
+  <div class="it"><b>1</b>Загрузка<i>read_csv</i></div>
+  <div class="it"><b>6</b>Объединение<i>merge</i></div>
+  <div class="it"><b>2</b>Разведка<i>info, describe</i></div>
+  <div class="it"><b>7</b>Группировка<i>groupby</i></div>
+  <div class="it"><b>3</b>Очистка<i>NaN, типы</i></div>
+  <div class="it"><b>8</b>Сортировка<i>sort_values</i></div>
+  <div class="it"><b>4</b>Отбор<i>маска, loc</i></div>
+  <div class="it"><b>9</b>Время<i>resample</i></div>
+  <div class="it"><b>5</b>Преобразование<i>новый столбец</i></div>
+  <div class="it"><b>10</b>Сохранение<i>to_csv</i></div>
+</div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Очистка</p>
+<h2>Очистка занимает 60-70% времени проекта</h2>
+<p class="body-text">Реальные данные приходят грязными: пропуски, числа как текст, дубликаты, разный регистр в категориях. Очистка идёт до анализа, потому что плохие данные на входе дают неверные выводы на выходе.</p>
+<div class="quote-card warning"><p>Анализ на неочищенных данных даёт неверные результаты. Очистка идёт до любых расчётов.</p></div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Отбор</p>
+<h2>Метки и позиции: loc и iloc</h2>
+<p class="body-text">У строк и столбцов есть и номера (позиции), и имена (метки). pandas даёт два способа доступа.</p>
+<div class="comparison-grid">
+  <div class="comparison-item old"><div class="label">iloc</div><h3>По позициям</h3>
+    <ul><li>Номера строк и столбцов с нуля</li><li>Как индексация массива в Лекции 11</li><li>Верхняя граница среза не включается</li></ul></div>
+  <div class="comparison-item new"><div class="label">loc</div><h3>По меткам</h3>
+    <ul><li>Имена строк (индекс) и столбцов</li><li>Можно отбирать строки маской</li><li>Верхняя граница среза включается</li></ul></div>
+</div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Фильтрация</p>
+<h2>Булева маска отбирает строки по условию</h2>
+<p class="body-text">Сравнение столбца с числом даёт массив True/False по каждой строке. В квадратных скобках он оставляет только строки, где True. Это продолжение булевых масок из Лекции 11.</p>
+<div class="quote-card"><p>Несколько условий объединяют через &amp; (И) и | (ИЛИ), каждое в круглых скобках. Слова and и or здесь не работают.</p></div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow" style="color:#ff9500">Вопрос аудитории</p><h2>Ты написал filtered = df[df.amount &gt; 1e6], потом filtered["fee"] = 0. Изменился ли оригинальный df?</h2><p class="body-text">Интуитивно кажется что да, filtered это та же таблица. Но Python показывает SettingWithCopyWarning.</p>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow" style="color:#34c759">Ответ</p><h2>df не изменился: фильтрация вернула копию</h2><div class="quote-card success"><p>Фильтрация может вернуть копию или вид - непредсказуемо. Запись идёт в копию, оригинал не меняется. Правильно: df.loc[df.amount &gt; 1e6, "fee"] = 0 - один вызов loc гарантирует запись в оригинал.</p></div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Пропуски</p>
+<h2>NaN: отсутствующее значение</h2>
+<p class="body-text">В реальных данных часть значений отсутствует и помечается как NaN. NaN не равен ничему, даже самому себе, поэтому сравнением == его не поймать. Агрегаты вроде mean пропускают NaN автоматически.</p>
+<div class="quote-card"><p>Пропуски находят через isna, удаляют через dropna или заполняют через fillna. Что выбрать, зависит от того, можно ли терять строку.</p></div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Шпаргалка</p>
+<h2>Данные и типы на одном слайде</h2>
+<div class="cards-container" style="grid-template-columns:repeat(3,1fr)">
+  <div class="card"><h3>Series / DataFrame</h3><p>Столбец и таблица</p><div class="mono">df["amount"]</div></div>
+  <div class="card"><h3>Тип столбца</h3><p>Посмотреть и сменить</p><div class="mono">df.dtypes · astype</div></div>
+  <div class="card"><h3>string / object</h3><p>Типы для текстовых столбцов</p><div class="mono">dtype="string"</div></div>
+  <div class="card"><h3>Int64 / boolean</h3><p>Целое и булев с NA</p><div class="mono">dtype="Int64"</div></div>
+  <div class="card"><h3>category</h3><p>Экономия памяти</p><div class="mono">astype("category")</div></div>
+  <div class="card"><h3>read_csv</h3><p>Загрузка из файла</p><div class="mono">pd.read_csv(...)</div></div>
+  <div class="card"><h3>Очистка</h3><p>Текст в число и дату</p><div class="mono">to_numeric · to_datetime</div></div>
+  <div class="card"><h3>loc / iloc</h3><p>По меткам / позициям</p><div class="mono">df.loc[...]</div></div>
+  <div class="card"><h3>Маска</h3><p>Фильтр строк</p><div class="mono">df[df.amount&gt;1e6]</div></div>
+</div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Проверь себя</p>
+<ol style="text-align:left;max-width:880px;padding-left:24px;font-size:clamp(14px,1.55vw,17px);line-height:1.7">
+  <li>Чем Series отличается от DataFrame?</li>
+  <li>Почему массив целых с одним NaN становится float, и как это решает Int64?</li>
+  <li>Чем тип U отличается от S и почему для русского нужен U?</li>
+  <li>Почему столбец object работает медленно?</li>
+  <li>Что экономит тип category и за счёт чего?</li>
+  <li>Когда astype падает, а to_numeric нет?</li>
+  <li>Чем loc отличается от iloc?</li>
+  <li>Как из текстового столбца amount получить число?</li>
+</ol>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<h2>Вопросы?</h2>
+</div>
+</div>
+
+</div>
+<div class="lesson-tag">Лекция 12 · pandas: данные и типы</div><div class="slide-indicator"><span id="current-slide">1</span> / <span id="total-slides">1</span></div><div class="nav-hint">→ или Space далее<br/>← назад</div>
+<script>
+let currentSlide=0;const slides=document.querySelectorAll('.slide');const totalSlides=slides.length;document.getElementById('total-slides').textContent=totalSlides;function showSlide(n){slides[currentSlide].classList.remove('active');currentSlide=(n+totalSlides)%totalSlides;slides[currentSlide].classList.add('active');document.getElementById('current-slide').textContent=currentSlide+1;const sc=slides[currentSlide].querySelector('.slide-content');sc.style.animation='none';void sc.offsetHeight;sc.style.animation=null;slides[currentSlide].querySelectorAll('.card,.comparison-item,.step,.replay-anim').forEach(el=>{const o=el.style.animation;el.style.animation='none';void el.offsetHeight;el.style.animation=o;});}function nextSlide(){showSlide(currentSlide+1);}function prevSlide(){showSlide(currentSlide-1);}document.addEventListener('keydown',e=>{if(['textarea','input'].includes((e.target.tagName||'').toLowerCase()))return;if(e.key==='ArrowRight'||e.key===' '){e.preventDefault();nextSlide();}else if(e.key==='ArrowLeft'){e.preventDefault();prevSlide();}});let tX=0;document.addEventListener('touchstart',e=>{tX=e.changedTouches[0].screenX;});document.addEventListener('touchend',e=>{const dx=e.changedTouches[0].screenX-tX;if(dx<-50)nextSlide();else if(dx>50)prevSlide();});
+</script>
+</body>
+</html>

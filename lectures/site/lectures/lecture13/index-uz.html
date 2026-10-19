@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>pandas: ma'lumotlar va turlar · 12-ma'ruza</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700;800&display=swap');
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system,BlinkMacSystemFont,'Inter','SF Pro Display','Segoe UI',Roboto,sans-serif; background:#FFFFFF; color:#1d1d1f; line-height:1.1; overflow:hidden; -webkit-font-smoothing:antialiased; }
+.presentation { width:100vw; height:100vh; position:relative; }
+.slide { width:100%; height:100%; display:none; align-items:center; justify-content:center; position:absolute; top:0; left:0; padding:clamp(40px,6vh,80px) clamp(40px,6vw,80px); text-align:center; }
+.slide.active { display:flex; flex-direction:column; }
+.slide-content { max-width:1200px; width:100%; margin:0 auto; opacity:0; transform:translateY(20px); animation:fadeInUp 0.7s ease-out 0.15s forwards; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+@keyframes fadeInUp { to { opacity:1; transform:translateY(0); } }
+h1 { font-size:clamp(40px,6.5vw,96px); font-weight:700; letter-spacing:-0.025em; line-height:0.95; margin-bottom:clamp(16px,2.5vh,32px); }
+h2 { font-size:clamp(28px,4vw,56px); font-weight:600; letter-spacing:-0.02em; line-height:1.05; margin-bottom:clamp(16px,2vh,28px); }
+.subtitle { font-size:clamp(18px,2.2vw,28px); font-weight:400; color:#86868b; margin-bottom:clamp(20px,3vh,40px); line-height:1.3; max-width:900px; }
+.eyebrow { font-size:clamp(13px,1.2vw,16px); font-weight:600; color:#007aff; text-transform:uppercase; letter-spacing:0.18em; margin-bottom:18px; }
+.body-text { font-size:clamp(15px,1.8vw,22px); font-weight:400; color:#515154; line-height:1.45; max-width:820px; margin:0 auto; }
+code { font-family:'SF Mono','Menlo','Monaco','Consolas',monospace; font-size:0.9em; }
+.highlight { color:#007aff; font-weight:500; }
+.cards-container { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:clamp(14px,2vw,22px); margin-top:clamp(20px,3vh,36px); max-width:1100px; width:100%; }
+.card { background:rgba(0,0,0,0.025); border:1px solid rgba(0,0,0,0.06); border-radius:14px; padding:clamp(18px,2.2vw,26px); text-align:left; opacity:0; transform:translateY(20px); animation:cardSlideUp 0.55s ease-out forwards; }
+.card:nth-child(1){animation-delay:.35s}.card:nth-child(2){animation-delay:.42s}.card:nth-child(3){animation-delay:.5s}.card:nth-child(4){animation-delay:.58s}.card:nth-child(5){animation-delay:.66s}.card:nth-child(6){animation-delay:.74s}
+@keyframes cardSlideUp { to { opacity:1; transform:translateY(0); } }
+.card h3 { font-size:clamp(15px,1.8vw,20px); font-weight:600; margin-bottom:7px; color:#1d1d1f; }
+.card p { font-size:clamp(12px,1.45vw,15px); color:#6e6e73; line-height:1.4; }
+.card .mono { font-family:'SF Mono','Menlo','Monaco','Consolas',monospace; font-size:clamp(11px,1.3vw,13px); background:rgba(0,0,0,0.05); padding:2px 6px; border-radius:3px; display:block; margin-top:6px; color:#007aff; }
+.comparison-grid { display:grid; grid-template-columns:1fr 1fr; gap:clamp(20px,3vw,40px); max-width:1100px; width:100%; margin-top:clamp(20px,3vh,36px); align-items:stretch; }
+.comparison-item { text-align:left; padding:clamp(18px,2.2vw,28px); border-radius:14px; background:rgba(0,0,0,0.02); border:1px solid rgba(0,0,0,0.06); opacity:0; transform:scale(0.96); animation:scaleIn 0.6s ease-out forwards; }
+.comparison-item:nth-child(1){animation-delay:.35s}.comparison-item:nth-child(2){animation-delay:.5s}
+@keyframes scaleIn { to { opacity:1; transform:scale(1); } }
+.comparison-item .label { font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:0.14em; margin-bottom:10px; }
+.comparison-item.bad .label, .comparison-item.old .label { color:#ff3b30; }
+.comparison-item.good .label, .comparison-item.new .label { color:#34c759; }
+.comparison-item h3 { font-size:clamp(18px,2.2vw,24px); font-weight:600; margin-bottom:10px; }
+.comparison-item p { font-size:clamp(13px,1.6vw,17px); color:#515154; line-height:1.45; margin-bottom:8px; }
+.comparison-item ul { list-style:none; padding:0; }
+.comparison-item ul li { font-size:clamp(13px,1.55vw,16px); color:#515154; line-height:1.5; padding:4px 0 4px 16px; position:relative; }
+.comparison-item.bad ul li::before, .comparison-item.old ul li::before { content:"-"; position:absolute; left:0; color:#ff3b30; font-weight:600; }
+.comparison-item.good ul li::before, .comparison-item.new ul li::before { content:"+"; position:absolute; left:0; color:#34c759; font-weight:600; }
+.quote-card { margin-top:clamp(18px,2.5vh,28px); padding:clamp(16px,2vw,24px) clamp(20px,2.5vw,30px); border-left:3px solid #007aff; background:rgba(0,122,255,0.04); border-radius:8px; text-align:left; max-width:860px; }
+.quote-card.success { border-left-color:#34c759; background:rgba(52,199,89,0.05); }
+.quote-card.warning { border-left-color:#ff3b30; background:rgba(255,59,48,0.04); }
+.quote-card p { font-size:clamp(14px,1.6vw,18px); color:#1d1d1f; line-height:1.4; font-weight:500; }
+.code-block { background:#1d1d1f; color:#f5f5f7; border-radius:12px; padding:clamp(14px,1.7vw,22px); font-family:'SF Mono','Menlo','Monaco','Consolas',monospace; font-size:clamp(11px,1.35vw,15px); line-height:1.6; text-align:left; margin-top:14px; max-width:920px; width:100%; white-space:pre; overflow-x:auto; }
+.code-block .ck { color:#ff79c6; }
+.code-block .cs { color:#f1fa8c; }
+.code-block .cn { color:#f8f8f2; }
+.code-block .co { color:#6272a4; font-style:italic; }
+.code-block .cf { color:#8be9fd; }
+.code-block .cm { color:#bd93f9; }
+.code-block .cc { color:#50fa7b; }
+.checklist { list-style:none; padding:0; margin-top:16px; max-width:860px; text-align:left; }
+.checklist li { font-size:clamp(14px,1.65vw,18px); line-height:1.45; padding:9px 0 9px 36px; position:relative; border-bottom:1px solid rgba(0,0,0,0.05); }
+.checklist li:last-child { border-bottom:none; }
+.checklist li::before { content:"✓"; position:absolute; left:0; top:50%; transform:translateY(-50%); width:24px; height:24px; border-radius:50%; background:rgba(0,122,255,0.1); color:#007aff; font-size:12px; font-weight:700; display:flex; align-items:center; justify-content:center; }
+.steps-row { display:grid; grid-template-columns:repeat(3,1fr); gap:clamp(20px,3vw,40px); max-width:1000px; margin-top:clamp(24px,4vh,40px); }
+.step { text-align:center; opacity:0; transform:translateY(20px); animation:cardSlideUp 0.55s ease-out forwards; }
+.step:nth-child(1){animation-delay:.35s}.step:nth-child(2){animation-delay:.5s}.step:nth-child(3){animation-delay:.65s}
+.step .step-num { display:inline-flex; width:52px; height:52px; border-radius:50%; background:#007aff; color:#fff; font-size:20px; font-weight:700; align-items:center; justify-content:center; margin-bottom:14px; }
+.step h3 { font-size:clamp(17px,2vw,22px); font-weight:600; margin-bottom:8px; }
+.step p { font-size:clamp(13px,1.5vw,16px); color:#6e6e73; line-height:1.45; }
+.flow { display:grid; grid-template-columns:1fr 1fr; gap:10px 48px; max-width:900px; width:100%; margin-top:clamp(20px,3vh,32px); text-align:left; }
+.flow .it { display:flex; align-items:center; gap:12px; font-size:clamp(14px,1.6vw,19px); color:#1d1d1f; }
+.flow .it b { display:inline-flex; width:30px; height:30px; border-radius:50%; background:rgba(0,122,255,0.1); color:#007aff; font-size:14px; font-weight:700; align-items:center; justify-content:center; flex:0 0 auto; }
+.flow .it i { color:#86868b; font-size:0.82em; font-style:normal; margin-left:auto; font-family:'SF Mono','Menlo','Monaco','Consolas',monospace; }
+.layer-stack { display:flex; flex-direction:column; gap:8px; max-width:560px; width:100%; margin-top:clamp(18px,2.5vh,28px); }
+.layer { padding:13px 22px; border-radius:12px; background:rgba(0,0,0,0.03); border:1px solid rgba(0,0,0,0.06); font-size:clamp(13px,1.55vw,17px); color:#515154; text-align:left; }
+.layer.top { background:rgba(0,122,255,0.08); border-color:rgba(0,122,255,0.18); color:#1d1d1f; font-weight:500; }
+.lang-switcher { position:fixed; top:22px; right:28px; z-index:100; display:flex; gap:2px; background:rgba(255,255,255,0.95); -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px); border:1px solid rgba(0,0,0,0.06); border-radius:50px; padding:3px; box-shadow:0 2px 8px rgba(0,0,0,0.04); }
+.lang-switcher a { font-size:11px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:#86868b; text-decoration:none; padding:5px 12px; border-radius:50px; transition:all 0.2s ease; }
+.lang-switcher a.active { color:#fff; background:#007aff; }
+.lang-switcher a:not(.active):hover { color:#1d1d1f; }
+.slide-indicator { position:fixed; bottom:24px; left:50%; transform:translateX(-50%); font-size:13px; color:#86868b; z-index:100; letter-spacing:0.04em; }
+.nav-hint { position:fixed; bottom:24px; right:24px; font-size:12px; color:#c7c7cc; text-align:right; z-index:100; }
+.lesson-tag { position:fixed; top:24px; left:24px; font-size:11px; font-weight:600; color:#86868b; text-transform:uppercase; letter-spacing:0.16em; z-index:100; }
+.arr-box { display:inline-flex; gap:5px; align-items:center; justify-content:center; margin-top:12px; }
+.arr-cell { width:54px; height:40px; border:1px solid rgba(0,0,0,0.1); border-radius:8px; display:flex; align-items:center; justify-content:center; font-family:'SF Mono','Menlo','Monaco','Consolas',monospace; font-size:13px; background:#f5f5f7; color:#1d1d1f; }
+.ser-list { display:flex; flex-direction:column; gap:3px; align-items:center; margin-top:12px; }
+.ser-row { display:flex; border-radius:6px; overflow:hidden; border:1px solid rgba(0,0,0,0.09); }
+.ser-idx { padding:5px 14px; background:rgba(0,122,255,0.08); color:#007aff; font-family:'SF Mono','Menlo','Monaco','Consolas',monospace; font-size:12px; font-weight:600; border-right:1px solid rgba(0,122,255,0.12); min-width:32px; text-align:center; }
+.ser-val { padding:5px 16px; background:#f5f5f7; font-family:'SF Mono','Menlo','Monaco','Consolas',monospace; font-size:12px; color:#1d1d1f; }
+.df-viz { border-collapse:collapse; font-family:'SF Mono','Menlo','Monaco','Consolas',monospace; font-size:12px; margin-top:12px; }
+.df-viz th { background:rgba(0,122,255,0.08); color:#007aff; padding:5px 16px; font-weight:600; border:1px solid rgba(0,122,255,0.15); }
+.df-viz td { padding:5px 16px; border:1px solid rgba(0,0,0,0.07); background:#f5f5f7; color:#1d1d1f; }
+.df-viz .idx { background:rgba(0,0,0,0.03); color:#86868b; font-weight:500; }
+@media (max-width:768px) { .comparison-grid { grid-template-columns:1fr; gap:16px; } .cards-container { grid-template-columns:1fr; } .flow { grid-template-columns:1fr; } .steps-row { grid-template-columns:1fr; gap:16px; } }
+.data-table { width:100%; max-width:980px; margin-top:clamp(12px,1.8vh,20px); border-collapse:collapse; font-size:clamp(11px,1.3vw,14px); }
+.data-table th,.data-table td { text-align:left; padding:clamp(6px,1vw,10px) clamp(8px,1.2vw,13px); border-bottom:1px solid rgba(0,0,0,0.07); vertical-align:middle; }
+.data-table th { font-weight:600; border-bottom:2px solid rgba(0,0,0,0.13); background:rgba(0,0,0,0.025); }
+.data-table td { color:#515154; line-height:1.35; }
+.data-table tr:last-child td { border-bottom:none; }
+.data-table td code { background:rgba(0,0,0,0.06); padding:1px 5px; border-radius:3px; font-family:'SF Mono','Menlo','Monaco','Consolas',monospace; font-size:0.95em; color:#1d1d1f; }
+.tag-np { color:#ff9500; font-weight:700; font-size:0.82em; text-transform:uppercase; letter-spacing:0.06em; }
+.tag-pd { color:#007aff; font-weight:700; font-size:0.82em; text-transform:uppercase; letter-spacing:0.06em; }
+</style>
+</head>
+<body>
+<div class="lang-switcher"><a href="index.html">RU</a><a href="index-uz.html" class="active">UZ</a><a href="index-en.html">EN</a></div>
+<div class="presentation">
+
+<div class="slide active">
+<div class="slide-content">
+<p class="eyebrow">12-ma'ruza</p><h1>pandas</h1><p class="subtitle">Series · DataFrame · ma'lumot turlari · yuklash · tozalash</p>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Tarix</p>
+<h2>pandas 2008-yilda moliyaviy ma'lumotlarni tahlil qilish uchun yaratilgan</h2>
+<p class="body-text">Wes McKinney pandas'ni investitsiya fondida ishlab yurganida yozgan. Python sonlarni sanay olardi, lekin jadvallar uchun qulay vositaga ega emasdi. Bugun pandas ma'lumotlar bilan ishlanadigan deyarli har bir mashinaga o'rnatilgan.</p>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Ta'rif</p>
+<h2>pandas - bu dasturlanadigan jadval</h2>
+<p class="body-text">Ustun nomlari, qator yorliqlari, bitta strukturada turli ma'lumot turlari va ular ustidan katta amallar to'plamiga ega jadval. Excel'da sichqoncha bilan qilinadigan ish bu yerda kod bilan va darrov millionlab qatorlarda bajariladi.</p>
+<div class="quote-card"><p>Qator - bu yozuv (bitta tranzaksiya). Ustun - bu belgi (summa, hudud, merchant). Katak - bu bitta qiymat.</p></div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Nima uchun kerak</p>
+<h2>Oyiga yuz million tranzaksiya massivlarda emas, jadvallarda yotadi</h2>
+<p class="body-text">UZCARD oyiga taxminan 100 mln amalni qayta ishlaydi. Har birida summa, hudud, merchant, vaqt va status bor. NumPy-massiv bir turdagi sonlarni saqlaydi va ustun nomlarini eslab qolmaydi. pandas aynan jadvalni saqlaydi.</p>
+<div class="comparison-grid">
+  <div class="comparison-item bad"><div class="label">NumPy-massiv</div><h3>Faqat sonlar</h3>
+    <ul><li>Butun massivga bitta ma'lumot turi</li><li>Ustun nomlari yo'q</li><li>Hudud va summa yonma-yon yotmaydi</li></ul></div>
+  <div class="comparison-item good"><div class="label">pandas DataFrame</div><h3>Jadval</h3>
+    <ul><li>Turli turdagi ustunlar: son, matn, sana</li><li>Har bir ustunning nomi bor</li><li>Qator = bitta tranzaksiya butunligicha</li></ul></div>
+</div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Ekotizim</p>
+<h2>pandas NumPy ustida turadi</h2>
+<p class="body-text">Ichkarida har bir pandas ustuni NumPy-massiv sifatida saqlanadi. NumPy tezlik beradi, pandas esa ustiga ustun nomlari, qator indeksi va bitta jadvalda turli turlarni qo'shadi.</p>
+<div class="layer-stack">
+  <div class="layer top">pandas - jadvallar: ustun nomlari, indeks, turli turlar</div>
+  <div class="layer">NumPy - massivlar: vektorlash, tezlik</div>
+  <div class="layer">C va xotira - ichkaridagi tez sikllar</div>
+</div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Uchta obyekt</p>
+<h2>NumPy massiv, Series, DataFrame</h2>
+<p class="body-text">Har bir keyingi obyekt oldingisi ustiga quriladi.</p>
+<div class="cards-container" style="grid-template-columns:repeat(3,1fr)">
+  <div class="card"><h3>NumPy massiv</h3><p>Bir turdagi sonlar, yorliqsiz. Sof tezlik.</p></div>
+  <div class="card"><h3>Series</h3><p>Bir o'lchamli massiv plyus indeks (qator yorliqlari). Bitta ustun.</p></div>
+  <div class="card"><h3>DataFrame</h3><p>Jadval: umumiy indeksli Series ustunlari to'plami. Asosiy obyekt.</p></div>
+</div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Ular qanday ko'rinadi</p>
+<h2>NumPy, Series va DataFrame yonma-yon</h2>
+<div class="cards-container" style="grid-template-columns:repeat(3,1fr);align-items:start;margin-top:clamp(20px,3vh,32px)">
+  <div class="card" style="text-align:center">
+    <h3>NumPy array</h3>
+    <p>Yorliqsiz tekis massiv</p>
+    <div class="arr-box">
+      <div class="arr-cell">125k</div><div class="arr-cell">45k</div><div class="arr-cell">230k</div><div class="arr-cell">89k</div>
+    </div>
+    <div class="mono" style="margin-top:8px">dtype: int64</div>
+  </div>
+  <div class="card" style="text-align:center">
+    <h3>Series</h3>
+    <p>Massiv + qator indeksi</p>
+    <div class="ser-list">
+      <div class="ser-row"><span class="ser-idx">0</span><span class="ser-val">125 000</span></div>
+      <div class="ser-row"><span class="ser-idx">1</span><span class="ser-val"> 45 000</span></div>
+      <div class="ser-row"><span class="ser-idx">2</span><span class="ser-val">230 000</span></div>
+      <div class="ser-row"><span class="ser-idx">3</span><span class="ser-val"> 89 000</span></div>
+    </div>
+    <div class="mono" style="margin-top:6px">Name: amount</div>
+  </div>
+  <div class="card" style="text-align:center">
+    <h3>DataFrame</h3>
+    <p>Bir nechta ustundan iborat jadval</p>
+    <table class="df-viz" style="margin:10px auto 0">
+      <tr><th class="idx"></th><th>merchant</th><th>amount</th></tr>
+      <tr><td class="idx">0</td><td>Korzinka</td><td>125 000</td></tr>
+      <tr><td class="idx">1</td><td>Evos</td><td>45 000</td></tr>
+      <tr><td class="idx">2</td><td>Texnomart</td><td>230 000</td></tr>
+    </table>
+  </div>
+</div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Series</p>
+<h2>Series: yorliqlangan qatorli ustun</h2>
+<div class="comparison-grid" style="align-items:start">
+  <div style="text-align:left">
+    <p class="body-text" style="margin:0 0 14px">Series - bu bir o'lchamli NumPy massiv plyus indeks (qator yorliqlari). Unda nom, tur va 11-ma'ruzadagi kabi vektor amallari bor.</p>
+    <div class="quote-card"><p>Jadvalning bitta ustuni - bu Series. Uning qiymatlari - NumPy-massiv, indeks esa qator yorliqlarini belgilaydi.</p></div>
+  </div>
+  <div style="text-align:center">
+    <p style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.12em;color:#86868b;margin-bottom:8px">df["amount"]</p>
+    <div class="ser-list">
+      <div class="ser-row"><span class="ser-idx">0</span><span class="ser-val">125 000</span></div>
+      <div class="ser-row"><span class="ser-idx">1</span><span class="ser-val"> 45 000</span></div>
+      <div class="ser-row"><span class="ser-idx">2</span><span class="ser-val">2 300 000</span></div>
+    </div>
+    <p style="font-size:11px;color:#86868b;margin-top:8px;font-family:'SF Mono','Menlo',monospace">Name: amount, dtype: int64</p>
+  </div>
+</div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">DataFrame</p>
+<h2>DataFrame: umumiy indeksli ustunlar to'plami</h2>
+<div class="comparison-grid" style="align-items:start">
+  <div style="text-align:left">
+    <p class="body-text" style="margin:0 0 14px">DataFrame - bu jadval. Har bir ustun - bu Series, hammasi bir xil uzunlikda va umumiy qator indeksi bilan. Bitta ustunga murojaat Series qaytaradi.</p>
+    <div class="quote-card success"><p>Qatorlar - bu tranzaksiyalar, ustunlar - bu belgilar. Jadval, ustun va katak - bu bitta obyektning uch darajasi.</p></div>
+  </div>
+  <div style="text-align:center">
+    <p style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.12em;color:#86868b;margin-bottom:8px">df</p>
+    <table class="df-viz" style="margin:0 auto">
+      <tr><th class="idx"></th><th>merchant</th><th>amount</th><th>region</th></tr>
+      <tr><td class="idx">0</td><td>Korzinka</td><td>125 000</td><td>Toshkent</td></tr>
+      <tr><td class="idx">1</td><td>Evos</td><td>45 000</td><td>Samarqand</td></tr>
+      <tr><td class="idx">2</td><td>Texnomart</td><td>2 300 000</td><td>Toshkent</td></tr>
+    </table>
+  </div>
+</div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Misol</p>
+<h2>Koddagi jadval</h2>
+<div class="code-block">df = pd.<span class="cf">DataFrame</span>({
+    <span class="cs">"merchant"</span>: [<span class="cs">"Korzinka"</span>, <span class="cs">"Evos"</span>, <span class="cs">"Texnomart"</span>],
+    <span class="cs">"amount"</span>:   [<span class="cm">125000</span>, <span class="cm">45000</span>, <span class="cm">2300000</span>],
+    <span class="cs">"region"</span>:   [<span class="cs">"Toshkent"</span>, <span class="cs">"Samarqand"</span>, <span class="cs">"Toshkent"</span>],
+})
+<span class="cf">print</span>(df.shape)      <span class="co"># (3, 3): qatorlar, ustunlar</span></div>
+<p class="body-text" style="margin-top:14px">Ustunlar lug'ati jadvalga aylanadi. Har bir kalit - ustun nomi, har bir ro'yxat - uning qiymatlari.</p>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Ichkaridan</p>
+<h2>Har bir ustun - alohida turlangan massiv</h2>
+<p class="body-text">DataFrame ustunlarni alohida turlangan NumPy massivlari sifatida saqlaydi. Shuning uchun ustun ustidagi amal NumPy tezligida ketadi, turli ustunlarda esa turli turlar bo'lishi mumkin.</p>
+<div class="code-block"><span class="cf">print</span>(df.dtypes)
+<span class="co"># merchant    object   (matn)</span>
+<span class="co"># amount      int64    (son)</span>
+<span class="co"># region      object   (matn)</span></div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Qaysi biri qachon</p>
+<h2>NumPy, Series yoki DataFrame</h2>
+<div class="cards-container" style="grid-template-columns:repeat(3,1fr)">
+  <div class="card"><h3>NumPy</h3><p>Sof sonlar, matritsalar, chiziqli algebra, maksimal tezlik.</p></div>
+  <div class="card"><h3>Series</h3><p>Bitta yorliqlangan ustun, yorliq bo'yicha tez qidiruv, bitta belgi.</p></div>
+  <div class="card"><h3>DataFrame</h3><p>Aralash turli jadval, har qanday haqiqiy ma'lumot tahlili.</p></div>
+</div>
+<div class="quote-card"><p>Ko'pchilik haqiqiy masalalarda DataFrame bilan ishlanadi. Bitta ustun olinganda Series olinadi. NumPy ichkarida matematikani sanaydi.</p></div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Ma'lumot turlari</p>
+<h2>Har bir ustunda bitta tur</h2>
+<p class="body-text">Ustun turi uchta narsani hal qiladi: u qancha xotira egallaydi, amallar qanchalik tez ketadi va qanday harakatlar mumkin. pandas faylni o'qishda turni o'zi tanlaydi, lekin ko'pincha uni to'g'rilashga to'g'ri keladi.</p>
+<div class="quote-card"><p>Son, matn va sana - bu turli turlar. Sonlarni qo'shish mumkin, matnni bosh harfga keltirish mumkin, bir sanadan boshqasini ayirish mumkin.</p></div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">NumPy</p>
+<h2>Raqamli turlar: bir o'lcham - bir xotira bloki</h2>
+<p class="body-text">NumPy tezligi bitta printsipga asoslanadi: bir turdagi barcha qiymatlar xuddi bir xil bayt sonini egallaydi va xotirada uzluksiz bir yaxlit blok shaklida yotadi. Protsessor keyingi qiymat qaerda ekanini biladi va Python ishtirokisiz blok bo'ylab yuradi.</p>
+<div class="cards-container" style="grid-template-columns:repeat(3,1fr)">
+  <div class="card"><h3>int8 / 16 / 32 / 64</h3><p>Butun sonlar. Qiymatga 1, 2, 4 yoki 8 bayt. Diapazon o'lchamga bog'liq.</p></div>
+  <div class="card"><h3>float32 / float64</h3><p>Kasr qismli sonlar. 4 yoki 8 bayt. float64 - ma'lumotlar fanida standart.</p></div>
+  <div class="card"><h3>bool</h3><p>True yoki False. 1 bayt. 11-ma'ruzadagi mantiqiy maskalarning asosi.</p></div>
+</div>
+<div class="quote-card"><p>Matn bilan bu printsip buziladi: satrlar turli uzunlikda bo'ladi. NumPy masalani uchta usul bilan hal qiladi - va har birining o'z narxi bor.</p></div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">NumPy: matn</p>
+<h2>NumPy'da matn saqlashning uch usuli</h2>
+<p class="body-text">Har bir yondashuv uzunlik muammosini o'zicha hal qiladi. Tanlov xotira, tezlik va umuman qaysi tillarni saqlash mumkinligiga ta'sir qiladi.</p>
+<div class="cards-container" style="grid-template-columns:repeat(3,1fr)">
+  <div class="card"><h3>U - Unicode</h3><p>Qat'iy kenglik. Belgiga 4 bayt. Rus tili ham kiradigan har qanday til. Juda uzun satr indamay kesiladi.</p></div>
+  <div class="card"><h3>S - baytlar</h3><p>Qat'iy kenglik. Belgiga 1 bayt. Faqat lotin. U'dan 4 marta tejamkor, lekin kiril xatoga olib keladi.</p></div>
+  <div class="card"><h3>object</h3><p>Qiymatning o'zi emas, xotiradagi satrga manzil (ko'rsatkich). Moslashuvchan, lekin sekin: vektorlash ishlamaydi.</p></div>
+</div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">U amalda</p>
+<h2>U: qat'iy kenglik va indamay kesilish</h2>
+<div class="comparison-grid" style="align-items:start">
+  <div class="code-block" style="margin-top:0"><span class="cc">&gt;&gt;&gt;</span> a = np.<span class="cf">array</span>([<span class="cs">"Korzinka"</span>, <span class="cs">"Evos"</span>, <span class="cs">"Texnomart"</span>])
+<span class="cc">&gt;&gt;&gt;</span> a.dtype
+dtype(<span class="cs">'&lt;U9'</span>)        <span class="co"># kenglik = eng uzun satr (9)</span>
+<span class="cc">&gt;&gt;&gt;</span> a[<span class="cm">0</span>] = <span class="cs">"Texnomart Plaza"</span>   <span class="co"># 15 ta belgi</span>
+<span class="cc">&gt;&gt;&gt;</span> a
+array([<span class="cs">'Texnomart'</span>, <span class="cs">'Evos'</span>, <span class="cs">'Texnomart'</span>], dtype=<span class="cs">'&lt;U9'</span>)
+<span class="co">#       ↑ 9 gacha kesildi — indamay, xatosiz</span></div>
+  <div style="text-align:center">
+    <p style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.12em;color:#86868b;margin-bottom:12px">a[0] = "Texnomart Plaza"</p>
+    <div style="display:inline-flex;gap:3px;flex-wrap:wrap;align-items:center;justify-content:center;max-width:360px">
+      <span style="width:26px;height:34px;border-radius:5px;display:inline-flex;align-items:center;justify-content:center;font-family:'SF Mono',monospace;font-size:14px;font-weight:600;background:rgba(0,122,255,0.1);border:1px solid rgba(0,122,255,0.28);color:#007aff">T</span><span style="width:26px;height:34px;border-radius:5px;display:inline-flex;align-items:center;justify-content:center;font-family:'SF Mono',monospace;font-size:14px;font-weight:600;background:rgba(0,122,255,0.1);border:1px solid rgba(0,122,255,0.28);color:#007aff">e</span><span style="width:26px;height:34px;border-radius:5px;display:inline-flex;align-items:center;justify-content:center;font-family:'SF Mono',monospace;font-size:14px;font-weight:600;background:rgba(0,122,255,0.1);border:1px solid rgba(0,122,255,0.28);color:#007aff">x</span><span style="width:26px;height:34px;border-radius:5px;display:inline-flex;align-items:center;justify-content:center;font-family:'SF Mono',monospace;font-size:14px;font-weight:600;background:rgba(0,122,255,0.1);border:1px solid rgba(0,122,255,0.28);color:#007aff">n</span><span style="width:26px;height:34px;border-radius:5px;display:inline-flex;align-items:center;justify-content:center;font-family:'SF Mono',monospace;font-size:14px;font-weight:600;background:rgba(0,122,255,0.1);border:1px solid rgba(0,122,255,0.28);color:#007aff">o</span><span style="width:26px;height:34px;border-radius:5px;display:inline-flex;align-items:center;justify-content:center;font-family:'SF Mono',monospace;font-size:14px;font-weight:600;background:rgba(0,122,255,0.1);border:1px solid rgba(0,122,255,0.28);color:#007aff">m</span><span style="width:26px;height:34px;border-radius:5px;display:inline-flex;align-items:center;justify-content:center;font-family:'SF Mono',monospace;font-size:14px;font-weight:600;background:rgba(0,122,255,0.1);border:1px solid rgba(0,122,255,0.28);color:#007aff">a</span><span style="width:26px;height:34px;border-radius:5px;display:inline-flex;align-items:center;justify-content:center;font-family:'SF Mono',monospace;font-size:14px;font-weight:600;background:rgba(0,122,255,0.1);border:1px solid rgba(0,122,255,0.28);color:#007aff">r</span><span style="width:26px;height:34px;border-radius:5px;display:inline-flex;align-items:center;justify-content:center;font-family:'SF Mono',monospace;font-size:14px;font-weight:600;background:rgba(0,122,255,0.1);border:1px solid rgba(0,122,255,0.28);color:#007aff">t</span><span style="display:inline-flex;align-items:center;color:#ff3b30;font-size:18px;padding:0 4px">✂</span><span style="height:34px;padding:0 12px;border-radius:5px;display:inline-flex;align-items:center;font-family:'SF Mono',monospace;font-size:14px;background:rgba(255,59,48,0.06);border:1px dashed rgba(255,59,48,0.35);color:#ff3b30;text-decoration:line-through">·Plaza</span>
+    </div>
+    <p style="margin-top:14px;font-size:14px;color:#515154;line-height:1.45;max-width:340px;margin-left:auto;margin-right:auto">Katak aynan <b style="color:#007aff">9 ta belgi</b> sig'diradi. Qolgani <b style="color:#ff3b30">xatosiz</b> tashlanadi — ma'lumot indamay yo'qoladi.</p>
+  </div>
+</div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">S amalda</p>
+<h2>S: belgiga bir bayt — va kirilda qulash</h2>
+<div class="comparison-grid" style="align-items:start">
+  <div class="code-block" style="margin-top:0"><span class="cc">&gt;&gt;&gt;</span> b = np.<span class="cf">array</span>([<span class="cs">"Tashkent"</span>, <span class="cs">"Evos"</span>], dtype=<span class="cs">"S"</span>)
+<span class="cc">&gt;&gt;&gt;</span> b
+array([b<span class="cs">'Tashkent'</span>, b<span class="cs">'Evos'</span>], dtype=<span class="cs">'|S8'</span>)   <span class="co"># belgiga 1 bayt</span>
+<span class="cc">&gt;&gt;&gt;</span> np.<span class="cf">array</span>([<span class="cs">"Ташкент"</span>], dtype=<span class="cs">"S"</span>)
+<span style="color:#ff5555">UnicodeEncodeError: 'ascii' codec can't</span>
+<span style="color:#ff5555">encode characters in position 0-6</span></div>
+  <div style="text-align:center;display:flex;flex-direction:column;gap:16px;justify-content:center">
+    <div>
+      <div style="display:flex;align-items:center;justify-content:center;gap:10px;padding:13px 18px;border-radius:10px;background:rgba(52,199,89,0.06);border:1px solid rgba(52,199,89,0.22)">
+        <span style="font-family:'SF Mono',monospace;font-size:14px;color:#1d1d1f">"Tashkent"</span><span style="color:#34c759;font-size:16px">→</span><span style="font-family:'SF Mono',monospace;font-size:14px;color:#1d1d1f">b'Tashkent'</span><span style="color:#34c759;font-weight:700;font-size:16px">✓</span>
+      </div>
+      <p style="font-size:12px;color:#86868b;margin-top:6px">lotin: har bir belgi — 1 ASCII bayt</p>
+    </div>
+    <div>
+      <div style="display:flex;align-items:center;justify-content:center;gap:10px;padding:13px 18px;border-radius:10px;background:rgba(255,59,48,0.05);border:1px solid rgba(255,59,48,0.22)">
+        <span style="font-family:'SF Mono',monospace;font-size:14px;color:#1d1d1f">"Ташкент"</span><span style="color:#ff3b30;font-size:16px">→</span><span style="color:#ff3b30;font-weight:700;font-size:14px">✗ UnicodeEncodeError</span>
+      </div>
+      <p style="font-size:12px;color:#86868b;margin-top:6px">kiril ASCII'ga sig'maydi</p>
+    </div>
+  </div>
+</div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">object amalda</p>
+<h2>object: satr o'rniga 8 bayt ko'rsatkich</h2>
+<div class="comparison-grid" style="align-items:start">
+  <div class="code-block" style="margin-top:0"><span class="cc">&gt;&gt;&gt;</span> o = np.<span class="cf">array</span>([<span class="cs">"Ташкент"</span>, <span class="cs">"Самарканд"</span>], dtype=object)
+<span class="cc">&gt;&gt;&gt;</span> o.dtype
+dtype(<span class="cs">'O'</span>)
+<span class="cc">&gt;&gt;&gt;</span> o.itemsize
+<span class="cm">8</span>        <span class="co"># 8 bayt = ko'rsatkich, satr emas</span></div>
+  <div style="text-align:center">
+    <p style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:#86868b;margin-bottom:8px">object massiv: ko'rsatkichlar ketma-ket</p>
+    <div style="display:inline-flex;gap:3px">
+      <span style="font-family:'SF Mono',monospace;font-size:12px;padding:8px 10px;border-radius:6px;background:rgba(0,122,255,0.1);border:1px solid rgba(0,122,255,0.28);color:#007aff">0x··a1</span><span style="font-family:'SF Mono',monospace;font-size:12px;padding:8px 10px;border-radius:6px;background:rgba(0,122,255,0.1);border:1px solid rgba(0,122,255,0.28);color:#007aff">0x··c8</span><span style="font-family:'SF Mono',monospace;font-size:12px;padding:8px 10px;border-radius:6px;background:rgba(0,122,255,0.1);border:1px solid rgba(0,122,255,0.28);color:#007aff">0x··04</span>
+    </div>
+    <div style="color:#c7c7cc;font-size:16px;letter-spacing:18px;margin:6px 0 2px;padding-left:18px">↓↓↓</div>
+    <p style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:#86868b;margin-bottom:8px">satrlar uyum bo'ylab sochilgan</p>
+    <div style="position:relative;height:78px;max-width:340px;margin:0 auto">
+      <span style="position:absolute;left:6%;top:0;font-family:'SF Mono',monospace;font-size:12px;padding:6px 12px;border-radius:6px;background:#f5f5f7;border:1px solid rgba(0,0,0,0.1);color:#1d1d1f">"Самарканд"</span>
+      <span style="position:absolute;right:0;top:24px;font-family:'SF Mono',monospace;font-size:12px;padding:6px 12px;border-radius:6px;background:#f5f5f7;border:1px solid rgba(0,0,0,0.1);color:#1d1d1f">"Ташкент"</span>
+      <span style="position:absolute;left:24%;top:52px;font-family:'SF Mono',monospace;font-size:12px;padding:6px 12px;border-radius:6px;background:#f5f5f7;border:1px solid rgba(0,0,0,0.1);color:#1d1d1f">"Бухара"</span>
+    </div>
+  </div>
+</div>
+<div class="quote-card"><p>Ko'rsatkichlar massivi kichik (50 000 region — atigi 0.4 MB), lekin satrlarning o'zi alohida Python-obyektlar bo'lib yotadi. Protsessor har biri uchun sakraydi: har bir elementda cache miss, vektorlash ishlamaydi.</p></div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">NumPy</p>
+<h2>Matn turlari: U va S</h2>
+<p class="body-text">NumPy'da matn - bu qat'iy kenglikdagi tur: kenglik eng uzun satrga teng, va juda uzun qiymat indamay kesiladi.</p>
+<div class="comparison-grid">
+  <div class="comparison-item old"><div class="label">S - baytlar</div><h3>Belgiga 1 bayt</h3>
+    <ul><li>Faqat lotin (ASCII)</li><li>Kirilda xato bilan to'xtaydi</li><li>Xotirani tejaydi</li></ul></div>
+  <div class="comparison-item new"><div class="label">U - Unicode</div><h3>Belgiga 4 bayt</h3>
+    <ul><li>Har qanday til, jumladan rus tili</li><li>Ko'proq xotira egallaydi</li><li>Matn uchun standart tanlov</li></ul></div>
+</div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Ichkaridan</p>
+<h2>object: qiymatlar emas, ko'rsatkichlar massivi</h2>
+<p class="body-text">object turi satrlarning o'zini emas, 64-bitli manzillarni saqlaydi: satrlar haqiqatda joylashgan operativ xotira joylariga ko'rsatkichlar. Satrlarning o'zi esa xotirada tartibsiz tarqalib yotadi.</p>
+<div class="comparison-grid">
+  <div class="comparison-item bad"><div class="label">object - ko'rsatkichlar</div><h3>Har bir elementda cache miss</h3>
+    <ul><li>CPU manzilni o'qiydi</li><li>Xotiraning boshqa qismiga sakraydi</li><li>Satrni o'qiydi</li><li>Keyingi manzil uchun qaytadi</li></ul></div>
+  <div class="comparison-item good"><div class="label">int64 - qiymatlar</div><h3>Protsessor blok bo'ylab yuradi</h3>
+    <ul><li>Barcha qiymatlar yonma-yon yotadi</li><li>Keyingisi = +8 bayt</li><li>Protsessor keshi tiklanmaydi</li><li>Vektorlash ishlaydi</li></ul></div>
+</div>
+<div class="quote-card success"><p>pandas 3.0'da sof matn ustuni standart bo'yicha object emas, str turini oladi - bu tezlikni matnda tiklashga qarab birinchi qadam.</p></div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">pandas aqlli turlari</p>
+<h2>Extension types: bo'sh qiymatlar va tejamkorlik</h2>
+<p class="body-text">pandas NumPy ustiga kengaytirilgan turlarni qo'shdi. Ular bo'sh qiymatlarni to'g'ridan-to'g'ri ustunda saqlaydi va xotirani tejaydi.</p>
+<div class="cards-container" style="grid-template-columns:repeat(3,1fr)">
+  <div class="card"><h3>string</h3><p>Matn ustunlari uchun alohida tur. NA'ni qo'llab-quvvatlaydi. Sonlar yoki ro'yxatlar bilan aralashishga yo'l qo'ymaydi.</p></div>
+  <div class="card"><h3>Int64, boolean</h3><p>NA'ni qo'llab-quvvatlovchi butun sonlar va mantiqiy tur. Bosh harf ularni NumPy analoglaridan ajratadi.</p></div>
+  <div class="card"><h3>category</h3><p>Unikal qiymatlar bir marta saqlanadi. Ustunda raqamli kodlar turadi. Xotirani 10-100 marta tejaydi.</p></div>
+  <div class="card"><h3>datetime (TZ)</h3><p>Vaqt zonasi bilan vaqt lahzasi.</p></div>
+  <div class="card"><h3>Period</h3><p>Taqvim kesimi: chorak, oy.</p></div>
+  <div class="card"><h3>Interval</h3><p>Sonli diapazon, masalan (0, 10].</p></div>
+</div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Butun sonlarda bo'sh qiymatlar</p>
+<h2>Int64: bo'sh qiymatli butun</h2>
+<p class="body-text">Oddiy NumPy butun NaN'ni saqlamaydi, shuning uchun bitta bo'sh qiymat ustunni kasrlarga aylantiradi va sonli id'larni buzadi.</p>
+<div class="comparison-grid">
+  <div class="comparison-item bad"><div class="label">oddiy int + NaN</div><h3>float'ga ketadi</h3>
+    <ul><li>101 -> 101.0 bo'ladi</li><li>sonli id buzilgan</li></ul></div>
+  <div class="comparison-item good"><div class="label">Int64</div><h3>Butun bo'lib qoladi</h3>
+    <ul><li>101 -> 101 bo'lib qoladi</li><li>bo'sh qiymat bu &lt;NA&gt;</li></ul></div>
+</div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Xotira</p>
+<h2>category: satrlar o'rniga raqamli kodlar</h2>
+<p class="body-text">Ustunda kam sonli turli qiymatlar ko'p marta takrorlanganda (shaharlar, statuslar), category turi har bir satrni lug'atda bir marta saqlaydi, ustunda esa kichik kodlarni ushlab turadi. Minglab takrorli ustunda bu xotirani o'nlab marta kamaytiradi.</p>
+<div class="quote-card"><p>Ustun xotirasini o'lchash: memory_usage(deep=True). deep parametri matn uchun majburiy, aks holda faqat havolalar hajmi sanaladi.</p></div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Ma'lumot turlari</p>
+<h2>NumPy va pandas: turlar jadvali</h2>
+<table class="data-table">
+<thead><tr><th>Tur</th><th>Qayerda</th><th>Nima saqlaydi</th><th>Yo'q qiymat</th></tr></thead>
+<tbody>
+<tr><td><code>int8 / 16 / 32 / 64</code></td><td><span class="tag-np">NumPy</span></td><td>Butun sonlar</td><td>yo'q (NaN float'ga o'tkazadi)</td></tr>
+<tr><td><code>float32 / float64</code></td><td><span class="tag-np">NumPy</span></td><td>Kasr qismli sonlar</td><td>NaN</td></tr>
+<tr><td><code>bool</code></td><td><span class="tag-np">NumPy</span></td><td>True / False</td><td>yo'q</td></tr>
+<tr><td><code>U</code> (Unicode)</td><td><span class="tag-np">NumPy</span></td><td>Matn, qat'iy kenglik, har qanday til</td><td>yo'q</td></tr>
+<tr><td><code>S</code> (bytes)</td><td><span class="tag-np">NumPy</span></td><td>Matn, qat'iy kenglik, faqat ASCII</td><td>yo'q</td></tr>
+<tr><td><code>object</code></td><td><span class="tag-np">NumPy</span> / <span class="tag-pd">pandas</span></td><td>Python-obyektlariga ko'rsatkichlar</td><td>NaN</td></tr>
+<tr><td><code>Int8 / 16 / 32 / 64</code></td><td><span class="tag-pd">pandas</span></td><td>Butun sonlar</td><td>pd.NA</td></tr>
+<tr><td><code>Float32 / Float64</code></td><td><span class="tag-pd">pandas</span></td><td>Kasr qismli sonlar</td><td>pd.NA</td></tr>
+<tr><td><code>boolean</code></td><td><span class="tag-pd">pandas</span></td><td>True / False</td><td>pd.NA</td></tr>
+<tr><td><code>string</code></td><td><span class="tag-pd">pandas</span></td><td>Matn ma'lumotlari</td><td>pd.NA</td></tr>
+<tr><td><code>category</code></td><td><span class="tag-pd">pandas</span></td><td>Takrorlanuvchi qiymatlar (lug'at + kodlar)</td><td>pd.NA</td></tr>
+<tr><td><code>datetime (TZ)</code></td><td><span class="tag-pd">pandas</span></td><td>Vaqt zonasi bilan sana va vaqt</td><td>pd.NA</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow" style="color:#ff9500">Savol</p>
+<h2>status ustuni string turiga ega. df[df["status"].str.contains("success")] xato berdi. Bir xil kod object turida ishlagan. Nega?</h2>
+<p class="body-text">str.contains() xatosiz ishladi va natija qaytardi. Xato natijani indekslash uchun maska sifatida ishlatishda yuz berdi.</p>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow" style="color:#34c759">Javob</p>
+<h2>string bo'sh katakchalarda False o'rniga NA qaytaradi - NA bilan maska ishlamaydi</h2>
+<div class="quote-card success"><p>object turida bo'sh katakcha str.contains() da False beradi. string turida - NA. pandas NA li maskadan indekslash uchun foydalana olmaydi. Yechim: <code>df["status"].str.contains("success", na=False)</code> - na=False parametri NA ni False ga almashtiradi.</p></div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Ish jarayoni</p>
+<h2>Qadamlar ketma-ketligi: xom fayldan hisobotgacha</h2>
+<p class="body-text">Haqiqiy loyihada doim bitta qadamlar ketma-ketligi bor. Bu marshrutni biz ikki ma'ruzada o'tamiz: 12-ma'ruza (shu) ma'lumotni tayyorlaydi, 13-ma'ruza uni tahlil qiladi.</p>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">10 qadam</p>
+<h2>Xom fayldan hisobotgacha</h2>
+<div class="flow">
+  <div class="it"><b>1</b>Yuklash<i>read_csv</i></div>
+  <div class="it"><b>6</b>Birlashtirish<i>merge</i></div>
+  <div class="it"><b>2</b>Razvedka<i>info, describe</i></div>
+  <div class="it"><b>7</b>Guruhlash<i>groupby</i></div>
+  <div class="it"><b>3</b>Tozalash<i>NaN, turlar</i></div>
+  <div class="it"><b>8</b>Saralash<i>sort_values</i></div>
+  <div class="it"><b>4</b>Tanlash<i>maska, loc</i></div>
+  <div class="it"><b>9</b>Vaqt<i>resample</i></div>
+  <div class="it"><b>5</b>O'zgartirish<i>yangi ustun</i></div>
+  <div class="it"><b>10</b>Saqlash<i>to_csv</i></div>
+</div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Tozalash</p>
+<h2>Tozalash loyiha vaqtining 60-70% ini egallaydi</h2>
+<p class="body-text">Haqiqiy ma'lumot iflos keladi: bo'sh qiymatlar, matn ko'rinishidagi sonlar, dublikatlar, kategoriyalarda turli registr. Tozalash tahlildan oldin boradi, chunki kirishdagi yomon ma'lumot chiqishda noto'g'ri xulosalar beradi.</p>
+<div class="quote-card warning"><p>Tozalanmagan ma'lumotlarda tahlil noto'g'ri natijalar beradi. Tozalash har qanday hisob-kitobdan oldin ketadi.</p></div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Tanlash</p>
+<h2>Yorliqlar va pozitsiyalar: loc va iloc</h2>
+<p class="body-text">Qator va ustunlarda ham raqamlari (pozitsiyalar), ham nomlari (yorliqlar) bor. pandas ikkita murojaat usulini beradi.</p>
+<div class="comparison-grid">
+  <div class="comparison-item old"><div class="label">iloc</div><h3>Pozitsiyalar bo'yicha</h3>
+    <ul><li>Qator va ustun raqamlari noldan</li><li>11-ma'ruzadagi massiv indekslashi kabi</li><li>Kesimning yuqori chegarasi kirmaydi</li></ul></div>
+  <div class="comparison-item new"><div class="label">loc</div><h3>Yorliqlar bo'yicha</h3>
+    <ul><li>Qator (indeks) va ustun nomlari</li><li>Qatorlarni maska bilan tanlash mumkin</li><li>Kesimning yuqori chegarasi kiradi</li></ul></div>
+</div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Filtrlash</p>
+<h2>Mantiqiy maska qatorlarni shart bo'yicha tanlaydi</h2>
+<p class="body-text">Ustunni son bilan taqqoslash har bir qator bo'yicha True/False massivini beradi. Kvadrat qavslarda u faqat True bo'lgan qatorlarni qoldiradi. Bu 11-ma'ruzadagi mantiqiy maskalarning davomi.</p>
+<div class="quote-card"><p>Bir nechta shart &amp; (VA) va | (YOKI) orqali birlashtiriladi, har biri yumaloq qavsda. and va or so'zlari bu yerda ishlamaydi.</p></div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow" style="color:#ff9500">Auditoriya savoli</p><h2>Sen filtered = df[df.amount &gt; 1e6] yozding, keyin filtered["fee"] = 0. Asl df o'zgardimi?</h2><p class="body-text">Intuitiv ravishda ha shekilli, filtered - bu o'sha jadval. Lekin Python SettingWithCopyWarning ko'rsatadi.</p>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow" style="color:#34c759">Javob</p><h2>df o'zgarmadi: filtrlash nusxa qaytardi</h2><div class="quote-card success"><p>Filtrlash nusxa yoki ko'rinish qaytarishi mumkin - oldindan aytib bo'lmaydi. Yozuv nusxaga boradi, asli o'zgarmaydi. To'g'risi: df.loc[df.amount &gt; 1e6, "fee"] = 0 - bitta loc chaqiruvi asliga yozishni kafolatlaydi.</p></div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Bo'sh qiymatlar</p>
+<h2>NaN: yo'q qiymat</h2>
+<p class="body-text">Haqiqiy ma'lumotda qiymatlarning bir qismi yo'q va NaN deb belgilanadi. NaN hech narsaga, hatto o'ziga ham teng emas, shuning uchun uni == taqqoslash bilan tutib bo'lmaydi. mean kabi agregatlar NaN'ni avtomatik o'tkazib yuboradi.</p>
+<div class="quote-card"><p>Bo'sh qiymatlar isna orqali topiladi, dropna orqali o'chiriladi yoki fillna orqali to'ldiriladi. Nimani tanlash qatorni yo'qotish mumkinligiga bog'liq.</p></div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Shpargalka</p>
+<h2>Ma'lumotlar va turlar bitta slaydda</h2>
+<div class="cards-container" style="grid-template-columns:repeat(3,1fr)">
+  <div class="card"><h3>Series / DataFrame</h3><p>Ustun va jadval</p><div class="mono">df["amount"]</div></div>
+  <div class="card"><h3>Ustun turi</h3><p>Ko'rish va o'zgartirish</p><div class="mono">df.dtypes · astype</div></div>
+  <div class="card"><h3>string / object</h3><p>Matn ustunlari uchun turlar</p><div class="mono">dtype="string"</div></div>
+  <div class="card"><h3>Int64 / boolean</h3><p>NA bilan butun va bul</p><div class="mono">dtype="Int64"</div></div>
+  <div class="card"><h3>category</h3><p>Xotira tejamkorligi</p><div class="mono">astype("category")</div></div>
+  <div class="card"><h3>read_csv</h3><p>Fayldan yuklash</p><div class="mono">pd.read_csv(...)</div></div>
+  <div class="card"><h3>Tozalash</h3><p>Matnni songa va sanaga</p><div class="mono">to_numeric · to_datetime</div></div>
+  <div class="card"><h3>loc / iloc</h3><p>Yorliqlar / pozitsiyalar bo'yicha</p><div class="mono">df.loc[...]</div></div>
+  <div class="card"><h3>Maska</h3><p>Qatorlar filtri</p><div class="mono">df[df.amount&gt;1e6]</div></div>
+</div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">O'zingni tekshir</p>
+<ol style="text-align:left;max-width:880px;padding-left:24px;font-size:clamp(14px,1.55vw,17px);line-height:1.7">
+  <li>Series DataFrame'dan nimasi bilan farq qiladi?</li>
+  <li>Nega bitta NaN'li butun sonlar massivi float'ga aylanadi, va buni Int64 qanday hal qiladi?</li>
+  <li>U turi S'dan nimasi bilan farq qiladi va nega rus tili uchun U kerak?</li>
+  <li>Nega object ustuni sekin ishlaydi?</li>
+  <li>category turi nimani va nima hisobiga tejaydi?</li>
+  <li>astype qachon to'xtaydi, to_numeric esa yo'q?</li>
+  <li>loc iloc'dan nimasi bilan farq qiladi?</li>
+  <li>amount matn ustunidan qanday qilib son olish mumkin?</li>
+</ol>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<h2>Savollar?</h2>
+</div>
+</div>
+
+</div>
+<div class="lesson-tag">12-ma'ruza · pandas: ma'lumotlar va turlar</div><div class="slide-indicator"><span id="current-slide">1</span> / <span id="total-slides">1</span></div><div class="nav-hint">→ yoki Space oldinga<br/>← orqaga</div>
+<script>
+let currentSlide=0;const slides=document.querySelectorAll('.slide');const totalSlides=slides.length;document.getElementById('total-slides').textContent=totalSlides;function showSlide(n){slides[currentSlide].classList.remove('active');currentSlide=(n+totalSlides)%totalSlides;slides[currentSlide].classList.add('active');document.getElementById('current-slide').textContent=currentSlide+1;const sc=slides[currentSlide].querySelector('.slide-content');sc.style.animation='none';void sc.offsetHeight;sc.style.animation=null;slides[currentSlide].querySelectorAll('.card,.comparison-item,.step,.replay-anim').forEach(el=>{const o=el.style.animation;el.style.animation='none';void el.offsetHeight;el.style.animation=o;});}function nextSlide(){showSlide(currentSlide+1);}function prevSlide(){showSlide(currentSlide-1);}document.addEventListener('keydown',e=>{if(['textarea','input'].includes((e.target.tagName||'').toLowerCase()))return;if(e.key==='ArrowRight'||e.key===' '){e.preventDefault();nextSlide();}else if(e.key==='ArrowLeft'){e.preventDefault();prevSlide();}});let tX=0;document.addEventListener('touchstart',e=>{tX=e.changedTouches[0].screenX;});document.addEventListener('touchend',e=>{const dx=e.changedTouches[0].screenX-tX;if(dx<-50)nextSlide();else if(dx>50)prevSlide();});
+</script>
+</body>
+</html>

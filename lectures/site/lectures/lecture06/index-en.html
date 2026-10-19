@@ -1,0 +1,1527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OOP in Python · Lecture 6</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700;800&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+            background: #FFFFFF;
+            color: #1d1d1f;
+            line-height: 1.1;
+            overflow: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .presentation { width: 100vw; height: 100vh; position: relative; }
+
+        .slide {
+            width: 100%; height: 100%;
+            display: none;
+            align-items: center; justify-content: center;
+            position: absolute; top: 0; left: 0;
+            padding: clamp(40px, 6vh, 80px) clamp(40px, 6vw, 80px);
+            text-align: center;
+        }
+        .slide.active { display: flex; flex-direction: column; }
+
+        .slide-content {
+            max-width: 1200px; width: 100%; margin: 0 auto;
+            opacity: 0; transform: translateY(20px);
+            animation: fadeInUp 0.8s ease-out 0.2s forwards;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+        }
+
+        @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
+
+        h1 {
+            font-size: clamp(40px, 6.5vw, 96px);
+            font-weight: 700;
+            letter-spacing: -0.025em;
+            line-height: 0.95;
+            margin-bottom: clamp(16px, 2.5vh, 32px);
+            color: #1d1d1f;
+        }
+
+        h2 {
+            font-size: clamp(28px, 4vw, 56px);
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            line-height: 1.05;
+            margin-bottom: clamp(16px, 2vh, 28px);
+            color: #1d1d1f;
+        }
+
+        .subtitle {
+            font-size: clamp(18px, 2.2vw, 28px);
+            font-weight: 400;
+            color: #86868b;
+            margin-bottom: clamp(24px, 4vh, 48px);
+            line-height: 1.3;
+            max-width: 900px;
+        }
+
+        .eyebrow {
+            font-size: clamp(13px, 1.2vw, 16px);
+            font-weight: 600;
+            color: #007aff;
+            text-transform: uppercase;
+            letter-spacing: 0.18em;
+            margin-bottom: 18px;
+        }
+
+        .body-text {
+            font-size: clamp(15px, 1.8vw, 22px);
+            font-weight: 400;
+            color: #515154;
+            line-height: 1.45;
+            max-width: 820px;
+            margin: 0 auto;
+        }
+
+        .highlight { color: #007aff; font-weight: 500; }
+        .accent-green { color: #34c759; font-weight: 500; }
+        .accent-red { color: #ff3b30; font-weight: 500; }
+        .accent-purple { color: #af52de; font-weight: 500; }
+
+        .cards-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: clamp(16px, 2.5vw, 28px);
+            margin-top: clamp(24px, 4vh, 40px);
+            max-width: 1100px; width: 100%;
+        }
+
+        .card {
+            background: rgba(0, 0, 0, 0.025);
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            border-radius: 14px;
+            padding: clamp(20px, 2.5vw, 32px);
+            text-align: left;
+            opacity: 0; transform: translateY(24px);
+            animation: cardSlideUp 0.55s ease-out forwards;
+            transition: all 0.3s ease;
+        }
+        .card:nth-child(1) { animation-delay: 0.4s; }
+        .card:nth-child(2) { animation-delay: 0.5s; }
+        .card:nth-child(3) { animation-delay: 0.6s; }
+        .card:nth-child(4) { animation-delay: 0.7s; }
+        @keyframes cardSlideUp { to { opacity: 1; transform: translateY(0); } }
+        .card .num {
+            font-size: clamp(28px, 3vw, 36px);
+            font-weight: 700;
+            color: #007aff;
+            line-height: 1;
+            margin-bottom: 12px;
+        }
+        .card h3 {
+            font-size: clamp(17px, 2vw, 22px);
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #1d1d1f;
+        }
+        .card p {
+            font-size: clamp(13px, 1.55vw, 16px);
+            color: #6e6e73;
+            line-height: 1.45;
+        }
+
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: clamp(24px, 4vw, 56px);
+            max-width: 1100px;
+            width: 100%;
+            margin-top: clamp(24px, 4vh, 40px);
+            align-items: stretch;
+        }
+        .comparison-item {
+            text-align: left;
+            opacity: 0; transform: scale(0.96);
+            animation: scaleIn 0.6s ease-out forwards;
+            padding: clamp(20px, 2.5vw, 32px);
+            border-radius: 16px;
+            background: rgba(0,0,0,0.02);
+            border: 1px solid rgba(0,0,0,0.06);
+        }
+        .comparison-item:nth-child(1) { animation-delay: 0.4s; }
+        .comparison-item:nth-child(2) { animation-delay: 0.55s; }
+        @keyframes scaleIn { to { opacity: 1; transform: scale(1); } }
+        .comparison-item .label {
+            font-size: clamp(12px, 1.1vw, 14px);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.16em;
+            margin-bottom: 12px;
+        }
+        .comparison-item.old .label { color: #ff3b30; }
+        .comparison-item.new .label { color: #34c759; }
+        .comparison-item h3 {
+            font-size: clamp(20px, 2.4vw, 28px);
+            font-weight: 600;
+            margin-bottom: 14px;
+            color: #1d1d1f;
+            line-height: 1.15;
+        }
+        .comparison-item p, .comparison-item li {
+            font-size: clamp(13px, 1.6vw, 17px);
+            color: #515154;
+            line-height: 1.45;
+        }
+
+        .quote-card {
+            margin-top: clamp(20px, 3vh, 32px);
+            padding: clamp(18px, 2.2vw, 26px) clamp(22px, 2.8vw, 32px);
+            border-left: 3px solid #007aff;
+            background: rgba(0, 122, 255, 0.04);
+            border-radius: 8px;
+            text-align: left;
+            max-width: 820px;
+        }
+        .quote-card.warning {
+            border-left-color: #ff3b30;
+            background: rgba(255, 59, 48, 0.04);
+        }
+        .quote-card.success {
+            border-left-color: #34c759;
+            background: rgba(52, 199, 89, 0.05);
+        }
+        .quote-card .label {
+            font-size: 12px; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 0.16em;
+            color: #007aff; margin-bottom: 8px;
+        }
+        .quote-card.warning .label { color: #ff3b30; }
+        .quote-card.success .label { color: #34c759; }
+        .quote-card p {
+            font-size: clamp(14px, 1.7vw, 19px);
+            color: #1d1d1f; line-height: 1.4; font-weight: 500;
+        }
+
+        .code-block {
+            background: #1d1d1f;
+            color: #f5f5f7;
+            border-radius: 12px;
+            padding: clamp(16px, 1.8vw, 24px);
+            font-family: 'SF Mono', 'Menlo', 'Monaco', 'Consolas', monospace;
+            font-size: clamp(12px, 1.4vw, 16px);
+            line-height: 1.6;
+            text-align: left;
+            margin-top: 18px;
+            max-width: 860px;
+            width: 100%;
+            white-space: pre;
+            overflow-x: auto;
+        }
+        .code-block.tight { padding: clamp(14px, 1.6vw, 20px); font-size: clamp(11px, 1.3vw, 14px); line-height: 1.5; }
+        .code-block .ck { color: #ff79c6; }
+        .code-block .cs { color: #f1fa8c; }
+        .code-block .cn { color: #f8f8f2; }
+        .code-block .co { color: #6272a4; font-style: italic; }
+        .code-block .cf { color: #8be9fd; }
+        .code-block .cm { color: #bd93f9; }
+        .code-block .ce { color: #ff5555; }
+        .code-block .cc { color: #50fa7b; }
+
+        .code-output {
+            display: grid;
+            grid-template-columns: 1.1fr 1fr;
+            gap: 16px;
+            margin-top: 22px;
+            width: 100%;
+            max-width: 1050px;
+        }
+        .code-output .term {
+            background: #1d1d1f;
+            color: #f5f5f7;
+            border-radius: 12px;
+            padding: 18px;
+            font-family: 'SF Mono', 'Menlo', monospace;
+            font-size: clamp(12px, 1.4vw, 15px);
+            line-height: 1.6;
+            text-align: left;
+            white-space: pre;
+            overflow-x: auto;
+        }
+        .term .out { color: #50fa7b; }
+        .term .err { color: #ff5555; }
+
+        .checklist {
+            list-style: none;
+            padding: 0;
+            margin-top: 18px;
+            max-width: 800px;
+            text-align: left;
+        }
+        .checklist li {
+            font-size: clamp(15px, 1.8vw, 19px);
+            color: #1d1d1f;
+            line-height: 1.5;
+            padding: 11px 0 11px 40px;
+            position: relative;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+        .checklist li:last-child { border-bottom: none; }
+        .checklist li::before {
+            content: "✓";
+            position: absolute;
+            left: 0; top: 50%;
+            transform: translateY(-50%);
+            width: 26px; height: 26px;
+            border-radius: 50%;
+            background: rgba(0, 122, 255, 0.1);
+            color: #007aff;
+            font-size: 13px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .bullet-list {
+            list-style: none;
+            padding: 0;
+            margin-top: 14px;
+            max-width: 820px;
+            text-align: left;
+        }
+        .bullet-list li {
+            font-size: clamp(14px, 1.7vw, 18px);
+            color: #1d1d1f;
+            line-height: 1.5;
+            padding: 8px 0 8px 22px;
+            position: relative;
+        }
+        .bullet-list li::before {
+            content: "•";
+            position: absolute;
+            left: 6px; top: 7px;
+            color: #007aff;
+            font-weight: 700;
+        }
+
+        .timer-display {
+            font-family: 'SF Mono', 'Menlo', monospace;
+            font-size: clamp(56px, 9vw, 120px);
+            font-weight: 700;
+            color: #007aff;
+            line-height: 1;
+            letter-spacing: -0.04em;
+            margin: 12px 0 20px 0;
+        }
+
+        .flow-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 22px;
+            font-family: 'SF Mono', 'Menlo', monospace;
+            font-size: clamp(13px, 1.5vw, 17px);
+        }
+        .flow-row .step-pill {
+            padding: 9px 16px;
+            border-radius: 50px;
+            background: rgba(0,122,255,0.08);
+            color: #007aff;
+            font-weight: 600;
+            border: 1px solid rgba(0,122,255,0.18);
+        }
+        .flow-row .arrow { color: #86868b; font-size: 18px; }
+
+        .slide-indicator {
+            position: fixed;
+            bottom: 28px; left: 50%;
+            transform: translateX(-50%);
+            font-size: 13px; color: #86868b;
+            font-weight: 400; z-index: 100;
+            letter-spacing: 0.04em;
+        }
+        .nav-hint {
+            position: fixed;
+            bottom: 28px; right: 28px;
+            font-size: 12px; color: #c7c7cc;
+            font-weight: 400; text-align: right;
+            z-index: 100;
+        }
+        .lesson-tag {
+            position: fixed;
+            top: 28px; left: 28px;
+            font-size: 11px; font-weight: 600;
+            color: #86868b; text-transform: uppercase;
+            letter-spacing: 0.18em;
+            z-index: 100;
+        }
+
+        @media (max-width: 768px) {
+            .comparison-grid, .code-output, .cards-container {
+                grid-template-columns: 1fr; gap: 18px;
+            }
+        }
+        .lang-switcher {
+            position: fixed;
+            top: 22px; right: 28px;
+            z-index: 100;
+            display: flex;
+            gap: 2px;
+            background: rgba(255,255,255,0.95);
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0,0,0,0.06);
+            border-radius: 50px;
+            padding: 3px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        .lang-switcher a {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: #86868b;
+            text-decoration: none;
+            padding: 5px 12px;
+            border-radius: 50px;
+            transition: all 0.2s ease;
+        }
+        .lang-switcher a.active {
+            color: #fff;
+            background: #007aff;
+        }
+        .lang-switcher a:not(.active):hover {
+            color: #1d1d1f;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="presentation">
+
+        <!-- 1: Title -->
+        <div class="slide active">
+            <div class="slide-content">
+                <p class="eyebrow">Lecture 6</p>
+                <h1>OOP part 1</h1>
+                <p class="subtitle">Classes, attributes, methods, core concepts</p>
+            </div>
+        </div>
+
+        <!-- 2: Problem statement -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Problem statement</p>
+                <h2>You launch Minecraft</h2>
+                <p class="subtitle">Your character is Steve.<br/>He has: a name, health, coordinates on the map, an inventory.</p>
+                <div class="quote-card">
+                    <p>How do you <span class="highlight">program</span> this?</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3: The variables approach -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">First attempt</p>
+                <h2>The variables approach</h2>
+                <div class="code-block"><span class="cn">player_name</span> = <span class="cs">"Steve"</span>
+<span class="cn">player_hp</span>   = <span class="cm">20</span>
+<span class="cn">player_x</span>    = <span class="cm">0</span>
+<span class="cn">player_y</span>    = <span class="cm">64</span></div>
+                <p class="body-text" style="margin-top: 22px;">One player - works great.</p>
+            </div>
+        </div>
+
+        <!-- 4: Scaling -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">What about 1000 of them?</p>
+                <h2>Scaling the approach</h2>
+                <div class="code-block tight"><span class="cn">p1_name</span>, <span class="cn">p1_hp</span>, <span class="cn">p1_x</span> = <span class="cs">"Steve"</span>,  <span class="cm">20</span>, <span class="cm">0</span>
+<span class="cn">p2_name</span>, <span class="cn">p2_hp</span>, <span class="cn">p2_x</span> = <span class="cs">"Alex"</span>,   <span class="cm">20</span>, <span class="cm">5</span>
+<span class="cn">p3_name</span>, <span class="cn">p3_hp</span>, <span class="cn">p3_x</span> = ...
+<span class="co"># ... 997 more lines ...</span></div>
+                <p class="body-text" style="margin-top: 22px; color: #86868b;">And there are mobs around. And villages. And animals. Something went wrong.</p>
+            </div>
+        </div>
+
+        <!-- 5: The dictionaries approach -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Better, but not perfect</p>
+                <h2>The dictionaries approach</h2>
+                <div class="code-block"><span class="cn">p1</span> = {<span class="cs">"name"</span>: <span class="cs">"Steve"</span>, <span class="cs">"hp"</span>: <span class="cm">20</span>, <span class="cs">"x"</span>: <span class="cm">0</span>}
+<span class="cn">p2</span> = {<span class="cs">"name"</span>: <span class="cs">"Alex"</span>,  <span class="cs">"hp"</span>: <span class="cm">20</span>, <span class="cs">"x"</span>: <span class="cm">5</span>}</div>
+                <p class="body-text" style="margin-top: 22px;">Better already. But a player has to <span class="highlight">walk</span>, <span class="highlight">break blocks</span>, <span class="highlight">eat food</span>.</p>
+                <p class="body-text" style="margin-top: 10px; color: #86868b;">Each time - a separate function that takes a dictionary. And what if someone passes the "wrong" dictionary?</p>
+            </div>
+        </div>
+
+        <!-- 6: The idea of OOP -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Class and object</p>
+                <h2>The idea of OOP</h2>
+                <p class="subtitle">Programmers are lazy people.<br/>They came up with: let's pack the player's data and what they can do into one box.</p>
+                <div class="quote-card success">
+                    <p>This box is called a <span class="accent-green">class</span>.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 7: A class is a blueprint -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Concept</p>
+                <h2>A class is a blueprint</h2>
+                <p class="body-text">A class is a description of how a player is built.<br/>By itself it does nothing.</p>
+                <div class="quote-card" style="margin-top: 28px;">
+                    <p>It is a <span class="highlight">template</span> from which real players are later made.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 8: An object is an instance of a class -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Concept</p>
+                <h2>An object is an instance of a class</h2>
+                <p class="body-text">An object is what was born from the blueprint.<br/>One object = one real player with their own name and hp.</p>
+                <div class="quote-card success" style="margin-top: 28px;">
+                    <p>From a single blueprint you can make <span class="accent-green">as many</span> objects as you want.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 9: One blueprint - a thousand players -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">The key idea</p>
+                <h2>One blueprint, a thousand players</h2>
+                <div class="code-block" style="text-align: center; font-size: clamp(12px, 1.4vw, 15px); max-width: 620px;">       ┌───────────────┐
+       │  <span class="ck">class</span> <span class="cf">Player</span> │   ◄── blueprint
+       └───────┬───────┘
+               │
+       ┌───────┼───────┐
+       ▼       ▼       ▼
+     <span class="cs">Steve</span>   <span class="cs">Alex</span>   <span class="cs">Notch</span>
+     hp <span class="cm">20</span>  hp <span class="cm">20</span>   hp <span class="cm">20</span></div>
+                <p class="body-text" style="margin-top: 22px; color: #86868b;">Each with its own data. One blueprint.</p>
+            </div>
+        </div>
+
+        <!-- 10: The two parts of an object -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">What an object consists of</p>
+                <h2>The two parts of an object</h2>
+                <div class="cards-container" style="grid-template-columns: 1fr 1fr; max-width: 820px;">
+                    <div class="card">
+                        <div class="num">1</div>
+                        <h3>What the object knows about itself</h3>
+                        <p>These are <span class="highlight">attributes</span> - data.</p>
+                    </div>
+                    <div class="card">
+                        <div class="num">2</div>
+                        <h3>What the object can do</h3>
+                        <p>These are <span class="highlight">methods</span> - actions.</p>
+                    </div>
+                </div>
+                <p class="body-text" style="margin-top: 28px; color: #86868b;">All of OOP is about these two words.</p>
+            </div>
+        </div>
+
+        <!-- 11: Attributes -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">What an object consists of</p>
+                <h2>Attributes: the object's data</h2>
+                <div class="flow-row">
+                    <span class="step-pill">name</span>
+                    <span class="step-pill">health</span>
+                    <span class="step-pill">coordinate</span>
+                    <span class="step-pill">inventory</span>
+                    <span class="step-pill">speed</span>
+                </div>
+                <p class="body-text" style="margin-top: 32px;">An attribute is a variable "<span class="highlight">attached</span>" to an object.</p>
+                <p class="body-text" style="margin-top: 10px; color: #86868b;">Each object has its own attributes.</p>
+            </div>
+        </div>
+
+        <!-- 12: Methods -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">What an object consists of</p>
+                <h2>Methods: the object's actions</h2>
+                <div class="flow-row">
+                    <span class="step-pill">walk</span>
+                    <span class="step-pill">break a block</span>
+                    <span class="step-pill">eat</span>
+                    <span class="step-pill">jump</span>
+                    <span class="step-pill">attack</span>
+                </div>
+                <p class="body-text" style="margin-top: 32px;">A method is a function "<span class="highlight">attached</span>" to an object.</p>
+                <p class="body-text" style="margin-top: 10px; color: #86868b;">All objects of the same class can do the same things.</p>
+            </div>
+        </div>
+
+        <!-- 13: A minimal class -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Creating your first class</p>
+                <h2>A minimal class</h2>
+                <div class="code-block"><span class="ck">class</span> <span class="cf">Player</span>:
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, <span class="cn">name</span>, <span class="cn">hp</span>):
+        <span class="cn">self</span>.<span class="cn">name</span> = <span class="cn">name</span>
+        <span class="cn">self</span>.<span class="cn">hp</span>   = <span class="cn">hp</span></div>
+                <p class="body-text" style="margin-top: 22px; color: #86868b;">That's the whole class. Three lines of body.</p>
+            </div>
+        </div>
+
+        <!-- 14: Line-by-line breakdown -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Syntax</p>
+                <h2>Line-by-line breakdown</h2>
+                <div class="code-block tight"><span class="ck">class</span> <span class="cf">Player</span>:                  <span class="co">← the blueprint follows</span>
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, ...):    <span class="co">← the setup function</span>
+        <span class="cn">self</span>.<span class="cn">name</span> = <span class="cn">name</span>        <span class="co">← put the name "in a pocket"</span>
+        <span class="cn">self</span>.<span class="cn">hp</span>   = <span class="cn">hp</span>          <span class="co">← put the health</span></div>
+                <p class="body-text" style="margin-top: 22px; color: #86868b;">The class name starts with a capital letter. That's a convention.</p>
+            </div>
+        </div>
+
+        <!-- 15: The purpose of __init__ -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Constructor</p>
+                <h2>The purpose of <code style="font-family:'SF Mono',monospace;">__init__</code></h2>
+                <div class="code-block tight" style="max-width: 720px;"><span class="ck">class</span> <span class="cf">Player</span>:                  <span class="co">← the blueprint follows</span>
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, ...):    <span class="co">← the setup function</span>
+        <span class="cn">self</span>.<span class="cn">name</span> = <span class="cn">name</span>        <span class="co">← put the name "in a pocket"</span>
+        <span class="cn">self</span>.<span class="cn">hp</span>   = <span class="cn">hp</span>          <span class="co">← put the health</span></div>
+                <p class="subtitle" style="margin-top: 18px;">When we tell Python "make a player", it:</p>
+                <ol class="checklist" style="max-width: 720px;">
+                    <li>takes the <code style="font-family:'SF Mono',monospace;">Player</code> blueprint</li>
+                    <li>makes an empty blank</li>
+                    <li>runs it through <code style="font-family:'SF Mono',monospace;">__init__</code></li>
+                    <li>the result - a finished player with a name and hp</li>
+                </ol>
+                <p class="body-text" style="margin-top: 24px; color: #86868b;"><code style="font-family:'SF Mono',monospace;">__init__</code> - from the word <span class="highlight">initialize</span>, "to set up".</p>
+            </div>
+        </div>
+
+        <!-- 16: The self parameter -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">The self parameter</p>
+                <h2>The pronoun "my"</h2>
+                <div class="code-block tight" style="max-width: 720px;"><span class="ck">class</span> <span class="cf">Player</span>:                  <span class="co">← the blueprint follows</span>
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, ...):    <span class="co">← the setup function</span>
+        <span class="cn">self</span>.<span class="cn">name</span> = <span class="cn">name</span>        <span class="co">← put the name "in a pocket"</span>
+        <span class="cn">self</span>.<span class="cn">hp</span>   = <span class="cn">hp</span>          <span class="co">← put the health</span></div>
+                <p class="body-text" style="margin-top: 22px;">When we write the blueprint, we don't yet know<br/>what a specific player is called.</p>
+                <div class="quote-card" style="margin-top: 28px;">
+                    <p><code style="font-family:'SF Mono',monospace;">self</code> is a <span class="highlight">pronoun</span>. Inside a class it means "mine, this specific player's".</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 17: self continued -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">The self parameter</p>
+                <h2>Binding to the object</h2>
+                <div class="code-block tight" style="max-width: 720px;"><span class="ck">class</span> <span class="cf">Player</span>:                  <span class="co">← the blueprint follows</span>
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, ...):    <span class="co">← the setup function</span>
+        <span class="cn">self</span>.<span class="cn">name</span> = <span class="cn">name</span>        <span class="co">← put the name "in a pocket"</span>
+        <span class="cn">self</span>.<span class="cn">hp</span>   = <span class="cn">hp</span>          <span class="co">← put the health</span></div>
+                <div class="code-block" style="margin-top: 14px; max-width: 640px;">When we work with <span class="cs">Steve</span>  → <span class="cn">self</span>.<span class="cn">name</span> = <span class="cs">"Steve"</span>
+When with <span class="cs">Alex</span>             → <span class="cn">self</span>.<span class="cn">name</span> = <span class="cs">"Alex"</span></div>
+                <p class="body-text" style="margin-top: 22px;"><code style="font-family:'SF Mono',monospace;">self</code> is the object's way to reach its own <span class="highlight">pockets</span>.</p>
+            </div>
+        </div>
+
+        <!-- 18: Creating an object -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Creating the first player</p>
+                <h2>Steve from the blueprint</h2>
+                <div class="code-block tight" style="max-width: 720px;"><span class="ck">class</span> <span class="cf">Player</span>:                  <span class="co">← the blueprint follows</span>
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, ...):    <span class="co">← the setup function</span>
+        <span class="cn">self</span>.<span class="cn">name</span> = <span class="cn">name</span>        <span class="co">← put the name "in a pocket"</span>
+        <span class="cn">self</span>.<span class="cn">hp</span>   = <span class="cn">hp</span>          <span class="co">← put the health</span></div>
+                <div class="code-output" style="margin-top: 14px;">
+                    <div class="code-block" style="margin-top: 0;"><span class="cn">steve</span> = <span class="cf">Player</span>(<span class="cs">"Steve"</span>, <span class="cm">20</span>)
+
+<span class="cf">print</span>(<span class="cn">steve</span>.<span class="cn">name</span>)
+<span class="cf">print</span>(<span class="cn">steve</span>.<span class="cn">hp</span>)</div>
+                    <div class="term"><span class="out">Steve
+20</span></div>
+                </div>
+                <p class="body-text" style="margin-top: 22px; color: #86868b;">The dot reads as "of": "Steve's name", "Steve's hp".</p>
+            </div>
+        </div>
+
+        <!-- 19: Independence of objects -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Multiple objects</p>
+                <h2>Independence of objects</h2>
+                <div class="code-block tight" style="max-width: 720px;"><span class="ck">class</span> <span class="cf">Player</span>:                  <span class="co">← the blueprint follows</span>
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, ...):    <span class="co">← the setup function</span>
+        <span class="cn">self</span>.<span class="cn">name</span> = <span class="cn">name</span>        <span class="co">← put the name "in a pocket"</span>
+        <span class="cn">self</span>.<span class="cn">hp</span>   = <span class="cn">hp</span>          <span class="co">← put the health</span></div>
+                <div class="code-output" style="margin-top: 14px;">
+                    <div class="code-block" style="margin-top: 0;"><span class="cn">steve</span> = <span class="cf">Player</span>(<span class="cs">"Steve"</span>, <span class="cm">20</span>)
+<span class="cn">alex</span>  = <span class="cf">Player</span>(<span class="cs">"Alex"</span>,  <span class="cm">20</span>)
+
+<span class="cf">print</span>(<span class="cn">steve</span>.<span class="cn">name</span>, <span class="cn">alex</span>.<span class="cn">name</span>)</div>
+                    <div class="term"><span class="out">Steve Alex</span></div>
+                </div>
+                <p class="body-text" style="margin-top: 22px;">One blueprint - <span class="highlight">two different</span> objects.</p>
+            </div>
+        </div>
+
+        <!-- 20: Objects in memory -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Multiple objects</p>
+                <h2>Two separate boxes in memory</h2>
+                <div class="code-block" style="font-size: clamp(12px, 1.4vw, 15px); max-width: 620px;"><span class="cn">steve</span>  ──►  ┌────────────────┐
+            │ <span class="cn">name</span> = <span class="cs">"Steve"</span> │
+            │ <span class="cn">hp</span>   = <span class="cm">20</span>      │
+            └────────────────┘
+
+<span class="cn">alex</span>   ──►  ┌────────────────┐
+            │ <span class="cn">name</span> = <span class="cs">"Alex"</span>  │
+            │ <span class="cn">hp</span>   = <span class="cm">20</span>      │
+            └────────────────┘</div>
+                <p class="body-text" style="margin-top: 22px; color: #86868b;">These are two different boxes. Physically different.</p>
+            </div>
+        </div>
+
+        <!-- 21 (NEW): Addresses and size in memory -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Multiple objects</p>
+                <h2>Addresses and size in memory</h2>
+                <div class="code-output">
+                    <div class="code-block" style="margin-top: 0;"><span class="cf">print</span>(<span class="cf">id</span>(<span class="cn">steve</span>))
+<span class="cf">print</span>(<span class="cf">id</span>(<span class="cn">alex</span>))
+<span class="cf">print</span>(<span class="cn">steve</span> <span class="ck">is</span> <span class="cn">alex</span>)
+
+<span class="ck">import</span> <span class="cn">sys</span>
+<span class="cf">print</span>(<span class="cf">sys</span>.<span class="cf">getsizeof</span>(<span class="cn">steve</span>))</div>
+                    <div class="term"><span class="out">140234567890
+140234571248
+False
+48</span>  <span style="color: #6272a4;">// bytes</span></div>
+                </div>
+                <p class="body-text" style="margin-top: 22px;"><code style="font-family:'SF Mono',monospace;">id()</code> - the unique <span class="highlight">address</span> of an object in memory. <code style="font-family:'SF Mono',monospace;">is</code> compares by address.</p>
+                <div class="quote-card success" style="margin-top: 18px;">
+                    <p>Tens of bytes per object. <span class="accent-green">1000 players ≈ 50 KB</span> - objects are cheap.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 22 (NEW): A variable is a label -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Multiple objects</p>
+                <h2>A variable is a label on a box</h2>
+                <div class="code-block" style="font-size: clamp(12px, 1.4vw, 15px); max-width: 560px;"><span class="cn">steve</span> ──►  ┌────────────────┐
+<span class="cn">hero</span>  ──►  │ <span class="cn">name</span> = <span class="cs">"Steve"</span> │
+           │ <span class="cn">hp</span>   = <span class="cm">20</span>      │
+           └────────────────┘</div>
+                <div class="code-output" style="margin-top: 14px;">
+                    <div class="code-block" style="margin-top: 0;"><span class="cn">hero</span> = <span class="cn">steve</span>            <span class="co"># a second label</span>
+<span class="cn">hero</span>.<span class="cn">hp</span> = <span class="cm">5</span>
+<span class="cf">print</span>(<span class="cn">steve</span>.<span class="cn">hp</span>)
+<span class="cf">print</span>(<span class="cn">steve</span> <span class="ck">is</span> <span class="cn">hero</span>)</div>
+                    <div class="term"><span class="out">5
+True</span></div>
+                </div>
+                <div class="quote-card warning" style="margin-top: 14px;">
+                    <p><code style="font-family:'SF Mono',monospace;">b = a</code> - not a copy, but a <span class="accent-red">second name</span> for the same box.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 23: Changes are local -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Multiple objects</p>
+                <h2>Changes do not overlap</h2>
+                <div class="code-output">
+                    <div class="code-block" style="margin-top: 0;"><span class="cn">steve</span>.<span class="cn">hp</span> = <span class="cm">0</span>
+<span class="cf">print</span>(<span class="cn">alex</span>.<span class="cn">hp</span>)</div>
+                    <div class="term"><span class="out">20</span>  <span style="color: #6272a4;">// he is alive</span></div>
+                </div>
+                <p class="body-text" style="margin-top: 22px;">Objects are <span class="highlight">not linked</span> to one another.</p>
+                <p class="body-text" style="margin-top: 10px; color: #86868b;">Changing one does not affect the others.</p>
+            </div>
+        </div>
+
+        <!-- 22: A server of 1000 -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Multiple objects</p>
+                <h2>Creating many objects</h2>
+                <div class="code-output">
+                    <div class="code-block" style="margin-top: 0;"><span class="cn">server</span> = [<span class="cf">Player</span>(<span class="cf">f</span><span class="cs">"Player_{i}"</span>, <span class="cm">20</span>)
+          <span class="ck">for</span> <span class="cn">i</span> <span class="ck">in</span> <span class="cf">range</span>(<span class="cm">1000</span>)]
+
+<span class="cf">print</span>(<span class="cn">server</span>[<span class="cm">0</span>].<span class="cn">name</span>)
+<span class="cf">print</span>(<span class="cn">server</span>[<span class="cm">999</span>].<span class="cn">hp</span>)</div>
+                    <div class="term"><span class="out">Player_0
+20</span></div>
+                </div>
+                <p class="body-text" style="margin-top: 22px;">A thousand players. Each with its own data.</p>
+                <p class="body-text" style="margin-top: 10px; color: #86868b;">This is what it was all started for.</p>
+            </div>
+        </div>
+
+        <!-- 23: A method with no parameters -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Class methods</p>
+                <h2>A method with no parameters</h2>
+                <div class="code-block tight"><span class="ck">class</span> <span class="cf">Player</span>:
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, <span class="cn">name</span>, <span class="cn">hp</span>):
+        <span class="cn">self</span>.<span class="cn">name</span> = <span class="cn">name</span>
+        <span class="cn">self</span>.<span class="cn">hp</span>   = <span class="cn">hp</span>
+
+    <span class="ck">def</span> <span class="cf">say</span>(<span class="cn">self</span>, <span class="cn">text</span>):
+        <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"&lt;{self.name}&gt; {text}"</span>)</div>
+                <p class="body-text" style="margin-top: 18px; color: #86868b;">A method is a function inside a class. Its first parameter is always <code style="font-family:'SF Mono',monospace;">self</code>.</p>
+            </div>
+        </div>
+
+        <!-- 24: Calling a method -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Class methods</p>
+                <h2>Calling a method with the dot</h2>
+                <div class="code-output">
+                    <div class="code-block" style="margin-top: 0;"><span class="cn">steve</span> = <span class="cf">Player</span>(<span class="cs">"Steve"</span>, <span class="cm">20</span>)
+<span class="cn">steve</span>.<span class="cf">say</span>(<span class="cs">"Hello, world!"</span>)</div>
+                    <div class="term"><span class="out">&lt;Steve&gt; Hello, world!</span></div>
+                </div>
+                <p class="body-text" style="margin-top: 22px;">A call with the dot. Python <span class="highlight">supplies self itself</span>.</p>
+            </div>
+        </div>
+
+        <!-- 25: How a method call works -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Under the hood</p>
+                <h2>How a method call works</h2>
+                <p class="body-text" style="margin-bottom: 10px;">When you write</p>
+                <div class="code-block" style="max-width: 560px;"><span class="cn">steve</span>.<span class="cf">say</span>(<span class="cs">"Hello, world!"</span>)</div>
+                <p class="body-text" style="margin-top: 14px; margin-bottom: 10px;">Python internally translates it into</p>
+                <div class="code-block" style="max-width: 560px;"><span class="cf">Player</span>.<span class="cf">say</span>(<span class="cn">steve</span>, <span class="cs">"Hello, world!"</span>)</div>
+                <p class="body-text" style="margin-top: 22px;"><code style="font-family:'SF Mono',monospace;">steve</code> automatically takes the place of <code style="font-family:'SF Mono',monospace;">self</code>.</p>
+            </div>
+        </div>
+
+        <!-- 26: A method with a parameter -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Class methods</p>
+                <h2>A method with a parameter</h2>
+                <div class="code-block tight"><span class="ck">class</span> <span class="cf">Player</span>:
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, <span class="cn">name</span>, <span class="cn">hp</span>):
+        <span class="cn">self</span>.<span class="cn">name</span> = <span class="cn">name</span>
+        <span class="cn">self</span>.<span class="cn">hp</span>   = <span class="cn">hp</span>
+
+    <span class="ck">def</span> <span class="cf">take_damage</span>(<span class="cn">self</span>, <span class="cn">amount</span>):
+        <span class="cn">self</span>.<span class="cn">hp</span> -= <span class="cn">amount</span></div>
+                <div class="code-output" style="margin-top: 14px;">
+                    <div class="code-block" style="margin-top: 0;"><span class="cn">steve</span> = <span class="cf">Player</span>(<span class="cs">"Steve"</span>, <span class="cm">20</span>)
+<span class="cn">steve</span>.<span class="cf">take_damage</span>(<span class="cm">5</span>)
+<span class="cf">print</span>(<span class="cn">steve</span>.<span class="cn">hp</span>)</div>
+                    <div class="term"><span class="out">15</span></div>
+                </div>
+                <p class="body-text" style="margin-top: 14px; color: #86868b;">In the parentheses there is only <code style="font-family:'SF Mono',monospace;">amount</code>. Python supplies <code style="font-family:'SF Mono',monospace;">self</code> itself.</p>
+            </div>
+        </div>
+
+        <!-- 27: A method with a return value -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Class methods</p>
+                <h2>A method with a return value</h2>
+                <div class="code-block tight"><span class="ck">class</span> <span class="cf">Player</span>:
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, <span class="cn">name</span>, <span class="cn">hp</span>):
+        <span class="cn">self</span>.<span class="cn">name</span> = <span class="cn">name</span>
+        <span class="cn">self</span>.<span class="cn">hp</span>   = <span class="cn">hp</span>
+
+    <span class="ck">def</span> <span class="cf">take_damage</span>(<span class="cn">self</span>, <span class="cn">amount</span>):
+        <span class="cn">self</span>.<span class="cn">hp</span> -= <span class="cn">amount</span>
+
+    <span class="ck">def</span> <span class="cf">is_alive</span>(<span class="cn">self</span>):
+        <span class="ck">return</span> <span class="cn">self</span>.<span class="cn">hp</span> > <span class="cm">0</span></div>
+                <div class="code-output" style="margin-top: 14px;">
+                    <div class="code-block" style="margin-top: 0;"><span class="cf">print</span>(<span class="cn">steve</span>.<span class="cf">is_alive</span>())
+<span class="cn">steve</span>.<span class="cf">take_damage</span>(<span class="cm">100</span>)
+<span class="cf">print</span>(<span class="cn">steve</span>.<span class="cf">is_alive</span>())</div>
+                    <div class="term"><span class="out">True
+False</span></div>
+                </div>
+                <p class="body-text" style="margin-top: 14px; color: #86868b;">A method can return a value - just like an ordinary function.</p>
+            </div>
+        </div>
+
+        <!-- 28: Calling a method from a method -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Class methods</p>
+                <h2>Calling a method from a method</h2>
+                <div class="code-block tight"><span class="ck">class</span> <span class="cf">Player</span>:
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, <span class="cn">name</span>, <span class="cn">hp</span>):
+        <span class="cn">self</span>.<span class="cn">name</span> = <span class="cn">name</span>
+        <span class="cn">self</span>.<span class="cn">hp</span>   = <span class="cn">hp</span>
+
+    <span class="ck">def</span> <span class="cf">say</span>(<span class="cn">self</span>, <span class="cn">text</span>):
+        <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"&lt;{self.name}&gt; {text}"</span>)
+
+    <span class="ck">def</span> <span class="cf">eat</span>(<span class="cn">self</span>, <span class="cn">food_hp</span>):
+        <span class="cn">self</span>.<span class="cn">hp</span> += <span class="cn">food_hp</span>
+        <span class="ck">if</span> <span class="cn">self</span>.<span class="cn">hp</span> > <span class="cm">20</span>:
+            <span class="cn">self</span>.<span class="cn">hp</span> = <span class="cm">20</span>
+        <span class="cn">self</span>.<span class="cf">say</span>(<span class="cf">f</span><span class="cs">"ate food, hp: {self.hp}"</span>)</div>
+                <p class="body-text" style="margin-top: 14px;">Inside a class, methods freely communicate through <code style="font-family:'SF Mono',monospace;">self</code>.</p>
+            </div>
+        </div>
+
+        <!-- 29: __str__ -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Magic method</p>
+                <h2><code style="font-family:'SF Mono',monospace;">__str__</code>: controlling print()</h2>
+                <div class="code-block tight"><span class="ck">class</span> <span class="cf">Player</span>:
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, <span class="cn">name</span>, <span class="cn">hp</span>):
+        <span class="cn">self</span>.<span class="cn">name</span> = <span class="cn">name</span>
+        <span class="cn">self</span>.<span class="cn">hp</span>   = <span class="cn">hp</span>
+
+    <span class="ck">def</span> <span class="cf">__str__</span>(<span class="cn">self</span>):
+        <span class="ck">return</span> <span class="cf">f</span><span class="cs">"&lt;{self.name}&gt; hp: {self.hp}"</span></div>
+                <div class="code-output" style="margin-top: 14px;">
+                    <div class="code-block" style="margin-top: 0;"><span class="cn">steve</span> = <span class="cf">Player</span>(<span class="cs">"Steve"</span>, <span class="cm">20</span>)
+<span class="cf">print</span>(<span class="cn">steve</span>)</div>
+                    <div class="term"><span class="out">&lt;Steve&gt; hp: 20</span></div>
+                </div>
+                <div class="quote-card warning" style="margin-top: 14px;">
+                    <p>Without <code style="font-family:'SF Mono',monospace;">__str__</code> you would see <code style="font-family:'SF Mono',monospace;">&lt;__main__.Player object at 0x7f...&gt;</code> - an address in memory.</p>
+                </div>
+                <p class="body-text" style="margin-top: 22px; color: #86868b;">Double underscores are a convention for "service" methods that Python calls itself.</p>
+            </div>
+        </div>
+
+        <!-- 30: OOP in Python code -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">OOP in the standard libraries</p>
+                <h2>OOP in Python code</h2>
+                <div class="code-block" style="max-width: 560px;"><span class="cn">df</span>.<span class="cf">head</span>()
+<span class="cn">df</span>.<span class="cf">groupby</span>(<span class="cs">"city"</span>)
+<span class="cs">"hello"</span>.<span class="cf">upper</span>()
+[<span class="cm">1</span>, <span class="cm">2</span>, <span class="cm">3</span>].<span class="cf">append</span>(<span class="cm">4</span>)</div>
+                <p class="body-text" style="margin-top: 22px;">Each dot is a call to a <span class="highlight">method on an object</span>.</p>
+                <p class="body-text" style="margin-top: 10px; color: #86868b;">You have been using OOP since the very first lecture, you just didn't call it that.</p>
+            </div>
+        </div>
+
+        <!-- 31: A string as an object -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Example</p>
+                <h2>A string as an object</h2>
+                <div class="code-block" style="max-width: 460px;"><span class="cs">"hello"</span>.<span class="cf">upper</span>()</div>
+                <p class="body-text" style="margin-top: 22px;">A string is an object of the <code style="font-family:'SF Mono',monospace;">str</code> class.<br/>It has an <code style="font-family:'SF Mono',monospace;">upper</code> method.</p>
+                <div class="quote-card" style="margin-top: 24px;">
+                    <p>It's the same as <code style="font-family:'SF Mono',monospace;">steve.say(...)</code>. The <code style="font-family:'SF Mono',monospace;">str</code> class was simply written by the Python developers.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 32: A DataFrame as an object -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Example</p>
+                <h2>A DataFrame as an object of a class</h2>
+                <div class="code-block" style="max-width: 560px;"><span class="cn">df</span> = <span class="cn">pd</span>.<span class="cf">read_csv</span>(<span class="cs">"data.csv"</span>)
+<span class="cn">df</span>.<span class="cf">head</span>()
+<span class="cn">df</span>.<span class="cn">shape</span></div>
+                <p class="body-text" style="margin-top: 22px;"><code style="font-family:'SF Mono',monospace;">df</code> - an object of the <span class="highlight">DataFrame</span> class.</p>
+                <p class="body-text" style="margin-top: 10px; color: #86868b;">Methods: <code style="font-family:'SF Mono',monospace;">head</code>, <code style="font-family:'SF Mono',monospace;">groupby</code>, <code style="font-family:'SF Mono',monospace;">describe</code>. Attributes: <code style="font-family:'SF Mono',monospace;">shape</code>, <code style="font-family:'SF Mono',monospace;">columns</code>.</p>
+                <p class="body-text" style="margin-top: 10px; color: #86868b;">Built exactly like our <code style="font-family:'SF Mono',monospace;">Player</code> - only with hundreds of methods.</p>
+            </div>
+        </div>
+
+        <!-- 33: sklearn models -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Example</p>
+                <h2>sklearn models as classes</h2>
+                <div class="code-block" style="max-width: 560px;"><span class="cn">model</span> = <span class="cf">LinearRegression</span>()
+<span class="cn">model</span>.<span class="cf">fit</span>(<span class="cn">X</span>, <span class="cn">y</span>)
+<span class="cn">model</span>.<span class="cf">predict</span>(<span class="cn">X_test</span>)</div>
+                <p class="body-text" style="margin-top: 22px;"><code style="font-family:'SF Mono',monospace;">LinearRegression</code> - a class. <code style="font-family:'SF Mono',monospace;">model</code> - an object. <code style="font-family:'SF Mono',monospace;">fit</code>/<code style="font-family:'SF Mono',monospace;">predict</code> - methods.</p>
+                <div class="quote-card success" style="margin-top: 22px;">
+                    <p>When you understand OOP, you understand how <span class="accent-green">large libraries</span> are built.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 34: Task 1 -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Practice #1</p>
+                <h2>Task 1: an extended Player class</h2>
+                <ul class="checklist" style="max-width: 780px;">
+                    <li>attributes: <code style="font-family:'SF Mono',monospace;">name</code>, <code style="font-family:'SF Mono',monospace;">hp</code> (default 20), <code style="font-family:'SF Mono',monospace;">inventory</code> (an empty list)</li>
+                    <li>method <code style="font-family:'SF Mono',monospace;">pickup(item)</code> - add an item to the inventory</li>
+                    <li>method <code style="font-family:'SF Mono',monospace;">has(item)</code> - whether the item is present</li>
+                    <li>method <code style="font-family:'SF Mono',monospace;">__str__</code> - <code style="font-family:'SF Mono',monospace;">&lt;Steve&gt; hp: 20, items: 3</code></li>
+                </ul>
+                <div class="timer-display" style="font-size: clamp(28px, 4vw, 48px); margin-top: 24px;">10 minutes</div>
+            </div>
+        </div>
+
+        <!-- 35: Task 2 -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Practice #1</p>
+                <h2>Task 2: BankAccount</h2>
+                <p class="subtitle">The same thing, but from real life:</p>
+                <ul class="checklist" style="max-width: 780px;">
+                    <li>attributes: <code style="font-family:'SF Mono',monospace;">owner</code>, <code style="font-family:'SF Mono',monospace;">balance</code> (default 0)</li>
+                    <li>methods <code style="font-family:'SF Mono',monospace;">deposit(amount)</code>, <code style="font-family:'SF Mono',monospace;">withdraw(amount)</code></li>
+                    <li>if there isn't enough money - print "Insufficient funds"</li>
+                </ul>
+                <p class="body-text" style="margin-top: 24px; color: #86868b;">Not a game - but built the same way.</p>
+            </div>
+        </div>
+
+        <!-- 36: Solution to task 1 -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Walkthrough</p>
+                <h2>Solution to task 1</h2>
+                <div class="code-block tight"><span class="ck">class</span> <span class="cf">Player</span>:
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, <span class="cn">name</span>, <span class="cn">hp</span>=<span class="cm">20</span>):
+        <span class="cn">self</span>.<span class="cn">name</span> = <span class="cn">name</span>
+        <span class="cn">self</span>.<span class="cn">hp</span> = <span class="cn">hp</span>
+        <span class="cn">self</span>.<span class="cn">inventory</span> = []          <span class="co"># ← important: in __init__</span>
+
+    <span class="ck">def</span> <span class="cf">pickup</span>(<span class="cn">self</span>, <span class="cn">item</span>):
+        <span class="cn">self</span>.<span class="cn">inventory</span>.<span class="cf">append</span>(<span class="cn">item</span>)
+
+    <span class="ck">def</span> <span class="cf">has</span>(<span class="cn">self</span>, <span class="cn">item</span>):
+        <span class="ck">return</span> <span class="cn">item</span> <span class="ck">in</span> <span class="cn">self</span>.<span class="cn">inventory</span>
+
+    <span class="ck">def</span> <span class="cf">__str__</span>(<span class="cn">self</span>):
+        <span class="ck">return</span> <span class="cf">f</span><span class="cs">"&lt;{self.name}&gt; hp: {self.hp}, items: {len(self.inventory)}"</span></div>
+            </div>
+        </div>
+
+        <!-- 37: Break -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Break</p>
+                <h1>Coffee break</h1>
+                <div class="timer-display">5–10 min</div>
+                <p class="body-text" style="color: #86868b;">Next: night falls, mobs appear - and we will understand<br/>why we write one method instead of a hundred.</p>
+            </div>
+        </div>
+
+        <!-- 38: Night falls -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">The duplication problem</p>
+                <h2>A new task: mobs</h2>
+                <p class="subtitle">Mobs come out of the darkness:</p>
+                <div class="cards-container" style="grid-template-columns: repeat(3, 1fr); max-width: 1020px;">
+                    <div class="card">
+                        <h3 style="color: #007aff;">Zombie</h3>
+                        <p>moves slowly and hits in melee</p>
+                    </div>
+                    <div class="card">
+                        <h3 style="color: #007aff;">Skeleton</h3>
+                        <p>shoots a bow from a distance</p>
+                    </div>
+                    <div class="card">
+                        <h3 style="color: #007aff;">Creeper</h3>
+                        <p>quietly approaches and explodes</p>
+                    </div>
+                </div>
+                <p class="body-text" style="margin-top: 22px;">They all have in common: a name, hp, a coordinate, the ability to take damage.<br/>The only difference is how they <span class="highlight">attack</span>.</p>
+            </div>
+        </div>
+
+        <!-- 39: The copy-paste approach -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">The brute-force solution</p>
+                <h2>The copy-paste approach</h2>
+                <div class="code-block tight" style="font-size: clamp(10px, 1.2vw, 13px);"><span class="ck">class</span> <span class="cf">Zombie</span>:
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, <span class="cn">name</span>, <span class="cn">hp</span>):
+        <span class="cn">self</span>.<span class="cn">name</span> = <span class="cn">name</span>; <span class="cn">self</span>.<span class="cn">hp</span> = <span class="cn">hp</span>
+    <span class="ck">def</span> <span class="cf">take_damage</span>(<span class="cn">self</span>, <span class="cn">amount</span>): <span class="cn">self</span>.<span class="cn">hp</span> -= <span class="cn">amount</span>
+    <span class="ck">def</span> <span class="cf">is_alive</span>(<span class="cn">self</span>): <span class="ck">return</span> <span class="cn">self</span>.<span class="cn">hp</span> > <span class="cm">0</span>
+    <span class="ck">def</span> <span class="cf">attack</span>(<span class="cn">self</span>, <span class="cn">target</span>): ...
+
+<span class="ck">class</span> <span class="cf">Skeleton</span>:
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, <span class="cn">name</span>, <span class="cn">hp</span>):
+        <span class="cn">self</span>.<span class="cn">name</span> = <span class="cn">name</span>; <span class="cn">self</span>.<span class="cn">hp</span> = <span class="cn">hp</span>
+    <span class="ck">def</span> <span class="cf">take_damage</span>(<span class="cn">self</span>, <span class="cn">amount</span>): <span class="cn">self</span>.<span class="cn">hp</span> -= <span class="cn">amount</span>
+    <span class="ck">def</span> <span class="cf">is_alive</span>(<span class="cn">self</span>): <span class="ck">return</span> <span class="cn">self</span>.<span class="cn">hp</span> > <span class="cm">0</span>
+    <span class="ck">def</span> <span class="cf">attack</span>(<span class="cn">self</span>, <span class="cn">target</span>): ...</div>
+                <p class="body-text" style="margin-top: 16px; color: #86868b;">And the same again for Creeper. Seven lines copied three times.</p>
+            </div>
+        </div>
+
+        <!-- 40: The problems with duplication -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Why you can't do this</p>
+                <h2>The problems with duplication</h2>
+                <ul class="checklist" style="max-width: 820px;">
+                    <li>The same code in several places</li>
+                    <li>An Enderman, Spider, Witch will appear - copy it again</li>
+                    <li>You find a bug in <code style="font-family:'SF Mono',monospace;">take_damage</code> - you fix it in Zombie, you forget it in Skeleton</li>
+                </ul>
+                <div class="quote-card warning" style="margin-top: 24px;">
+                    <p>We will not do it this way.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 41: The idea of inheritance -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Inheritance</p>
+                <h2>The idea of inheritance</h2>
+                <p class="subtitle">The common part - into one parent class.<br/>The unique part - into the children.</p>
+                <div class="quote-card success">
+                    <p>Children get the common part <span class="accent-green">automatically</span>.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 42: The parent class -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Inheritance</p>
+                <h2>The parent class</h2>
+                <div class="code-block tight"><span class="ck">class</span> <span class="cf">Mob</span>:
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, <span class="cn">name</span>, <span class="cn">hp</span>):
+        <span class="cn">self</span>.<span class="cn">name</span> = <span class="cn">name</span>
+        <span class="cn">self</span>.<span class="cn">hp</span>   = <span class="cn">hp</span>
+
+    <span class="ck">def</span> <span class="cf">take_damage</span>(<span class="cn">self</span>, <span class="cn">amount</span>):
+        <span class="cn">self</span>.<span class="cn">hp</span> -= <span class="cn">amount</span>
+
+    <span class="ck">def</span> <span class="cf">is_alive</span>(<span class="cn">self</span>):
+        <span class="ck">return</span> <span class="cn">self</span>.<span class="cn">hp</span> > <span class="cm">0</span></div>
+                <p class="body-text" style="margin-top: 18px; color: #86868b;">The common part is gathered in one place.</p>
+            </div>
+        </div>
+
+        <!-- 43: The child class -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Inheritance</p>
+                <h2>The child class</h2>
+                <div class="code-block tight" style="max-width: 720px;"><span class="ck">class</span> <span class="cf">Mob</span>:                                  <span class="co">← parent</span>
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, <span class="cn">name</span>, <span class="cn">hp</span>): ...
+    <span class="ck">def</span> <span class="cf">take_damage</span>(<span class="cn">self</span>, <span class="cn">amount</span>): ...
+    <span class="ck">def</span> <span class="cf">is_alive</span>(<span class="cn">self</span>): ...</div>
+                <div class="code-block tight" style="margin-top: 14px;"><span class="ck">class</span> <span class="cf">Zombie</span>(<span class="cf">Mob</span>):                          <span class="co">← child</span>
+    <span class="ck">def</span> <span class="cf">attack</span>(<span class="cn">self</span>, <span class="cn">target</span>):
+        <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"{self.name} bites {target.name}"</span>)
+        <span class="cn">target</span>.<span class="cf">take_damage</span>(<span class="cm">3</span>)</div>
+                <p class="body-text" style="margin-top: 14px;"><code style="font-family:'SF Mono',monospace;">Zombie(Mob)</code> - "<span class="highlight">Zombie inherits from Mob</span>". Inside - only the new ability.</p>
+            </div>
+        </div>
+
+        <!-- 44: Using the child class -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">What you got for free</p>
+                <h2>Using the child class</h2>
+                <div class="code-block tight" style="max-width: 720px;"><span class="ck">class</span> <span class="cf">Mob</span>:                                  <span class="co">← parent</span>
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, <span class="cn">name</span>, <span class="cn">hp</span>): ...
+    <span class="ck">def</span> <span class="cf">take_damage</span>(<span class="cn">self</span>, <span class="cn">amount</span>): ...
+    <span class="ck">def</span> <span class="cf">is_alive</span>(<span class="cn">self</span>): ...
+
+<span class="ck">class</span> <span class="cf">Zombie</span>(<span class="cf">Mob</span>):                          <span class="co">← child</span>
+    <span class="ck">def</span> <span class="cf">attack</span>(<span class="cn">self</span>, <span class="cn">target</span>): ...</div>
+                <div class="code-block tight" style="margin-top: 14px;"><span class="cn">z</span> = <span class="cf">Zombie</span>(<span class="cs">"Zombie-1"</span>, <span class="cm">20</span>)
+
+<span class="cf">print</span>(<span class="cn">z</span>.<span class="cn">name</span>)         <span class="co"># Zombie-1   - attribute from the parent</span>
+<span class="cf">print</span>(<span class="cn">z</span>.<span class="cf">is_alive</span>())   <span class="co"># True       - method from the parent</span>
+<span class="cn">z</span>.<span class="cf">attack</span>(<span class="cn">steve</span>)       <span class="co"># its own ability</span></div>
+                <p class="body-text" style="margin-top: 14px;">We defined only <code style="font-family:'SF Mono',monospace;">attack</code>, but everything else <span class="highlight">works</span>.</p>
+            </div>
+        </div>
+
+        <!-- 45: Extending the constructor -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Extending __init__</p>
+                <h2>Extending the constructor</h2>
+                <div class="code-block tight" style="max-width: 720px;"><span class="ck">class</span> <span class="cf">Mob</span>:                                  <span class="co">← parent</span>
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, <span class="cn">name</span>, <span class="cn">hp</span>):
+        <span class="cn">self</span>.<span class="cn">name</span> = <span class="cn">name</span>
+        <span class="cn">self</span>.<span class="cn">hp</span>   = <span class="cn">hp</span></div>
+                <div class="code-block tight" style="margin-top: 14px;"><span class="ck">class</span> <span class="cf">Creeper</span>(<span class="cf">Mob</span>):
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, <span class="cn">name</span>, <span class="cn">hp</span>, <span class="cn">fuse</span>):
+        <span class="cf">super</span>().<span class="cf">__init__</span>(<span class="cn">name</span>, <span class="cn">hp</span>)   <span class="co"># call the parent</span>
+        <span class="cn">self</span>.<span class="cn">fuse</span> = <span class="cn">fuse</span>             <span class="co"># add our own</span></div>
+                <div class="quote-card" style="margin-top: 14px;">
+                    <p><code style="font-family:'SF Mono',monospace;">super().__init__(name, hp)</code> - "do everything the parent does, and then I'll add my own".</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 46: Without super -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Attention</p>
+                <h2>A common mistake: without super()</h2>
+                <div class="code-block tight" style="max-width: 720px;"><span class="ck">class</span> <span class="cf">Mob</span>:                                  <span class="co">← parent, name and hp are created here</span>
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, <span class="cn">name</span>, <span class="cn">hp</span>):
+        <span class="cn">self</span>.<span class="cn">name</span> = <span class="cn">name</span>
+        <span class="cn">self</span>.<span class="cn">hp</span>   = <span class="cn">hp</span></div>
+                <div class="code-block tight" style="margin-top: 14px;"><span class="ck">class</span> <span class="cf">Creeper</span>(<span class="cf">Mob</span>):
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, <span class="cn">name</span>, <span class="cn">hp</span>, <span class="cn">fuse</span>):
+        <span class="cn">self</span>.<span class="cn">fuse</span> = <span class="cn">fuse</span>     <span class="co"># forgot to call the parent</span>
+
+<span class="cn">c</span> = <span class="cf">Creeper</span>(<span class="cs">"Creeper-1"</span>, <span class="cm">20</span>, <span class="cm">3</span>)
+<span class="cf">print</span>(<span class="cn">c</span>.<span class="cn">name</span>)
+<span class="ce"># AttributeError: 'Creeper' object has no attribute 'name'</span></div>
+                <div class="quote-card warning" style="margin-top: 14px;">
+                    <p>You overrode <code style="font-family:'SF Mono',monospace;">__init__</code> - make <code style="font-family:'SF Mono',monospace;">super().__init__(...)</code> the first line.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 47: Terminology -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Words</p>
+                <h2>Terminology</h2>
+                <div class="comparison-grid">
+                    <div class="comparison-item new">
+                        <div class="label">Mob</div>
+                        <h3>Parent class</h3>
+                        <p>parent, base, superclass</p>
+                    </div>
+                    <div class="comparison-item new">
+                        <div class="label">Zombie, Skeleton, Creeper</div>
+                        <h3>Child classes</h3>
+                        <p>child, descendants, subclasses</p>
+                    </div>
+                </div>
+                <div class="quote-card" style="margin-top: 24px;">
+                    <p>The notation <code style="font-family:'SF Mono',monospace;">Zombie(Mob)</code> reads as: "<span class="highlight">Zombie is a Mob plus a bit more</span>".</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 48: Overriding a method -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Overriding and polymorphism</p>
+                <h2>Overriding a method</h2>
+                <div class="code-block tight" style="font-size: clamp(11px, 1.3vw, 14px);"><span class="ck">class</span> <span class="cf">Zombie</span>(<span class="cf">Mob</span>):
+    <span class="ck">def</span> <span class="cf">attack</span>(<span class="cn">self</span>, <span class="cn">target</span>):
+        <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"{self.name} bites {target.name}"</span>)
+        <span class="cn">target</span>.<span class="cf">take_damage</span>(<span class="cm">3</span>)
+
+<span class="ck">class</span> <span class="cf">Skeleton</span>(<span class="cf">Mob</span>):
+    <span class="ck">def</span> <span class="cf">attack</span>(<span class="cn">self</span>, <span class="cn">target</span>):
+        <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"{self.name} shoots at {target.name}"</span>)
+        <span class="cn">target</span>.<span class="cf">take_damage</span>(<span class="cm">2</span>)
+
+<span class="ck">class</span> <span class="cf">Creeper</span>(<span class="cf">Mob</span>):
+    <span class="ck">def</span> <span class="cf">attack</span>(<span class="cn">self</span>, <span class="cn">target</span>):
+        <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"{self.name}: SSSSS... BOOM!"</span>)
+        <span class="cn">target</span>.<span class="cf">take_damage</span>(<span class="cm">15</span>)</div>
+                <p class="body-text" style="margin-top: 18px; color: #86868b;">The same method name - a <span class="highlight">different implementation</span>.</p>
+            </div>
+        </div>
+
+        <!-- 49: Choosing the implementation -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Which version to call?</p>
+                <h2>Choosing the implementation at call time</h2>
+                <div class="code-output">
+                    <div class="code-block" style="margin-top: 0;"><span class="cn">z</span> = <span class="cf">Zombie</span>(<span class="cs">"Zombie-1"</span>, <span class="cm">20</span>)
+<span class="cn">s</span> = <span class="cf">Skeleton</span>(<span class="cs">"Skeleton-1"</span>, <span class="cm">20</span>)
+<span class="cn">c</span> = <span class="cf">Creeper</span>(<span class="cs">"Creeper-1"</span>, <span class="cm">20</span>, <span class="cm">3</span>)
+
+<span class="cn">z</span>.<span class="cf">attack</span>(<span class="cn">steve</span>)
+<span class="cn">s</span>.<span class="cf">attack</span>(<span class="cn">steve</span>)
+<span class="cn">c</span>.<span class="cf">attack</span>(<span class="cn">steve</span>)</div>
+                    <div class="term"><span class="out">Zombie-1 bites Steve
+Skeleton-1 shoots at Steve
+Creeper-1: SSSSS... BOOM!</span></div>
+                </div>
+                <p class="body-text" style="margin-top: 18px; color: #86868b;">Python looks at the object's type and calls the right version of <code style="font-family:'SF Mono',monospace;">attack</code>.</p>
+            </div>
+        </div>
+
+        <!-- 50: Polymorphism -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Magic in a single loop</p>
+                <h2>Polymorphism in practice</h2>
+                <div class="code-block tight"><span class="cn">night</span> = [
+    <span class="cf">Zombie</span>(<span class="cs">"Z-1"</span>, <span class="cm">20</span>),
+    <span class="cf">Skeleton</span>(<span class="cs">"S-1"</span>, <span class="cm">20</span>),
+    <span class="cf">Creeper</span>(<span class="cs">"C-1"</span>, <span class="cm">20</span>, <span class="cm">3</span>),
+    <span class="cf">Zombie</span>(<span class="cs">"Z-2"</span>, <span class="cm">20</span>),
+]
+
+<span class="ck">for</span> <span class="cn">mob</span> <span class="ck">in</span> <span class="cn">night</span>:
+    <span class="ck">if</span> <span class="cn">mob</span>.<span class="cf">is_alive</span>():
+        <span class="cn">mob</span>.<span class="cf">attack</span>(<span class="cn">steve</span>)</div>
+                <p class="body-text" style="margin-top: 18px;">The loop doesn't care who is inside. It just calls <code style="font-family:'SF Mono',monospace;">.attack()</code>.</p>
+                <div class="quote-card success" style="margin-top: 18px;">
+                    <p>This is exactly what is called <span class="accent-green">polymorphism</span>. The idea is simple: one interface, different behavior.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 51: Polymorphism in sklearn -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">OOP in real projects</p>
+                <h2>Polymorphism in sklearn</h2>
+                <div class="code-block tight"><span class="ck">from</span> <span class="cn">sklearn.linear_model</span> <span class="ck">import</span> <span class="cf">LinearRegression</span>
+<span class="ck">from</span> <span class="cn">sklearn.tree</span>         <span class="ck">import</span> <span class="cf">DecisionTreeRegressor</span>
+
+<span class="cn">models</span> = [<span class="cf">LinearRegression</span>(), <span class="cf">DecisionTreeRegressor</span>()]
+<span class="ck">for</span> <span class="cn">m</span> <span class="ck">in</span> <span class="cn">models</span>:
+    <span class="cn">m</span>.<span class="cf">fit</span>(<span class="cn">X</span>, <span class="cn">y</span>)
+    <span class="cn">m</span>.<span class="cf">predict</span>(<span class="cn">X_test</span>)</div>
+                <p class="body-text" style="margin-top: 22px;">Different models - one interface, <code style="font-family:'SF Mono',monospace;">fit</code>/<code style="font-family:'SF Mono',monospace;">predict</code>.</p>
+                <p class="body-text" style="margin-top: 10px; color: #86868b;">The same loop we had with the mobs.</p>
+            </div>
+        </div>
+
+        <!-- 52: The exception hierarchy -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Also inheritance</p>
+                <h2>The exception hierarchy</h2>
+                <div class="code-block" style="text-align: center; font-size: clamp(13px, 1.5vw, 16px); max-width: 460px;"><span class="cf">Exception</span>
+  ├── <span class="cf">ValueError</span>
+  ├── <span class="cf">KeyError</span>
+  ├── <span class="cf">TypeError</span>
+  └── ...</div>
+                <p class="body-text" style="margin-top: 22px;"><code style="font-family:'SF Mono',monospace;">ValueError</code> - a kind of <code style="font-family:'SF Mono',monospace;">Exception</code>.</p>
+                <p class="body-text" style="margin-top: 10px; color: #86868b;">When you write <code style="font-family:'SF Mono',monospace;">except Exception</code> - all of them are caught, because of inheritance.</p>
+            </div>
+        </div>
+
+        <!-- 53: Mistake 1 -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Common mistakes</p>
+                <h2>Mistake 1: a missing self</h2>
+                <div class="code-block tight"><span class="ck">class</span> <span class="cf">Player</span>:
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, <span class="cn">name</span>):
+        <span class="cn">name</span> = <span class="cn">name</span>      <span class="ce"># ⚠ created a local variable</span>
+
+<span class="cn">steve</span> = <span class="cf">Player</span>(<span class="cs">"Steve"</span>)
+<span class="cf">print</span>(<span class="cn">steve</span>.<span class="cn">name</span>)
+<span class="ce"># AttributeError</span></div>
+                <div class="quote-card warning" style="margin-top: 18px;">
+                    <p>An attribute is created <span class="accent-red">only</span> through <code style="font-family:'SF Mono',monospace;">self.name = ...</code></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 54: Mistake 2 -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Common mistakes</p>
+                <h2>Mistake 2: a missing super().__init__()</h2>
+                <div class="code-block tight"><span class="ck">class</span> <span class="cf">Creeper</span>(<span class="cf">Mob</span>):
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, <span class="cn">name</span>, <span class="cn">hp</span>, <span class="cn">fuse</span>):
+        <span class="cn">self</span>.<span class="cn">fuse</span> = <span class="cn">fuse</span>    <span class="ce"># ⚠ the parent is not called</span>
+
+<span class="cn">c</span> = <span class="cf">Creeper</span>(<span class="cs">"Creeper-1"</span>, <span class="cm">20</span>, <span class="cm">3</span>)
+<span class="cf">print</span>(<span class="cn">c</span>.<span class="cn">name</span>)
+<span class="ce"># AttributeError</span></div>
+                <div class="quote-card warning" style="margin-top: 18px;">
+                    <p>You overrode <code style="font-family:'SF Mono',monospace;">__init__</code> - make <code style="font-family:'SF Mono',monospace;">super().__init__(...)</code> the first line.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 55: Mistake 3 -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Common mistakes</p>
+                <h2>Mistake 3: a mutable class attribute</h2>
+                <div class="code-block tight"><span class="ck">class</span> <span class="cf">Player</span>:
+    <span class="cn">inventory</span> = []          <span class="ce"># ⚠ one for all players</span>
+
+    <span class="ck">def</span> <span class="cf">pickup</span>(<span class="cn">self</span>, <span class="cn">item</span>):
+        <span class="cn">self</span>.<span class="cn">inventory</span>.<span class="cf">append</span>(<span class="cn">item</span>)
+
+<span class="cn">steve</span>.<span class="cf">pickup</span>(<span class="cs">"sword"</span>)
+<span class="cf">print</span>(<span class="cn">alex</span>.<span class="cn">inventory</span>)
+<span class="co"># ['sword'] - Alex has it too!</span></div>
+                <div class="quote-card warning" style="margin-top: 18px;">
+                    <p>Lists and dictionaries - only in <code style="font-family:'SF Mono',monospace;">__init__</code>, not at the class level.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 56: The Animal task -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Practice #2</p>
+                <h2>Task: an Animal hierarchy</h2>
+                <p class="subtitle">Without Minecraft - reinforcing the technique on a simple example.</p>
+                <ul class="checklist" style="max-width: 820px;">
+                    <li><code style="font-family:'SF Mono',monospace;">Animal(name)</code> with a method <code style="font-family:'SF Mono',monospace;">sound() = "..."</code></li>
+                    <li><code style="font-family:'SF Mono',monospace;">Dog(Animal)</code> overrides <code style="font-family:'SF Mono',monospace;">sound() = "Woof"</code></li>
+                    <li><code style="font-family:'SF Mono',monospace;">Cat(Animal)</code> overrides <code style="font-family:'SF Mono',monospace;">sound() = "Meow"</code></li>
+                    <li>A method <code style="font-family:'SF Mono',monospace;">describe()</code> in Animal: "{name} says {sound()}"</li>
+                    <li>Create a list of animals and iterate over it</li>
+                </ul>
+                <div class="timer-display" style="font-size: clamp(28px, 4vw, 48px); margin-top: 18px;">10 minutes</div>
+            </div>
+        </div>
+
+        <!-- 57: Expected result -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Walkthrough</p>
+                <h2>Expected result</h2>
+                <div class="code-output">
+                    <div class="code-block" style="margin-top: 0;"><span class="cn">zoo</span> = [<span class="cf">Dog</span>(<span class="cs">"Rex"</span>), <span class="cf">Cat</span>(<span class="cs">"Murka"</span>)]
+<span class="ck">for</span> <span class="cn">a</span> <span class="ck">in</span> <span class="cn">zoo</span>:
+    <span class="cf">print</span>(<span class="cn">a</span>.<span class="cf">describe</span>())</div>
+                    <div class="term"><span class="out">Rex says Woof
+Murka says Meow</span></div>
+                </div>
+                <p class="body-text" style="margin-top: 22px; color: #86868b;">The same technique as with Zombie/Skeleton/Creeper. The same loop. Just different names.</p>
+            </div>
+        </div>
+
+        <!-- 58: What we learned -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Summary</p>
+                <h2>What we learned</h2>
+                <ul class="checklist" style="max-width: 820px;">
+                    <li><span class="highlight">class</span> - a blueprint</li>
+                    <li><span class="highlight">object</span> - what was born from the blueprint</li>
+                    <li><span class="highlight">attributes</span> and <span class="highlight">methods</span> - what an object knows and can do</li>
+                    <li><code style="font-family:'SF Mono',monospace;">self</code> - "mine" inside a class</li>
+                    <li><code style="font-family:'SF Mono',monospace;">__str__</code> - controlling how an object is printed</li>
+                    <li><span class="highlight">inheritance</span> - the common part in the parent, the unique part in the children</li>
+                    <li><code style="font-family:'SF Mono',monospace;">super()</code> - calling the parent</li>
+                    <li><span class="highlight">polymorphism</span> - one interface, different behavior</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 59: Why this matters -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Summary</p>
+                <h2>Applying it in real work</h2>
+                <p class="subtitle">When you see <code style="font-family:'SF Mono',monospace;">df.groupby(...)</code> or <code style="font-family:'SF Mono',monospace;">model.fit(...)</code>, you now know how it is built inside.</p>
+                <ul class="bullet-list" style="max-width: 720px;">
+                    <li>You can dig into the source code</li>
+                    <li>You can write your own classes on top of libraries</li>
+                    <li>Most Python code is classes</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 61: Questions -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Closing</p>
+                <h1>Questions?</h1>
+                <p class="subtitle" style="margin-top: 24px;">Telegram: <span class="highlight">@gokalqurt</span></p>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="lang-switcher">
+        <a href="index.html">RU</a>
+        <a href="index-uz.html">UZ</a>
+        <a href="index-en.html" class="active">EN</a>
+    </div>
+
+    <div class="lesson-tag">Python · Lecture 6</div>
+    <div class="slide-indicator">
+        <span id="current-slide">1</span> / <span id="total-slides">62</span>
+    </div>
+    <div class="nav-hint">→ or Space - next<br/>← - back</div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+        document.getElementById('total-slides').textContent = totalSlides;
+
+        function showSlide(n) {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (n + totalSlides) % totalSlides;
+            slides[currentSlide].classList.add('active');
+            document.getElementById('current-slide').textContent = currentSlide + 1;
+
+            const slideContent = slides[currentSlide].querySelector('.slide-content');
+            slideContent.style.animation = 'none';
+            void slideContent.offsetHeight;
+            slideContent.style.animation = null;
+
+            const animated = slides[currentSlide].querySelectorAll('.card, .comparison-item');
+            animated.forEach(el => {
+                el.style.animation = 'none';
+                void el.offsetHeight;
+                el.style.animation = null;
+            });
+        }
+
+        function nextSlide() { showSlide(currentSlide + 1); }
+        function prevSlide() { showSlide(currentSlide - 1); }
+
+        document.addEventListener('keydown', (e) => {
+            const tag = (e.target.tagName || '').toLowerCase();
+            if (tag === 'textarea' || tag === 'input') return;
+            if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); nextSlide(); }
+            else if (e.key === 'ArrowLeft') { e.preventDefault(); prevSlide(); }
+        });
+
+        let touchStartX = 0;
+        document.addEventListener('touchstart', (e) => { touchStartX = e.changedTouches[0].screenX; });
+        document.addEventListener('touchend', (e) => {
+            const dx = e.changedTouches[0].screenX - touchStartX;
+            if (dx < -50) nextSlide();
+            else if (dx > 50) prevSlide();
+        });
+    </script>
+</body>
+</html>

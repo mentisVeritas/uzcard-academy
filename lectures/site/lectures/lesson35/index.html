@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Кредитный скоринг: от фразы бизнеса до постановки задачи</title>
+<style>
+:root{
+  --ink:#17211b;--muted:#617067;--paper:#f7f8f4;--white:#fff;
+  --green:#168447;--green2:#dff3e6;--lime:#b9e769;
+  --red:#d94a3d;--red2:#fde8e5;--amber:#d88917;--amber2:#fff0d5;
+  --blue:#1f68c1;--blue2:#e7f0fb;--purple:#7157b7;--purple2:#eee9fb;
+  --line:#dfe5df;--shadow:0 20px 60px -42px rgba(25,43,32,.48);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%}
+body{
+  overflow:hidden;background:var(--paper);color:var(--ink);
+  font-family:Inter,Arial,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased;
+}
+.deck{position:relative;width:100vw;height:100vh}
+.slide{
+  display:none;position:absolute;inset:0;align-items:center;justify-content:center;
+  padding:clamp(38px,5vh,68px) clamp(46px,6vw,96px);
+  background:
+    radial-gradient(circle at 88% 12%,rgba(185,231,105,.18),transparent 24%),
+    linear-gradient(135deg,#fafbf8 0%,#f4f7f2 100%);
+}
+.slide.active{display:flex}
+.canvas{
+  width:100%;max-width:1280px;margin:auto;display:flex;flex-direction:column;
+  align-items:flex-start;justify-content:center;gap:clamp(14px,2vh,24px);
+  animation:slideIn .42s cubic-bezier(.2,.8,.2,1) both;
+}
+@keyframes slideIn{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+.center .canvas{align-items:center;text-align:center}
+.cover .canvas{max-width:1280px;display:grid;grid-template-columns:minmax(0,1.35fr) minmax(290px,.65fr);grid-template-rows:auto auto;align-items:center;justify-content:center;gap:clamp(18px,3vh,32px) clamp(38px,5vw,76px);text-align:left}
+.cover h1{grid-column:1;grid-row:1;align-self:end;max-width:780px;font-size:clamp(56px,min(7.2vw,9vh),92px);line-height:.95}
+.cover-subtitle{grid-column:1;grid-row:2;align-self:start;max-width:720px;color:#425047;font-size:clamp(22px,min(2.5vw,3.6vh),34px);line-height:1.3;font-weight:650}
+.cover-image{grid-column:2;grid-row:1/3;width:100%;max-width:390px;aspect-ratio:1;justify-self:end;object-fit:cover;border:1px solid #cbd4cc;box-shadow:0 24px 70px -40px rgba(23,33,27,.65)}
+.section-break .canvas{max-width:1180px;align-items:flex-start;justify-content:center}
+.section-break h2{max-width:1100px;font-size:clamp(48px,6.4vw,92px);line-height:.98;letter-spacing:-.055em}
+.section-answer{max-width:1000px;margin-top:14px;color:var(--green);font-size:clamp(25px,2.8vw,42px);line-height:1.22;font-weight:850;letter-spacing:-.035em}
+.stage-row{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(260px,.65fr);gap:clamp(30px,4vw,64px);align-items:end;width:100%;margin-top:10px}
+.stage-row.single{grid-template-columns:1fr}
+.stage-row .section-answer{margin-top:0}
+.stage-signal{display:flex;align-items:baseline;justify-content:flex-end;gap:clamp(8px,1vw,14px);padding:0 0 12px;border-bottom:5px solid var(--green);white-space:nowrap;color:var(--ink);font-size:clamp(23px,2.4vw,36px);font-weight:950;letter-spacing:-.045em}
+.stage-signal i{font-style:normal;color:#a5afa8;font-weight:600}
+.eyebrow{
+  color:var(--green);font-size:clamp(11px,.9vw,14px);font-weight:900;
+  letter-spacing:.17em;text-transform:uppercase;
+}
+h1{
+  max-width:1120px;font-size:clamp(48px,6vw,84px);line-height:.96;
+  letter-spacing:-.055em;font-weight:950;
+}
+h2{
+  max-width:1180px;font-size:clamp(30px,3.6vw,52px);line-height:1.06;
+  letter-spacing:-.045em;font-weight:950;
+}
+h3{font-size:clamp(18px,1.65vw,25px);line-height:1.15;font-weight:900}
+p,.body{font-size:clamp(17px,1.55vw,23px);line-height:1.45}
+.lead{max-width:1080px;color:#35443a;font-size:clamp(20px,2.05vw,30px);line-height:1.34;font-weight:700}
+.muted{color:var(--muted)}
+.small{font-size:clamp(13px,1.05vw,16px);line-height:1.45;color:var(--muted)}
+.mono{font-family:Consolas,"Courier New",monospace}
+.green{color:var(--green)}.red{color:var(--red)}.amber{color:var(--amber)}.blue{color:var(--blue)}
+.grid2,.grid3,.grid4{display:grid;width:100%;gap:clamp(14px,1.5vw,22px)}
+.grid2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.grid3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.grid4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.card{
+  position:relative;background:transparent;border:0;border-left:4px solid var(--line);
+  border-radius:0;padding:clamp(8px,1vw,14px) clamp(16px,1.5vw,24px);box-shadow:none;
+}
+.card h3{margin-bottom:10px}.card p,.card li{font-size:clamp(15px,1.22vw,18px);line-height:1.48;color:#48564d}
+.card ul{padding-left:20px}.card li+li{margin-top:7px}
+.card.g{border-left-color:var(--green)}.card.r{border-left-color:var(--red)}
+.card.a{border-left-color:var(--amber)}.card.b{border-left-color:var(--blue)}
+.card.p{border-left-color:var(--purple)}
+.number{
+  display:inline-flex;width:34px;height:34px;border-radius:50%;align-items:center;justify-content:center;
+  background:var(--ink);color:#fff;font-size:14px;font-weight:900;margin-bottom:12px;
+}
+.quote{
+  position:relative;max-width:1120px;padding:clamp(20px,2.4vw,36px) clamp(26px,3vw,44px);
+  border-radius:0;background:transparent;color:var(--ink);box-shadow:none;border-left:8px solid var(--green);
+  font-size:clamp(30px,3.7vw,54px);line-height:1.15;font-weight:900;letter-spacing:-.035em;
+}
+.quote small{display:block;margin-top:18px;color:var(--muted);font-size:clamp(15px,1.25vw,19px);font-weight:650;letter-spacing:0}
+.flow{display:flex;width:100%;align-items:stretch;justify-content:center;gap:10px}
+.node{
+  flex:1;min-width:0;min-height:104px;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;text-align:center;padding:14px;border-radius:0;background:transparent;
+  border:0;border-bottom:3px solid var(--line);box-shadow:none;
+}
+.node b{font-size:clamp(16px,1.4vw,21px)}.node span{margin-top:5px;color:var(--muted);font-size:clamp(12px,1vw,15px);line-height:1.35}
+.arrow{align-self:center;color:#9aa69e;font-size:30px;font-weight:300}
+.node.g{border-color:var(--green)}.node.r{border-color:var(--red)}
+.node.a{border-color:var(--amber)}.node.b{border-color:var(--blue)}
+.chain{width:100%;display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(12px,1.6vw,22px) clamp(20px,3vw,44px)}
+.chain-step{display:grid;grid-template-columns:44px 1fr;gap:14px;align-items:baseline;padding-bottom:clamp(8px,1.2vh,14px);border-bottom:1px solid #cbd4cc}
+.chain-step i{font-style:normal;color:var(--green);font-size:clamp(24px,2.4vw,34px);font-weight:950;letter-spacing:-.04em;font-variant-numeric:tabular-nums}
+.chain-step b{display:block;font-size:clamp(17px,1.5vw,22px);letter-spacing:-.02em}
+.chain-step span{display:block;margin-top:4px;color:var(--muted);font-size:clamp(13px,1.05vw,16px);line-height:1.35}
+.chain-note{width:100%;font-size:clamp(19px,1.85vw,27px);line-height:1.35;font-weight:800}
+.chain-mini{display:flex;flex-wrap:wrap;align-items:center;gap:6px 9px;width:100%;margin-top:clamp(22px,4vh,44px);padding-top:16px;border-top:1px solid #cbd4cc;font-size:clamp(12px,1vw,15px);font-weight:750}
+.chain-mini span{color:#8b968e}.chain-mini b{color:var(--green);font-weight:950}
+.chain-mini i{font-style:normal;color:#c3cbc5}
+.formula{
+  display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:14px;width:100%;
+  font-size:clamp(29px,4vw,57px);font-weight:950;letter-spacing:-.045em;
+}
+.formula span{padding:10px 0;border-radius:0;background:transparent;border:0;border-bottom:3px solid var(--ink)}
+.formula .op{padding:0;background:none;border:0;color:#a2aca5;font-weight:500}
+.funnel{width:100%;display:flex;flex-direction:column;align-items:center;gap:9px}
+.metrics{display:flex;width:100%;gap:16px;justify-content:center;align-items:stretch;flex-wrap:wrap}
+.metric{flex:1 1 180px;max-width:290px;text-align:left;background:transparent;border:0;border-bottom:3px solid var(--ink);border-radius:0;padding:22px 0;box-shadow:none}
+.metric b{display:block;font-size:clamp(35px,4.4vw,64px);letter-spacing:-.05em;font-variant-numeric:tabular-nums}
+.metric span{display:block;margin-top:6px;color:var(--muted);font-size:clamp(13px,1.05vw,16px);line-height:1.35}
+.table{width:100%;border-collapse:collapse;background:transparent;border:0;box-shadow:none}
+.table th,.table td{padding:clamp(11px,1.1vw,16px);text-align:left;border-bottom:1px solid #e9ede9;font-size:clamp(13px,1.05vw,16px);line-height:1.36;vertical-align:top}
+.table th{background:transparent;color:#526057;font-size:clamp(11px,.9vw,14px);text-transform:uppercase;letter-spacing:.08em;border-top:2px solid var(--ink)}
+.table tr:last-child td{border-bottom:0}
+.tag{display:inline-flex;padding:5px 10px;border-radius:999px;background:#edf0ed;color:#536158;font-size:12px;font-weight:850}
+.tag.g{background:var(--green2);color:#126636}.tag.r{background:var(--red2);color:#a43128}.tag.a{background:var(--amber2);color:#86560c}
+.checklist{width:100%;list-style:none}
+.checklist li{position:relative;padding:12px 10px 12px 42px;border-bottom:1px solid var(--line);font-size:clamp(16px,1.35vw,20px);line-height:1.4}
+.checklist li:before{content:"✓";position:absolute;left:9px;color:var(--green);font-weight:950}
+.step{opacity:.14;transform:translateY(7px);transition:opacity .28s ease,transform .28s ease}
+.step.shown{opacity:1;transform:none}
+.progress{position:fixed;z-index:30;top:0;left:0;height:4px;background:var(--green);transition:width .25s}
+.counter{position:fixed;z-index:30;bottom:17px;right:26px;color:#aeb7b0;font-size:12px;font-weight:800;font-variant-numeric:tabular-nums}
+.hint{position:fixed;z-index:30;bottom:17px;left:50%;transform:translateX(-50%);color:#bcc4be;font-size:11px}
+.counter{display:block}.hint{display:none}
+.zone{position:fixed;z-index:20;top:0;bottom:0;width:8vw;border:0;background:transparent;cursor:pointer}.zone.prev{left:0}.zone.next{right:0}
+.branch{display:grid;grid-template-columns:minmax(260px,.8fr) minmax(520px,1.7fr);gap:clamp(36px,5vw,74px);align-items:center;width:100%;margin-top:6px}
+.branch-core{display:flex;flex-direction:column;align-items:center;justify-content:center;width:clamp(220px,25vw,330px);height:clamp(220px,25vw,330px);border:8px solid var(--green);border-radius:50%;font-size:clamp(45px,6vw,84px);font-weight:950;line-height:.9;text-align:center;letter-spacing:-.06em}
+.branch-core span{font-size:.42em;letter-spacing:.06em}.branch-core b{font-size:1em}
+.branch-list{position:relative;display:flex;flex-direction:column;gap:clamp(24px,3.3vh,42px)}
+.branch-list:before{content:"";position:absolute;left:-45px;top:12%;bottom:12%;width:4px;background:var(--green)}
+.branch-item{position:relative;display:grid;grid-template-columns:minmax(170px,.65fr) minmax(300px,1.35fr);gap:22px;align-items:center;min-height:92px;border-bottom:1px solid #cfd7d0}
+.branch-item:last-child{border-bottom:0}
+.branch-item:before{content:"";position:absolute;left:-45px;top:50%;width:38px;height:4px;background:currentColor}
+.branch-item:after{content:"";position:absolute;left:-10px;top:calc(50% - 7px);width:14px;height:14px;border-radius:50%;background:currentColor}
+.branch-item.g{color:var(--green)}.branch-item.b{color:var(--blue)}.branch-item.a{color:var(--amber)}.branch-item.r{color:var(--red)}
+.branch-item b{color:var(--ink);font-size:clamp(24px,2.4vw,36px);letter-spacing:-.03em}
+.branch-item span{color:#4c5950;font-size:clamp(15px,1.25vw,19px);line-height:1.42}
+.condition-line{width:100%;color:#46544b;font-family:Consolas,"Courier New",monospace;font-size:clamp(15px,1.35vw,20px);line-height:1.4}
+.split{display:grid;grid-template-columns:1fr 1px 1fr;gap:clamp(28px,4vw,58px);align-items:stretch;width:100%}
+.split-line{background:#cfd7d0}
+.split-side{display:flex;flex-direction:column;justify-content:center;gap:14px;min-height:280px}
+.split-side .number{display:block;width:auto;height:auto;border-radius:0;background:transparent;color:var(--green);font-size:clamp(12px,1vw,15px);letter-spacing:.12em;text-transform:uppercase;margin:0}
+.split-side b{font-size:clamp(34px,4.5vw,66px);line-height:1;letter-spacing:-.05em}
+.split-side p{max-width:520px}
+.discussion .canvas{max-width:1160px;align-items:flex-start;justify-content:center;text-align:left}
+.discussion h2{max-width:1080px;font-size:clamp(34px,4vw,58px);line-height:1.06}
+.prompt-list{width:100%;max-width:1080px;border-top:2px solid var(--ink)}
+.prompt-list p{padding:clamp(12px,1.7vh,20px) 0;border-bottom:1px solid #cbd4cc;font-size:clamp(22px,2.25vw,34px);line-height:1.24;font-weight:800;letter-spacing:-.025em}
+.prompt-footer{max-width:920px;color:var(--muted);font-size:clamp(14px,1.2vw,18px);line-height:1.45}
+.thesis{width:100%;display:grid;grid-template-columns:minmax(240px,.7fr) minmax(540px,1.3fr);gap:54px;align-items:start}
+.thesis-key{font-size:clamp(62px,8vw,116px);font-weight:950;line-height:.9;color:var(--green);letter-spacing:-.07em}
+.thesis-copy{font-size:clamp(23px,2.5vw,37px);font-weight:800;line-height:1.25}
+.thesis-copy b,.thesis-copy span{display:block}.thesis-copy span{margin-top:14px;color:#536158;font-size:.58em;line-height:1.45;font-weight:600;letter-spacing:0}
+.thesis.compact{grid-template-columns:minmax(110px,.25fr) minmax(540px,1.75fr);gap:30px;align-items:center}.thesis.compact .thesis-key{font-size:clamp(50px,6vw,84px)}
+.ledger{width:100%;border-top:1px solid #cbd4cc}
+.ledger-row{display:grid;grid-template-columns:minmax(170px,.44fr) minmax(360px,1.56fr);gap:24px;align-items:center;min-height:clamp(52px,6.6vh,74px);padding:6px 0;border-bottom:1px solid #cbd4cc}
+.ledger-row b{font-size:clamp(17px,1.55vw,24px)}.ledger-row span{color:#536158;font-size:clamp(14px,1.15vw,18px);line-height:1.42}
+.scenario-answer{display:block;margin-top:7px;color:var(--ink)!important;font-weight:780}
+.scenario-answer b{font-size:inherit;color:var(--green)}
+.homework-inline{width:100%;margin-top:14px;padding-top:12px;border-top:2px solid var(--green);font-size:clamp(15px,1.15vw,18px);line-height:1.4;color:#536158}
+.homework-inline b{color:var(--ink)}
+.reliability-compare{display:grid;grid-template-columns:1fr auto 1.2fr;gap:clamp(22px,3vw,46px);align-items:center;width:100%;margin:4px 0 12px}
+.reliability-side{min-height:175px;display:flex;flex-direction:column;justify-content:center;border-bottom:5px solid var(--red)}
+.reliability-side b{font-size:clamp(54px,6.5vw,92px);line-height:.9;letter-spacing:-.06em}
+.reliability-side span{margin-top:14px;font-size:clamp(20px,1.9vw,28px);font-weight:850}
+.reliability-side small{margin-top:8px;color:var(--muted);font-size:clamp(14px,1.05vw,17px);line-height:1.4}
+.reliability-side.stable{border-color:var(--green)}.reliability-side.stable b{color:var(--green);font-size:clamp(42px,5.2vw,74px)}
+.reliability-op{color:#9ca79f;font-size:clamp(48px,6vw,82px);font-weight:500}
+.validation-core{display:grid;grid-template-columns:minmax(210px,.52fr) minmax(360px,1.08fr) minmax(190px,.4fr);gap:clamp(20px,2.4vw,38px);align-items:center;width:100%;padding:14px 0;border-top:1px solid #cbd4cc;border-bottom:1px solid #cbd4cc}
+.validation-core b{font-size:clamp(23px,2.3vw,34px);line-height:1.15;color:var(--green)}
+.validation-core span{font-size:clamp(16px,1.35vw,20px);line-height:1.5;color:#48564d}
+.validation-thumb{display:block;width:100%;max-width:230px;max-height:175px;justify-self:end;object-fit:contain;border:1px solid #d7ded8;background:#fff}
+.business-promise{width:100%;font-size:clamp(20px,1.85vw,27px);line-height:1.35;font-weight:850}
+.statement-slide .canvas{align-items:center;justify-content:center;text-align:center}
+.statement-text{max-width:1320px;font-size:clamp(42px,5vw,76px);line-height:1.12;font-weight:950;letter-spacing:-.045em}
+.cycle{display:flex;align-items:center;width:100%;gap:8px;margin-top:20px}
+.cycle-step{flex:1;text-align:center;padding:20px 8px;border-bottom:4px solid var(--green);font-size:clamp(16px,1.4vw,21px);font-weight:850}
+.cycle-step b,.cycle-step span{display:block}.cycle-step span{margin-top:8px;color:var(--muted);font-size:.75em;line-height:1.35;font-weight:600}
+.source{display:none}
+.meme-layout{display:grid;grid-template-columns:minmax(280px,.72fr) minmax(520px,1.28fr);gap:clamp(34px,5vw,74px);align-items:center;width:100%}
+.meme-layout.reverse{grid-template-columns:minmax(520px,1.28fr) minmax(280px,.72fr)}
+.meme-art{display:block;width:100%;height:min(56vh,520px);object-fit:contain;object-position:center}
+.meme-art.wide{height:auto;max-height:min(46vh,410px)}
+.meme-copy{display:flex;flex-direction:column;gap:16px}
+.meme-copy .punchline{font-size:clamp(25px,2.8vw,41px);line-height:1.12;font-weight:950;letter-spacing:-.04em}
+.meme-copy p{max-width:620px;font-size:clamp(16px,1.45vw,21px)}
+.attribution{display:none}
+.selective-hero{display:grid;grid-template-columns:3fr 2fr;gap:clamp(28px,5vw,70px);width:100%;align-items:end}
+.selective-block{min-height:320px;display:flex;flex-direction:column;justify-content:flex-end;padding-bottom:24px;border-bottom:8px solid var(--green)}
+.selective-block.unknown{border-color:#aeb7b0}.selective-block b{font-size:clamp(90px,12vw,170px);line-height:.78;letter-spacing:-.08em}.selective-block span{margin-top:24px;font-size:clamp(22px,2vw,30px);font-weight:850}.selective-block small{margin-top:8px;color:var(--muted);font-size:clamp(14px,1.15vw,18px);line-height:1.4}
+.selective-block.unknown b{color:#7d8980}.selective-block.unknown span{color:#59655d}
+.policy-loop{display:grid;grid-template-columns:1fr auto 1fr auto 1fr auto 1.25fr;gap:clamp(10px,1.5vw,22px);align-items:center;width:100%}
+.policy-node{min-height:240px;display:flex;flex-direction:column;justify-content:center;border-bottom:5px solid var(--line)}
+.policy-node b{font-size:clamp(25px,2.5vw,38px);line-height:1.05}.policy-node span{margin-top:12px;color:var(--muted);font-size:clamp(14px,1.1vw,17px);line-height:1.4}
+.policy-node.key{border-color:var(--green)}.policy-node.key b{color:var(--green);font-size:clamp(34px,3.5vw,52px)}
+.policy-arrow{color:#9ca79f;font-size:clamp(28px,3vw,44px)}
+.loop-result{width:100%;font-size:clamp(21px,2.2vw,33px);line-height:1.25;font-weight:850}
+.business-tension{display:grid;grid-template-columns:1fr 1px 1fr;gap:clamp(34px,5vw,72px);align-items:center;width:100%;margin:14px 0}
+.business-side{display:flex;flex-direction:column;justify-content:center;min-height:250px}.business-side b{font-size:clamp(58px,7.4vw,104px);line-height:.85;letter-spacing:-.07em}.business-side span{margin-top:20px;color:var(--muted);font-size:clamp(22px,2.2vw,33px);font-weight:800}.business-side:last-child b{color:var(--green)}
+.business-divider{height:100%;background:#cbd4cc}
+.target-rule{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:clamp(18px,2.5vw,38px);align-items:center;width:100%;margin-top:10px}
+.target-part{min-height:210px;display:flex;flex-direction:column;justify-content:center;border-bottom:5px solid var(--ink)}
+.target-part b{font-size:clamp(60px,7.6vw,110px);line-height:.9;letter-spacing:-.07em}.target-part span{margin-top:14px;color:var(--muted);font-size:clamp(16px,1.35vw,21px);line-height:1.35}
+.target-part.result{border-color:var(--red)}.target-part.result b{color:var(--red)}
+.target-op{color:#aeb7b0;font-size:clamp(32px,4vw,58px);font-weight:500}
+.target-remark{width:100%;font-size:clamp(20px,2vw,30px);line-height:1.35;font-weight:750}
+.seg{display:flex;width:100%;border:2px solid var(--ink);border-radius:14px;overflow:hidden}
+.seg-part{flex:1;padding:clamp(18px,2.4vh,30px) clamp(14px,1.6vw,24px);border-right:1px solid rgba(23,33,27,.18)}
+.seg-part:last-child{border-right:0}
+.seg-part b{display:block;font-size:clamp(22px,2.2vw,33px);letter-spacing:-.03em}
+.seg-part span{display:block;margin-top:8px;font-size:clamp(14px,1.15vw,18px);line-height:1.4}
+.seg-part.g{background:var(--green2)}.seg-part.g b{color:#126636}.seg-part.g span{color:#2f5c42}
+.seg-part.a{background:var(--amber2)}.seg-part.a b{color:#86560c}.seg-part.a span{color:#6d5426}
+.seg-part.r{background:var(--red2)}.seg-part.r b{color:#a43128}.seg-part.r span{color:#7c4038}
+.maturity-visual{display:grid;grid-template-columns:220px 1fr 220px;align-items:center;gap:0;width:100%;margin:20px 0}
+.maturity-point{display:flex;flex-direction:column}.maturity-point:last-child{text-align:right;align-items:flex-end}.maturity-point b{font-size:clamp(48px,6vw,82px);line-height:.95;letter-spacing:-.05em}.maturity-point span{margin-top:10px;color:var(--muted);font-size:clamp(15px,1.25vw,19px)}
+.maturity-track{position:relative;height:6px;background:#b9c2bb}.maturity-track:before,.maturity-track:after{content:"";position:absolute;top:50%;width:20px;height:20px;border-radius:50%;background:var(--green);transform:translateY(-50%)}.maturity-track:before{left:0}.maturity-track:after{right:0;background:var(--ink)}
+.maturity-track span{position:absolute;left:38%;top:18px;color:var(--muted);font-size:14px;white-space:nowrap}
+.fresh-line{display:flex;align-items:baseline;justify-content:space-between;width:100%;padding-top:20px;border-top:1px solid #cbd4cc}
+.fresh-line b{font-size:clamp(25px,2.8vw,40px)}.fresh-line strong{color:var(--red);font-size:clamp(42px,5.6vw,76px);letter-spacing:-.05em}
+.loss-calc{display:flex;flex-direction:column;width:100%;border-top:2px solid var(--ink)}
+.loss-row{display:grid;grid-template-columns:1fr auto 1fr auto 1.15fr auto 1.25fr;gap:clamp(10px,1.4vw,22px);align-items:baseline;padding:clamp(20px,2.8vh,32px) 0;border-bottom:1px solid #cbd4cc}
+.loss-row b{font-size:clamp(32px,3.8vw,54px);letter-spacing:-.05em}.loss-row span{color:#9ca69f;font-size:clamp(24px,2.5vw,38px)}.loss-row strong{text-align:right;color:var(--green);font-size:clamp(36px,4.3vw,62px);letter-spacing:-.055em;font-variant-numeric:tabular-nums}
+.loss-labels{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;width:78%;color:var(--muted);font-size:clamp(13px,1.1vw,17px)}
+.loss-takeaway{width:100%;font-size:clamp(21px,2.1vw,32px);line-height:1.3;font-weight:800}
+.cost{width:100%;display:flex;flex-direction:column;gap:clamp(18px,2.6vh,32px);margin:10px 0}
+.cost-row{display:grid;grid-template-columns:minmax(180px,.5fr) 1fr minmax(150px,.32fr);gap:clamp(16px,2vw,30px);align-items:center}
+.cost-row b{font-size:clamp(18px,1.6vw,24px)}
+.cost-row i{display:block;height:clamp(34px,4.6vh,54px);width:var(--w);background:var(--c)}
+.cost-row strong{text-align:right;font-size:clamp(28px,3.2vw,46px);letter-spacing:-.05em;font-variant-numeric:tabular-nums}
+.cost-row.loss strong{color:var(--red)}.cost-row.miss strong{color:var(--amber)}
+.curve{width:100%;display:flex;flex-direction:column}
+.curve-plot{display:flex;align-items:flex-end;gap:clamp(14px,2.4vw,40px);width:100%;height:clamp(210px,32vh,300px)}
+.curve-col{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%}
+.curve-col b{margin-bottom:9px;font-size:clamp(20px,2vw,30px);letter-spacing:-.04em;font-variant-numeric:tabular-nums;color:#5c6a61}
+.curve-col i{display:block;width:100%;height:var(--h);background:#c5d0c8}
+.curve-col.best b{color:var(--green)}.curve-col.best i{background:var(--green)}
+.curve-axis{display:flex;gap:clamp(14px,2.4vw,40px);width:100%;border-top:2px solid var(--ink)}
+.curve-cell{flex:1;padding-top:12px;text-align:center}
+.curve-cell b{display:block;font-size:clamp(17px,1.55vw,23px);font-variant-numeric:tabular-nums}
+.curve-cell span{display:block;margin-top:5px;color:var(--muted);font-size:clamp(13px,1.05vw,16px)}
+.curve-cell.best b{color:var(--green)}
+.rank-viz{display:flex;flex-direction:column;gap:22px;width:100%}
+.rank-row{display:grid;grid-template-columns:190px 1fr 150px;gap:clamp(16px,2vw,28px);align-items:center}
+.rank-label b,.rank-label span{display:block}.rank-label b{font-size:clamp(19px,1.7vw,25px)}.rank-label span{margin-top:5px;color:var(--muted);font-size:14px;line-height:1.35}
+.rank-track{height:clamp(80px,11vh,106px);display:flex;align-items:flex-end;gap:12px;border-bottom:2px solid #aeb8b0}
+.risk-token{flex:1;min-width:0;height:var(--h);background:var(--c);display:flex;align-items:flex-end;justify-content:center;padding:8px;color:#fff;font-size:clamp(11px,.9vw,14px);font-weight:850}
+.rank-money{text-align:right}
+.rank-money b{display:block;font-size:clamp(26px,2.8vw,40px);letter-spacing:-.05em;font-variant-numeric:tabular-nums}
+.rank-money span{display:block;margin-top:4px;color:var(--muted);font-size:13px}
+.rank-money.up b{color:var(--red)}
+.full-meme{display:block;width:100%;height:min(64vh,610px);object-fit:contain;object-position:center}
+.meme-only .canvas{max-width:1500px;align-items:center}.meme-only .full-meme{height:min(80vh,800px)}
+@media(max-width:900px){
+  .cover .canvas{grid-template-columns:minmax(0,1fr) minmax(240px,.55fr);gap:24px}.cover-image{max-width:310px}
+  .validation-core{grid-template-columns:minmax(180px,.7fr) 1.3fr}.validation-thumb{grid-column:1/-1;justify-self:center}
+  .grid3,.grid4{grid-template-columns:repeat(2,1fr)}
+  .stage-row{grid-template-columns:1fr}.stage-signal{justify-content:flex-start;width:max-content;max-width:100%}
+  .chain{grid-template-columns:repeat(2,1fr)}
+  .flow{flex-wrap:wrap}.arrow{display:none}.node{min-width:30%}
+  .branch{grid-template-columns:220px 1fr;gap:38px}.branch-core{width:210px;height:210px}
+  .branch-item{grid-template-columns:145px 1fr}
+  .thesis{grid-template-columns:180px 1fr;gap:32px}
+  .meme-layout,.meme-layout.reverse{grid-template-columns:minmax(230px,.65fr) 1fr;gap:30px}
+  .rank-row{grid-template-columns:140px 1fr 120px}
+  .target-rule{grid-template-columns:1fr auto 1fr auto 1fr}.target-part{min-height:180px}
+  .maturity-visual{grid-template-columns:170px 1fr 170px}.policy-node{min-height:210px}
+}
+@media(max-width:620px){
+  .cover .canvas{display:flex;align-items:flex-start;text-align:left}.cover-image{width:min(70vw,280px);align-self:center}
+  .validation-core{grid-template-columns:1fr}.validation-thumb{grid-column:auto;justify-self:start}
+  .slide{padding:44px 20px}.grid2,.grid3,.grid4{grid-template-columns:1fr}
+  .stage-signal{font-size:21px}
+  .chain{grid-template-columns:1fr}.hint{display:none}
+  .split{grid-template-columns:1fr}.split-line{height:1px}.split-side{min-height:auto}
+  .branch{grid-template-columns:1fr}.branch-core{width:150px;height:150px;border-width:5px}
+  .branch-list:before,.branch-item:before,.branch-item:after{display:none}.branch-item{grid-template-columns:1fr;gap:5px}
+  .thesis,.thesis.compact{grid-template-columns:1fr;gap:12px}.ledger-row{grid-template-columns:1fr;gap:4px;padding:10px 0}
+  .cycle{align-items:stretch}.cycle-step{padding:10px 4px}
+  .meme-layout,.meme-layout.reverse{grid-template-columns:1fr}.meme-art{height:34vh}.meme-layout.reverse .meme-art{order:2}
+  .seg{flex-direction:column}.seg-part{border-right:0;border-bottom:1px solid rgba(23,33,27,.18)}
+  .rank-row{grid-template-columns:1fr}.rank-money{text-align:left}
+  .cost-row{grid-template-columns:1fr}.cost-row strong{text-align:left}
+  .curve-plot{height:180px}
+  .target-rule{grid-template-columns:1fr}.target-op{display:none}.target-part{min-height:auto;padding:14px 0}
+  .business-tension{grid-template-columns:1fr}.business-divider{height:1px}.business-side{min-height:auto;padding:20px 0}
+  .maturity-visual{grid-template-columns:100px 1fr 100px}.maturity-track span{display:none}
+  .fresh-line{display:block}.fresh-line strong{display:block;margin-top:10px}.selective-block{min-height:230px}
+  .policy-loop{grid-template-columns:1fr}.policy-arrow{transform:rotate(90deg);text-align:center}.policy-node{min-height:auto;padding:14px 0}
+  .loss-row{grid-template-columns:1fr auto 1fr;row-gap:8px}.loss-row strong{grid-column:1/-1;text-align:left}.loss-labels{width:100%}
+  .selective-hero{grid-template-columns:1fr}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*:before,*:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+}
+@media print{
+  body{overflow:visible}.deck{height:auto}.slide{display:flex!important;position:relative;width:100vw;height:56.25vw;page-break-after:always}
+  .step{opacity:1;transform:none}.progress,.counter,.hint,.zone{display:none}
+}
+</style>
+</head>
+<body>
+<div class="progress" id="progress"></div>
+<main class="deck" id="deck"></main>
+<div class="counter"><span id="current">1</span> / <span id="total">1</span></div>
+<div class="hint">← назад · → или Space: показать / дальше · F: полный экран</div>
+<button class="zone prev" id="prev" aria-label="Предыдущий шаг"></button>
+<button class="zone next" id="next" aria-label="Следующий шаг"></button>
+<script>
+const A = '<span class="arrow">→</span>';
+const flow = items => `<div class="flow">${items.map((x,i)=>`${i?A:''}<div class="node ${x.c||''}"><b>${x.t}</b>${x.s?`<span>${x.s}</span>`:''}</div>`).join('')}</div>`;
+const cards = (items,n=3) => `<div class="grid${n}">${items.map(x=>`<div class="card ${x.c||''} ${x.step?'step':''}">${x.n?`<span class="number">${x.n}</span>`:''}<h3>${x.t}</h3>${x.p?`<p>${x.p}</p>`:''}${x.list?`<ul>${x.list.map(v=>`<li>${v}</li>`).join('')}</ul>`:''}</div>`).join('')}</div>`;
+const ledger = rows => `<div class="ledger">${rows.map(r=>`<div class="ledger-row"><b>${r.t}</b><span>${r.s}</span></div>`).join('')}</div>`;
+const S = (section,eyebrow,title,html,cls='') => ({section,eyebrow,title,html,cls});
+
+// шесть шагов постановки, порядок задаёт структуру дека
+const CHAIN = [
+  'Бизнес-задача','Target','Данные','Экономика риска','Метрики','Проверка'
+];
+const STAGE_TITLES = [
+  'Истинная бизнес-цель редко лежит в первой формулировке',
+  'Target не лежит готовым в базе: его задаёт банк',
+  'История показывает только тех, кому банк уже решил выдать кредит',
+  'Одинаковый PD может стоить банку совершенно разных денег',
+  'Хороший Gini ещё не гарантирует хорошую стратегию',
+  'Честный тест должен быть похож на будущую выдачу'
+];
+const STAGE_VISUALS = [
+  '<b>Симптом</b><i>≠</i><b>задача</b>',
+  '',
+  '',
+  '<b>PD</b><i>×</i><b>LGD</b><i>×</i><b>EAD</b>',
+  '<b>Gini</b><i>≠</i><b>прибыль</b>',
+  '<b>Прошлое</b><i>→</i><b>будущее</b>'
+];
+const chainMini = n => `<div class="chain-mini">${CHAIN.map((t,i)=>
+  `${i?'<i>→</i>':''}${i===n-1?`<b>${t}</b>`:`<span>${t}</span>`}`).join('')}</div>`;
+const divider = (n,claim) => S(`Шаг ${n}`,`Шаг ${n} из 6`,STAGE_TITLES[n-1],
+  `<div class="stage-row ${STAGE_VISUALS[n-1]?'':'single'}"><p class="section-answer">${claim}</p>${STAGE_VISUALS[n-1]?`<div class="stage-signal">${STAGE_VISUALS[n-1]}</div>`:''}</div>${chainMini(n)}`,'section-break');
+
+const allSlides = [
+S('Титул','','Кредитный скоринг',`
+  <p class="cover-subtitle">Как найти настоящую задачу бизнеса до обучения первой модели</p>
+  <img class="cover-image" src="data/social_credit.jpg" alt="Мем о социальном кредитном рейтинге">
+`,'center cover'),
+
+S('Фраза бизнеса','Запрос','',`
+  <div class="quote">«Просрочка выросла. Нужна модель надёжности клиента»
+    <small>Владелец розничного кредитного продукта, микрокредиты до 10 млн сум</small>
+  </div>
+  <p class="lead">«Нужна модель» ещё не является задачей. Сначала нужно определить решение банка и критерий успеха проекта.</p>
+`),
+
+divider(1,'За фразой «просрочка выросла» скрываются три вопроса: какие выдачи сохранить, какой риск принять и сколько банк готов потерять.'),
+
+S('Два требования','Запрос бизнеса','Бизнес-цель: меньше просрочки при сохранении выдач',`
+  <div class="business-tension">
+    <div class="business-side">
+      <b>СНИЗИТЬ</b>
+      <span>просрочку</span>
+    </div>
+    <div class="business-divider"></div>
+    <div class="business-side">
+      <b>СОХРАНИТЬ</b>
+      <span>выдач</span>
+    </div>
+  </div>
+  <p class="lead">Просрочку можно обнулить, отказав почти всем. Выдачи можно сохранить, одобряя всех подряд. Оба требования вместе задают границы будущей кредитной стратегии.</p>
+`),
+
+S('Чего нет во фразе','Постановка','Пять вещей, которых нет в запросе бизнеса',`
+  ${ledger([
+    {t:'Действие',s:'Что банк сделает иначе: одобрит заявку, изменит лимит или изменит ставку'},
+    {t:'Событие',s:'Какой исход считается плохим и через сколько месяцев он становится виден'},
+    {t:'Популяция',s:'Какие заявки попадают в модель: продукт, канал, повторные клиенты'},
+    {t:'Данные',s:'Что известно банку до решения, а что появляется только после выдачи'},
+    {t:'Критерий',s:'Какой результат разрешает запуск модели, а какой останавливает проект'}
+  ])}
+`),
+
+S('Виды скоринга','Карта','Вид скоринга определяется моментом решения и целевым событием',`
+  ${flow([
+    {c:'g',t:'Application',s:'Новая заявка. Одобрение, лимит и ставка. Target: дефолт после выдачи.'},
+    {c:'b',t:'Behavioral',s:'Действующий клиент. Пересмотр лимита или новое предложение. Target: риск в ближайшие месяцы.'},
+    {c:'a',t:'Collection',s:'Клиент уже в просрочке. Приоритет и способ контакта. Target: платёж или возврат в график.'},
+    {c:'r',t:'Fraud',s:'Заявка или транзакция. Блокировка или проверка. Target: мошенничество, а не кредитный дефолт.'}
+  ])}
+  <p class="lead">Названия похожи, но это разные задачи: меняются момент расчёта, доступные данные, действие банка и target.</p>
+`),
+
+S('Шесть шагов','Порядок работы','За фразой «нужна модель» скрываются шесть решений',`
+  <div class="chain">
+    <div class="chain-step"><i>1</i><div><b>Бизнес-задача</b><span>что просит бизнес и что ограничивает</span></div></div>
+    <div class="chain-step"><i>2</i><div><b>Формирование target</b><span>правило, по которому появляется столбец y</span></div></div>
+    <div class="chain-step"><i>3</i><div><b>Ограничения данных</b><span>что известно в момент решения</span></div></div>
+    <div class="chain-step"><i>4</i><div><b>Экономика риска</b><span>как PD и условия кредита превращаются в деньги</span></div></div>
+    <div class="chain-step"><i>5</i><div><b>Метрики модели и стратегии</b><span>что считаем результатом модели и портфеля</span></div></div>
+    <div class="chain-step"><i>6</i><div><b>Проверка на будущем периоде</b><span>как повторить будущее применение</span></div></div>
+  </div>
+  <p class="chain-note">Риск не выделен в отдельный блок: его смысл раскрывается через target, условия кредита и ожидаемые потери.</p>
+`),
+
+S('Инструмент раньше задачи','Ошибка','Команда слишком рано начинает думать про CatBoost',`
+  <div class="meme-layout">
+    <img class="meme-art" src="data/ml-meme-war-this-is-one-of-my-favourite-machine-learning-v0-nc5ua4x8lfg31.webp" alt="Мем: человек режет простую еду огромным мечом с подписью deep learning">
+    <div class="meme-copy">
+      <div class="punchline">«Нужна модель» слышится команде как «нужен CatBoost»</div>
+      <p>Пока не названы действие банка, целевое событие и горизонт наблюдения, любой алгоритм будет обучен на произвольно выбранной метке.</p>
+      <p>Ни один из шести шагов не начинается с обучения модели.</p>
+    </div>
+  </div>
+`),
+
+divider(2,'Банк заранее выбирает событие, горизонт и серую зону. Из этого правила появляется y.'),
+
+S('Сценарии target','Практика','Для каждого сценария соберите таргет',`
+  ${ledger([
+    {t:'Новая заявка',s:'Микрозайм на 6 месяцев. Банк решает, выдавать ли кредит.<span class="scenario-answer"><b>Один вариант target:</b> 90+ дней просрочки в первые 6 месяцев после выдачи. Незрелые договоры исключаются.</span>'},
+    {t:'Действующий клиент',s:'Банк ежемесячно решает, увеличить ли лимит по карте.<span class="scenario-answer"><b>Один вариант target:</b> 30+ дней просрочки в следующие 3 месяца после даты расчёта behavioral score.</span>'},
+    {t:'Клиент в просрочке',s:'Просрочка уже достигла 15 дней. Банк выбирает приоритет контакта.<span class="scenario-answer"><b>Один вариант target:</b> платёж или возврат в график в течение 14 дней после контакта.</span>'}
+  ])}
+`,'discussion'),
+
+S('Правило bad','Target','Bad не лежит готовым в базе: его определяет банк',`
+  <div class="target-rule">
+    <div class="target-part">
+      <b>90+</b>
+      <span>дней просрочки</span>
+    </div>
+    <div class="target-op">×</div>
+    <div class="target-part">
+      <b>12</b>
+      <span>месяцев наблюдения</span>
+    </div>
+    <div class="target-op">=</div>
+    <div class="target-part result">
+      <b>BAD</b>
+      <span>положительный класс</span>
+    </div>
+  </div>
+  <p class="target-remark">Это правило задаёт долю положительного класса, цену ошибки и требование к глубине истории. Три вещи сразу.</p>
+`),
+
+S('Серая зона','Target','Между good и bad остаётся серая зона',`
+  <div class="seg">
+    <div class="seg-part g"><b>0-29 дней</b><span>Платежи идут или договор закрыт. Класс good.</span></div>
+    <div class="seg-part a"><b>30-89 дней</b><span>Часть договоров вернётся в график, часть уйдёт дальше. Класс не определён.</span></div>
+    <div class="seg-part r"><b>90+ дней</b><span>Просрочка внутри окна наблюдения. Класс bad.</span></div>
+  </div>
+  <p class="lead">Серую зону либо исключают из обучения, либо относят к одному из классов. Основание для выбора даёт roll-rate: доля договоров из 30-89 дней, которая в следующие месяцы переходит в 90+.</p>
+  <p class="small">Решение по серой зоне фиксируется до обучения и записывается в постановку.</p>
+`),
+
+S('Вопрос про target','Вопрос','Что изменится, если 90+ заменить на 60+?',`
+  <div class="prompt-list">
+    <p>Доля bad в обучающей выборке</p>
+    <p>Состав положительного класса</p>
+    <p>Цена ошибки в деньгах</p>
+    <p>Сопоставимость с прошлыми моделями</p>
+  </div>
+  <p class="prompt-footer">Какие части постановки придётся пересчитать?</p>
+`,'discussion'),
+
+S('Зрелость метки','Время','Три месяца без просрочки ещё не означают good',`
+  <div class="maturity-visual">
+    <div class="maturity-point">
+      <b>t0</b>
+      <span>заявка и решение</span>
+    </div>
+    <div class="maturity-track"><span>наблюдаем платежи 12 месяцев</span></div>
+    <div class="maturity-point">
+      <b>+12 мес</b>
+      <span>метка созрела</span>
+    </div>
+  </div>
+  <div class="fresh-line">
+    <b>Просрочки пока нет</b>
+    <strong>≠ GOOD</strong>
+  </div>
+  <p class="lead">Договор возрастом три месяца не может стать bad по правилу «90+ за 12 месяцев». Он не good, он незрелый. В обучающую выборку такие договоры не попадают.</p>
+`),
+
+divider(3,'Исторический датасет уже отобран прошлой кредитной политикой. По отказанным заявкам банк не наблюдает платёжный исход.'),
+
+S('Смещённая выборка','Проблема','Исторические данные смещены в сторону одобренных клиентов',`
+  <div class="selective-hero">
+    <div class="selective-block">
+      <b>60</b>
+      <span>одобрено</span>
+      <small>Банк увидит платёжное поведение и присвоит good или bad</small>
+    </div>
+    <div class="selective-block unknown">
+      <b>40</b>
+      <span>отказано</span>
+      <small>Исход неизвестен. Отказанная заявка не равна bad</small>
+    </div>
+  </div>
+  <p class="lead">Это не классический data leakage, но похожая ловушка: прошлое решение банка уже зашито в состав выборки. Модель чаще видит знакомые профили и хуже понимает новых клиентов без кредитной истории.</p>
+`),
+
+S('Новые клиенты','Подход','Новым клиентам нужна отдельная стратегия набора истории',`
+  <div class="policy-loop">
+    <div class="policy-node">
+      <b>New-to-bank</b>
+      <span>отсутствие истории означает неопределённость, а не bad</span>
+    </div>
+    <div class="policy-arrow">→</div>
+    <div class="policy-node">
+      <b>Данные в t0</b>
+      <span>заявка, бюро и другие признаки, доступные до решения</span>
+    </div>
+    <div class="policy-arrow">→</div>
+    <div class="policy-node">
+      <b>Осторожный старт</b>
+      <span>умеренный лимит, короткий срок или отдельный порог</span>
+    </div>
+    <div class="policy-arrow">→</div>
+    <div class="policy-node key">
+      <b>Новая история</b>
+      <span>фактическое поведение позволяет пересмотреть лимит и риск</span>
+    </div>
+  </div>
+  <p class="loop-result">Для проверки стратегии нужна небольшая контролируемая выборка около порога. Отказанных клиентов нельзя автоматически записывать в bad.</p>
+`),
+
+S('Правило t0','Данные','Сильный признак бесполезен, если его нет в момент заявки',`
+  <div class="meme-layout reverse">
+    <div class="meme-copy">
+      <div class="punchline">Точность 99% на кредитных данных требует проверки</div>
+      <p>Проверьте, не попали ли в признаки последний статус договора, дата закрытия, будущая реструктуризация или снимок бюро, сделанный после выдачи.</p>
+      <p><b>Правило t0:</b> значение признака должно быть доступно банку в момент кредитного решения. Иначе модель не сможет использовать его при реальной заявке.</p>
+    </div>
+    <img class="meme-art wide" src="data/images.jpg" alt="Мем: junior Data Scientist радуется точности выше 99 процентов, senior смотрит с подозрением">
+  </div>
+`),
+
+S('Отбор выборки','Отбор','Отказанная заявка не является bad',`
+  <div class="selective-hero">
+    <div class="selective-block">
+      <b>60</b>
+      <span>одобрено</span>
+      <small>Через 12 месяцев банк увидит good или bad</small>
+    </div>
+    <div class="selective-block unknown">
+      <b>40</b>
+      <span>отказано</span>
+      <small>Платёжного поведения по этому договору не существует</small>
+    </div>
+  </div>
+  <p class="lead">Обучающая выборка формируется прошлой стратегией одобрения. Из 100 заявок метка есть только у 60.</p>
+`),
+
+S('Петля данных','Обратная связь','Прошлая стратегия решает, на каких данных обучится следующая модель',`
+  <div class="policy-loop">
+    <div class="policy-node">
+      <b>Модель</b>
+      <span>оценивает PD</span>
+    </div>
+    <div class="policy-arrow">→</div>
+    <div class="policy-node">
+      <b>Решение</b>
+      <span>кому выдать кредит</span>
+    </div>
+    <div class="policy-arrow">→</div>
+    <div class="policy-node">
+      <b>Выдачи</b>
+      <span>только здесь появится исход</span>
+    </div>
+    <div class="policy-arrow">→</div>
+    <div class="policy-node key">
+      <b>Новый датасет</b>
+      <span>он уже отобран предыдущей политикой</span>
+    </div>
+  </div>
+  <p class="loop-result">Каждая следующая модель учится на выборке, которую отобрала предыдущая. Ошибка политики воспроизводится в данных.</p>
+`),
+
+S('Отказы','Отказы','По отклонённым заявкам банк не знает платёжный исход',`
+  ${ledger([
+    {t:'Контрольная выдача',s:'Небольшая случайная доля заявок около порога одобряется, чтобы увидеть их исход'},
+    {t:'Внешние исходы',s:'Бюро или другой продукт дают наблюдаемый результат, но по другому договору'},
+    {t:'Диапазон допущений',s:'Решение проверяется при нескольких предположениях об отказанных заявках'},
+    {t:'Прозрачность',s:'В постановке указано, где заканчиваются данные и начинаются допущения'}
+  ])}
+  <p class="source">Ни один метод не восстанавливает результат отклонённой заявки без допущений или эксперимента.</p>
+`),
+
+S('Вопрос про признак','Вопрос','Сильный признак обновляется после выдачи. Использовать?',`
+  <div class="prompt-list">
+    <p>На offline-тесте он заметно поднимает Gini</p>
+    <p>В момент заявки его значение неизвестно</p>
+    <p>Бизнес просит не терять качество</p>
+  </div>
+  <p class="prompt-footer">Как объяснить отказ от признака владельцу продукта за одну минуту?</p>
+`,'discussion'),
+
+divider(4,'PD становится бизнес-риском только вместе с LGD и EAD: условия кредита определяют размер ожидаемых потерь.'),
+
+S('Ожидаемые потери','Ожидаемые потери','PD один и тот же, а ожидаемый убыток отличается в пять раз',`
+  <div class="loss-calc">
+    <div class="loss-row">
+      <b>6%</b><span>×</span><b>60%</b><span>×</span><b>2 млн</b><span>=</span><strong>72 000</strong>
+    </div>
+    <div class="loss-row">
+      <b>6%</b><span>×</span><b>60%</b><span>×</span><b>10 млн</b><span>=</span><strong>360 000</strong>
+    </div>
+  </div>
+  <div class="loss-labels"><span>PD: вероятность дефолта</span><span>LGD: доля потерь после взыскания</span><span>EAD: сумма под риском</span></div>
+  <p class="loss-takeaway">Вероятность одна. Ожидаемый убыток отличается в пять раз. Лимит входит в решение о риске наравне с одобрением.</p>
+  <p class="source">Расчёт: scoring_numbers.py, сум на один договор.</p>
+`),
+
+S('Цена ошибки','Цена ошибки','Две ошибки стоят по-разному: 3,6 млн против 0,4 млн',`
+  <div class="cost">
+    <div class="cost-row loss">
+      <b>Одобрен будущий bad</b>
+      <i style="--w:100%;--c:var(--red)"></i>
+      <strong>3,6 млн</strong>
+    </div>
+    <div class="cost-row miss">
+      <b>Отклонён будущий good</b>
+      <i style="--w:11%;--c:var(--amber)"></i>
+      <strong>0,4 млн</strong>
+    </div>
+  </div>
+  <p class="lead">Одобренный bad уносит LGD 60% от среднего остатка 6 млн. Отклонённый good уносит только маржу, которую банк не заработал. Разница в девять раз.</p>
+  <p class="small">Пока цена обеих ошибок не названа бизнесом, порог одобрения выбрать нельзя.</p>
+`),
+
+divider(5,'Gini говорит о порядке клиентов. Прибыль зависит ещё от порога, лимита и цены ошибки.'),
+
+S('Стратегия и прибыль','Стратегия','Минимальная просрочка не всегда приносит максимум прибыли',`
+  <div class="curve">
+    <div class="curve-plot">
+      <div class="curve-col"><b>128,0</b><i style="--h:66%"></i></div>
+      <div class="curve-col best"><b>160,0</b><i style="--h:82%"></i></div>
+      <div class="curve-col"><b>128,0</b><i style="--h:66%"></i></div>
+      <div class="curve-col"><b>8,0</b><i style="--h:4%"></i></div>
+    </div>
+    <div class="curve-axis">
+      <div class="curve-cell"><b>40%</b><span>доля bad 2,0%</span></div>
+      <div class="curve-cell best"><b>60%</b><span>доля bad 3,3%</span></div>
+      <div class="curve-cell"><b>80%</b><span>доля bad 6,0%</span></div>
+      <div class="curve-cell"><b>100%</b><span>доля bad 9,8%</span></div>
+    </div>
+  </div>
+  <p class="lead">По вертикали прибыль в млн сум, по горизонтали доля одобрений. Стратегии с долей bad 2,0% и 6,0% дают одинаковые 128 млн. Максимум лежит между ними.</p>
+  <p class="source">1000 заявок, пять групп риска, маржа с good 0,4 млн, потеря с bad 3,6 млн. Расчёт: scoring_numbers.py.</p>
+`),
+
+S('Gini и деньги','Мониторинг','Порядок риска не изменился, а потери выросли вдвое',`
+  <div class="rank-viz">
+    <div class="rank-row">
+      <div class="rank-label"><b>Период 1</b><span>средний лимит 3 млн</span></div>
+      <div class="rank-track">
+        <i class="risk-token" style="--h:30%;--c:#39764c">A</i>
+        <i class="risk-token" style="--h:38%;--c:#5d8c4d">B</i>
+        <i class="risk-token" style="--h:48%;--c:#b88a26">C</i>
+        <i class="risk-token" style="--h:58%;--c:#c76b29">D</i>
+        <i class="risk-token" style="--h:70%;--c:#c6473d">E</i>
+      </div>
+      <div class="rank-money"><b>36 млн</b><span>ожидаемые потери</span></div>
+    </div>
+    <div class="rank-row">
+      <div class="rank-label"><b>Период 2</b><span>средний лимит 6 млн</span></div>
+      <div class="rank-track">
+        <i class="risk-token" style="--h:30%;--c:#39764c">A</i>
+        <i class="risk-token" style="--h:38%;--c:#5d8c4d">B</i>
+        <i class="risk-token" style="--h:48%;--c:#b88a26">C</i>
+        <i class="risk-token" style="--h:58%;--c:#c76b29">D</i>
+        <i class="risk-token" style="--h:70%;--c:#c6473d">E</i>
+      </div>
+      <div class="rank-money up"><b>72 млн</b><span>ожидаемые потери</span></div>
+    </div>
+  </div>
+  <p class="lead">Gini измеряет только порядок клиентов от A до E. Порядок не изменился, поэтому Gini остался прежним. Деньги зависят ещё и от лимита, и они выросли вдвое.</p>
+  <p class="source">600 выдач, 20 ожидаемых bad, LGD 60%. Расчёт: scoring_numbers.py.</p>
+`),
+
+S('Два отчёта','Сравнение','Модель и портфель могут рассказывать разные истории',`
+  <div class="meme-layout reverse">
+    <div class="meme-copy">
+      <div class="punchline">В отчёте по модели должны стоять обе величины</div>
+      <p><b>Про модель:</b> Gini, KS, калибровка PD, стабильность по сегментам.</p>
+      <p><b>Про портфель:</b> доля одобрений, доля bad среди зрелых выдач, прибыль после потерь.</p>
+      <p>Строка «Gini вырос на 3 пункта» не отвечает на вопрос, что произошло с деньгами.</p>
+    </div>
+    <img class="meme-art" src="data/ftcms-c88ab175.png" alt="Мем: пассажиры одного автобуса смотрят в разные окна и видят разные картины">
+  </div>
+`),
+
+divider(6,'Время, клиенты и зрелость меток в тесте должны повторять реальное применение.'),
+
+S('Схема проверки','Шаг 6 из 6','Бизнесу важнее стабильность модели, чем рекордная точность',`
+  <div class="reliability-compare">
+    <div class="reliability-side">
+      <b>99%</b>
+      <span>на одном offline-тесте</span>
+      <small>Метрика может исчезнуть на новом месяце, продукте или сегменте.</small>
+    </div>
+    <div class="reliability-op">&lt;</div>
+    <div class="reliability-side stable">
+      <b>СТАБИЛЬНО</b>
+      <span>на новых периодах и клиентах</span>
+      <small>Понятные границы применения, устойчивый порог, мониторинг и запасной сценарий.</small>
+    </div>
+  </div>
+  <div class="validation-core">
+    <b>Валидация превращает эксперимент в банковский инструмент</b>
+    <span>Она показывает, где модель ломается. После этого команда сужает сценарий, исправляет данные, выбирает устойчивый порог и задаёт правила мониторинга.</span>
+    <img class="validation-thumb" src="data/validation.png" alt="Схема вложенной кросс-валидации с внешним контуром проверки и внутренним подбором параметров">
+  </div>
+`),
+
+S('Надёжный сценарий','','',`
+  <p class="statement-text">Лучше дать бизнесу одно небольшое решение, которое надёжно работает каждый день, чем пообещать универсальную модель и перенести её ошибки в кредитные решения.</p>
+`,'statement-slide'),
+
+S('Постановка','Постановка задачи','До первой строки кода у проекта уже должен быть паспорт',`
+  ${ledger([
+    {t:'Действие',s:'Кто, в какой момент и какое действие принимает по оценке риска'},
+    {t:'Target',s:'Событие, горизонт наблюдения, популяция, исключения и серая зона'},
+    {t:'Данные',s:'Источники, момент доступности, частота обновления и запрещённые поля'},
+    {t:'Проверка',s:'Разделение по времени и клиенту, зрелость, метрика модели и метрика портфеля'},
+    {t:'Ограничения',s:'Отказанные заявки, сдвиг данных, ручные исключения, план мониторинга'}
+  ])}
+  <p class="lead">Эту страницу вы соберёте на симуляции. Код и обучение модели для неё не нужны.</p>
+`),
+
+S('Мем про BRD','Практика','Симуляция с бизнесом',`
+  <img class="full-meme" src="data/meme1.png" alt="Мем: короткий бизнес-запрос и растерянный Data Scientist, которому не хватает определений и данных">
+`),
+
+S('Интервью','Практика','Интервью с владельцем кредитного продукта',`
+  ${ledger([
+    {t:'Действие',s:'Что банк будет делать иначе после появления оценки риска?'},
+    {t:'Цена ошибки',s:'Что дороже: лишний отказ или пропущенный дефолт, и во сколько раз?'},
+    {t:'Плохой исход',s:'Как банк признаёт договор плохим и когда результат становится известен?'},
+    {t:'Популяция',s:'Для какого продукта, канала и типа клиента нужна модель?'},
+    {t:'Данные в t0',s:'Какая информация действительно доступна до одобрения?'},
+    {t:'Успех',s:'Какой будущий результат позволит принять или отклонить проект?'}
+  ])}
+  <p class="small">Владелец отвечает только на конкретный вопрос. На общий вопрос он даёт общий ответ.</p>
+`),
+
+S('Поворот сценария','Сценарий','В одном канале доля bad 18%, в другом 5%',`
+  <div class="prompt-list">
+    <p>Разный состав клиентов</p>
+    <p>Разные правила выдачи в канале</p>
+    <p>Разная зрелость выдач</p>
+    <p>Ошибка в момент формирования данных</p>
+  </div>
+  <p class="prompt-footer">Назовите минимум три механизма и по одному способу проверить каждый данными.</p>
+`,'discussion'),
+
+S('Питч','Питч','Защита начинается с решения, а не с названия алгоритма',`
+  <div class="meme-layout reverse">
+    <div class="meme-copy">
+      <div class="punchline">«Насыпьте данные в линейную алгебру и перемешайте»</div>
+      <p>Название алгоритма в питче не засчитывается. Сначала действие по заявке, целевое событие, данные в t0, схема проверки и главное допущение.</p>
+      <p>Если защита начинается с алгоритма, постановка ещё не готова.</p>
+      <p class="attribution">xkcd 1838, “Machine Learning”, CC BY-NC 2.5</p>
+    </div>
+    <img class="meme-art" src="assets/memes/xkcd-machine-learning.png" alt="Комикс xkcd о машинном обучении как куче линейной алгебры, которую перемешивают">
+  </div>
+`),
+
+S('Шпаргалка','Шпаргалка','Девять вопросов, которые экономят недели моделирования',`
+  ${ledger([
+    {t:'1. Действие',s:'Что изменится: одобрение, лимит или ставка?'},
+    {t:'2. Момент',s:'Когда принимается решение и что известно к этому моменту?'},
+    {t:'3. Событие',s:'Что считается bad и в каком окне наблюдения?'},
+    {t:'4. Серая зона',s:'Куда относятся договоры с просрочкой 30-89 дней?'},
+    {t:'5. Популяция',s:'Какой продукт, канал и тип клиента входят в модель?'},
+    {t:'6. Отбор',s:'По кому исторически наблюдается исход, а по кому нет?'},
+    {t:'7. Экономика',s:'Сколько стоит одобренный bad и отклонённый good?'},
+    {t:'8. Метрики',s:'Метрика модели, метрика портфеля и ограничение бизнеса?'},
+    {t:'9. Проверка',s:'Как выглядит честный будущий период?'}
+  ])}
+`),
+
+S('Проверь себя','Проверь себя','',`
+  <ol style="width:100%;padding-left:32px;font-size:clamp(17px,1.35vw,21px);line-height:1.55">
+    <li>Клиенту подняли лимит с 2 до 10 млн. Какие части PD пересчитываются и почему?</li>
+    <li>Договор выдан три месяца назад, просрочки нет. Почему его нельзя пометить как good?</li>
+    <li>В обучающей выборке 60 договоров из 100 заявок. Что произойдёт с оценкой новой политики, которая одобряет 75?</li>
+    <li>Gini не изменился, ожидаемые потери выросли с 36 до 72 млн. Назовите две причины.</li>
+    <li>Стратегии с долей bad 2,0% и 6,0% дают одинаковую прибыль. Что выбрать и по какому критерию?</li>
+    <li>Правило bad меняют с 90+ на 60+. Что придётся пересчитать до обучения модели?</li>
+    <li>Признак известен только через месяц после выдачи. Чем это опасно при реальном применении?</li>
+  </ol>
+  <p class="homework-inline"><b>Домашнее задание:</b> на одной странице соберите паспорт скорингового решения: действие, target, данные в t0, проверка и метрики. Код не требуется.</p>
+`),
+
+S('Домашнее задание','Домашнее задание','Паспорт скорингового решения',`
+  <ul class="checklist">
+    <li>Назвать действие, которое будет зависеть от оценки риска: одобрение, лимит или ставка.</li>
+    <li>Определить bad, горизонт наблюдения, популяцию и правило для серой зоны.</li>
+    <li>Нарисовать окна наблюдения, решения и созревания метки на одной шкале.</li>
+    <li>Составить каталог из 12 полей с источником и доступностью в t0.</li>
+    <li>Предложить разделение по времени и проверку пересечения ID клиентов.</li>
+    <li>Выбрать метрику модели, метрику портфеля и два ограничения стратегии.</li>
+    <li>Описать одно допущение, которое невозможно проверить на исторических данных.</li>
+  </ul>
+  <p class="lead">Формат сдачи: одна страница. Код и обучение модели не требуются.</p>
+`),
+
+// слайды ниже не входят в основной прогон, включаются добавлением в deckOrder
+S('Ручные решения','Переопределения','Эксперт может казаться точнее модели из-за отбора',`
+  <div class="split">
+    <div class="split-side">
+      <span class="number">Одобрение эксперта</span>
+      <h3>Исход наблюдается</h3>
+      <p>Эксперт одобрил клиента вопреки модели. Через год банк увидит фактический платёжный результат.</p>
+    </div>
+    <div class="split-line"></div>
+    <div class="split-side">
+      <span class="number">Отказ эксперта</span>
+      <h3>Исход не наблюдается</h3>
+      <p>Эксперт отказал вопреки модели. Его ошибка остаётся невидимой в данных банка.</p>
+    </div>
+  </div>
+  <p class="small">Сравнение «эксперт против модели» без учёта этой асимметрии всегда в пользу эксперта.</p>
+`),
+
+S('Вопрос про прогноз','Вопрос','Что должен предсказывать скоринг?',`
+  <div class="prompt-list">
+    <p>Вероятность дефолта клиента</p>
+    <p>Убыток по заявке</p>
+    <p>Решение «выдать или отказать»</p>
+  </div>
+  <p class="prompt-footer">Выберите один вариант и объясните, какое действие по заявке он улучшает.</p>
+`,'discussion')
+];
+
+const deckOrder = [
+  'Титул',
+  'Фраза бизнеса',
+  'Шаг 1','Два требования','Чего нет во фразе','Виды скоринга','Шесть шагов','Инструмент раньше задачи',
+  'Шаг 2','Сценарии target',
+  'Шаг 3','Смещённая выборка','Новые клиенты',
+  'Шаг 4','Ожидаемые потери','Цена ошибки',
+  'Шаг 5','Стратегия и прибыль','Gini и деньги',
+  'Схема проверки','Надёжный сценарий',
+  'Мем про BRD',
+  'Шпаргалка','Проверь себя'
+];
+const slides = deckOrder.map(section => allSlides.find(slide => slide.section === section)).filter(Boolean);
+
+function render(){
+  document.getElementById('deck').innerHTML=slides.map((s,i)=>`
+    <section class="slide ${s.cls}" data-index="${i+1}" data-section="${s.section}">
+      <div class="canvas">
+        ${s.eyebrow?`<p class="eyebrow">${s.eyebrow}</p>`:''}
+        ${s.title?(i===0?`<h1>${s.title}</h1>`:`<h2>${s.title}</h2>`):''}
+        ${s.html}
+      </div>
+    </section>`).join('');
+}
+render();
+const els=[...document.querySelectorAll('.slide')];
+let current=0;
+document.getElementById('total').textContent=els.length;
+function steps(slide){return [...slide.querySelectorAll('.step')]}
+function resetSteps(slide){steps(slide).forEach(x=>x.classList.remove('shown'))}
+function showAll(slide){steps(slide).forEach(x=>x.classList.add('shown'))}
+function go(n,hash=true){
+  els[current]?.classList.remove('active');
+  current=(n+els.length)%els.length;
+  els[current].classList.add('active');
+  resetSteps(els[current]);
+  document.getElementById('current').textContent=current+1;
+  document.getElementById('progress').style.width=((current+1)/els.length*100)+'%';
+  if(hash)history.replaceState(null,'','#'+(current+1));
+}
+function forward(){
+  const hidden=steps(els[current]).find(x=>!x.classList.contains('shown'));
+  if(hidden){hidden.classList.add('shown');return}
+  go(current+1);
+}
+function backward(){
+  const shown=steps(els[current]).filter(x=>x.classList.contains('shown'));
+  if(shown.length){shown[shown.length-1].classList.remove('shown');return}
+  go(current-1);showAll(els[current]);
+}
+document.addEventListener('keydown',e=>{
+  if(e.key==='ArrowRight'||e.key===' '||e.key==='PageDown'||e.key==='Enter'){e.preventDefault();forward()}
+  if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();backward()}
+  if(e.key==='Home'){e.preventDefault();go(0)}
+  if(e.key==='End'){e.preventDefault();go(els.length-1)}
+  if(e.key.toLowerCase()==='f'){document.fullscreenElement?document.exitFullscreen?.():document.documentElement.requestFullscreen?.()}
+});
+document.getElementById('prev').addEventListener('click',backward);
+document.getElementById('next').addEventListener('click',forward);
+let touchX=0;
+document.addEventListener('touchstart',e=>touchX=e.touches[0].clientX,{passive:true});
+document.addEventListener('touchend',e=>{const dx=e.changedTouches[0].clientX-touchX;if(Math.abs(dx)>45)(dx<0?forward():backward())},{passive:true});
+const initial=parseInt((location.hash||'#1').slice(1),10);
+go(Number.isFinite(initial)&&initial>=1&&initial<=els.length?initial-1:0,false);
+</script>
+</body>
+</html>

@@ -1,0 +1,1108 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Recap занятия 1 · RU / UZ / EN</title>
+<style>
+  html,body{margin:0;padding:0;height:100%;overflow:hidden;background:#fcfcfd;}
+  iframe{position:fixed;inset:0;width:100%;height:100%;border:0;display:none;}
+  body[data-lang="ru"] iframe[data-lang="ru"],
+  body[data-lang="uz"] iframe[data-lang="uz"],
+  body[data-lang="en"] iframe[data-lang="en"]{display:block;}
+  .langsw{position:fixed;top:12px;right:16px;z-index:10;display:flex;gap:5px;
+          font-family:'Inter',-apple-system,'Segoe UI',sans-serif;}
+  .langsw button{font-size:12px;font-weight:700;padding:5px 13px;border-radius:99px;
+                 border:1.5px solid #d2d6dd;background:#fff;color:#5a5f68;cursor:pointer;
+                 box-shadow:0 1px 4px rgba(18,20,28,.08);}
+  .langsw button.on{background:#1a9d4a;border-color:#1a9d4a;color:#fff;}
+  .langsw .homebtn{font-size:12px;font-weight:700;padding:5px 13px;border-radius:99px;
+                   border:1.5px solid #cfe0f7;background:#eef4fc;color:#0c447c;cursor:pointer;
+                   box-shadow:0 1px 4px rgba(18,20,28,.08);text-decoration:none;margin-right:4px;}
+  .langsw .homebtn:hover{background:#dce9fb;}
+  .langsw .navbtn{display:none;font-size:16px;font-weight:800;line-height:1;padding:4px 12px;
+                  border-radius:99px;border:1.5px solid #d2d6dd;background:#fff;color:#5a5f68;
+                  cursor:pointer;text-decoration:none;box-shadow:0 1px 4px rgba(18,20,28,.08);}
+  .langsw .navbtn:hover{background:#f0f1f4;}
+</style>
+</head>
+<body data-lang="ru">
+<div class="langsw">
+  <a class="navbtn" id="prevBtn" title="">&#8249;</a>
+  <a class="homebtn" href="../../" title="Home"><span id="homeLabel">&#8592; Bosh sahifa</span></a>
+  <a class="navbtn" id="nextBtn" title="">&#8250;</a>
+  <button data-l="ru" class="on">RU</button>
+  <button data-l="uz">UZ</button>
+  <button data-l="en">EN</button>
+</div>
+<iframe data-lang="ru" srcdoc="<!DOCTYPE html>
+<html lang=&quot;ru&quot;>
+<head>
+<meta charset=&quot;UTF-8&quot;>
+<meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;>
+<title>Модель оттока · Recap занятия 1</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&amp;display=swap');
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Inter',-apple-system,sans-serif;background:#fcfcfd;color:#16171a;overflow:hidden;-webkit-font-smoothing:antialiased;}
+.deck{width:100vw;height:100vh;position:relative;}
+.slide{width:100%;height:100%;display:none;flex-direction:column;align-items:center;justify-content:center;position:absolute;inset:0;padding:clamp(12px,2vh,28px) clamp(32px,5vw,72px);}
+.slide.active{display:flex;}
+.sc{max-width:1200px;width:100%;margin:0 auto;opacity:0;transform:translateY(16px);animation:up .4s ease-out forwards;display:flex;flex-direction:column;align-items:center;}
+@keyframes up{to{opacity:1;transform:translateY(0);}}
+.rise{opacity:0;transform:translateY(12px);animation:up .45s ease-out forwards;}
+
+h1{font-size:clamp(36px,5.2vw,80px);font-weight:900;letter-spacing:-.04em;line-height:.95;margin-bottom:clamp(10px,1.8vh,22px);}
+h2{font-size:clamp(18px,2.4vw,36px);font-weight:800;letter-spacing:-.025em;line-height:1.08;margin-bottom:clamp(4px,.7vh,10px);}
+.eyebrow{font-size:clamp(10px,.95vw,12px);font-weight:700;text-transform:uppercase;letter-spacing:.2em;color:#1a9d4a;margin-bottom:clamp(5px,.9vh,12px);}
+.sub{font-size:clamp(13px,1.7vw,21px);color:#6b6f76;line-height:1.45;max-width:820px;margin-top:clamp(5px,.9vh,12px);}
+.c-blue{color:#0064d6;}.c-green{color:#1a9d4a;}.c-orange{color:#e0820a;}.c-red{color:#e02d20;}.c-purple{color:#7c3aed;}
+
+.cr{display:grid;grid-template-columns:1fr 1fr;gap:clamp(12px,1.6vw,22px);width:100%;max-width:1200px;margin-top:clamp(8px,1.2vh,16px);align-items:start;}
+.lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.16em;color:#888;margin-bottom:5px;}
+
+.codebox{width:100%;max-width:940px;border-radius:14px;overflow:hidden;border:1px solid #252830;box-shadow:0 16px 40px -20px rgba(10,12,18,.5);}
+.codebar{display:flex;align-items:center;background:#1d2026;padding:9px 16px;}
+.codebar span{font-size:11px;color:#8a8f9a;font-family:'SF Mono','Consolas',monospace;}
+.code{font-family:'SF Mono','Menlo','Consolas',monospace;font-size:clamp(11px,1.1vw,14.5px);background:#141618;color:#e8eaf0;padding:clamp(12px,1.5vw,18px) clamp(14px,1.7vw,20px);width:100%;text-align:left;line-height:1.75;white-space:pre;overflow-x:auto;}
+.code .cl{display:block;opacity:0;transform:translateX(-8px);animation:lin .35s ease-out forwards;animation-delay:calc(var(--i)*.14s);}
+@keyframes lin{to{opacity:1;transform:translateX(0);}}
+.code .kw{color:#5ab0ff;}
+.code .fn{color:#e2c08d;}
+.code .st{color:#ffa657;}
+.code .cm{color:#5a9a5a;font-style:italic;}
+.code .nm{color:#f0a0d0;}
+.code .sq{background:rgba(26,157,74,.18);box-shadow:inset 0 0 0 1.5px rgba(26,157,74,.65);border-radius:5px;padding:1px 5px;}
+.code .ovin{background:rgba(26,157,74,.3);border-radius:4px;padding:0 3px;}
+.code .cte{display:block;margin:3px -10px;padding:4px 10px;border-left:3px solid #1a9d4a;background:rgba(26,157,74,.2);border-radius:0 6px 6px 0;}
+.resbadge{display:inline-block;background:#0d2818;color:#4ade80;border:1.5px solid #14532d;border-radius:8px;padding:2px 12px;font-weight:700;opacity:0;animation:pop .5s cubic-bezier(.2,1.6,.4,1) forwards;animation-delay:1.6s;}
+@keyframes pop{0%{opacity:0;transform:scale(.4);}100%{opacity:1;transform:scale(1);}}
+
+.result{width:100%;border-radius:12px;overflow:hidden;border:1.5px solid #e2e4ea;background:#fff;}
+.result table{width:100%;border-collapse:collapse;font-size:clamp(11px,1.05vw,13.5px);}
+.result thead tr{background:#f4f5f8;}
+.result th{padding:clamp(7px,.9vw,11px) clamp(9px,1.1vw,14px);font-weight:700;color:#4a4d53;border-bottom:1.5px solid #e2e4ea;white-space:nowrap;text-align:left;}
+.result td{padding:clamp(6px,.8vw,10px) clamp(9px,1.1vw,14px);border-bottom:1px solid #f0f1f4;color:#2a2c30;text-align:left;white-space:nowrap;}
+.result tr:last-child td{border-bottom:none;}
+.hi{color:#0064d6;font-weight:600;}.ok{color:#1a9d4a;font-weight:600;}.ng{color:#e02d20;font-weight:600;}
+.or{color:#e0820a;font-weight:600;}
+.num{text-align:right;font-variant-numeric:tabular-nums;}
+.result th.ycol,.result td.ycol{background:#fff6f5;box-shadow:inset 3px 0 0 #e02d20;}
+.result tbody tr{opacity:0;animation:up .4s ease-out forwards;}
+.result tbody tr:nth-child(1){animation-delay:.15s;}.result tbody tr:nth-child(2){animation-delay:.3s;}
+.result tbody tr:nth-child(3){animation-delay:.45s;}.result tbody tr:nth-child(4){animation-delay:.6s;}
+.result tbody tr:nth-child(5){animation-delay:.75s;}
+.result td.wrap,.result th.wrap{white-space:normal;line-height:1.45;}
+.tagchip{display:inline-block;font-size:11px;font-weight:800;padding:3px 12px;border-radius:99px;letter-spacing:.02em;}
+.tagchip.x{background:#eef4fc;color:#0c447c;border:1.5px solid #cfe0f7;}
+.tagchip.y{background:#fef2f2;color:#8a1a0e;border:1.5px solid #f0c8c8;}
+.pillrow{display:flex;gap:10px;align-items:center;justify-content:center;margin-top:10px;flex-wrap:wrap;}
+
+.note{padding:clamp(8px,1vw,12px) clamp(12px,1.4vw,17px);border-radius:10px;text-align:left;width:100%;margin-top:clamp(7px,1vh,12px);}
+.note p{font-size:clamp(11px,1.1vw,14px);color:#2a2c30;line-height:1.5;font-weight:500;}
+.note b{font-weight:700;color:#0b0c0e;}
+.note.blue{background:#eef4fc;}.note.green{background:#e8f5eb;}
+.note.orange{background:#fff3e6;}.note.purple{background:#f3efff;}
+
+.tslide .eyebrow{color:#1a9d4a;}
+
+/* hook slides */
+.qslide .sc{position:relative;z-index:2;}
+.qbig{font-size:clamp(24px,3.4vw,50px);font-weight:850;letter-spacing:-.03em;line-height:1.16;max-width:1000px;text-align:center;}
+.qslide .eyebrow.q{color:#7c3aed;}
+.qslide .eyebrow.f{color:#e0820a;}
+
+.prog{position:fixed;top:0;left:0;height:3px;background:#1a9d4a;z-index:200;transition:width .28s ease;}
+.ind{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);font-size:12px;color:#b8bbc2;z-index:100;letter-spacing:.04em;}
+.hint{position:fixed;bottom:16px;right:20px;font-size:11px;color:#d0d3da;z-index:100;}
+.tag{position:fixed;top:16px;left:20px;font-size:10px;font-weight:700;color:#c8cace;text-transform:uppercase;letter-spacing:.16em;z-index:100;}
+
+.cards{display:grid;gap:clamp(8px,1vw,12px);width:100%;margin-top:clamp(8px,1.2vh,14px);}
+.cards.c2{grid-template-columns:1fr 1fr;max-width:1000px;}
+.cards.c3{grid-template-columns:1fr 1fr 1fr;max-width:1120px;}
+.cards.c4{grid-template-columns:1fr 1fr 1fr 1fr;max-width:1180px;}
+.card{background:#fff;border:1px solid #edeef2;border-radius:14px;padding:clamp(11px,1.3vw,16px);text-align:left;box-shadow:0 1px 2px rgba(18,20,28,.04),0 8px 20px -12px rgba(18,20,28,.12);}
+.card h4{font-size:clamp(12px,1.25vw,16px);font-weight:700;margin-bottom:4px;}
+.card p{font-size:clamp(11px,1.05vw,13.5px);color:#4a4d53;line-height:1.55;}
+.card.acc-green h4{color:#1a9d4a;}.card.acc-orange h4{color:#b3660a;}.card.acc-purple h4{color:#7c3aed;}.card.acc-blue h4{color:#0064d6;}.card.acc-red h4{color:#c22317;}
+.badge{display:inline-block;font-size:10px;font-weight:700;padding:2px 9px;border-radius:99px;margin-bottom:6px;}
+.mono{font-family:'SF Mono','Consolas',monospace;font-size:.92em;background:#f0f1f4;padding:1px 6px;border-radius:5px;color:#0b0c0e;}
+ul.facts{list-style:none;text-align:left;max-width:860px;margin-top:14px;}
+ul.facts li{font-size:clamp(13px,1.35vw,17px);color:#2a2c30;line-height:1.5;padding:7px 0 7px 24px;position:relative;border-bottom:1px solid #f0f1f4;}
+ul.facts li:before{content:'';position:absolute;left:0;top:15px;width:8px;height:8px;border-radius:2px;background:#1a9d4a;}
+ul.facts b{color:#0b0c0e;}
+ul.facts.stag li{opacity:0;animation:up .45s ease-out forwards;}
+ul.facts.stag li:nth-child(1){animation-delay:.2s;}ul.facts.stag li:nth-child(2){animation-delay:.5s;}
+ul.facts.stag li:nth-child(3){animation-delay:.8s;}ul.facts.stag li:nth-child(4){animation-delay:1.1s;}
+ul.facts.checks li:before{content:'✓';background:none;color:#1a9d4a;font-weight:900;font-size:16px;top:6px;}
+.pills{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:clamp(12px,1.8vh,24px);}
+.pill{font-size:clamp(11px,1.1vw,13px);font-weight:600;padding:4px 13px;border-radius:99px;border:1.5px solid transparent;opacity:0;animation:pop .5s cubic-bezier(.2,1.6,.4,1) forwards;}
+.pill:nth-child(1){animation-delay:.5s;}.pill:nth-child(2){animation-delay:.7s;}.pill:nth-child(3){animation-delay:.9s;}
+
+.bgdots{position:absolute;inset:0;overflow:hidden;pointer-events:none;}
+.bgdots i{position:absolute;border-radius:50%;opacity:.16;animation:drift linear infinite;}
+@keyframes drift{0%{transform:translate(0,0);}50%{transform:translate(var(--dx),var(--dy));}100%{transform:translate(0,0);}}
+
+/* roadmap */
+.map{width:100%;max-width:1080px;}
+.mapnode{opacity:0;animation:pop .5s cubic-bezier(.2,1.6,.4,1) forwards;}
+.mapnode.n1{animation-delay:.3s;}.mapnode.n2{animation-delay:.55s;}.mapnode.n3{animation-delay:.8s;}
+.mapnode.n4{animation-delay:1.05s;}.mapnode.n5{animation-delay:1.3s;}.mapnode.n6{animation-delay:1.55s;}
+.mapline{stroke-dasharray:1000;stroke-dashoffset:1000;animation:mapdraw 1.6s ease-out forwards;}
+@keyframes mapdraw{to{stroke-dashoffset:0;}}
+.heretick{animation:pulsr 2s ease-in-out infinite;transform-origin:center;transform-box:fill-box;}
+
+/* mini svg card animations */
+.mini{width:100%;height:86px;margin-bottom:8px;background:#fafbfd;border:1px solid #f0f1f4;border-radius:10px;}
+.drawline{stroke-dasharray:220;stroke-dashoffset:220;animation:draw 2.6s ease-in-out infinite;}
+@keyframes draw{0%{stroke-dashoffset:220;}45%,70%{stroke-dashoffset:0;}100%{stroke-dashoffset:0;opacity:0;}}
+.clu{animation:clumove 3.4s ease-in-out infinite;}
+@keyframes clumove{0%,12%{transform:translate(0,0);}45%,80%{transform:translate(var(--tx),var(--ty));}100%{transform:translate(0,0);}}
+.votebar{transform:scaleX(0);transform-origin:left;animation:grow 2.8s ease-in-out infinite;}
+@keyframes grow{0%,10%{transform:scaleX(0);}50%,85%{transform:scaleX(1);}100%{transform:scaleX(0);}}
+.pulse-r{animation:pulsr 2.2s ease-in-out infinite;transform-origin:center;transform-box:fill-box;}
+@keyframes pulsr{0%,100%{opacity:.25;transform:scale(.8);}50%{opacity:.9;transform:scale(1.15);}}
+
+/* churn leak animation */
+.leak{width:100%;max-width:520px;height:170px;background:#fff;border:1.5px solid #e6e8ee;border-radius:14px;}
+.walker{animation:walk 3.6s ease-in-out infinite;}
+.walker.w2{animation-delay:1.7s;}
+@keyframes walk{0%,25%{transform:translateX(0);opacity:1;}70%{transform:translateX(150px);opacity:.9;}95%,100%{transform:translateX(210px);opacity:0;}}
+
+/* timeline */
+.tl{width:100%;max-width:940px;height:110px;}
+.growx{transform:scaleX(0);transform-origin:left;animation:gx 1.1s ease-out forwards;}
+.growx.g2{animation-delay:.7s;}
+@keyframes gx{to{transform:scaleX(1);}}
+.cutline{animation:blink 1.8s ease-in-out infinite;}
+@keyframes blink{0%,100%{opacity:.9;}50%{opacity:.3;}}
+
+/* big numbers */
+.bignum{display:flex;gap:clamp(12px,2vw,26px);margin-top:clamp(10px,1.6vh,20px);flex-wrap:wrap;justify-content:center;align-items:center;}
+.bn{background:#fff;border:1.5px solid #e6e8ee;border-radius:16px;padding:clamp(12px,1.6vw,20px) clamp(18px,2.4vw,30px);text-align:center;min-width:210px;}
+.bn .v{font-size:clamp(30px,4vw,52px);font-weight:900;letter-spacing:-.03em;font-variant-numeric:tabular-nums;}
+.bn .t{font-size:clamp(11px,1.1vw,13px);color:#6b6f76;font-weight:600;margin-top:2px;}
+.bn.good{border-color:#b8dfc1;background:#f4fbf6;}.bn.good .v{color:#1a9d4a;}
+.bn.bad{border-color:#f0c8c8;background:#fef7f6;}.bn.bad .v{color:#e02d20;}
+.bn.gray .v{color:#4a4d53;}
+.arrow-big{font-size:clamp(24px,3vw,40px);color:#c3c7cf;font-weight:300;}
+
+/* formula box */
+.formula{background:#fff;border:1.5px solid #e6e8ee;border-radius:14px;padding:clamp(14px,1.8vw,22px) clamp(18px,2.2vw,28px);font-family:'SF Mono','Consolas',monospace;font-size:clamp(13px,1.5vw,19px);text-align:center;margin-top:12px;line-height:2;max-width:960px;width:100%;overflow-x:auto;}
+.formula .fstep{display:block;opacity:0;animation:up .5s ease-out forwards;}
+.formula .fstep.s1{animation-delay:.3s;}.formula .fstep.s2{animation-delay:1s;}.formula .fstep.s3{animation-delay:1.7s;}
+.formula .big{color:#e02d20;font-weight:800;}
+.formula .sm{color:#e0820a;font-weight:700;}
+
+/* distance contribution bars */
+.dbars{width:100%;max-width:860px;margin-top:10px;text-align:left;}
+.dbar{display:flex;align-items:center;gap:10px;margin:7px 0;}
+.dbar .dn{width:130px;font-size:12.5px;font-weight:700;color:#4a4d53;font-family:'SF Mono','Consolas',monospace;}
+.dbar .tr{flex:1;height:16px;background:#f0f1f4;border-radius:99px;overflow:hidden;}
+.dbar .fl{height:100%;border-radius:99px;transform:scaleX(0);transform-origin:left;animation:gx .9s ease-out forwards;}
+.dbar .dv{width:110px;font-size:12px;color:#6b6f76;font-variant-numeric:tabular-nums;text-align:right;}
+
+/* before/after panels */
+.morph2{display:flex;gap:clamp(10px,1.6vw,20px);margin-top:10px;flex-wrap:wrap;justify-content:center;}
+.mpanel{background:#fff;border:1.5px solid #e6e8ee;border-radius:14px;padding:8px;}
+.mpanel .cap{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:#888;text-align:center;padding:4px 0 6px;}
+.mpanel .sub2{font-size:clamp(10px,1vw,12px);color:#4a4d53;line-height:1.45;max-width:250px;padding:6px 6px 2px;text-align:left;font-weight:500;}
+.legend{font-size:clamp(10.5px,1.05vw,12.5px);color:#4a4d53;font-weight:600;text-align:center;margin-top:8px;}
+.legend i{display:inline-block;width:9px;height:9px;border-radius:50%;margin:0 3px 0 10px;vertical-align:baseline;}
+
+/* pipeline */
+.pipewrap{position:relative;width:fit-content;margin:clamp(14px,2.2vh,26px) auto 0;}
+.pipe{display:flex;align-items:center;gap:clamp(8px,1.4vw,18px);flex-wrap:nowrap;justify-content:center;}
+.pstep{background:#fff;border:2px solid #b8dfc1;border-radius:14px;padding:clamp(12px,1.6vw,20px) clamp(16px,2vw,26px);text-align:center;box-shadow:0 8px 20px -14px rgba(26,157,74,.4);opacity:0;animation:pop .5s cubic-bezier(.2,1.6,.4,1) forwards;}
+.pstep:nth-child(1){animation-delay:.2s;}.pstep:nth-child(3){animation-delay:.5s;}.pstep:nth-child(5){animation-delay:.8s;}
+.pstep .n{font-family:'SF Mono','Consolas',monospace;font-weight:700;font-size:clamp(14px,1.7vw,21px);color:#1a9d4a;}
+.pstep .d{font-size:clamp(10px,1vw,12.5px);color:#6b6f76;margin-top:3px;font-weight:600;}
+.parr{font-size:clamp(20px,2.6vw,34px);color:#1a9d4a;font-weight:300;animation:pulseA 1.6s ease-in-out infinite;}
+.parr.d2{animation-delay:.8s;}
+@keyframes pulseA{0%,100%{opacity:.35;transform:translateX(0);}50%{opacity:1;transform:translateX(5px);}}
+.pdot{position:absolute;top:50%;left:0;width:12px;height:12px;border-radius:50%;background:#e0820a;box-shadow:0 0 0 4px rgba(224,130,10,.2);animation:ride 3s ease-in-out infinite;animation-delay:1.2s;}
+@keyframes ride{0%{left:4%;opacity:0;}10%{opacity:1;}45%{left:48%;}90%{left:94%;opacity:1;}100%{left:96%;opacity:0;}}
+
+/* kNN widget */
+.knn-wrap{width:100%;max-width:960px;display:flex;gap:clamp(10px,1.6vw,20px);align-items:stretch;margin-top:8px;}
+.knn-left{flex:1 1 620px;background:#fff;border:1.5px solid #e2e4ea;border-radius:14px;padding:10px;}
+.knn-svg{width:100%;height:auto;display:block;touch-action:none;cursor:crosshair;}
+.knn-side{flex:0 0 240px;display:flex;flex-direction:column;gap:10px;}
+.kbtns{display:flex;gap:6px;}
+.kbtn{flex:1;font-family:inherit;font-size:13px;font-weight:700;padding:8px 0;border-radius:9px;border:1.5px solid #d8dbe2;background:#fff;color:#2a2c30;cursor:pointer;transition:.15s;}
+.kbtn:hover{border-color:#7c3aed;color:#7c3aed;}
+.kbtn.on{background:#7c3aed;border-color:#7c3aed;color:#fff;}
+.verdict{background:#fff;border:1.5px solid #e2e4ea;border-radius:12px;padding:12px 14px;text-align:left;}
+.verdict .vt{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.14em;color:#888;margin-bottom:5px;}
+.verdict .vv{font-size:clamp(16px,1.8vw,22px);font-weight:800;}
+.verdict .vd{font-size:12.5px;color:#6b6f76;margin-top:4px;line-height:1.45;}
+.legend{display:flex;gap:14px;font-size:12px;color:#4a4d53;font-weight:600;justify-content:center;margin-top:6px;}
+.legend span:before{content:'●';margin-right:5px;}
+.leg-stay:before{color:#0064d6;}.leg-churn:before{color:#e02d20;}.leg-new:before{color:#e0820a;}
+.nline{stroke-dasharray:5 4;animation:march .7s linear infinite;}
+@keyframes march{to{stroke-dashoffset:-9;}}
+
+@media(max-width:860px){.cr,.cards.c3,.cards.c2,.cards.c4{grid-template-columns:1fr;}.knn-wrap{flex-direction:column;}.knn-side{flex-direction:row;flex-wrap:wrap;}}
+</style>
+</head>
+<body>
+<div class=&quot;tag&quot; id=&quot;ltag&quot;>ML · Recap</div>
+<div class=&quot;prog&quot; id=&quot;prog&quot;></div>
+<div class=&quot;deck&quot; id=&quot;deck&quot;>
+
+
+<div class=&quot;slide tslide&quot; style=&quot;text-align:center;&quot;>
+<div class=&quot;sc&quot;>
+  <p class=&quot;eyebrow&quot;>Блок 3 · Recap занятия 1</p>
+  <h1>Модель оттока:<br>весь путь</h1>
+  <div class=&quot;pills&quot; style=&quot;margin-top:20px;&quot;>
+    <span class=&quot;pill&quot; style=&quot;background:#eef4fc;border-color:#cfe0f7;color:#0c447c&quot;>данные → таргет → признаки</span>
+    <span class=&quot;pill&quot; style=&quot;background:#e8f5eb;border-color:#b8dfc1;color:#0d5a1e&quot;>обучение → оценка</span>
+    <span class=&quot;pill&quot; style=&quot;background:#fff3e6;border-color:#f3d9ae;color:#8a5406&quot;>baseline · масштаб · метрики</span>
+  </div>
+</div>
+</div>
+
+
+<div class=&quot;slide&quot;>
+<div class=&quot;sc&quot;>
+  <p class=&quot;eyebrow&quot;>Шаг 1 · Данные</p>
+  <h2>Отток: 1 400 клиентов, 9 признаков</h2>
+  <svg viewBox=&quot;0 0 720 92&quot; style=&quot;max-width:820px;width:100%;margin-top:14px;&quot;>
+    <rect x=&quot;20&quot; y=&quot;20&quot; width=&quot;476&quot; height=&quot;46&quot; rx=&quot;8&quot; fill=&quot;#eef4fc&quot; stroke=&quot;#cfe0f7&quot; stroke-width=&quot;1.5&quot;/>
+    <text x=&quot;258&quot; y=&quot;48&quot; text-anchor=&quot;middle&quot; font-size=&quot;15&quot; font-weight=&quot;800&quot; fill=&quot;#0c447c&quot; font-family=&quot;Inter&quot;>остаются · 70%</text>
+    <rect x=&quot;500&quot; y=&quot;20&quot; width=&quot;200&quot; height=&quot;46&quot; rx=&quot;8&quot; fill=&quot;#fde8e6&quot; stroke=&quot;#f0c8c8&quot; stroke-width=&quot;1.5&quot;/>
+    <text x=&quot;600&quot; y=&quot;48&quot; text-anchor=&quot;middle&quot; font-size=&quot;15&quot; font-weight=&quot;800&quot; fill=&quot;#8a1a0e&quot; font-family=&quot;Inter&quot;>уходят · 30%</text>
+    <text x=&quot;258&quot; y=&quot;84&quot; text-anchor=&quot;middle&quot; font-size=&quot;11.5&quot; fill=&quot;#8a8f9a&quot; font-family=&quot;Inter&quot;>~980 клиентов</text>
+    <text x=&quot;600&quot; y=&quot;84&quot; text-anchor=&quot;middle&quot; font-size=&quot;11.5&quot; fill=&quot;#8a8f9a&quot; font-family=&quot;Inter&quot;>~420 клиентов</text>
+  </svg>
+  <ul class=&quot;facts stag&quot; style=&quot;margin-top:10px;&quot;>
+    <li><b>Задача:</b> классификация - предсказать churned (0 или 1).</li>
+    <li><b>Признаки:</b> профиль и активность за 3 месяца, до контрольной даты.</li>
+    <li><b>Baseline = 0.70:</b> доля большинства, точка отсчёта.</li>
+  </ul>
+</div>
+</div>
+
+
+<div class=&quot;slide&quot;>
+<div class=&quot;sc&quot;>
+  <p class=&quot;eyebrow&quot;>Шаг 2 · Деление данных</p>
+  <h2>Признаки, таргет и train / test</h2>
+  <div class=&quot;codebox&quot;><div class=&quot;codebar&quot;><span>recap.ipynb</span></div><div class=&quot;code&quot; style=&quot;font-size:clamp(10px,1vw,13.5px);&quot;><span class=&quot;cl&quot; style=&quot;--i:0&quot;><span class=&quot;kw&quot;>from</span> sklearn.model_selection <span class=&quot;kw&quot;>import</span> train_test_split</span><span class=&quot;cl&quot; style=&quot;--i:1&quot;> </span><span class=&quot;cl&quot; style=&quot;--i:2&quot;>df = pd.<span class=&quot;fn&quot;>read_csv</span>(<span class=&quot;st&quot;>&amp;#39;customers.csv&amp;#39;</span>)</span><span class=&quot;cl&quot; style=&quot;--i:3&quot;>X = df[[<span class=&quot;st&quot;>&amp;#39;age&amp;#39;</span>, <span class=&quot;st&quot;>&amp;#39;months_active&amp;#39;</span>, <span class=&quot;st&quot;>&amp;#39;n_cards&amp;#39;</span>, <span class=&quot;st&quot;>&amp;#39;txn_count&amp;#39;</span>, <span class=&quot;st&quot;>&amp;#39;txn_sum&amp;#39;</span>,</span><span class=&quot;cl&quot; style=&quot;--i:4&quot;>        <span class=&quot;st&quot;>&amp;#39;avg_check&amp;#39;</span>, <span class=&quot;st&quot;>&amp;#39;n_active_days&amp;#39;</span>, <span class=&quot;st&quot;>&amp;#39;n_merchants&amp;#39;</span>, <span class=&quot;st&quot;>&amp;#39;share_ecom&amp;#39;</span>]]</span><span class=&quot;cl&quot; style=&quot;--i:5&quot;>y = df[<span class=&quot;st&quot;>&amp;#39;churned&amp;#39;</span>]</span><span class=&quot;cl&quot; style=&quot;--i:6&quot;> </span><span class=&quot;cl&quot; style=&quot;--i:7&quot;>X_train, X_test, y_train, y_test = <span class=&quot;fn&quot;>train_test_split</span>(</span><span class=&quot;cl&quot; style=&quot;--i:8&quot;>    X, y, test_size=<span class=&quot;nm&quot;>0.2</span>, stratify=y, random_state=<span class=&quot;nm&quot;>42</span>)</span></div></div>
+</div>
+</div>
+
+
+<div class=&quot;slide&quot;>
+<div class=&quot;sc&quot;>
+  <p class=&quot;eyebrow&quot;>Шаг 3 · Оценка</p>
+  <h2>Baseline - точка отсчёта</h2>
+  <div class=&quot;codebox&quot;><div class=&quot;codebar&quot;><span>recap.ipynb</span></div><div class=&quot;code&quot; style=&quot;font-size:clamp(10px,1vw,13.5px);&quot;><span class=&quot;cl&quot; style=&quot;--i:0&quot;><span class=&quot;kw&quot;>from</span> sklearn.dummy <span class=&quot;kw&quot;>import</span> DummyClassifier</span><span class=&quot;cl&quot; style=&quot;--i:1&quot;><span class=&quot;kw&quot;>from</span> sklearn.metrics <span class=&quot;kw&quot;>import</span> accuracy_score</span><span class=&quot;cl&quot; style=&quot;--i:2&quot;> </span><span class=&quot;cl&quot; style=&quot;--i:3&quot;>baseline = <span class=&quot;fn&quot;>DummyClassifier</span>(strategy=<span class=&quot;st&quot;>&amp;#39;most_frequent&amp;#39;</span>)</span><span class=&quot;cl&quot; style=&quot;--i:4&quot;>baseline.<span class=&quot;ovin&quot;>fit</span>(X_train, y_train)</span><span class=&quot;cl&quot; style=&quot;--i:5&quot;><span class=&quot;fn&quot;>accuracy_score</span>(y_test, baseline.<span class=&quot;ovin&quot;>predict</span>(X_test))   <span class=&quot;resbadge&quot;>0.700</span></span></div></div>
+  <div class=&quot;note blue&quot; style=&quot;max-width:940px;margin-top:12px;&quot;><p>Всегда «останется», права в 70%. Ниже baseline = модель бесполезна.</p></div>
+</div>
+</div>
+
+
+<div class=&quot;slide&quot;>
+<div class=&quot;sc&quot;>
+  <p class=&quot;eyebrow&quot;>Шаг 3 · Оценка · без масштабирования</p>
+  <h2>kNN без стандартизации</h2>
+  <div class=&quot;codebox&quot;><div class=&quot;codebar&quot;><span>recap.ipynb</span></div><div class=&quot;code&quot; style=&quot;font-size:clamp(10px,1vw,13.5px);&quot;><span class=&quot;cl&quot; style=&quot;--i:0&quot;><span class=&quot;kw&quot;>from</span> sklearn.neighbors <span class=&quot;kw&quot;>import</span> KNeighborsClassifier</span><span class=&quot;cl&quot; style=&quot;--i:1&quot;> </span><span class=&quot;cl&quot; style=&quot;--i:2&quot;>model = <span class=&quot;fn&quot;>KNeighborsClassifier</span>(n_neighbors=<span class=&quot;nm&quot;>5</span>)      <span class=&quot;cm&quot;># без StandardScaler</span></span><span class=&quot;cl&quot; style=&quot;--i:3&quot;>model.<span class=&quot;ovin&quot;>fit</span>(X_train, y_train)</span><span class=&quot;cl&quot; style=&quot;--i:4&quot;><span class=&quot;fn&quot;>accuracy_score</span>(y_test, model.<span class=&quot;ovin&quot;>predict</span>(X_test))   <span class=&quot;resbadge bad&quot;>0.650</span></span></div></div>
+  <div class=&quot;note orange&quot; style=&quot;max-width:940px;margin-top:12px;&quot;><p>Ниже baseline 0.70 - деньги (сотни тысяч) заглушают активность (десятки) в расстоянии. <span class=&quot;mono&quot;>fit</span> - учим, <span class=&quot;mono&quot;>predict</span> - прогноз.</p></div>
+</div>
+</div>
+
+
+<div class=&quot;slide&quot;>
+<div class=&quot;sc&quot;>
+  <p class=&quot;eyebrow&quot;>Шаг 3 · Оценка · со стандартизацией</p>
+  <h2>kNN + стандартизация</h2>
+  <div class=&quot;codebox&quot;><div class=&quot;codebar&quot;><span>recap.ipynb</span></div><div class=&quot;code&quot; style=&quot;font-size:clamp(10px,1vw,13.5px);&quot;><span class=&quot;cl&quot; style=&quot;--i:0&quot;><span class=&quot;kw&quot;>from</span> sklearn.preprocessing <span class=&quot;kw&quot;>import</span> StandardScaler</span><span class=&quot;cl&quot; style=&quot;--i:1&quot;><span class=&quot;kw&quot;>from</span> sklearn.pipeline <span class=&quot;kw&quot;>import</span> make_pipeline</span><span class=&quot;cl&quot; style=&quot;--i:2&quot;> </span><span class=&quot;cl&quot; style=&quot;--i:3&quot;>model = <span class=&quot;fn&quot;>make_pipeline</span>(<span class=&quot;fn&quot;>StandardScaler</span>(), <span class=&quot;fn&quot;>KNeighborsClassifier</span>(<span class=&quot;nm&quot;>5</span>))</span><span class=&quot;cl&quot; style=&quot;--i:4&quot;>model.<span class=&quot;ovin&quot;>fit</span>(X_train, y_train)</span><span class=&quot;cl&quot; style=&quot;--i:5&quot;><span class=&quot;fn&quot;>accuracy_score</span>(y_test, model.<span class=&quot;ovin&quot;>predict</span>(X_test))   <span class=&quot;resbadge&quot;>0.807</span></span></div></div>
+  <div class=&quot;note green&quot; style=&quot;max-width:940px;margin-top:12px;&quot;><p>Одна строка <span class=&quot;mono&quot;>StandardScaler</span> уравняла шкалы признаков - плюс 15 пунктов, 0.650 → 0.807.</p></div>
+</div>
+</div>
+
+
+<div class=&quot;slide&quot;>
+<div class=&quot;sc&quot;>
+  <p class=&quot;eyebrow&quot;>Шаг 3 · Оценка</p>
+  <h2>Без и со стандартизацией</h2>
+  <div class=&quot;result&quot; style=&quot;max-width:860px;margin-top:8px&quot;>
+    <table>
+      <thead><tr><th>Модель</th><th class=&quot;num&quot;>accuracy</th><th class=&quot;wrap&quot;>recall «уйдёт» (из 84)</th></tr></thead>
+      <tbody>
+        <tr style=&quot;animation-delay:.15s&quot;><td><b>Болванка «все останутся»</b></td><td class=&quot;num&quot;>0.700</td><td class=&quot;ng&quot;><b>0.000</b> - 0 из 84</td></tr>
+        <tr style=&quot;animation-delay:.35s&quot;><td><b>kNN без стандартизации</b></td><td class=&quot;num&quot;>0.650</td><td class=&quot;or&quot;><b>0.143</b> - 12 из 84</td></tr>
+        <tr style=&quot;animation-delay:.55s&quot;><td><b>kNN + стандартизация</b></td><td class=&quot;num&quot;>0.807</td><td class=&quot;ok&quot;><b>0.631</b> - 53 из 84</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class=&quot;note orange&quot; style=&quot;max-width:920px;&quot;><p>Accuracy при дисбалансе обманывает. <b>recall</b> - скольких уходящих поймали.</p></div>
+</div>
+</div>
+
+
+<div class=&quot;slide&quot;>
+<div class=&quot;sc&quot;>
+  <p class=&quot;eyebrow&quot;>Весь путь</p>
+  <h2>Обучение - десяток строк</h2>
+  <div class=&quot;codebox&quot;><div class=&quot;codebar&quot;><span>recap.ipynb</span></div><div class=&quot;code&quot; style=&quot;font-size:clamp(10px,1vw,13.5px);&quot;><span class=&quot;cl&quot; style=&quot;--i:0&quot;><span class=&quot;kw&quot;>import</span> pandas <span class=&quot;kw&quot;>as</span> pd</span><span class=&quot;cl&quot; style=&quot;--i:1&quot;><span class=&quot;kw&quot;>from</span> sklearn.model_selection <span class=&quot;kw&quot;>import</span> train_test_split</span><span class=&quot;cl&quot; style=&quot;--i:2&quot;><span class=&quot;kw&quot;>from</span> sklearn.pipeline <span class=&quot;kw&quot;>import</span> make_pipeline</span><span class=&quot;cl&quot; style=&quot;--i:3&quot;><span class=&quot;kw&quot;>from</span> sklearn.preprocessing <span class=&quot;kw&quot;>import</span> StandardScaler</span><span class=&quot;cl&quot; style=&quot;--i:4&quot;><span class=&quot;kw&quot;>from</span> sklearn.neighbors <span class=&quot;kw&quot;>import</span> KNeighborsClassifier</span><span class=&quot;cl&quot; style=&quot;--i:5&quot;><span class=&quot;kw&quot;>from</span> sklearn.metrics <span class=&quot;kw&quot;>import</span> accuracy_score</span><span class=&quot;cl&quot; style=&quot;--i:6&quot;> </span><span class=&quot;cl&quot; style=&quot;--i:7&quot;>df = pd.<span class=&quot;fn&quot;>read_csv</span>(<span class=&quot;st&quot;>&amp;#39;customers.csv&amp;#39;</span>)</span><span class=&quot;cl&quot; style=&quot;--i:8&quot;>X, y = df[COLS], df[<span class=&quot;st&quot;>&amp;#39;churned&amp;#39;</span>]     <span class=&quot;cm&quot;># COLS - 9 колонок со слайда 3</span></span><span class=&quot;cl&quot; style=&quot;--i:9&quot;>X_tr, X_te, y_tr, y_te = <span class=&quot;fn&quot;>train_test_split</span>(X, y, test_size=<span class=&quot;nm&quot;>0.2</span>, stratify=y, random_state=<span class=&quot;nm&quot;>42</span>)</span><span class=&quot;cl&quot; style=&quot;--i:10&quot;> </span><span class=&quot;cl&quot; style=&quot;--i:11&quot;>model = <span class=&quot;fn&quot;>make_pipeline</span>(<span class=&quot;fn&quot;>StandardScaler</span>(), <span class=&quot;fn&quot;>KNeighborsClassifier</span>(<span class=&quot;nm&quot;>5</span>))</span><span class=&quot;cl&quot; style=&quot;--i:12&quot;>model.<span class=&quot;ovin&quot;>fit</span>(X_tr, y_tr)</span><span class=&quot;cl&quot; style=&quot;--i:13&quot;><span class=&quot;fn&quot;>accuracy_score</span>(y_te, model.<span class=&quot;ovin&quot;>predict</span>(X_te))   <span class=&quot;resbadge&quot;>0.807</span></span></div></div>
+</div>
+</div>
+
+
+</div>
+<div class=&quot;ind&quot;><span id=&quot;cur&quot;>1</span> / <span id=&quot;tot&quot;></span></div>
+<div class=&quot;hint&quot;>← → space</div>
+<script>
+const slides=[...document.querySelectorAll('.slide')];
+let cur=0;
+const totEl=document.getElementById('tot'); if(totEl)totEl.textContent=slides.length;
+function runCounters(s){s.querySelectorAll('[data-cnt]').forEach(el=>{
+  const target=parseFloat(el.dataset.cnt),dec=parseInt(el.dataset.dec||'0'),pre=el.dataset.pre||'',suf=el.dataset.suf||'';
+  const t0=performance.now();
+  (function tick(t){const p=Math.min(1,(t-t0)/900),e=1-Math.pow(1-p,3);el.textContent=pre+(target*e).toFixed(dec)+suf;if(p<1)requestAnimationFrame(tick);})(performance.now());
+});}
+function go(n){slides[cur].classList.remove('active');cur=(n+slides.length)%slides.length;slides[cur].classList.add('active');
+  const sc=slides[cur].querySelector('.sc');if(sc){sc.style.animation='none';void sc.offsetWidth;sc.style.animation='';}
+  slides[cur].querySelectorAll('.rise,.cl,.growx,.pill,.resbadge,.bn,.card').forEach(el=>{el.style.animation='none';void el.offsetWidth;el.style.animation='';});
+  runCounters(slides[cur]);
+  const c=document.getElementById('cur');if(c)c.textContent=cur+1;
+  const p=document.getElementById('prog');if(p)p.style.width=((cur+1)/slides.length*100)+'%';}
+document.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key===' '){e.preventDefault();go(cur+1);}if(e.key==='ArrowLeft'){e.preventDefault();go(cur-1);}});
+let tx=0;document.addEventListener('touchstart',e=>{tx=e.touches[0].clientX;},{passive:true});
+document.addEventListener('touchend',e=>{const dx=e.changedTouches[0].clientX-tx;if(Math.abs(dx)>40)go(cur+(dx<0?1:-1));},{passive:true});
+go(0);
+</script>
+</body>
+</html>
+"></iframe>
+<iframe data-lang="uz" srcdoc="<!DOCTYPE html>
+<html lang=&quot;uz&quot;>
+<head>
+<meta charset=&quot;UTF-8&quot;>
+<meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;>
+<title>Ketish modeli · 1-mashg'ulot recap</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&amp;display=swap');
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Inter',-apple-system,sans-serif;background:#fcfcfd;color:#16171a;overflow:hidden;-webkit-font-smoothing:antialiased;}
+.deck{width:100vw;height:100vh;position:relative;}
+.slide{width:100%;height:100%;display:none;flex-direction:column;align-items:center;justify-content:center;position:absolute;inset:0;padding:clamp(12px,2vh,28px) clamp(32px,5vw,72px);}
+.slide.active{display:flex;}
+.sc{max-width:1200px;width:100%;margin:0 auto;opacity:0;transform:translateY(16px);animation:up .4s ease-out forwards;display:flex;flex-direction:column;align-items:center;}
+@keyframes up{to{opacity:1;transform:translateY(0);}}
+.rise{opacity:0;transform:translateY(12px);animation:up .45s ease-out forwards;}
+
+h1{font-size:clamp(36px,5.2vw,80px);font-weight:900;letter-spacing:-.04em;line-height:.95;margin-bottom:clamp(10px,1.8vh,22px);}
+h2{font-size:clamp(18px,2.4vw,36px);font-weight:800;letter-spacing:-.025em;line-height:1.08;margin-bottom:clamp(4px,.7vh,10px);}
+.eyebrow{font-size:clamp(10px,.95vw,12px);font-weight:700;text-transform:uppercase;letter-spacing:.2em;color:#1a9d4a;margin-bottom:clamp(5px,.9vh,12px);}
+.sub{font-size:clamp(13px,1.7vw,21px);color:#6b6f76;line-height:1.45;max-width:820px;margin-top:clamp(5px,.9vh,12px);}
+.c-blue{color:#0064d6;}.c-green{color:#1a9d4a;}.c-orange{color:#e0820a;}.c-red{color:#e02d20;}.c-purple{color:#7c3aed;}
+
+.cr{display:grid;grid-template-columns:1fr 1fr;gap:clamp(12px,1.6vw,22px);width:100%;max-width:1200px;margin-top:clamp(8px,1.2vh,16px);align-items:start;}
+.lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.16em;color:#888;margin-bottom:5px;}
+
+.codebox{width:100%;max-width:940px;border-radius:14px;overflow:hidden;border:1px solid #252830;box-shadow:0 16px 40px -20px rgba(10,12,18,.5);}
+.codebar{display:flex;align-items:center;background:#1d2026;padding:9px 16px;}
+.codebar span{font-size:11px;color:#8a8f9a;font-family:'SF Mono','Consolas',monospace;}
+.code{font-family:'SF Mono','Menlo','Consolas',monospace;font-size:clamp(11px,1.1vw,14.5px);background:#141618;color:#e8eaf0;padding:clamp(12px,1.5vw,18px) clamp(14px,1.7vw,20px);width:100%;text-align:left;line-height:1.75;white-space:pre;overflow-x:auto;}
+.code .cl{display:block;opacity:0;transform:translateX(-8px);animation:lin .35s ease-out forwards;animation-delay:calc(var(--i)*.14s);}
+@keyframes lin{to{opacity:1;transform:translateX(0);}}
+.code .kw{color:#5ab0ff;}
+.code .fn{color:#e2c08d;}
+.code .st{color:#ffa657;}
+.code .cm{color:#5a9a5a;font-style:italic;}
+.code .nm{color:#f0a0d0;}
+.code .sq{background:rgba(26,157,74,.18);box-shadow:inset 0 0 0 1.5px rgba(26,157,74,.65);border-radius:5px;padding:1px 5px;}
+.code .ovin{background:rgba(26,157,74,.3);border-radius:4px;padding:0 3px;}
+.code .cte{display:block;margin:3px -10px;padding:4px 10px;border-left:3px solid #1a9d4a;background:rgba(26,157,74,.2);border-radius:0 6px 6px 0;}
+.resbadge{display:inline-block;background:#0d2818;color:#4ade80;border:1.5px solid #14532d;border-radius:8px;padding:2px 12px;font-weight:700;opacity:0;animation:pop .5s cubic-bezier(.2,1.6,.4,1) forwards;animation-delay:1.6s;}
+@keyframes pop{0%{opacity:0;transform:scale(.4);}100%{opacity:1;transform:scale(1);}}
+
+.result{width:100%;border-radius:12px;overflow:hidden;border:1.5px solid #e2e4ea;background:#fff;}
+.result table{width:100%;border-collapse:collapse;font-size:clamp(11px,1.05vw,13.5px);}
+.result thead tr{background:#f4f5f8;}
+.result th{padding:clamp(7px,.9vw,11px) clamp(9px,1.1vw,14px);font-weight:700;color:#4a4d53;border-bottom:1.5px solid #e2e4ea;white-space:nowrap;text-align:left;}
+.result td{padding:clamp(6px,.8vw,10px) clamp(9px,1.1vw,14px);border-bottom:1px solid #f0f1f4;color:#2a2c30;text-align:left;white-space:nowrap;}
+.result tr:last-child td{border-bottom:none;}
+.hi{color:#0064d6;font-weight:600;}.ok{color:#1a9d4a;font-weight:600;}.ng{color:#e02d20;font-weight:600;}
+.or{color:#e0820a;font-weight:600;}
+.num{text-align:right;font-variant-numeric:tabular-nums;}
+.result th.ycol,.result td.ycol{background:#fff6f5;box-shadow:inset 3px 0 0 #e02d20;}
+.result tbody tr{opacity:0;animation:up .4s ease-out forwards;}
+.result tbody tr:nth-child(1){animation-delay:.15s;}.result tbody tr:nth-child(2){animation-delay:.3s;}
+.result tbody tr:nth-child(3){animation-delay:.45s;}.result tbody tr:nth-child(4){animation-delay:.6s;}
+.result tbody tr:nth-child(5){animation-delay:.75s;}
+.result td.wrap,.result th.wrap{white-space:normal;line-height:1.45;}
+.tagchip{display:inline-block;font-size:11px;font-weight:800;padding:3px 12px;border-radius:99px;letter-spacing:.02em;}
+.tagchip.x{background:#eef4fc;color:#0c447c;border:1.5px solid #cfe0f7;}
+.tagchip.y{background:#fef2f2;color:#8a1a0e;border:1.5px solid #f0c8c8;}
+.pillrow{display:flex;gap:10px;align-items:center;justify-content:center;margin-top:10px;flex-wrap:wrap;}
+
+.note{padding:clamp(8px,1vw,12px) clamp(12px,1.4vw,17px);border-radius:10px;text-align:left;width:100%;margin-top:clamp(7px,1vh,12px);}
+.note p{font-size:clamp(11px,1.1vw,14px);color:#2a2c30;line-height:1.5;font-weight:500;}
+.note b{font-weight:700;color:#0b0c0e;}
+.note.blue{background:#eef4fc;}.note.green{background:#e8f5eb;}
+.note.orange{background:#fff3e6;}.note.purple{background:#f3efff;}
+
+.tslide .eyebrow{color:#1a9d4a;}
+
+/* hook slides */
+.qslide .sc{position:relative;z-index:2;}
+.qbig{font-size:clamp(24px,3.4vw,50px);font-weight:850;letter-spacing:-.03em;line-height:1.16;max-width:1000px;text-align:center;}
+.qslide .eyebrow.q{color:#7c3aed;}
+.qslide .eyebrow.f{color:#e0820a;}
+
+.prog{position:fixed;top:0;left:0;height:3px;background:#1a9d4a;z-index:200;transition:width .28s ease;}
+.ind{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);font-size:12px;color:#b8bbc2;z-index:100;letter-spacing:.04em;}
+.hint{position:fixed;bottom:16px;right:20px;font-size:11px;color:#d0d3da;z-index:100;}
+.tag{position:fixed;top:16px;left:20px;font-size:10px;font-weight:700;color:#c8cace;text-transform:uppercase;letter-spacing:.16em;z-index:100;}
+
+.cards{display:grid;gap:clamp(8px,1vw,12px);width:100%;margin-top:clamp(8px,1.2vh,14px);}
+.cards.c2{grid-template-columns:1fr 1fr;max-width:1000px;}
+.cards.c3{grid-template-columns:1fr 1fr 1fr;max-width:1120px;}
+.cards.c4{grid-template-columns:1fr 1fr 1fr 1fr;max-width:1180px;}
+.card{background:#fff;border:1px solid #edeef2;border-radius:14px;padding:clamp(11px,1.3vw,16px);text-align:left;box-shadow:0 1px 2px rgba(18,20,28,.04),0 8px 20px -12px rgba(18,20,28,.12);}
+.card h4{font-size:clamp(12px,1.25vw,16px);font-weight:700;margin-bottom:4px;}
+.card p{font-size:clamp(11px,1.05vw,13.5px);color:#4a4d53;line-height:1.55;}
+.card.acc-green h4{color:#1a9d4a;}.card.acc-orange h4{color:#b3660a;}.card.acc-purple h4{color:#7c3aed;}.card.acc-blue h4{color:#0064d6;}.card.acc-red h4{color:#c22317;}
+.badge{display:inline-block;font-size:10px;font-weight:700;padding:2px 9px;border-radius:99px;margin-bottom:6px;}
+.mono{font-family:'SF Mono','Consolas',monospace;font-size:.92em;background:#f0f1f4;padding:1px 6px;border-radius:5px;color:#0b0c0e;}
+ul.facts{list-style:none;text-align:left;max-width:860px;margin-top:14px;}
+ul.facts li{font-size:clamp(13px,1.35vw,17px);color:#2a2c30;line-height:1.5;padding:7px 0 7px 24px;position:relative;border-bottom:1px solid #f0f1f4;}
+ul.facts li:before{content:'';position:absolute;left:0;top:15px;width:8px;height:8px;border-radius:2px;background:#1a9d4a;}
+ul.facts b{color:#0b0c0e;}
+ul.facts.stag li{opacity:0;animation:up .45s ease-out forwards;}
+ul.facts.stag li:nth-child(1){animation-delay:.2s;}ul.facts.stag li:nth-child(2){animation-delay:.5s;}
+ul.facts.stag li:nth-child(3){animation-delay:.8s;}ul.facts.stag li:nth-child(4){animation-delay:1.1s;}
+ul.facts.checks li:before{content:'✓';background:none;color:#1a9d4a;font-weight:900;font-size:16px;top:6px;}
+.pills{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:clamp(12px,1.8vh,24px);}
+.pill{font-size:clamp(11px,1.1vw,13px);font-weight:600;padding:4px 13px;border-radius:99px;border:1.5px solid transparent;opacity:0;animation:pop .5s cubic-bezier(.2,1.6,.4,1) forwards;}
+.pill:nth-child(1){animation-delay:.5s;}.pill:nth-child(2){animation-delay:.7s;}.pill:nth-child(3){animation-delay:.9s;}
+
+.bgdots{position:absolute;inset:0;overflow:hidden;pointer-events:none;}
+.bgdots i{position:absolute;border-radius:50%;opacity:.16;animation:drift linear infinite;}
+@keyframes drift{0%{transform:translate(0,0);}50%{transform:translate(var(--dx),var(--dy));}100%{transform:translate(0,0);}}
+
+/* roadmap */
+.map{width:100%;max-width:1080px;}
+.mapnode{opacity:0;animation:pop .5s cubic-bezier(.2,1.6,.4,1) forwards;}
+.mapnode.n1{animation-delay:.3s;}.mapnode.n2{animation-delay:.55s;}.mapnode.n3{animation-delay:.8s;}
+.mapnode.n4{animation-delay:1.05s;}.mapnode.n5{animation-delay:1.3s;}.mapnode.n6{animation-delay:1.55s;}
+.mapline{stroke-dasharray:1000;stroke-dashoffset:1000;animation:mapdraw 1.6s ease-out forwards;}
+@keyframes mapdraw{to{stroke-dashoffset:0;}}
+.heretick{animation:pulsr 2s ease-in-out infinite;transform-origin:center;transform-box:fill-box;}
+
+/* mini svg card animations */
+.mini{width:100%;height:86px;margin-bottom:8px;background:#fafbfd;border:1px solid #f0f1f4;border-radius:10px;}
+.drawline{stroke-dasharray:220;stroke-dashoffset:220;animation:draw 2.6s ease-in-out infinite;}
+@keyframes draw{0%{stroke-dashoffset:220;}45%,70%{stroke-dashoffset:0;}100%{stroke-dashoffset:0;opacity:0;}}
+.clu{animation:clumove 3.4s ease-in-out infinite;}
+@keyframes clumove{0%,12%{transform:translate(0,0);}45%,80%{transform:translate(var(--tx),var(--ty));}100%{transform:translate(0,0);}}
+.votebar{transform:scaleX(0);transform-origin:left;animation:grow 2.8s ease-in-out infinite;}
+@keyframes grow{0%,10%{transform:scaleX(0);}50%,85%{transform:scaleX(1);}100%{transform:scaleX(0);}}
+.pulse-r{animation:pulsr 2.2s ease-in-out infinite;transform-origin:center;transform-box:fill-box;}
+@keyframes pulsr{0%,100%{opacity:.25;transform:scale(.8);}50%{opacity:.9;transform:scale(1.15);}}
+
+/* churn leak animation */
+.leak{width:100%;max-width:520px;height:170px;background:#fff;border:1.5px solid #e6e8ee;border-radius:14px;}
+.walker{animation:walk 3.6s ease-in-out infinite;}
+.walker.w2{animation-delay:1.7s;}
+@keyframes walk{0%,25%{transform:translateX(0);opacity:1;}70%{transform:translateX(150px);opacity:.9;}95%,100%{transform:translateX(210px);opacity:0;}}
+
+/* timeline */
+.tl{width:100%;max-width:940px;height:110px;}
+.growx{transform:scaleX(0);transform-origin:left;animation:gx 1.1s ease-out forwards;}
+.growx.g2{animation-delay:.7s;}
+@keyframes gx{to{transform:scaleX(1);}}
+.cutline{animation:blink 1.8s ease-in-out infinite;}
+@keyframes blink{0%,100%{opacity:.9;}50%{opacity:.3;}}
+
+/* big numbers */
+.bignum{display:flex;gap:clamp(12px,2vw,26px);margin-top:clamp(10px,1.6vh,20px);flex-wrap:wrap;justify-content:center;align-items:center;}
+.bn{background:#fff;border:1.5px solid #e6e8ee;border-radius:16px;padding:clamp(12px,1.6vw,20px) clamp(18px,2.4vw,30px);text-align:center;min-width:210px;}
+.bn .v{font-size:clamp(30px,4vw,52px);font-weight:900;letter-spacing:-.03em;font-variant-numeric:tabular-nums;}
+.bn .t{font-size:clamp(11px,1.1vw,13px);color:#6b6f76;font-weight:600;margin-top:2px;}
+.bn.good{border-color:#b8dfc1;background:#f4fbf6;}.bn.good .v{color:#1a9d4a;}
+.bn.bad{border-color:#f0c8c8;background:#fef7f6;}.bn.bad .v{color:#e02d20;}
+.bn.gray .v{color:#4a4d53;}
+.arrow-big{font-size:clamp(24px,3vw,40px);color:#c3c7cf;font-weight:300;}
+
+/* formula box */
+.formula{background:#fff;border:1.5px solid #e6e8ee;border-radius:14px;padding:clamp(14px,1.8vw,22px) clamp(18px,2.2vw,28px);font-family:'SF Mono','Consolas',monospace;font-size:clamp(13px,1.5vw,19px);text-align:center;margin-top:12px;line-height:2;max-width:960px;width:100%;overflow-x:auto;}
+.formula .fstep{display:block;opacity:0;animation:up .5s ease-out forwards;}
+.formula .fstep.s1{animation-delay:.3s;}.formula .fstep.s2{animation-delay:1s;}.formula .fstep.s3{animation-delay:1.7s;}
+.formula .big{color:#e02d20;font-weight:800;}
+.formula .sm{color:#e0820a;font-weight:700;}
+
+/* distance contribution bars */
+.dbars{width:100%;max-width:860px;margin-top:10px;text-align:left;}
+.dbar{display:flex;align-items:center;gap:10px;margin:7px 0;}
+.dbar .dn{width:130px;font-size:12.5px;font-weight:700;color:#4a4d53;font-family:'SF Mono','Consolas',monospace;}
+.dbar .tr{flex:1;height:16px;background:#f0f1f4;border-radius:99px;overflow:hidden;}
+.dbar .fl{height:100%;border-radius:99px;transform:scaleX(0);transform-origin:left;animation:gx .9s ease-out forwards;}
+.dbar .dv{width:110px;font-size:12px;color:#6b6f76;font-variant-numeric:tabular-nums;text-align:right;}
+
+/* before/after panels */
+.morph2{display:flex;gap:clamp(10px,1.6vw,20px);margin-top:10px;flex-wrap:wrap;justify-content:center;}
+.mpanel{background:#fff;border:1.5px solid #e6e8ee;border-radius:14px;padding:8px;}
+.mpanel .cap{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:#888;text-align:center;padding:4px 0 6px;}
+.mpanel .sub2{font-size:clamp(10px,1vw,12px);color:#4a4d53;line-height:1.45;max-width:250px;padding:6px 6px 2px;text-align:left;font-weight:500;}
+.legend{font-size:clamp(10.5px,1.05vw,12.5px);color:#4a4d53;font-weight:600;text-align:center;margin-top:8px;}
+.legend i{display:inline-block;width:9px;height:9px;border-radius:50%;margin:0 3px 0 10px;vertical-align:baseline;}
+
+/* pipeline */
+.pipewrap{position:relative;width:fit-content;margin:clamp(14px,2.2vh,26px) auto 0;}
+.pipe{display:flex;align-items:center;gap:clamp(8px,1.4vw,18px);flex-wrap:nowrap;justify-content:center;}
+.pstep{background:#fff;border:2px solid #b8dfc1;border-radius:14px;padding:clamp(12px,1.6vw,20px) clamp(16px,2vw,26px);text-align:center;box-shadow:0 8px 20px -14px rgba(26,157,74,.4);opacity:0;animation:pop .5s cubic-bezier(.2,1.6,.4,1) forwards;}
+.pstep:nth-child(1){animation-delay:.2s;}.pstep:nth-child(3){animation-delay:.5s;}.pstep:nth-child(5){animation-delay:.8s;}
+.pstep .n{font-family:'SF Mono','Consolas',monospace;font-weight:700;font-size:clamp(14px,1.7vw,21px);color:#1a9d4a;}
+.pstep .d{font-size:clamp(10px,1vw,12.5px);color:#6b6f76;margin-top:3px;font-weight:600;}
+.parr{font-size:clamp(20px,2.6vw,34px);color:#1a9d4a;font-weight:300;animation:pulseA 1.6s ease-in-out infinite;}
+.parr.d2{animation-delay:.8s;}
+@keyframes pulseA{0%,100%{opacity:.35;transform:translateX(0);}50%{opacity:1;transform:translateX(5px);}}
+.pdot{position:absolute;top:50%;left:0;width:12px;height:12px;border-radius:50%;background:#e0820a;box-shadow:0 0 0 4px rgba(224,130,10,.2);animation:ride 3s ease-in-out infinite;animation-delay:1.2s;}
+@keyframes ride{0%{left:4%;opacity:0;}10%{opacity:1;}45%{left:48%;}90%{left:94%;opacity:1;}100%{left:96%;opacity:0;}}
+
+/* kNN widget */
+.knn-wrap{width:100%;max-width:960px;display:flex;gap:clamp(10px,1.6vw,20px);align-items:stretch;margin-top:8px;}
+.knn-left{flex:1 1 620px;background:#fff;border:1.5px solid #e2e4ea;border-radius:14px;padding:10px;}
+.knn-svg{width:100%;height:auto;display:block;touch-action:none;cursor:crosshair;}
+.knn-side{flex:0 0 240px;display:flex;flex-direction:column;gap:10px;}
+.kbtns{display:flex;gap:6px;}
+.kbtn{flex:1;font-family:inherit;font-size:13px;font-weight:700;padding:8px 0;border-radius:9px;border:1.5px solid #d8dbe2;background:#fff;color:#2a2c30;cursor:pointer;transition:.15s;}
+.kbtn:hover{border-color:#7c3aed;color:#7c3aed;}
+.kbtn.on{background:#7c3aed;border-color:#7c3aed;color:#fff;}
+.verdict{background:#fff;border:1.5px solid #e2e4ea;border-radius:12px;padding:12px 14px;text-align:left;}
+.verdict .vt{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.14em;color:#888;margin-bottom:5px;}
+.verdict .vv{font-size:clamp(16px,1.8vw,22px);font-weight:800;}
+.verdict .vd{font-size:12.5px;color:#6b6f76;margin-top:4px;line-height:1.45;}
+.legend{display:flex;gap:14px;font-size:12px;color:#4a4d53;font-weight:600;justify-content:center;margin-top:6px;}
+.legend span:before{content:'●';margin-right:5px;}
+.leg-stay:before{color:#0064d6;}.leg-churn:before{color:#e02d20;}.leg-new:before{color:#e0820a;}
+.nline{stroke-dasharray:5 4;animation:march .7s linear infinite;}
+@keyframes march{to{stroke-dashoffset:-9;}}
+
+@media(max-width:860px){.cr,.cards.c3,.cards.c2,.cards.c4{grid-template-columns:1fr;}.knn-wrap{flex-direction:column;}.knn-side{flex-direction:row;flex-wrap:wrap;}}
+</style>
+</head>
+<body>
+<div class=&quot;tag&quot; id=&quot;ltag&quot;>ML · Recap</div>
+<div class=&quot;prog&quot; id=&quot;prog&quot;></div>
+<div class=&quot;deck&quot; id=&quot;deck&quot;>
+
+
+<div class=&quot;slide tslide&quot; style=&quot;text-align:center;&quot;>
+<div class=&quot;sc&quot;>
+  <p class=&quot;eyebrow&quot;>3-blok · 1-mashg'ulot recap</p>
+  <h1>Ketish modeli:<br>to'liq yo'l</h1>
+  <div class=&quot;pills&quot; style=&quot;margin-top:20px;&quot;>
+    <span class=&quot;pill&quot; style=&quot;background:#eef4fc;border-color:#cfe0f7;color:#0c447c&quot;>ma'lumotlar → target → belgilar</span>
+    <span class=&quot;pill&quot; style=&quot;background:#e8f5eb;border-color:#b8dfc1;color:#0d5a1e&quot;>o'qitish → baholash</span>
+    <span class=&quot;pill&quot; style=&quot;background:#fff3e6;border-color:#f3d9ae;color:#8a5406&quot;>baseline · masshtab · metrikalar</span>
+  </div>
+</div>
+</div>
+
+
+<div class=&quot;slide&quot;>
+<div class=&quot;sc&quot;>
+  <p class=&quot;eyebrow&quot;>1-qadam · Ma'lumotlar</p>
+  <h2>Ketish: 1 400 mijoz, 9 belgi</h2>
+  <svg viewBox=&quot;0 0 720 92&quot; style=&quot;max-width:820px;width:100%;margin-top:14px;&quot;>
+    <rect x=&quot;20&quot; y=&quot;20&quot; width=&quot;476&quot; height=&quot;46&quot; rx=&quot;8&quot; fill=&quot;#eef4fc&quot; stroke=&quot;#cfe0f7&quot; stroke-width=&quot;1.5&quot;/>
+    <text x=&quot;258&quot; y=&quot;48&quot; text-anchor=&quot;middle&quot; font-size=&quot;15&quot; font-weight=&quot;800&quot; fill=&quot;#0c447c&quot; font-family=&quot;Inter&quot;>qoladi · 70%</text>
+    <rect x=&quot;500&quot; y=&quot;20&quot; width=&quot;200&quot; height=&quot;46&quot; rx=&quot;8&quot; fill=&quot;#fde8e6&quot; stroke=&quot;#f0c8c8&quot; stroke-width=&quot;1.5&quot;/>
+    <text x=&quot;600&quot; y=&quot;48&quot; text-anchor=&quot;middle&quot; font-size=&quot;15&quot; font-weight=&quot;800&quot; fill=&quot;#8a1a0e&quot; font-family=&quot;Inter&quot;>ketadi · 30%</text>
+    <text x=&quot;258&quot; y=&quot;84&quot; text-anchor=&quot;middle&quot; font-size=&quot;11.5&quot; fill=&quot;#8a8f9a&quot; font-family=&quot;Inter&quot;>~980 mijoz</text>
+    <text x=&quot;600&quot; y=&quot;84&quot; text-anchor=&quot;middle&quot; font-size=&quot;11.5&quot; fill=&quot;#8a8f9a&quot; font-family=&quot;Inter&quot;>~420 mijoz</text>
+  </svg>
+  <ul class=&quot;facts stag&quot; style=&quot;margin-top:10px;&quot;>
+    <li><b>Vazifa:</b> klassifikatsiya - churned ni bashorat qilish (0 yoki 1).</li>
+    <li><b>Belgilar:</b> nazorat sanasigacha bo'lgan 3 oylik profil va faollik.</li>
+    <li><b>Baseline = 0.70:</b> ko'pchilik ulushi, boshlang'ich nuqta.</li>
+  </ul>
+</div>
+</div>
+
+
+<div class=&quot;slide&quot;>
+<div class=&quot;sc&quot;>
+  <p class=&quot;eyebrow&quot;>2-qadam · Ma'lumotlarni bo'lish</p>
+  <h2>Belgilar, target va train / test</h2>
+  <div class=&quot;codebox&quot;><div class=&quot;codebar&quot;><span>recap.ipynb</span></div><div class=&quot;code&quot; style=&quot;font-size:clamp(10px,1vw,13.5px);&quot;><span class=&quot;cl&quot; style=&quot;--i:0&quot;><span class=&quot;kw&quot;>from</span> sklearn.model_selection <span class=&quot;kw&quot;>import</span> train_test_split</span><span class=&quot;cl&quot; style=&quot;--i:1&quot;> </span><span class=&quot;cl&quot; style=&quot;--i:2&quot;>df = pd.<span class=&quot;fn&quot;>read_csv</span>(<span class=&quot;st&quot;>&amp;#39;customers.csv&amp;#39;</span>)</span><span class=&quot;cl&quot; style=&quot;--i:3&quot;>X = df[[<span class=&quot;st&quot;>&amp;#39;age&amp;#39;</span>, <span class=&quot;st&quot;>&amp;#39;months_active&amp;#39;</span>, <span class=&quot;st&quot;>&amp;#39;n_cards&amp;#39;</span>, <span class=&quot;st&quot;>&amp;#39;txn_count&amp;#39;</span>, <span class=&quot;st&quot;>&amp;#39;txn_sum&amp;#39;</span>,</span><span class=&quot;cl&quot; style=&quot;--i:4&quot;>        <span class=&quot;st&quot;>&amp;#39;avg_check&amp;#39;</span>, <span class=&quot;st&quot;>&amp;#39;n_active_days&amp;#39;</span>, <span class=&quot;st&quot;>&amp;#39;n_merchants&amp;#39;</span>, <span class=&quot;st&quot;>&amp;#39;share_ecom&amp;#39;</span>]]</span><span class=&quot;cl&quot; style=&quot;--i:5&quot;>y = df[<span class=&quot;st&quot;>&amp;#39;churned&amp;#39;</span>]</span><span class=&quot;cl&quot; style=&quot;--i:6&quot;> </span><span class=&quot;cl&quot; style=&quot;--i:7&quot;>X_train, X_test, y_train, y_test = <span class=&quot;fn&quot;>train_test_split</span>(</span><span class=&quot;cl&quot; style=&quot;--i:8&quot;>    X, y, test_size=<span class=&quot;nm&quot;>0.2</span>, stratify=y, random_state=<span class=&quot;nm&quot;>42</span>)</span></div></div>
+</div>
+</div>
+
+
+<div class=&quot;slide&quot;>
+<div class=&quot;sc&quot;>
+  <p class=&quot;eyebrow&quot;>3-qadam · Baholash</p>
+  <h2>Baseline - boshlang'ich nuqta</h2>
+  <div class=&quot;codebox&quot;><div class=&quot;codebar&quot;><span>recap.ipynb</span></div><div class=&quot;code&quot; style=&quot;font-size:clamp(10px,1vw,13.5px);&quot;><span class=&quot;cl&quot; style=&quot;--i:0&quot;><span class=&quot;kw&quot;>from</span> sklearn.dummy <span class=&quot;kw&quot;>import</span> DummyClassifier</span><span class=&quot;cl&quot; style=&quot;--i:1&quot;><span class=&quot;kw&quot;>from</span> sklearn.metrics <span class=&quot;kw&quot;>import</span> accuracy_score</span><span class=&quot;cl&quot; style=&quot;--i:2&quot;> </span><span class=&quot;cl&quot; style=&quot;--i:3&quot;>baseline = <span class=&quot;fn&quot;>DummyClassifier</span>(strategy=<span class=&quot;st&quot;>&amp;#39;most_frequent&amp;#39;</span>)</span><span class=&quot;cl&quot; style=&quot;--i:4&quot;>baseline.<span class=&quot;ovin&quot;>fit</span>(X_train, y_train)</span><span class=&quot;cl&quot; style=&quot;--i:5&quot;><span class=&quot;fn&quot;>accuracy_score</span>(y_test, baseline.<span class=&quot;ovin&quot;>predict</span>(X_test))   <span class=&quot;resbadge&quot;>0.700</span></span></div></div>
+  <div class=&quot;note blue&quot; style=&quot;max-width:940px;margin-top:12px;&quot;><p>Har doim «qoladi» deydi, 70% da haq. Baseline dan past = model foydasiz.</p></div>
+</div>
+</div>
+
+
+<div class=&quot;slide&quot;>
+<div class=&quot;sc&quot;>
+  <p class=&quot;eyebrow&quot;>3-qadam · Baholash · masshtablashsiz</p>
+  <h2>kNN standartlashtirmasdan</h2>
+  <div class=&quot;codebox&quot;><div class=&quot;codebar&quot;><span>recap.ipynb</span></div><div class=&quot;code&quot; style=&quot;font-size:clamp(10px,1vw,13.5px);&quot;><span class=&quot;cl&quot; style=&quot;--i:0&quot;><span class=&quot;kw&quot;>from</span> sklearn.neighbors <span class=&quot;kw&quot;>import</span> KNeighborsClassifier</span><span class=&quot;cl&quot; style=&quot;--i:1&quot;> </span><span class=&quot;cl&quot; style=&quot;--i:2&quot;>model = <span class=&quot;fn&quot;>KNeighborsClassifier</span>(n_neighbors=<span class=&quot;nm&quot;>5</span>)      <span class=&quot;cm&quot;># StandardScaler siz</span></span><span class=&quot;cl&quot; style=&quot;--i:3&quot;>model.<span class=&quot;ovin&quot;>fit</span>(X_train, y_train)</span><span class=&quot;cl&quot; style=&quot;--i:4&quot;><span class=&quot;fn&quot;>accuracy_score</span>(y_test, model.<span class=&quot;ovin&quot;>predict</span>(X_test))   <span class=&quot;resbadge bad&quot;>0.650</span></span></div></div>
+  <div class=&quot;note orange&quot; style=&quot;max-width:940px;margin-top:12px;&quot;><p>Baseline 0.70 dan past - pul (yuz minglab) masofada faollikni (o'nlab) bo'g'adi. <span class=&quot;mono&quot;>fit</span> - o'rgatamiz, <span class=&quot;mono&quot;>predict</span> - bashorat.</p></div>
+</div>
+</div>
+
+
+<div class=&quot;slide&quot;>
+<div class=&quot;sc&quot;>
+  <p class=&quot;eyebrow&quot;>3-qadam · Baholash · standartlashtirish bilan</p>
+  <h2>kNN + standartlashtirish</h2>
+  <div class=&quot;codebox&quot;><div class=&quot;codebar&quot;><span>recap.ipynb</span></div><div class=&quot;code&quot; style=&quot;font-size:clamp(10px,1vw,13.5px);&quot;><span class=&quot;cl&quot; style=&quot;--i:0&quot;><span class=&quot;kw&quot;>from</span> sklearn.preprocessing <span class=&quot;kw&quot;>import</span> StandardScaler</span><span class=&quot;cl&quot; style=&quot;--i:1&quot;><span class=&quot;kw&quot;>from</span> sklearn.pipeline <span class=&quot;kw&quot;>import</span> make_pipeline</span><span class=&quot;cl&quot; style=&quot;--i:2&quot;> </span><span class=&quot;cl&quot; style=&quot;--i:3&quot;>model = <span class=&quot;fn&quot;>make_pipeline</span>(<span class=&quot;fn&quot;>StandardScaler</span>(), <span class=&quot;fn&quot;>KNeighborsClassifier</span>(<span class=&quot;nm&quot;>5</span>))</span><span class=&quot;cl&quot; style=&quot;--i:4&quot;>model.<span class=&quot;ovin&quot;>fit</span>(X_train, y_train)</span><span class=&quot;cl&quot; style=&quot;--i:5&quot;><span class=&quot;fn&quot;>accuracy_score</span>(y_test, model.<span class=&quot;ovin&quot;>predict</span>(X_test))   <span class=&quot;resbadge&quot;>0.807</span></span></div></div>
+  <div class=&quot;note green&quot; style=&quot;max-width:940px;margin-top:12px;&quot;><p>Bitta <span class=&quot;mono&quot;>StandardScaler</span> qatori belgilar shkalasini tenglashtirdi - 15 punkt qo'shildi, 0.650 → 0.807.</p></div>
+</div>
+</div>
+
+
+<div class=&quot;slide&quot;>
+<div class=&quot;sc&quot;>
+  <p class=&quot;eyebrow&quot;>3-qadam · Baholash</p>
+  <h2>Standartlashtirishsiz va bilan</h2>
+  <div class=&quot;result&quot; style=&quot;max-width:860px;margin-top:8px&quot;>
+    <table>
+      <thead><tr><th>Model</th><th class=&quot;num&quot;>accuracy</th><th class=&quot;wrap&quot;>recall «ketadi» (84 dan)</th></tr></thead>
+      <tbody>
+        <tr style=&quot;animation-delay:.15s&quot;><td><b>Bo'sh model «hammasi qoladi»</b></td><td class=&quot;num&quot;>0.700</td><td class=&quot;ng&quot;><b>0.000</b> - 84 dan 0</td></tr>
+        <tr style=&quot;animation-delay:.35s&quot;><td><b>kNN standartlashtirmasdan</b></td><td class=&quot;num&quot;>0.650</td><td class=&quot;or&quot;><b>0.143</b> - 84 dan 12</td></tr>
+        <tr style=&quot;animation-delay:.55s&quot;><td><b>kNN + standartlashtirish</b></td><td class=&quot;num&quot;>0.807</td><td class=&quot;ok&quot;><b>0.631</b> - 84 dan 53</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class=&quot;note orange&quot; style=&quot;max-width:920px;&quot;><p>Disbalansda accuracy aldaydi. <b>recall</b> - ketayotganlarning nechtasini ushladik.</p></div>
+</div>
+</div>
+
+
+<div class=&quot;slide&quot;>
+<div class=&quot;sc&quot;>
+  <p class=&quot;eyebrow&quot;>To'liq yo'l</p>
+  <h2>O'qitish - o'nlab qator</h2>
+  <div class=&quot;codebox&quot;><div class=&quot;codebar&quot;><span>recap.ipynb</span></div><div class=&quot;code&quot; style=&quot;font-size:clamp(10px,1vw,13.5px);&quot;><span class=&quot;cl&quot; style=&quot;--i:0&quot;><span class=&quot;kw&quot;>import</span> pandas <span class=&quot;kw&quot;>as</span> pd</span><span class=&quot;cl&quot; style=&quot;--i:1&quot;><span class=&quot;kw&quot;>from</span> sklearn.model_selection <span class=&quot;kw&quot;>import</span> train_test_split</span><span class=&quot;cl&quot; style=&quot;--i:2&quot;><span class=&quot;kw&quot;>from</span> sklearn.pipeline <span class=&quot;kw&quot;>import</span> make_pipeline</span><span class=&quot;cl&quot; style=&quot;--i:3&quot;><span class=&quot;kw&quot;>from</span> sklearn.preprocessing <span class=&quot;kw&quot;>import</span> StandardScaler</span><span class=&quot;cl&quot; style=&quot;--i:4&quot;><span class=&quot;kw&quot;>from</span> sklearn.neighbors <span class=&quot;kw&quot;>import</span> KNeighborsClassifier</span><span class=&quot;cl&quot; style=&quot;--i:5&quot;><span class=&quot;kw&quot;>from</span> sklearn.metrics <span class=&quot;kw&quot;>import</span> accuracy_score</span><span class=&quot;cl&quot; style=&quot;--i:6&quot;> </span><span class=&quot;cl&quot; style=&quot;--i:7&quot;>df = pd.<span class=&quot;fn&quot;>read_csv</span>(<span class=&quot;st&quot;>&amp;#39;customers.csv&amp;#39;</span>)</span><span class=&quot;cl&quot; style=&quot;--i:8&quot;>X, y = df[COLS], df[<span class=&quot;st&quot;>&amp;#39;churned&amp;#39;</span>]     <span class=&quot;cm&quot;># COLS - 3-slayddagi 9 ustun</span></span><span class=&quot;cl&quot; style=&quot;--i:9&quot;>X_tr, X_te, y_tr, y_te = <span class=&quot;fn&quot;>train_test_split</span>(X, y, test_size=<span class=&quot;nm&quot;>0.2</span>, stratify=y, random_state=<span class=&quot;nm&quot;>42</span>)</span><span class=&quot;cl&quot; style=&quot;--i:10&quot;> </span><span class=&quot;cl&quot; style=&quot;--i:11&quot;>model = <span class=&quot;fn&quot;>make_pipeline</span>(<span class=&quot;fn&quot;>StandardScaler</span>(), <span class=&quot;fn&quot;>KNeighborsClassifier</span>(<span class=&quot;nm&quot;>5</span>))</span><span class=&quot;cl&quot; style=&quot;--i:12&quot;>model.<span class=&quot;ovin&quot;>fit</span>(X_tr, y_tr)</span><span class=&quot;cl&quot; style=&quot;--i:13&quot;><span class=&quot;fn&quot;>accuracy_score</span>(y_te, model.<span class=&quot;ovin&quot;>predict</span>(X_te))   <span class=&quot;resbadge&quot;>0.807</span></span></div></div>
+</div>
+</div>
+
+
+</div>
+<div class=&quot;ind&quot;><span id=&quot;cur&quot;>1</span> / <span id=&quot;tot&quot;></span></div>
+<div class=&quot;hint&quot;>← → space</div>
+<script>
+const slides=[...document.querySelectorAll('.slide')];
+let cur=0;
+const totEl=document.getElementById('tot'); if(totEl)totEl.textContent=slides.length;
+function runCounters(s){s.querySelectorAll('[data-cnt]').forEach(el=>{
+  const target=parseFloat(el.dataset.cnt),dec=parseInt(el.dataset.dec||'0'),pre=el.dataset.pre||'',suf=el.dataset.suf||'';
+  const t0=performance.now();
+  (function tick(t){const p=Math.min(1,(t-t0)/900),e=1-Math.pow(1-p,3);el.textContent=pre+(target*e).toFixed(dec)+suf;if(p<1)requestAnimationFrame(tick);})(performance.now());
+});}
+function go(n){slides[cur].classList.remove('active');cur=(n+slides.length)%slides.length;slides[cur].classList.add('active');
+  const sc=slides[cur].querySelector('.sc');if(sc){sc.style.animation='none';void sc.offsetWidth;sc.style.animation='';}
+  slides[cur].querySelectorAll('.rise,.cl,.growx,.pill,.resbadge,.bn,.card').forEach(el=>{el.style.animation='none';void el.offsetWidth;el.style.animation='';});
+  runCounters(slides[cur]);
+  const c=document.getElementById('cur');if(c)c.textContent=cur+1;
+  const p=document.getElementById('prog');if(p)p.style.width=((cur+1)/slides.length*100)+'%';}
+document.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key===' '){e.preventDefault();go(cur+1);}if(e.key==='ArrowLeft'){e.preventDefault();go(cur-1);}});
+let tx=0;document.addEventListener('touchstart',e=>{tx=e.touches[0].clientX;},{passive:true});
+document.addEventListener('touchend',e=>{const dx=e.changedTouches[0].clientX-tx;if(Math.abs(dx)>40)go(cur+(dx<0?1:-1));},{passive:true});
+go(0);
+</script>
+</body>
+</html>
+"></iframe>
+<iframe data-lang="en" srcdoc="<!DOCTYPE html>
+<html lang=&quot;en&quot;>
+<head>
+<meta charset=&quot;UTF-8&quot;>
+<meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;>
+<title>Churn model · Session 1 recap</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&amp;display=swap');
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Inter',-apple-system,sans-serif;background:#fcfcfd;color:#16171a;overflow:hidden;-webkit-font-smoothing:antialiased;}
+.deck{width:100vw;height:100vh;position:relative;}
+.slide{width:100%;height:100%;display:none;flex-direction:column;align-items:center;justify-content:center;position:absolute;inset:0;padding:clamp(12px,2vh,28px) clamp(32px,5vw,72px);}
+.slide.active{display:flex;}
+.sc{max-width:1200px;width:100%;margin:0 auto;opacity:0;transform:translateY(16px);animation:up .4s ease-out forwards;display:flex;flex-direction:column;align-items:center;}
+@keyframes up{to{opacity:1;transform:translateY(0);}}
+.rise{opacity:0;transform:translateY(12px);animation:up .45s ease-out forwards;}
+
+h1{font-size:clamp(36px,5.2vw,80px);font-weight:900;letter-spacing:-.04em;line-height:.95;margin-bottom:clamp(10px,1.8vh,22px);}
+h2{font-size:clamp(18px,2.4vw,36px);font-weight:800;letter-spacing:-.025em;line-height:1.08;margin-bottom:clamp(4px,.7vh,10px);}
+.eyebrow{font-size:clamp(10px,.95vw,12px);font-weight:700;text-transform:uppercase;letter-spacing:.2em;color:#1a9d4a;margin-bottom:clamp(5px,.9vh,12px);}
+.sub{font-size:clamp(13px,1.7vw,21px);color:#6b6f76;line-height:1.45;max-width:820px;margin-top:clamp(5px,.9vh,12px);}
+.c-blue{color:#0064d6;}.c-green{color:#1a9d4a;}.c-orange{color:#e0820a;}.c-red{color:#e02d20;}.c-purple{color:#7c3aed;}
+
+.cr{display:grid;grid-template-columns:1fr 1fr;gap:clamp(12px,1.6vw,22px);width:100%;max-width:1200px;margin-top:clamp(8px,1.2vh,16px);align-items:start;}
+.lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.16em;color:#888;margin-bottom:5px;}
+
+.codebox{width:100%;max-width:940px;border-radius:14px;overflow:hidden;border:1px solid #252830;box-shadow:0 16px 40px -20px rgba(10,12,18,.5);}
+.codebar{display:flex;align-items:center;background:#1d2026;padding:9px 16px;}
+.codebar span{font-size:11px;color:#8a8f9a;font-family:'SF Mono','Consolas',monospace;}
+.code{font-family:'SF Mono','Menlo','Consolas',monospace;font-size:clamp(11px,1.1vw,14.5px);background:#141618;color:#e8eaf0;padding:clamp(12px,1.5vw,18px) clamp(14px,1.7vw,20px);width:100%;text-align:left;line-height:1.75;white-space:pre;overflow-x:auto;}
+.code .cl{display:block;opacity:0;transform:translateX(-8px);animation:lin .35s ease-out forwards;animation-delay:calc(var(--i)*.14s);}
+@keyframes lin{to{opacity:1;transform:translateX(0);}}
+.code .kw{color:#5ab0ff;}
+.code .fn{color:#e2c08d;}
+.code .st{color:#ffa657;}
+.code .cm{color:#5a9a5a;font-style:italic;}
+.code .nm{color:#f0a0d0;}
+.code .sq{background:rgba(26,157,74,.18);box-shadow:inset 0 0 0 1.5px rgba(26,157,74,.65);border-radius:5px;padding:1px 5px;}
+.code .ovin{background:rgba(26,157,74,.3);border-radius:4px;padding:0 3px;}
+.code .cte{display:block;margin:3px -10px;padding:4px 10px;border-left:3px solid #1a9d4a;background:rgba(26,157,74,.2);border-radius:0 6px 6px 0;}
+.resbadge{display:inline-block;background:#0d2818;color:#4ade80;border:1.5px solid #14532d;border-radius:8px;padding:2px 12px;font-weight:700;opacity:0;animation:pop .5s cubic-bezier(.2,1.6,.4,1) forwards;animation-delay:1.6s;}
+@keyframes pop{0%{opacity:0;transform:scale(.4);}100%{opacity:1;transform:scale(1);}}
+
+.result{width:100%;border-radius:12px;overflow:hidden;border:1.5px solid #e2e4ea;background:#fff;}
+.result table{width:100%;border-collapse:collapse;font-size:clamp(11px,1.05vw,13.5px);}
+.result thead tr{background:#f4f5f8;}
+.result th{padding:clamp(7px,.9vw,11px) clamp(9px,1.1vw,14px);font-weight:700;color:#4a4d53;border-bottom:1.5px solid #e2e4ea;white-space:nowrap;text-align:left;}
+.result td{padding:clamp(6px,.8vw,10px) clamp(9px,1.1vw,14px);border-bottom:1px solid #f0f1f4;color:#2a2c30;text-align:left;white-space:nowrap;}
+.result tr:last-child td{border-bottom:none;}
+.hi{color:#0064d6;font-weight:600;}.ok{color:#1a9d4a;font-weight:600;}.ng{color:#e02d20;font-weight:600;}
+.or{color:#e0820a;font-weight:600;}
+.num{text-align:right;font-variant-numeric:tabular-nums;}
+.result th.ycol,.result td.ycol{background:#fff6f5;box-shadow:inset 3px 0 0 #e02d20;}
+.result tbody tr{opacity:0;animation:up .4s ease-out forwards;}
+.result tbody tr:nth-child(1){animation-delay:.15s;}.result tbody tr:nth-child(2){animation-delay:.3s;}
+.result tbody tr:nth-child(3){animation-delay:.45s;}.result tbody tr:nth-child(4){animation-delay:.6s;}
+.result tbody tr:nth-child(5){animation-delay:.75s;}
+.result td.wrap,.result th.wrap{white-space:normal;line-height:1.45;}
+.tagchip{display:inline-block;font-size:11px;font-weight:800;padding:3px 12px;border-radius:99px;letter-spacing:.02em;}
+.tagchip.x{background:#eef4fc;color:#0c447c;border:1.5px solid #cfe0f7;}
+.tagchip.y{background:#fef2f2;color:#8a1a0e;border:1.5px solid #f0c8c8;}
+.pillrow{display:flex;gap:10px;align-items:center;justify-content:center;margin-top:10px;flex-wrap:wrap;}
+
+.note{padding:clamp(8px,1vw,12px) clamp(12px,1.4vw,17px);border-radius:10px;text-align:left;width:100%;margin-top:clamp(7px,1vh,12px);}
+.note p{font-size:clamp(11px,1.1vw,14px);color:#2a2c30;line-height:1.5;font-weight:500;}
+.note b{font-weight:700;color:#0b0c0e;}
+.note.blue{background:#eef4fc;}.note.green{background:#e8f5eb;}
+.note.orange{background:#fff3e6;}.note.purple{background:#f3efff;}
+
+.tslide .eyebrow{color:#1a9d4a;}
+
+/* hook slides */
+.qslide .sc{position:relative;z-index:2;}
+.qbig{font-size:clamp(24px,3.4vw,50px);font-weight:850;letter-spacing:-.03em;line-height:1.16;max-width:1000px;text-align:center;}
+.qslide .eyebrow.q{color:#7c3aed;}
+.qslide .eyebrow.f{color:#e0820a;}
+
+.prog{position:fixed;top:0;left:0;height:3px;background:#1a9d4a;z-index:200;transition:width .28s ease;}
+.ind{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);font-size:12px;color:#b8bbc2;z-index:100;letter-spacing:.04em;}
+.hint{position:fixed;bottom:16px;right:20px;font-size:11px;color:#d0d3da;z-index:100;}
+.tag{position:fixed;top:16px;left:20px;font-size:10px;font-weight:700;color:#c8cace;text-transform:uppercase;letter-spacing:.16em;z-index:100;}
+
+.cards{display:grid;gap:clamp(8px,1vw,12px);width:100%;margin-top:clamp(8px,1.2vh,14px);}
+.cards.c2{grid-template-columns:1fr 1fr;max-width:1000px;}
+.cards.c3{grid-template-columns:1fr 1fr 1fr;max-width:1120px;}
+.cards.c4{grid-template-columns:1fr 1fr 1fr 1fr;max-width:1180px;}
+.card{background:#fff;border:1px solid #edeef2;border-radius:14px;padding:clamp(11px,1.3vw,16px);text-align:left;box-shadow:0 1px 2px rgba(18,20,28,.04),0 8px 20px -12px rgba(18,20,28,.12);}
+.card h4{font-size:clamp(12px,1.25vw,16px);font-weight:700;margin-bottom:4px;}
+.card p{font-size:clamp(11px,1.05vw,13.5px);color:#4a4d53;line-height:1.55;}
+.card.acc-green h4{color:#1a9d4a;}.card.acc-orange h4{color:#b3660a;}.card.acc-purple h4{color:#7c3aed;}.card.acc-blue h4{color:#0064d6;}.card.acc-red h4{color:#c22317;}
+.badge{display:inline-block;font-size:10px;font-weight:700;padding:2px 9px;border-radius:99px;margin-bottom:6px;}
+.mono{font-family:'SF Mono','Consolas',monospace;font-size:.92em;background:#f0f1f4;padding:1px 6px;border-radius:5px;color:#0b0c0e;}
+ul.facts{list-style:none;text-align:left;max-width:860px;margin-top:14px;}
+ul.facts li{font-size:clamp(13px,1.35vw,17px);color:#2a2c30;line-height:1.5;padding:7px 0 7px 24px;position:relative;border-bottom:1px solid #f0f1f4;}
+ul.facts li:before{content:'';position:absolute;left:0;top:15px;width:8px;height:8px;border-radius:2px;background:#1a9d4a;}
+ul.facts b{color:#0b0c0e;}
+ul.facts.stag li{opacity:0;animation:up .45s ease-out forwards;}
+ul.facts.stag li:nth-child(1){animation-delay:.2s;}ul.facts.stag li:nth-child(2){animation-delay:.5s;}
+ul.facts.stag li:nth-child(3){animation-delay:.8s;}ul.facts.stag li:nth-child(4){animation-delay:1.1s;}
+ul.facts.checks li:before{content:'✓';background:none;color:#1a9d4a;font-weight:900;font-size:16px;top:6px;}
+.pills{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:clamp(12px,1.8vh,24px);}
+.pill{font-size:clamp(11px,1.1vw,13px);font-weight:600;padding:4px 13px;border-radius:99px;border:1.5px solid transparent;opacity:0;animation:pop .5s cubic-bezier(.2,1.6,.4,1) forwards;}
+.pill:nth-child(1){animation-delay:.5s;}.pill:nth-child(2){animation-delay:.7s;}.pill:nth-child(3){animation-delay:.9s;}
+
+.bgdots{position:absolute;inset:0;overflow:hidden;pointer-events:none;}
+.bgdots i{position:absolute;border-radius:50%;opacity:.16;animation:drift linear infinite;}
+@keyframes drift{0%{transform:translate(0,0);}50%{transform:translate(var(--dx),var(--dy));}100%{transform:translate(0,0);}}
+
+/* roadmap */
+.map{width:100%;max-width:1080px;}
+.mapnode{opacity:0;animation:pop .5s cubic-bezier(.2,1.6,.4,1) forwards;}
+.mapnode.n1{animation-delay:.3s;}.mapnode.n2{animation-delay:.55s;}.mapnode.n3{animation-delay:.8s;}
+.mapnode.n4{animation-delay:1.05s;}.mapnode.n5{animation-delay:1.3s;}.mapnode.n6{animation-delay:1.55s;}
+.mapline{stroke-dasharray:1000;stroke-dashoffset:1000;animation:mapdraw 1.6s ease-out forwards;}
+@keyframes mapdraw{to{stroke-dashoffset:0;}}
+.heretick{animation:pulsr 2s ease-in-out infinite;transform-origin:center;transform-box:fill-box;}
+
+/* mini svg card animations */
+.mini{width:100%;height:86px;margin-bottom:8px;background:#fafbfd;border:1px solid #f0f1f4;border-radius:10px;}
+.drawline{stroke-dasharray:220;stroke-dashoffset:220;animation:draw 2.6s ease-in-out infinite;}
+@keyframes draw{0%{stroke-dashoffset:220;}45%,70%{stroke-dashoffset:0;}100%{stroke-dashoffset:0;opacity:0;}}
+.clu{animation:clumove 3.4s ease-in-out infinite;}
+@keyframes clumove{0%,12%{transform:translate(0,0);}45%,80%{transform:translate(var(--tx),var(--ty));}100%{transform:translate(0,0);}}
+.votebar{transform:scaleX(0);transform-origin:left;animation:grow 2.8s ease-in-out infinite;}
+@keyframes grow{0%,10%{transform:scaleX(0);}50%,85%{transform:scaleX(1);}100%{transform:scaleX(0);}}
+.pulse-r{animation:pulsr 2.2s ease-in-out infinite;transform-origin:center;transform-box:fill-box;}
+@keyframes pulsr{0%,100%{opacity:.25;transform:scale(.8);}50%{opacity:.9;transform:scale(1.15);}}
+
+/* churn leak animation */
+.leak{width:100%;max-width:520px;height:170px;background:#fff;border:1.5px solid #e6e8ee;border-radius:14px;}
+.walker{animation:walk 3.6s ease-in-out infinite;}
+.walker.w2{animation-delay:1.7s;}
+@keyframes walk{0%,25%{transform:translateX(0);opacity:1;}70%{transform:translateX(150px);opacity:.9;}95%,100%{transform:translateX(210px);opacity:0;}}
+
+/* timeline */
+.tl{width:100%;max-width:940px;height:110px;}
+.growx{transform:scaleX(0);transform-origin:left;animation:gx 1.1s ease-out forwards;}
+.growx.g2{animation-delay:.7s;}
+@keyframes gx{to{transform:scaleX(1);}}
+.cutline{animation:blink 1.8s ease-in-out infinite;}
+@keyframes blink{0%,100%{opacity:.9;}50%{opacity:.3;}}
+
+/* big numbers */
+.bignum{display:flex;gap:clamp(12px,2vw,26px);margin-top:clamp(10px,1.6vh,20px);flex-wrap:wrap;justify-content:center;align-items:center;}
+.bn{background:#fff;border:1.5px solid #e6e8ee;border-radius:16px;padding:clamp(12px,1.6vw,20px) clamp(18px,2.4vw,30px);text-align:center;min-width:210px;}
+.bn .v{font-size:clamp(30px,4vw,52px);font-weight:900;letter-spacing:-.03em;font-variant-numeric:tabular-nums;}
+.bn .t{font-size:clamp(11px,1.1vw,13px);color:#6b6f76;font-weight:600;margin-top:2px;}
+.bn.good{border-color:#b8dfc1;background:#f4fbf6;}.bn.good .v{color:#1a9d4a;}
+.bn.bad{border-color:#f0c8c8;background:#fef7f6;}.bn.bad .v{color:#e02d20;}
+.bn.gray .v{color:#4a4d53;}
+.arrow-big{font-size:clamp(24px,3vw,40px);color:#c3c7cf;font-weight:300;}
+
+/* formula box */
+.formula{background:#fff;border:1.5px solid #e6e8ee;border-radius:14px;padding:clamp(14px,1.8vw,22px) clamp(18px,2.2vw,28px);font-family:'SF Mono','Consolas',monospace;font-size:clamp(13px,1.5vw,19px);text-align:center;margin-top:12px;line-height:2;max-width:960px;width:100%;overflow-x:auto;}
+.formula .fstep{display:block;opacity:0;animation:up .5s ease-out forwards;}
+.formula .fstep.s1{animation-delay:.3s;}.formula .fstep.s2{animation-delay:1s;}.formula .fstep.s3{animation-delay:1.7s;}
+.formula .big{color:#e02d20;font-weight:800;}
+.formula .sm{color:#e0820a;font-weight:700;}
+
+/* distance contribution bars */
+.dbars{width:100%;max-width:860px;margin-top:10px;text-align:left;}
+.dbar{display:flex;align-items:center;gap:10px;margin:7px 0;}
+.dbar .dn{width:130px;font-size:12.5px;font-weight:700;color:#4a4d53;font-family:'SF Mono','Consolas',monospace;}
+.dbar .tr{flex:1;height:16px;background:#f0f1f4;border-radius:99px;overflow:hidden;}
+.dbar .fl{height:100%;border-radius:99px;transform:scaleX(0);transform-origin:left;animation:gx .9s ease-out forwards;}
+.dbar .dv{width:110px;font-size:12px;color:#6b6f76;font-variant-numeric:tabular-nums;text-align:right;}
+
+/* before/after panels */
+.morph2{display:flex;gap:clamp(10px,1.6vw,20px);margin-top:10px;flex-wrap:wrap;justify-content:center;}
+.mpanel{background:#fff;border:1.5px solid #e6e8ee;border-radius:14px;padding:8px;}
+.mpanel .cap{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:#888;text-align:center;padding:4px 0 6px;}
+.mpanel .sub2{font-size:clamp(10px,1vw,12px);color:#4a4d53;line-height:1.45;max-width:250px;padding:6px 6px 2px;text-align:left;font-weight:500;}
+.legend{font-size:clamp(10.5px,1.05vw,12.5px);color:#4a4d53;font-weight:600;text-align:center;margin-top:8px;}
+.legend i{display:inline-block;width:9px;height:9px;border-radius:50%;margin:0 3px 0 10px;vertical-align:baseline;}
+
+/* pipeline */
+.pipewrap{position:relative;width:fit-content;margin:clamp(14px,2.2vh,26px) auto 0;}
+.pipe{display:flex;align-items:center;gap:clamp(8px,1.4vw,18px);flex-wrap:nowrap;justify-content:center;}
+.pstep{background:#fff;border:2px solid #b8dfc1;border-radius:14px;padding:clamp(12px,1.6vw,20px) clamp(16px,2vw,26px);text-align:center;box-shadow:0 8px 20px -14px rgba(26,157,74,.4);opacity:0;animation:pop .5s cubic-bezier(.2,1.6,.4,1) forwards;}
+.pstep:nth-child(1){animation-delay:.2s;}.pstep:nth-child(3){animation-delay:.5s;}.pstep:nth-child(5){animation-delay:.8s;}
+.pstep .n{font-family:'SF Mono','Consolas',monospace;font-weight:700;font-size:clamp(14px,1.7vw,21px);color:#1a9d4a;}
+.pstep .d{font-size:clamp(10px,1vw,12.5px);color:#6b6f76;margin-top:3px;font-weight:600;}
+.parr{font-size:clamp(20px,2.6vw,34px);color:#1a9d4a;font-weight:300;animation:pulseA 1.6s ease-in-out infinite;}
+.parr.d2{animation-delay:.8s;}
+@keyframes pulseA{0%,100%{opacity:.35;transform:translateX(0);}50%{opacity:1;transform:translateX(5px);}}
+.pdot{position:absolute;top:50%;left:0;width:12px;height:12px;border-radius:50%;background:#e0820a;box-shadow:0 0 0 4px rgba(224,130,10,.2);animation:ride 3s ease-in-out infinite;animation-delay:1.2s;}
+@keyframes ride{0%{left:4%;opacity:0;}10%{opacity:1;}45%{left:48%;}90%{left:94%;opacity:1;}100%{left:96%;opacity:0;}}
+
+/* kNN widget */
+.knn-wrap{width:100%;max-width:960px;display:flex;gap:clamp(10px,1.6vw,20px);align-items:stretch;margin-top:8px;}
+.knn-left{flex:1 1 620px;background:#fff;border:1.5px solid #e2e4ea;border-radius:14px;padding:10px;}
+.knn-svg{width:100%;height:auto;display:block;touch-action:none;cursor:crosshair;}
+.knn-side{flex:0 0 240px;display:flex;flex-direction:column;gap:10px;}
+.kbtns{display:flex;gap:6px;}
+.kbtn{flex:1;font-family:inherit;font-size:13px;font-weight:700;padding:8px 0;border-radius:9px;border:1.5px solid #d8dbe2;background:#fff;color:#2a2c30;cursor:pointer;transition:.15s;}
+.kbtn:hover{border-color:#7c3aed;color:#7c3aed;}
+.kbtn.on{background:#7c3aed;border-color:#7c3aed;color:#fff;}
+.verdict{background:#fff;border:1.5px solid #e2e4ea;border-radius:12px;padding:12px 14px;text-align:left;}
+.verdict .vt{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.14em;color:#888;margin-bottom:5px;}
+.verdict .vv{font-size:clamp(16px,1.8vw,22px);font-weight:800;}
+.verdict .vd{font-size:12.5px;color:#6b6f76;margin-top:4px;line-height:1.45;}
+.legend{display:flex;gap:14px;font-size:12px;color:#4a4d53;font-weight:600;justify-content:center;margin-top:6px;}
+.legend span:before{content:'●';margin-right:5px;}
+.leg-stay:before{color:#0064d6;}.leg-churn:before{color:#e02d20;}.leg-new:before{color:#e0820a;}
+.nline{stroke-dasharray:5 4;animation:march .7s linear infinite;}
+@keyframes march{to{stroke-dashoffset:-9;}}
+
+@media(max-width:860px){.cr,.cards.c3,.cards.c2,.cards.c4{grid-template-columns:1fr;}.knn-wrap{flex-direction:column;}.knn-side{flex-direction:row;flex-wrap:wrap;}}
+</style>
+</head>
+<body>
+<div class=&quot;tag&quot; id=&quot;ltag&quot;>ML · Recap</div>
+<div class=&quot;prog&quot; id=&quot;prog&quot;></div>
+<div class=&quot;deck&quot; id=&quot;deck&quot;>
+
+
+<div class=&quot;slide tslide&quot; style=&quot;text-align:center;&quot;>
+<div class=&quot;sc&quot;>
+  <p class=&quot;eyebrow&quot;>Block 3 · Session 1 recap</p>
+  <h1>Churn model:<br>the whole path</h1>
+  <div class=&quot;pills&quot; style=&quot;margin-top:20px;&quot;>
+    <span class=&quot;pill&quot; style=&quot;background:#eef4fc;border-color:#cfe0f7;color:#0c447c&quot;>data → target → features</span>
+    <span class=&quot;pill&quot; style=&quot;background:#e8f5eb;border-color:#b8dfc1;color:#0d5a1e&quot;>training → evaluation</span>
+    <span class=&quot;pill&quot; style=&quot;background:#fff3e6;border-color:#f3d9ae;color:#8a5406&quot;>baseline · scale · metrics</span>
+  </div>
+</div>
+</div>
+
+
+<div class=&quot;slide&quot;>
+<div class=&quot;sc&quot;>
+  <p class=&quot;eyebrow&quot;>Step 1 · Data</p>
+  <h2>Churn: 1 400 customers, 9 features</h2>
+  <svg viewBox=&quot;0 0 720 92&quot; style=&quot;max-width:820px;width:100%;margin-top:14px;&quot;>
+    <rect x=&quot;20&quot; y=&quot;20&quot; width=&quot;476&quot; height=&quot;46&quot; rx=&quot;8&quot; fill=&quot;#eef4fc&quot; stroke=&quot;#cfe0f7&quot; stroke-width=&quot;1.5&quot;/>
+    <text x=&quot;258&quot; y=&quot;48&quot; text-anchor=&quot;middle&quot; font-size=&quot;15&quot; font-weight=&quot;800&quot; fill=&quot;#0c447c&quot; font-family=&quot;Inter&quot;>stay · 70%</text>
+    <rect x=&quot;500&quot; y=&quot;20&quot; width=&quot;200&quot; height=&quot;46&quot; rx=&quot;8&quot; fill=&quot;#fde8e6&quot; stroke=&quot;#f0c8c8&quot; stroke-width=&quot;1.5&quot;/>
+    <text x=&quot;600&quot; y=&quot;48&quot; text-anchor=&quot;middle&quot; font-size=&quot;15&quot; font-weight=&quot;800&quot; fill=&quot;#8a1a0e&quot; font-family=&quot;Inter&quot;>leave · 30%</text>
+    <text x=&quot;258&quot; y=&quot;84&quot; text-anchor=&quot;middle&quot; font-size=&quot;11.5&quot; fill=&quot;#8a8f9a&quot; font-family=&quot;Inter&quot;>~980 customers</text>
+    <text x=&quot;600&quot; y=&quot;84&quot; text-anchor=&quot;middle&quot; font-size=&quot;11.5&quot; fill=&quot;#8a8f9a&quot; font-family=&quot;Inter&quot;>~420 customers</text>
+  </svg>
+  <ul class=&quot;facts stag&quot; style=&quot;margin-top:10px;&quot;>
+    <li><b>Task:</b> classification - predict churned (0 or 1).</li>
+    <li><b>Features:</b> profile and activity over 3 months, before the reference date.</li>
+    <li><b>Baseline = 0.70:</b> the majority share, the reference point.</li>
+  </ul>
+</div>
+</div>
+
+
+<div class=&quot;slide&quot;>
+<div class=&quot;sc&quot;>
+  <p class=&quot;eyebrow&quot;>Step 2 · Splitting the data</p>
+  <h2>Features, target and train / test</h2>
+  <div class=&quot;codebox&quot;><div class=&quot;codebar&quot;><span>recap.ipynb</span></div><div class=&quot;code&quot; style=&quot;font-size:clamp(10px,1vw,13.5px);&quot;><span class=&quot;cl&quot; style=&quot;--i:0&quot;><span class=&quot;kw&quot;>from</span> sklearn.model_selection <span class=&quot;kw&quot;>import</span> train_test_split</span><span class=&quot;cl&quot; style=&quot;--i:1&quot;> </span><span class=&quot;cl&quot; style=&quot;--i:2&quot;>df = pd.<span class=&quot;fn&quot;>read_csv</span>(<span class=&quot;st&quot;>&amp;#39;customers.csv&amp;#39;</span>)</span><span class=&quot;cl&quot; style=&quot;--i:3&quot;>X = df[[<span class=&quot;st&quot;>&amp;#39;age&amp;#39;</span>, <span class=&quot;st&quot;>&amp;#39;months_active&amp;#39;</span>, <span class=&quot;st&quot;>&amp;#39;n_cards&amp;#39;</span>, <span class=&quot;st&quot;>&amp;#39;txn_count&amp;#39;</span>, <span class=&quot;st&quot;>&amp;#39;txn_sum&amp;#39;</span>,</span><span class=&quot;cl&quot; style=&quot;--i:4&quot;>        <span class=&quot;st&quot;>&amp;#39;avg_check&amp;#39;</span>, <span class=&quot;st&quot;>&amp;#39;n_active_days&amp;#39;</span>, <span class=&quot;st&quot;>&amp;#39;n_merchants&amp;#39;</span>, <span class=&quot;st&quot;>&amp;#39;share_ecom&amp;#39;</span>]]</span><span class=&quot;cl&quot; style=&quot;--i:5&quot;>y = df[<span class=&quot;st&quot;>&amp;#39;churned&amp;#39;</span>]</span><span class=&quot;cl&quot; style=&quot;--i:6&quot;> </span><span class=&quot;cl&quot; style=&quot;--i:7&quot;>X_train, X_test, y_train, y_test = <span class=&quot;fn&quot;>train_test_split</span>(</span><span class=&quot;cl&quot; style=&quot;--i:8&quot;>    X, y, test_size=<span class=&quot;nm&quot;>0.2</span>, stratify=y, random_state=<span class=&quot;nm&quot;>42</span>)</span></div></div>
+</div>
+</div>
+
+
+<div class=&quot;slide&quot;>
+<div class=&quot;sc&quot;>
+  <p class=&quot;eyebrow&quot;>Step 3 · Evaluation</p>
+  <h2>Baseline - the reference point</h2>
+  <div class=&quot;codebox&quot;><div class=&quot;codebar&quot;><span>recap.ipynb</span></div><div class=&quot;code&quot; style=&quot;font-size:clamp(10px,1vw,13.5px);&quot;><span class=&quot;cl&quot; style=&quot;--i:0&quot;><span class=&quot;kw&quot;>from</span> sklearn.dummy <span class=&quot;kw&quot;>import</span> DummyClassifier</span><span class=&quot;cl&quot; style=&quot;--i:1&quot;><span class=&quot;kw&quot;>from</span> sklearn.metrics <span class=&quot;kw&quot;>import</span> accuracy_score</span><span class=&quot;cl&quot; style=&quot;--i:2&quot;> </span><span class=&quot;cl&quot; style=&quot;--i:3&quot;>baseline = <span class=&quot;fn&quot;>DummyClassifier</span>(strategy=<span class=&quot;st&quot;>&amp;#39;most_frequent&amp;#39;</span>)</span><span class=&quot;cl&quot; style=&quot;--i:4&quot;>baseline.<span class=&quot;ovin&quot;>fit</span>(X_train, y_train)</span><span class=&quot;cl&quot; style=&quot;--i:5&quot;><span class=&quot;fn&quot;>accuracy_score</span>(y_test, baseline.<span class=&quot;ovin&quot;>predict</span>(X_test))   <span class=&quot;resbadge&quot;>0.700</span></span></div></div>
+  <div class=&quot;note blue&quot; style=&quot;max-width:940px;margin-top:12px;&quot;><p>Always predicts «stays», right 70% of the time. Below baseline = the model is useless.</p></div>
+</div>
+</div>
+
+
+<div class=&quot;slide&quot;>
+<div class=&quot;sc&quot;>
+  <p class=&quot;eyebrow&quot;>Step 3 · Evaluation · without scaling</p>
+  <h2>kNN without standardization</h2>
+  <div class=&quot;codebox&quot;><div class=&quot;codebar&quot;><span>recap.ipynb</span></div><div class=&quot;code&quot; style=&quot;font-size:clamp(10px,1vw,13.5px);&quot;><span class=&quot;cl&quot; style=&quot;--i:0&quot;><span class=&quot;kw&quot;>from</span> sklearn.neighbors <span class=&quot;kw&quot;>import</span> KNeighborsClassifier</span><span class=&quot;cl&quot; style=&quot;--i:1&quot;> </span><span class=&quot;cl&quot; style=&quot;--i:2&quot;>model = <span class=&quot;fn&quot;>KNeighborsClassifier</span>(n_neighbors=<span class=&quot;nm&quot;>5</span>)      <span class=&quot;cm&quot;># without StandardScaler</span></span><span class=&quot;cl&quot; style=&quot;--i:3&quot;>model.<span class=&quot;ovin&quot;>fit</span>(X_train, y_train)</span><span class=&quot;cl&quot; style=&quot;--i:4&quot;><span class=&quot;fn&quot;>accuracy_score</span>(y_test, model.<span class=&quot;ovin&quot;>predict</span>(X_test))   <span class=&quot;resbadge bad&quot;>0.650</span></span></div></div>
+  <div class=&quot;note orange&quot; style=&quot;max-width:940px;margin-top:12px;&quot;><p>Below baseline 0.70 - money (hundreds of thousands) drowns out activity (tens) in the distance. <span class=&quot;mono&quot;>fit</span> - we train, <span class=&quot;mono&quot;>predict</span> - forecast.</p></div>
+</div>
+</div>
+
+
+<div class=&quot;slide&quot;>
+<div class=&quot;sc&quot;>
+  <p class=&quot;eyebrow&quot;>Step 3 · Evaluation · with standardization</p>
+  <h2>kNN + standardization</h2>
+  <div class=&quot;codebox&quot;><div class=&quot;codebar&quot;><span>recap.ipynb</span></div><div class=&quot;code&quot; style=&quot;font-size:clamp(10px,1vw,13.5px);&quot;><span class=&quot;cl&quot; style=&quot;--i:0&quot;><span class=&quot;kw&quot;>from</span> sklearn.preprocessing <span class=&quot;kw&quot;>import</span> StandardScaler</span><span class=&quot;cl&quot; style=&quot;--i:1&quot;><span class=&quot;kw&quot;>from</span> sklearn.pipeline <span class=&quot;kw&quot;>import</span> make_pipeline</span><span class=&quot;cl&quot; style=&quot;--i:2&quot;> </span><span class=&quot;cl&quot; style=&quot;--i:3&quot;>model = <span class=&quot;fn&quot;>make_pipeline</span>(<span class=&quot;fn&quot;>StandardScaler</span>(), <span class=&quot;fn&quot;>KNeighborsClassifier</span>(<span class=&quot;nm&quot;>5</span>))</span><span class=&quot;cl&quot; style=&quot;--i:4&quot;>model.<span class=&quot;ovin&quot;>fit</span>(X_train, y_train)</span><span class=&quot;cl&quot; style=&quot;--i:5&quot;><span class=&quot;fn&quot;>accuracy_score</span>(y_test, model.<span class=&quot;ovin&quot;>predict</span>(X_test))   <span class=&quot;resbadge&quot;>0.807</span></span></div></div>
+  <div class=&quot;note green&quot; style=&quot;max-width:940px;margin-top:12px;&quot;><p>A single line of <span class=&quot;mono&quot;>StandardScaler</span> evened out the feature scales - plus 15 points, 0.650 → 0.807.</p></div>
+</div>
+</div>
+
+
+<div class=&quot;slide&quot;>
+<div class=&quot;sc&quot;>
+  <p class=&quot;eyebrow&quot;>Step 3 · Evaluation</p>
+  <h2>Without and with standardization</h2>
+  <div class=&quot;result&quot; style=&quot;max-width:860px;margin-top:8px&quot;>
+    <table>
+      <thead><tr><th>Model</th><th class=&quot;num&quot;>accuracy</th><th class=&quot;wrap&quot;>recall «will leave» (of 84)</th></tr></thead>
+      <tbody>
+        <tr style=&quot;animation-delay:.15s&quot;><td><b>Dummy «everyone stays»</b></td><td class=&quot;num&quot;>0.700</td><td class=&quot;ng&quot;><b>0.000</b> - 0 of 84</td></tr>
+        <tr style=&quot;animation-delay:.35s&quot;><td><b>kNN without standardization</b></td><td class=&quot;num&quot;>0.650</td><td class=&quot;or&quot;><b>0.143</b> - 12 of 84</td></tr>
+        <tr style=&quot;animation-delay:.55s&quot;><td><b>kNN + standardization</b></td><td class=&quot;num&quot;>0.807</td><td class=&quot;ok&quot;><b>0.631</b> - 53 of 84</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class=&quot;note orange&quot; style=&quot;max-width:920px;&quot;><p>Accuracy is misleading under imbalance. <b>recall</b> - how many of the leavers we caught.</p></div>
+</div>
+</div>
+
+
+<div class=&quot;slide&quot;>
+<div class=&quot;sc&quot;>
+  <p class=&quot;eyebrow&quot;>The whole path</p>
+  <h2>Training - a dozen lines</h2>
+  <div class=&quot;codebox&quot;><div class=&quot;codebar&quot;><span>recap.ipynb</span></div><div class=&quot;code&quot; style=&quot;font-size:clamp(10px,1vw,13.5px);&quot;><span class=&quot;cl&quot; style=&quot;--i:0&quot;><span class=&quot;kw&quot;>import</span> pandas <span class=&quot;kw&quot;>as</span> pd</span><span class=&quot;cl&quot; style=&quot;--i:1&quot;><span class=&quot;kw&quot;>from</span> sklearn.model_selection <span class=&quot;kw&quot;>import</span> train_test_split</span><span class=&quot;cl&quot; style=&quot;--i:2&quot;><span class=&quot;kw&quot;>from</span> sklearn.pipeline <span class=&quot;kw&quot;>import</span> make_pipeline</span><span class=&quot;cl&quot; style=&quot;--i:3&quot;><span class=&quot;kw&quot;>from</span> sklearn.preprocessing <span class=&quot;kw&quot;>import</span> StandardScaler</span><span class=&quot;cl&quot; style=&quot;--i:4&quot;><span class=&quot;kw&quot;>from</span> sklearn.neighbors <span class=&quot;kw&quot;>import</span> KNeighborsClassifier</span><span class=&quot;cl&quot; style=&quot;--i:5&quot;><span class=&quot;kw&quot;>from</span> sklearn.metrics <span class=&quot;kw&quot;>import</span> accuracy_score</span><span class=&quot;cl&quot; style=&quot;--i:6&quot;> </span><span class=&quot;cl&quot; style=&quot;--i:7&quot;>df = pd.<span class=&quot;fn&quot;>read_csv</span>(<span class=&quot;st&quot;>&amp;#39;customers.csv&amp;#39;</span>)</span><span class=&quot;cl&quot; style=&quot;--i:8&quot;>X, y = df[COLS], df[<span class=&quot;st&quot;>&amp;#39;churned&amp;#39;</span>]     <span class=&quot;cm&quot;># COLS - the 9 columns from slide 3</span></span><span class=&quot;cl&quot; style=&quot;--i:9&quot;>X_tr, X_te, y_tr, y_te = <span class=&quot;fn&quot;>train_test_split</span>(X, y, test_size=<span class=&quot;nm&quot;>0.2</span>, stratify=y, random_state=<span class=&quot;nm&quot;>42</span>)</span><span class=&quot;cl&quot; style=&quot;--i:10&quot;> </span><span class=&quot;cl&quot; style=&quot;--i:11&quot;>model = <span class=&quot;fn&quot;>make_pipeline</span>(<span class=&quot;fn&quot;>StandardScaler</span>(), <span class=&quot;fn&quot;>KNeighborsClassifier</span>(<span class=&quot;nm&quot;>5</span>))</span><span class=&quot;cl&quot; style=&quot;--i:12&quot;>model.<span class=&quot;ovin&quot;>fit</span>(X_tr, y_tr)</span><span class=&quot;cl&quot; style=&quot;--i:13&quot;><span class=&quot;fn&quot;>accuracy_score</span>(y_te, model.<span class=&quot;ovin&quot;>predict</span>(X_te))   <span class=&quot;resbadge&quot;>0.807</span></span></div></div>
+</div>
+</div>
+
+
+</div>
+<div class=&quot;ind&quot;><span id=&quot;cur&quot;>1</span> / <span id=&quot;tot&quot;></span></div>
+<div class=&quot;hint&quot;>← → space</div>
+<script>
+const slides=[...document.querySelectorAll('.slide')];
+let cur=0;
+const totEl=document.getElementById('tot'); if(totEl)totEl.textContent=slides.length;
+function runCounters(s){s.querySelectorAll('[data-cnt]').forEach(el=>{
+  const target=parseFloat(el.dataset.cnt),dec=parseInt(el.dataset.dec||'0'),pre=el.dataset.pre||'',suf=el.dataset.suf||'';
+  const t0=performance.now();
+  (function tick(t){const p=Math.min(1,(t-t0)/900),e=1-Math.pow(1-p,3);el.textContent=pre+(target*e).toFixed(dec)+suf;if(p<1)requestAnimationFrame(tick);})(performance.now());
+});}
+function go(n){slides[cur].classList.remove('active');cur=(n+slides.length)%slides.length;slides[cur].classList.add('active');
+  const sc=slides[cur].querySelector('.sc');if(sc){sc.style.animation='none';void sc.offsetWidth;sc.style.animation='';}
+  slides[cur].querySelectorAll('.rise,.cl,.growx,.pill,.resbadge,.bn,.card').forEach(el=>{el.style.animation='none';void el.offsetWidth;el.style.animation='';});
+  runCounters(slides[cur]);
+  const c=document.getElementById('cur');if(c)c.textContent=cur+1;
+  const p=document.getElementById('prog');if(p)p.style.width=((cur+1)/slides.length*100)+'%';}
+document.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key===' '){e.preventDefault();go(cur+1);}if(e.key==='ArrowLeft'){e.preventDefault();go(cur-1);}});
+let tx=0;document.addEventListener('touchstart',e=>{tx=e.touches[0].clientX;},{passive:true});
+document.addEventListener('touchend',e=>{const dx=e.changedTouches[0].clientX-tx;if(Math.abs(dx)>40)go(cur+(dx<0?1:-1));},{passive:true});
+go(0);
+</script>
+</body>
+</html>
+"></iframe>
+<script>
+function activeFrame(){return document.querySelector('iframe[data-lang="'+document.body.dataset.lang+'"]');}
+function setLang(l){
+  document.body.dataset.lang=l;
+  document.querySelectorAll('.langsw button').forEach(b=>b.classList.toggle('on',b.dataset.l===l));
+  var HL={ru:'← Главная',uz:'← Bosh sahifa',en:'← Home'},hl=document.getElementById('homeLabel');
+  if(hl)hl.textContent=HL[l]||HL.ru;
+  updateNav();
+  var f=activeFrame(); if(f){ try{f.contentWindow.focus();}catch(e){} }
+}
+var PREV=null,NEXT=null,NAVT={ru:['Предыдущая','Следующая'],uz:['Oldingi','Keyingi'],en:['Previous','Next']};
+function updateNav(){
+  var l=document.body.dataset.lang||'ru',suf=(l!=='ru')?'#lang='+l:'',t=NAVT[l]||NAVT.ru;
+  var pb=document.getElementById('prevBtn'),nb=document.getElementById('nextBtn');
+  if(pb){pb.title=t[0];if(PREV){pb.href='../'+PREV+'/'+suf;pb.style.display='';}else{pb.style.display='none';}}
+  if(nb){nb.title=t[1];if(NEXT){nb.href='../'+NEXT+'/'+suf;nb.style.display='';}else{nb.style.display='none';}}
+}
+(function(){
+  var p=location.pathname.replace(/\/index\.html$/,'').replace(/\/$/,''),slug=p.split('/').pop();
+  fetch('../../published.json').then(function(r){return r.json();}).then(function(list){
+    var pub=list.filter(function(x){return x.langs&&x.langs.length;}).sort(function(a,b){return a.n-b.n;});
+    var i=-1;for(var k=0;k<pub.length;k++){if(pub[k].slug===slug){i=k;break;}}
+    if(i<0)return;
+    PREV=i>0?pub[i-1].slug:null;NEXT=i<pub.length-1?pub[i+1].slug:null;updateNav();
+  }).catch(function(){});
+})();
+document.querySelectorAll('.langsw button').forEach(b=>b.addEventListener('click',()=>{setLang(b.dataset.l);try{history.replaceState(null,'','#lang='+b.dataset.l);}catch(e){}}));
+function initLang(){var m=/lang=(ru|uz|en)/.exec(location.hash||'');setLang(m?m[1]:'ru');}
+window.addEventListener('hashchange',initLang);
+// forward navigation keys to the visible deck regardless of focus
+document.addEventListener('keydown',e=>{
+  if(['ArrowLeft','ArrowRight',' '].includes(e.key)){
+    var f=activeFrame();
+    if(f&&f.contentDocument){
+      try{f.contentDocument.dispatchEvent(new KeyboardEvent('keydown',{key:e.key,bubbles:true}));e.preventDefault();}catch(_){}
+    }
+  }
+});
+window.addEventListener('load',initLang);
+</script>
+</body>
+</html>

@@ -1,0 +1,139 @@
+{
+  "july_n": 12092,
+  "july_churn_rate": 0.07566986437313926,
+  "sep_n": 12203,
+  "sep_churn_rate": 0.05769073178726543,
+  "july_insample_auc": 0.9863529271420476,
+  "july_insample_ap": 0.8201662389428005,
+  "sep_oot_auc": 0.7845583410415133,
+  "sep_oot_ap": 0.38193515983786447,
+  "sep_base_ap": 0.05769073178726543,
+  "july_cv_auc_mean": 0.7804461597639142,
+  "july_cv_auc_std": 0.022036331916113122,
+  "july_cv_ap_mean": 0.39645043360480703,
+  "july_cv_ap_std": 0.044841769733248577,
+  "top_gain": [
+    {
+      "feature": "txn_all_cnt_30d",
+      "label": "txn_all_cnt_30d",
+      "gain": 32162.0386633873
+    },
+    {
+      "feature": "region",
+      "label": "Регион",
+      "gain": 14649.654437065125
+    },
+    {
+      "feature": "tenure_days",
+      "label": "Стаж в банке",
+      "gain": 10881.463016748428
+    },
+    {
+      "feature": "days_since_last_app",
+      "label": "Дней без приложения",
+      "gain": 9853.35905122757
+    },
+    {
+      "feature": "spend_ratio_30d",
+      "label": "Динамика оборота 30д",
+      "gain": 9579.465478897095
+    },
+    {
+      "feature": "txn_ratio_60d",
+      "label": "Динамика операций 60д",
+      "gain": 9305.69617652893
+    },
+    {
+      "feature": "log_income",
+      "label": "Лог заявленного дохода",
+      "gain": 8953.607964038849
+    },
+    {
+      "feature": "age_years",
+      "label": "Возраст",
+      "gain": 8464.963278770447
+    },
+    {
+      "feature": "spend_30d",
+      "label": "Оборот за 30 дней",
+      "gain": 8242.818375587463
+    },
+    {
+      "feature": "app_cnt_30d",
+      "label": "Событий в приложении за 30д",
+      "gain": 7421.465064048767
+    },
+    {
+      "feature": "app_ratio_30d",
+      "label": "Динамика приложения 30д",
+      "gain": 7223.803721904755
+    },
+    {
+      "feature": "avg_ticket_30d",
+      "label": "Средний чек 30д",
+      "gain": 6744.531884670258
+    }
+  ],
+  "top_perm_oot": [
+    {
+      "feature": "txn_all_cnt_30d",
+      "label": "txn_all_cnt_30d",
+      "auc_drop": 0.007996032510732026
+    },
+    {
+      "feature": "spend_60d",
+      "label": "Оборот за 60 дней",
+      "auc_drop": 0.006257167742847028
+    },
+    {
+      "feature": "txn_cnt_60d",
+      "label": "Операций за 60 дней",
+      "auc_drop": 0.005459868298824222
+    },
+    {
+      "feature": "txn_cnt_prev_60d",
+      "label": "Операций в предыдущие 60 дней",
+      "auc_drop": 0.00534969629276047
+    },
+    {
+      "feature": "txn_cnt_prev_7d",
+      "label": "Операций в предыдущие 7 дней",
+      "auc_drop": 0.005339319896393968
+    },
+    {
+      "feature": "acq_channel",
+      "label": "Канал привлечения",
+      "auc_drop": 0.004845530046090854
+    },
+    {
+      "feature": "txn_ratio_60d",
+      "label": "Динамика операций 60д",
+      "auc_drop": 0.004694948770248647
+    },
+    {
+      "feature": "product_events_30d",
+      "label": "Событий по продуктам за 30д",
+      "auc_drop": 0.004626127938990601
+    },
+    {
+      "feature": "avg_ticket_30d",
+      "label": "Средний чек 30д",
+      "auc_drop": 0.0036461915660648547
+    },
+    {
+      "feature": "sub_canceled",
+      "label": "Подписка уже отменена",
+      "auc_drop": 0.0033060557637421134
+    },
+    {
+      "feature": "spend_ratio_30d",
+      "label": "Динамика оборота 30д",
+      "auc_drop": 0.0030103593494294756
+    },
+    {
+      "feature": "has_active_sub",
+      "label": "Активная подписка",
+      "auc_drop": 0.0030026851396167814
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+model,split,auc,gini,ks
+Baseline LogReg,train,0.6798,0.3597,0.2992
+Baseline LogReg,valid,0.6675,0.335,0.2979
+Baseline LogReg,test,0.6623,0.3246,0.2861
+LogReg + FE,train,0.6848,0.3696,0.2844
+LogReg + FE,valid,0.6636,0.3272,0.2585
+LogReg + FE,test,0.6659,0.3317,0.2805
+HistGB + FE,train,0.9981,0.9961,0.9597
+HistGB + FE,valid,0.6723,0.3447,0.2942
+HistGB + FE,test,0.6664,0.3328,0.3012
+LightGBM tuned,train,0.9676,0.9351,0.848
+LightGBM tuned,valid,0.6994,0.3988,0.3444
+LightGBM tuned,test,0.6465,0.293,0.237

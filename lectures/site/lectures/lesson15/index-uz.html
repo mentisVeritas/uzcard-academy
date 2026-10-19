@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>pandas: muammolarni tahlil va ma'lumotlarni tozalash · 15-ma'ruza</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700;800&display=swap');
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system,BlinkMacSystemFont,'Inter','SF Pro Display','Segoe UI',Roboto,sans-serif; background:#FFFFFF; color:#1d1d1f; line-height:1.1; overflow:hidden; -webkit-font-smoothing:antialiased; }
+.presentation { width:100vw; height:100vh; position:relative; }
+.slide { width:100%; height:100%; display:none; align-items:center; justify-content:center; position:absolute; top:0; left:0; padding:clamp(40px,6vh,80px) clamp(40px,6vw,80px); text-align:center; }
+.slide.active { display:flex; flex-direction:column; }
+.slide-content { max-width:1200px; width:100%; margin:0 auto; opacity:0; transform:translateY(20px); animation:fadeInUp 0.7s ease-out 0.15s forwards; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+@keyframes fadeInUp { to { opacity:1; transform:translateY(0); } }
+h1 { font-size:clamp(40px,6.5vw,96px); font-weight:700; letter-spacing:-0.025em; line-height:0.95; margin-bottom:clamp(16px,2.5vh,32px); }
+h2 { font-size:clamp(28px,4vw,56px); font-weight:600; letter-spacing:-0.02em; line-height:1.05; margin-bottom:clamp(16px,2vh,28px); }
+.subtitle { font-size:clamp(18px,2.2vw,28px); font-weight:400; color:#86868b; margin-bottom:clamp(20px,3vh,40px); line-height:1.3; max-width:900px; }
+.eyebrow { font-size:clamp(13px,1.2vw,16px); font-weight:600; color:#007aff; text-transform:uppercase; letter-spacing:0.18em; margin-bottom:18px; }
+.body-text { font-size:clamp(15px,1.8vw,22px); font-weight:400; color:#515154; line-height:1.45; max-width:820px; margin:0 auto; }
+code { font-family:'SF Mono','Menlo','Monaco','Consolas',monospace; font-size:0.9em; }
+.highlight { color:#007aff; font-weight:500; }
+.cards-container { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:clamp(14px,2vw,22px); margin-top:clamp(20px,3vh,36px); max-width:1100px; width:100%; }
+.card { background:rgba(0,0,0,0.025); border:1px solid rgba(0,0,0,0.06); border-radius:14px; padding:clamp(18px,2.2vw,26px); text-align:left; opacity:0; transform:translateY(20px); animation:cardSlideUp 0.55s ease-out forwards; }
+.card:nth-child(1){animation-delay:.35s}.card:nth-child(2){animation-delay:.42s}.card:nth-child(3){animation-delay:.5s}.card:nth-child(4){animation-delay:.58s}.card:nth-child(5){animation-delay:.66s}.card:nth-child(6){animation-delay:.74s}
+@keyframes cardSlideUp { to { opacity:1; transform:translateY(0); } }
+.card h3 { font-size:clamp(15px,1.8vw,20px); font-weight:600; margin-bottom:7px; color:#1d1d1f; }
+.card p { font-size:clamp(12px,1.45vw,15px); color:#6e6e73; line-height:1.4; }
+.card .num { font-size:clamp(24px,2.8vw,32px); font-weight:700; color:#007aff; line-height:1; margin-bottom:10px; }
+.card .mono { font-family:'SF Mono','Menlo','Monaco','Consolas',monospace; font-size:clamp(11px,1.3vw,13px); background:rgba(0,0,0,0.05); padding:2px 6px; border-radius:3px; display:block; margin-top:6px; color:#007aff; }
+.comparison-grid { display:grid; grid-template-columns:1fr 1fr; gap:clamp(20px,3vw,40px); max-width:1100px; width:100%; margin-top:clamp(20px,3vh,36px); align-items:stretch; }
+.comparison-item { text-align:left; padding:clamp(18px,2.2vw,28px); border-radius:14px; background:rgba(0,0,0,0.02); border:1px solid rgba(0,0,0,0.06); opacity:0; transform:scale(0.96); animation:scaleIn 0.6s ease-out forwards; }
+.comparison-item:nth-child(1){animation-delay:.35s}.comparison-item:nth-child(2){animation-delay:.5s}
+@keyframes scaleIn { to { opacity:1; transform:scale(1); } }
+.comparison-item .label { font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:0.14em; margin-bottom:10px; }
+.comparison-item.bad .label, .comparison-item.old .label { color:#ff3b30; }
+.comparison-item.good .label, .comparison-item.new .label { color:#34c759; }
+.comparison-item h3 { font-size:clamp(18px,2.2vw,24px); font-weight:600; margin-bottom:10px; }
+.comparison-item p { font-size:clamp(13px,1.6vw,17px); color:#515154; line-height:1.45; margin-bottom:8px; }
+.comparison-item ul { list-style:none; padding:0; }
+.comparison-item ul li { font-size:clamp(13px,1.55vw,16px); color:#515154; line-height:1.5; padding:4px 0 4px 16px; position:relative; }
+.comparison-item.bad ul li::before, .comparison-item.old ul li::before { content:"-"; position:absolute; left:0; color:#ff3b30; font-weight:600; }
+.comparison-item.good ul li::before, .comparison-item.new ul li::before { content:"+"; position:absolute; left:0; color:#34c759; font-weight:600; }
+.quote-card { margin-top:clamp(18px,2.5vh,28px); padding:clamp(16px,2vw,24px) clamp(20px,2.5vw,30px); border-left:3px solid #007aff; background:rgba(0,122,255,0.04); border-radius:8px; text-align:left; max-width:860px; }
+.quote-card.success { border-left-color:#34c759; background:rgba(52,199,89,0.05); }
+.quote-card.warning { border-left-color:#ff3b30; background:rgba(255,59,48,0.04); }
+.quote-card p { font-size:clamp(14px,1.6vw,18px); color:#1d1d1f; line-height:1.4; font-weight:500; }
+.code-block { background:#1d1d1f; color:#f5f5f7; border-radius:12px; padding:clamp(14px,1.7vw,22px); font-family:'SF Mono','Menlo','Monaco','Consolas',monospace; font-size:clamp(11px,1.35vw,15px); line-height:1.6; text-align:left; margin-top:14px; max-width:920px; width:100%; white-space:pre; overflow-x:auto; }
+.code-block .ck { color:#ff79c6; }
+.code-block .cs { color:#f1fa8c; }
+.code-block .cn { color:#f8f8f2; }
+.code-block .co { color:#6272a4; font-style:italic; }
+.code-block .cf { color:#8be9fd; }
+.code-block .cm { color:#bd93f9; }
+.code-block .cc { color:#50fa7b; }
+.data-table { width:100%; max-width:980px; margin-top:clamp(12px,1.8vh,20px); border-collapse:collapse; font-size:clamp(11px,1.3vw,14px); }
+.data-table th,.data-table td { text-align:left; padding:clamp(6px,1vw,10px) clamp(8px,1.2vw,13px); border-bottom:1px solid rgba(0,0,0,0.07); vertical-align:middle; }
+.data-table th { font-weight:600; border-bottom:2px solid rgba(0,0,0,0.13); background:rgba(0,0,0,0.025); }
+.data-table td { color:#515154; line-height:1.35; }
+.data-table tr:last-child td { border-bottom:none; }
+.data-table td code { background:rgba(0,0,0,0.06); padding:1px 5px; border-radius:3px; font-family:'SF Mono','Menlo','Monaco','Consolas',monospace; font-size:0.95em; color:#1d1d1f; }
+.stat-cards { display:grid; grid-template-columns:repeat(3,1fr); gap:clamp(14px,2vw,22px); max-width:1050px; width:100%; margin-top:clamp(20px,3vh,32px); }
+.stat-card { border:1px solid rgba(0,0,0,0.06); border-radius:14px; padding:clamp(18px,2.2vw,24px); background:#fff; text-align:left; opacity:0; transform:translateY(20px); animation:cardSlideUp 0.55s ease-out forwards; }
+.stat-card:nth-child(1){animation-delay:.35s}.stat-card:nth-child(2){animation-delay:.42s}.stat-card:nth-child(3){animation-delay:.5s}
+.stat-card .big { font-size:clamp(36px,4.4vw,56px); font-weight:700; color:#007aff; line-height:1; letter-spacing:-0.02em; }
+.stat-card .lbl { margin-top:8px; font-size:clamp(13px,1.4vw,16px); font-weight:500; color:#1d1d1f; }
+.stat-card .sub { margin-top:3px; color:#86868b; font-size:clamp(11px,1.1vw,13px); }
+.layer-stack { display:flex; flex-direction:column; gap:8px; max-width:700px; width:100%; margin-top:clamp(18px,2.5vh,28px); }
+.layer { padding:13px 22px; border-radius:12px; background:rgba(0,0,0,0.03); border:1px solid rgba(0,0,0,0.06); font-size:clamp(13px,1.55vw,17px); color:#515154; text-align:left; }
+.layer.top { background:rgba(0,122,255,0.08); border-color:rgba(0,122,255,0.18); color:#1d1d1f; font-weight:500; }
+.arr-box { display:inline-flex; gap:5px; align-items:center; justify-content:center; margin-top:12px; }
+.arr-cell { width:54px; height:40px; border:1px solid rgba(0,0,0,0.1); border-radius:8px; display:flex; align-items:center; justify-content:center; font-family:'SF Mono','Menlo','Monaco','Consolas',monospace; font-size:13px; background:#f5f5f7; color:#1d1d1f; }
+.ser-list { display:flex; flex-direction:column; gap:3px; align-items:center; margin-top:12px; }
+.ser-row { display:flex; border-radius:6px; overflow:hidden; border:1px solid rgba(0,0,0,0.09); }
+.ser-idx { padding:5px 14px; background:rgba(0,122,255,0.08); color:#007aff; font-family:'SF Mono','Menlo','Monaco','Consolas',monospace; font-size:12px; font-weight:600; border-right:1px solid rgba(0,122,255,0.12); min-width:32px; text-align:center; }
+.ser-val { padding:5px 16px; background:#f5f5f7; font-family:'SF Mono','Menlo','Monaco','Consolas',monospace; font-size:12px; color:#1d1d1f; }
+.df-viz { border-collapse:collapse; font-family:'SF Mono','Menlo','Monaco','Consolas',monospace; font-size:12px; margin-top:12px; }
+.df-viz th { background:rgba(0,122,255,0.08); color:#007aff; padding:5px 14px; font-weight:600; border:1px solid rgba(0,122,255,0.15); }
+.df-viz td { padding:5px 14px; border:1px solid rgba(0,0,0,0.07); background:#f5f5f7; color:#1d1d1f; }
+.df-viz .idx { background:rgba(0,0,0,0.03); color:#86868b; font-weight:500; }
+.checklist { list-style:none; padding:0; margin-top:16px; max-width:860px; text-align:left; }
+.checklist li { font-size:clamp(14px,1.65vw,18px); line-height:1.45; padding:9px 0 9px 36px; position:relative; border-bottom:1px solid rgba(0,0,0,0.05); }
+.checklist li:last-child { border-bottom:none; }
+.checklist li::before { content:"✓"; position:absolute; left:0; top:50%; transform:translateY(-50%); width:24px; height:24px; border-radius:50%; background:rgba(0,122,255,0.1); color:#007aff; font-size:12px; font-weight:700; display:flex; align-items:center; justify-content:center; }
+.lang-switcher { position:fixed; top:22px; right:28px; z-index:100; display:flex; gap:2px; background:rgba(255,255,255,0.95); -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px); border:1px solid rgba(0,0,0,0.06); border-radius:50px; padding:3px; box-shadow:0 2px 8px rgba(0,0,0,0.04); }
+.lang-switcher a { font-size:11px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:#86868b; text-decoration:none; padding:5px 12px; border-radius:50px; transition:all 0.2s ease; }
+.lang-switcher a.active { color:#fff; background:#007aff; }
+.lang-switcher a:not(.active):hover { color:#1d1d1f; }
+.slide-indicator { position:fixed; bottom:24px; left:50%; transform:translateX(-50%); font-size:13px; color:#86868b; z-index:100; letter-spacing:0.04em; }
+.nav-hint { position:fixed; bottom:24px; right:24px; font-size:12px; color:#c7c7cc; text-align:right; z-index:100; }
+.lesson-tag { position:fixed; top:24px; left:24px; font-size:11px; font-weight:600; color:#86868b; text-transform:uppercase; letter-spacing:0.16em; z-index:100; }
+@media (max-width:768px) { .comparison-grid,.stat-cards { grid-template-columns:1fr; gap:16px; } .cards-container { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+<div class="lang-switcher"><a href="index.html">RU</a><a href="index-uz.html" class="active">UZ</a><a href="index-en.html">EN</a></div>
+<div class="presentation">
+
+<!-- 1. TITLE -->
+<div class="slide active">
+<div class="slide-content">
+<p class="eyebrow">15-ma'ruza</p>
+<h1>pandas: muammolarni tahlil va ma'lumotlarni tozalash</h1>
+<p class="subtitle">takrorlash · analitik bosqichlari · dataset · besh muammo · tozalash</p>
+</div>
+</div>
+
+<!-- 2. CONTEXT -->
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">45 dan 15-ma'ruza</p>
+<h2>O'quv rejasidagi o'rni</h2>
+<div class="checklist" style="max-width:680px">
+  <li style="color:#34c759">1-10 ma'ruzalar · Python</li>
+  <li style="color:#34c759">11-12 ma'ruzalar · NumPy</li>
+  <li style="color:#34c759">13-14 ma'ruzalar · pandas: obyektlar, turlar, razvedka</li>
+  <li style="color:#007aff;font-weight:600">15-ma'ruza · pandas: ma'lumotlarni tozalash</li>
+  <li style="color:#86868b">16-18 ma'ruzalar · tahlil, vizualizatsiya, SQL</li>
+</div>
+</div>
+</div>
+
+<!-- 3. PANDAS RECAP -->
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Takrorlash</p>
+<h2>pandas: dasturlanadigan jadval</h2>
+<p class="body-text">pandas jadval saqlaydi: belgilangan qatorlar, har xil turdagi ustunlar, qo'lda tsikllarsiz ma'lumot amallari. Har bir bank tranzaksiyasi, har bir buyurtma, har bir foydalanuvchi — DataFramedagi bitta qator.</p>
+<div class="comparison-grid">
+  <div class="comparison-item bad">
+    <div class="label">NumPy massiv</div>
+    <h3>Bir turdagi sonlar</h3>
+    <ul>
+      <li>Ustun nomlari yo'q</li>
+      <li>Butun massiv uchun bitta tur</li>
+      <li>Qator belgilari yo'q</li>
+    </ul>
+  </div>
+  <div class="comparison-item good">
+    <div class="label">pandas DataFrame</div>
+    <h3>Jadval</h3>
+    <ul>
+      <li>Har bir ustunning nomi bor</li>
+      <li>Bitta jadvalda har xil turlar</li>
+      <li>Qator = bitta to'liq tranzaksiya</li>
+    </ul>
+  </div>
+</div>
+</div>
+</div>
+
+<!-- 4. THREE OBJECTS -->
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Takrorlash</p>
+<h2>NumPy massiv, Series, DataFrame</h2>
+<div class="cards-container" style="grid-template-columns:repeat(3,1fr)">
+  <div class="card" style="text-align:center">
+    <h3>NumPy array</h3>
+    <p>Belgilarsiz tekis raqamli massiv</p>
+    <div class="arr-box" style="flex-wrap:wrap;gap:4px;margin-top:10px">
+      <div class="arr-cell">125k</div><div class="arr-cell">45k</div><div class="arr-cell">230k</div>
+    </div>
+    <span class="mono" style="display:block;margin-top:8px;font-size:11px">dtype: int64</span>
+  </div>
+  <div class="card" style="text-align:center">
+    <h3>Series</h3>
+    <p>Massiv + qator indeksi. Bitta ustun.</p>
+    <div class="ser-list">
+      <div class="ser-row"><span class="ser-idx">0</span><span class="ser-val">125 000</span></div>
+      <div class="ser-row"><span class="ser-idx">1</span><span class="ser-val"> 45 000</span></div>
+      <div class="ser-row"><span class="ser-idx">2</span><span class="ser-val">230 000</span></div>
+    </div>
+    <span class="mono" style="display:block;margin-top:6px;font-size:11px">Name: amount</span>
+  </div>
+  <div class="card" style="text-align:center">
+    <h3>DataFrame</h3>
+    <p>Umumiy indeksli bir nechta Series dan iborat jadval</p>
+    <table class="df-viz" style="margin:10px auto 0">
+      <tr><th class="idx"></th><th>merchant</th><th>amount</th></tr>
+      <tr><td class="idx">0</td><td>Korzinka</td><td>125 000</td></tr>
+      <tr><td class="idx">1</td><td>Evos</td><td>45 000</td></tr>
+      <tr><td class="idx">2</td><td>Texnomart</td><td>230 000</td></tr>
+    </table>
+  </div>
+</div>
+</div>
+</div>
+
+<!-- 5. FIVE STAGES -->
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Bosqichlar</p>
+<h2>Analitikaning ma'lumotlar bilan ishlashning besh bosqichi</h2>
+<div class="cards-container" style="grid-template-columns:repeat(5,1fr)">
+  <div class="card">
+    <div class="num">1</div>
+    <h3>Yuklash</h3>
+    <p>Faylni DataFramega o'qish. <code>read_csv</code></p>
+  </div>
+  <div class="card">
+    <div class="num">2</div>
+    <h3>Razvedka</h3>
+    <p>Ichida nima borligini tushunish. <code>head</code>, <code>info</code>, <code>describe</code></p>
+  </div>
+  <div class="card">
+    <div class="num">3</div>
+    <h3>Muammolar</h3>
+    <p>Nomuvofiqliklarni aniqlash. <code>isna</code>, <code>duplicated</code>, <code>value_counts</code></p>
+  </div>
+  <div class="card" style="background:rgba(0,122,255,0.06);border-color:rgba(0,122,255,0.2)">
+    <div class="num">4</div>
+    <h3>Tozalash</h3>
+    <p>Tartibga keltirish. <code>to_numeric</code>, <code>fillna</code>, <code>astype</code></p>
+  </div>
+  <div class="card">
+    <div class="num">5</div>
+    <h3>Tahlil</h3>
+    <p>Javoblarni hisoblash. <code>groupby</code>, <code>merge</code>, <code>pivot_table</code></p>
+  </div>
+</div>
+<div class="quote-card" style="margin-top:clamp(16px,2.5vh,24px)">
+  <p>O'tgan darsda 3-bosqich yakunlandi: muammolar jurnalga kiritildi. Bugun ularni bartaraf etamiz va tahlilga o'tamiz.</p>
+</div>
+</div>
+</div>
+
+<!-- 6. RECON COMMANDS -->
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">2-3 bosqichlar</p>
+<h2>Razvedka buyruqlari: ma'lumotlardagi muammolarni topish</h2>
+<table class="data-table">
+  <tr><th>Buyruq</th><th>Nima ko'rsatadi</th><th>Nima qidiramiz</th></tr>
+  <tr><td><code>df.shape</code></td><td>Qatorlar va ustunlar soni</td><td>Fayl hajmi</td></tr>
+  <tr><td><code>df.head()</code></td><td>Dastlabki 5 qator</td><td>Ma'lumotlarning umumiy ko'rinishi</td></tr>
+  <tr><td><code>df.info()</code></td><td>Ustun turlari, bo'sh bo'lmagan qiymatlar soni</td><td>Noto'g'ri turlar, bo'shliqlar</td></tr>
+  <tr><td><code>df.describe()</code></td><td>min, max, o'rtacha, kvartillar</td><td>Chiqindilar, manfiy sonlar</td></tr>
+  <tr><td><code>df.isna().sum()</code></td><td>Ustunlar bo'yicha bo'shliqlar soni</td><td>Qayerda va qancha NaN</td></tr>
+  <tr><td><code>df.duplicated().sum()</code></td><td>To'liq dublikat qatorlar soni</td><td>Takroriy yozuvlar</td></tr>
+  <tr><td><code>s.value_counts()</code></td><td>Ustun qiymatlarining chastotalari</td><td>Yozuvdagi xilma-xillik</td></tr>
+  <tr><td><code>s.nunique()</code></td><td>Noyob qiymatlar soni</td><td>Kategoriyada nechta variant</td></tr>
+</table>
+</div>
+</div>
+
+<!-- 7. DATASET -->
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Dataset</p>
+<h2>Bir kunlik karta tranzaksiyalari to'plami</h2>
+<p class="body-text">Fayl <code>l13_transactions_raw.csv</code>. Billingdan qayta ishlanmasdan kelgan. Ustunlar: sana, karta, savdogar, kategoriya, viloyat, summa, holat, online-bayroq, cashback, MCC kodi.</p>
+<div class="stat-cards">
+  <div class="stat-card">
+    <div class="big">50 120</div>
+    <div class="lbl">fayldagi qatorlar</div>
+    <div class="sub">kunlik tranzaksiyalar</div>
+  </div>
+  <div class="stat-card">
+    <div class="big">10</div>
+    <div class="lbl">ustunlar</div>
+    <div class="sub">sana, karta, summa...</div>
+  </div>
+  <div class="stat-card">
+    <div class="big">5</div>
+    <div class="lbl">muammo</div>
+    <div class="sub">razvedka buyruqlari bilan topildi</div>
+  </div>
+</div>
+</div>
+</div>
+
+<!-- 8. PROBLEMS OVERVIEW -->
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">3-bosqich</p>
+<h2>Xom fayldagi besh muammo</h2>
+<div class="cards-container" style="grid-template-columns:repeat(5,1fr)">
+  <div class="card">
+    <div class="num">1</div>
+    <h3>Ustun nomlari</h3>
+    <p>Chekkalarida bo'shliqlar va nomda o'lchov birliklari.</p>
+  </div>
+  <div class="card">
+    <div class="num">2</div>
+    <h3>Summa matn sifatida</h3>
+    <p>Sonlar bo'shliq, vergul va 'н/д' bilan satr sifatida yozilgan.</p>
+  </div>
+  <div class="card">
+    <div class="num">3</div>
+    <h3>Dublikatlar</h3>
+    <p>120 qator ikki marta uchraydi.</p>
+  </div>
+  <div class="card">
+    <div class="num">4</div>
+    <h3>Viloyat: 33 variant</h3>
+    <p>'Toshkent', '  Toshkent', 'toshkent' - pandas uchun bular turli qiymatlar.</p>
+  </div>
+  <div class="card">
+    <div class="num">5</div>
+    <h3>Bo'shliqlar</h3>
+    <p>cashback va region ustunlarida NaN mavjud.</p>
+  </div>
+</div>
+</div>
+</div>
+
+<!-- 9. PROBLEM 1 -->
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">1-muammo</p>
+<h2>Ustun nomlarida bo'shliqlar va o'lchov birliklari</h2>
+<p class="body-text"><code>list(df.columns)</code> buyrug'i haqiqiy nomlarni ko'rsatadi. Nomida bo'shliq bor ustunга nuqta orqali murojaat qilib bo'lmaydi, o'lchov birliklari esa kodni chigallаshtiradi.</p>
+<div class="code-block"><span class="co"># df.columns tozalashdan oldin</span>
+[<span class="cs">' DateTime'</span>, <span class="cs">'Card ID'</span>, <span class="cs">'Merchant '</span>, <span class="cs">'Category'</span>,
+ <span class="cs">'Region'</span>, <span class="cs">'Amount (UZS)'</span>, <span class="cs">'Status'</span>,
+ <span class="cs">'Is Online'</span>, <span class="cs">'Cashback (UZS)'</span>, <span class="cs">'MCC'</span>]</div>
+<div class="quote-card warning" style="margin-top:clamp(14px,2vh,20px)">
+  <p>' DateTime' boshidagi bo'shliq ustun nomining bir qismi. Nuqta orqali murojaat mumkin emas: <code>df. DateTime</code> xato beradi. Ishni boshlashdan oldin normalizatsiya zarur.</p>
+</div>
+</div>
+</div>
+
+<!-- 10. PROBLEM 2 -->
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">2-muammo</p>
+<h2>amount ustuni sonlar o'rniga satrlar saqlaydi</h2>
+<p class="body-text"><code>df.info()</code> Amount ustuni uchun <code>object</code> turini ko'rsatadi. Uch sabab: bo'shliq ajratuvchi, vergul ajratuvchi va summa yo'q joyda matnli qiymat.</p>
+<div class="code-block"><span class="co"># df["Amount (UZS)"].head(8)</span>
+<span class="cm">0</span>    <span class="cs">'154 700'</span>    <span class="co"># minglik ajratuvchi sifatida bo'shliq</span>
+<span class="cm">1</span>    <span class="cs">'181,000'</span>    <span class="co"># ajratuvchi sifatida vergul</span>
+<span class="cm">2</span>    <span class="cs">'2300000'</span>    <span class="co"># ajratuvchisiz</span>
+<span class="cm">3</span>    <span class="cs">'н/д'</span>        <span class="co"># summa yozilmagan</span>
+<span class="cm">4</span>    <span class="cs">'45 900'</span>
+<span class="cn">Name: Amount (UZS), dtype: object</span></div>
+</div>
+</div>
+
+<!-- 11. PROBLEMS 3-4-5 -->
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">3-4-5 muammolar</p>
+<h2>Dublikatlar, viloyatlardagi xilma-xillik, bo'shliqlar</h2>
+<div class="cards-container" style="grid-template-columns:repeat(3,1fr)">
+  <div class="card">
+    <h3>Dublikatlar</h3>
+    <p><code>df.duplicated().sum()</code> 120 qaytardi. Bitta tranzaksiya ikki marta chiqarilgan.</p>
+    <span class="mono" style="margin-top:10px">120 ta dublikat qator</span>
+  </div>
+  <div class="card">
+    <h3>Viloyat: 8 o'rniga 33 variant</h3>
+    <p><code>value_counts()</code> 'Toshkent', '  Toshkent', 'toshkent', 'TOSHKENT' ko'rsatdi - har xil registr va bo'shliqlar bitta qiymatni bo'lib yuboradi.</p>
+    <span class="mono" style="margin-top:10px">33 ta noyob variant</span>
+  </div>
+  <div class="card">
+    <h3>Bo'shliqlar</h3>
+    <p><code>isna().sum()</code>: cashbackda ko'p NaN (cashback shunchaki bo'lmagan), regionda bir necha yuz (ma'lumot kelmagan).</p>
+    <span class="mono" style="margin-top:10px">cashback: ~4 000 NaN</span>
+  </div>
+</div>
+<div class="quote-card" style="margin-top:clamp(14px,2vh,20px)">
+  <p>cashback va regiondagi bo'shliqlar har xil ma'noga ega. cashback = 0 (cashback bo'lmagan). region = 'Noma'lum' (ma'lumot yo'q). Ularni alohida qayta ishlaymiz.</p>
+</div>
+</div>
+</div>
+
+<!-- 12. CLEANING TOOLS -->
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">4-bosqich</p>
+<h2>Ma'lumotlarni tozalash vositalari</h2>
+<div class="cards-container" style="grid-template-columns:repeat(2,1fr)">
+  <div class="card">
+    <h3>.str metodlar</h3>
+    <p><code>strip</code>, <code>lower</code>, <code>title</code>, <code>replace</code>. Bo'shliqlarni olib tashlaydi, registrni moslashtiradi, belgilarni o'chiradi. <code>.str.</code> orqali satr Seriesiga qo'llanadi.</p>
+  </div>
+  <div class="card">
+    <h3>pd.to_numeric(errors="coerce")</h3>
+    <p>Matnni songa aylantiradi. Konvertatsiya qilib bo'lmaydigan hamma narsa NaN bo'ladi. 'н/д' da xato bermaydi.</p>
+  </div>
+  <div class="card">
+    <h3>drop_duplicates / dropna / fillna</h3>
+    <p><code>drop_duplicates</code> takrorlarni o'chiradi. <code>dropna</code> NaN li qatorlarni o'chiradi. <code>fillna(x)</code> NaN ni x qiymat bilan to'ldiradi.</p>
+  </div>
+  <div class="card">
+    <h3>astype("category")</h3>
+    <p>Takrorlanuvchi matnni ixcham raqamli turga o'tkazadi. Xotirani tejaydi. Noyob qiymatlar bir marta saqlanadi.</p>
+  </div>
+</div>
+</div>
+</div>
+
+<!-- 13. CLEANING STEPS -->
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Tozalash</p>
+<h2>Xom fayldan toza jadvalga sakkiz qadam</h2>
+<table class="data-table">
+  <tr><th>#</th><th>Qadam</th><th>Buyruq</th><th>Nima qiladi</th></tr>
+  <tr><td>1</td><td>Ustun nomlari</td><td><code>str.strip().str.lower().str.replace()</code></td><td>Bo'shliq va o'lchov birliklarini olib tashlaydi</td></tr>
+  <tr><td>2</td><td>Dublikatlar</td><td><code>drop_duplicates()</code></td><td>120 ta takroriy qatorni o'chiradi</td></tr>
+  <tr><td>3</td><td>Summa songa</td><td><code>str.replace() + to_numeric(errors="coerce")</code></td><td>Bo'shliq/vergulni olib tashlaydi, 'н/д' -> NaN</td></tr>
+  <tr><td>4</td><td>Sana</td><td><code>pd.to_datetime()</code></td><td>Satrni datetime turiga o'tkazadi</td></tr>
+  <tr><td>5</td><td>Viloyat</td><td><code>str.strip().str.title().fillna("Noma'lum")</code></td><td>33 variantdan 8 ta shaharga</td></tr>
+  <tr><td>6</td><td>Online bayroq</td><td><code>map({"Y": True, "N": False})</code></td><td>Y/N matnini bool turga o'tkazadi</td></tr>
+  <tr><td>7</td><td>Cashback</td><td><code>fillna(0)</code></td><td>NaN -> 0 (cashback bo'lmagan)</td></tr>
+  <tr><td>8</td><td>Kategoriyalar</td><td><code>astype("category")</code></td><td>Matnli ustunlarni ixcham turga o'tkazadi</td></tr>
+</table>
+</div>
+</div>
+
+<!-- 14. RESULT -->
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Natija</p>
+<h2>Toza jadval: 49 850 qator, nol bo'shliq</h2>
+<div class="comparison-grid">
+  <div class="comparison-item old">
+    <div class="label">Xom fayl</div>
+    <h3>l13_transactions_raw.csv</h3>
+    <ul>
+      <li>50 120 qator</li>
+      <li>Bo'shliq va o'lchov birliklari bilan nomlar</li>
+      <li>Summa object-satr sifatida</li>
+      <li>Viloyatning 33 varianti</li>
+      <li>120 ta dublikat qator</li>
+      <li>cashback va regionda NaN</li>
+    </ul>
+  </div>
+  <div class="comparison-item new">
+    <div class="label">Toza fayl</div>
+    <h3>l15_clean.csv</h3>
+    <ul>
+      <li>49 850 qator</li>
+      <li>snake_case da nomlar</li>
+      <li>Summa: float64</li>
+      <li>8 ta viloyat varianti (category)</li>
+      <li>Dublikatlar o'chirilgan</li>
+      <li>Nol NaN</li>
+    </ul>
+  </div>
+</div>
+<div class="quote-card success" style="margin-top:clamp(12px,2vh,20px)">
+  <p>Toza ma'lumotlar: to'g'ri turlar, kutilmagan NaN yo'q, matnli ustunlarda bir xil qiymatlar. Keyingi darsda tahlilga o'tamiz.</p>
+</div>
+</div>
+</div>
+
+<!-- 15. QUESTION -->
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow" style="color:#ff9500">Savol</p>
+<h2>Nima uchun df["amount"] = df["amount"].astype(float) yozib bo'lmaydi?</h2>
+<p class="body-text">Ustunda '154 700' va 'н/д' satrlari bor. To'g'ridan-to'g'ri konvertatsiya qilishga harakat qilsak nima bo'ladi?</p>
+</div>
+</div>
+
+<!-- 16. ANSWER -->
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow" style="color:#34c759">Javob</p>
+<h2>astype(float) ValueError beradi: 'н/д' va bo'shliqlar bilan nima qilishni bilmaydi</h2>
+<div class="quote-card success">
+  <p><code>to_numeric(errors="coerce")</code> istisno bermaydi: konvertatsiya qilib bo'lmaydigan qiymatlar NaN oladi. '154 700' dagi bo'shliqni oldindan <code>str.replace</code> bilan olib tashlash kerak, aks holda u ham NaN bo'ladi.</p>
+</div>
+<div class="code-block"><span class="co"># Noto'g'ri - ValueError beradi</span>
+<span class="cn">df</span>[<span class="cs">"amount"</span>] = <span class="cn">df</span>[<span class="cs">"amount"</span>].<span class="cf">astype</span>(<span class="cf">float</span>)
+
+<span class="co"># To'g'ri - avval tozalaymiz, keyin konvertatsiya qilamiz</span>
+<span class="cn">df</span>[<span class="cs">"amount"</span>] = <span class="cn">pd</span>.<span class="cf">to_numeric</span>(
+    <span class="cn">df</span>[<span class="cs">"amount"</span>].<span class="cf">astype</span>(<span class="cf">str</span>).<span class="cf">str</span>.<span class="cf">replace</span>(<span class="cs">r"[ ,]"</span>, <span class="cs">""</span>, regex=<span class="ck">True</span>),
+    errors=<span class="cs">"coerce"</span>)</div>
+</div>
+</div>
+
+<!-- 17. CLASSWORK -->
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Mustaqil ish</p>
+<h2>Xuddi shu andoza - yangi ma'lumotlar</h2>
+<p class="body-text">Fayl <code>concert_tickets.csv</code>, 2 540 qator. 2026 yil mart-may oylarida bilet sotishlar. Kamida o'nta muammo bor - ularni razvedka buyruqlari bilan mustaqil topish kerak.</p>
+<div class="cards-container" style="grid-template-columns:repeat(3,1fr);margin-top:clamp(16px,2.5vh,28px)">
+  <div class="card">
+    <div class="num">1</div>
+    <h3>Muammolarni topish</h3>
+    <p>Razvedka buyruqlari bilan mustaqil. Noutbukdagi jurnalga yozish.</p>
+  </div>
+  <div class="card">
+    <div class="num">2</div>
+    <h3>Tozalash</h3>
+    <p>Xuddi shu vositalar. Har bir muammo uchun qoidani qayd etish.</p>
+  </div>
+  <div class="card">
+    <div class="num">3</div>
+    <h3>Xulosalar hisoblash</h3>
+    <p>Tumanlar bo'yicha tushum va o'rtacha reyting bo'yicha top-5 restoran.</p>
+  </div>
+</div>
+<div class="quote-card" style="margin-top:clamp(14px,2vh,20px)">
+  <p>Turli talabalarning yakuniy raqamlari farq qilishi mumkin - har bir qaror asoslangan bo'lsa bu normal. Muammolar jurnali majburiy.</p>
+</div>
+</div>
+</div>
+
+<!-- 18. CHEATSHEET -->
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Yordam varaqasi</p>
+<h2>Barcha asosiy narsalar bitta slaydda</h2>
+<div class="cards-container" style="grid-template-columns:repeat(3,1fr)">
+  <div class="card">
+    <h3>DataFrame</h3>
+    <p>Jadval. Umumiy qator indeksli har xil turdagi ustunlar.</p>
+  </div>
+  <div class="card">
+    <h3>Series</h3>
+    <p>Bitta ustun. NumPy massiv plyus nomlangan indeks.</p>
+  </div>
+  <div class="card">
+    <h3>read_csv / info / describe</h3>
+    <p>Faylni yuklash, turlar va bo'sh bo'lmagan qiymatlarni ko'rish, statistika olish.</p>
+  </div>
+  <div class="card">
+    <h3>isna / duplicated / value_counts</h3>
+    <p>Bo'shliqlar, dublikatlar va matnli ustunlardagi xilma-xillikni topish.</p>
+  </div>
+  <div class="card">
+    <h3>to_numeric(errors="coerce")</h3>
+    <p>Matnni songa aylantirish. Konvertatsiya qilib bo'lmaydigan qiymatlar NaN bo'ladi.</p>
+  </div>
+  <div class="card">
+    <h3>to_datetime</h3>
+    <p>Satrni datetime turiga aylantirish. Sana va vaqt amallari ochiladi.</p>
+  </div>
+  <div class="card">
+    <h3>str.strip / str.title</h3>
+    <p>Chekkalaridagi bo'shliqlarni olib tashlash, har bir so'zni bosh harf bilan yozish.</p>
+  </div>
+  <div class="card">
+    <h3>drop_duplicates / fillna</h3>
+    <p>Takroriy qatorlarni o'chirish. Bo'shliqlarni qiymat bilan to'ldirish.</p>
+  </div>
+  <div class="card">
+    <h3>astype("category")</h3>
+    <p>Takrorlanuvchi matnni ixcham raqamli turga aylantirish.</p>
+  </div>
+</div>
+</div>
+</div>
+
+<!-- 19. SELF CHECK -->
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">O'z-o'zini tekshirish</p>
+<ol style="text-align:left;max-width:860px;font-size:clamp(14px,1.55vw,17px);line-height:1.8;padding-left:24px">
+  <li>DataFrame NumPy massividan qanday farq qiladi?</li>
+  <li>Barcha ustunlar turlarini va bo'sh bo'lmagan qiymatlar sonini qaysi buyruq ko'rsatadi?</li>
+  <li>Nima uchun sonli ustun <code>object</code> turiga ega bo'lishi mumkin?</li>
+  <li>Ustunda 'Toshkent' va 'toshkent' bo'lsa <code>df["region"].value_counts()</code> nima qaytaradi?</li>
+  <li><code>to_numeric(errors="coerce")</code> <code>astype(float)</code> dan qanday farq qiladi?</li>
+  <li>Nima uchun <code>to_numeric</code> dan oldin <code>str.replace(" ", "")</code> ishlatish kerak?</li>
+  <li><code>fillna(0)</code> va <code>dropna()</code> o'rtasidagi farq nima?</li>
+  <li><code>astype("category")</code> qanday ma'lumot turini beradi va nima uchun kerak?</li>
+</ol>
+</div>
+</div>
+
+<!-- 20. QUESTIONS -->
+<div class="slide">
+<div class="slide-content">
+<h2>Savollar?</h2>
+</div>
+</div>
+
+</div>
+<div class="lesson-tag">15-ma'ruza · pandas: ma'lumotlarni tozalash</div>
+<div class="slide-indicator"><span id="current-slide">1</span> / <span id="total-slides">1</span></div>
+<div class="nav-hint">→ yoki Space keyingisi<br/>← orqaga</div>
+<script>
+let currentSlide = 0;
+const slides = document.querySelectorAll('.slide');
+const totalSlides = slides.length;
+document.getElementById('total-slides').textContent = totalSlides;
+function showSlide(n) {
+    slides[currentSlide].classList.remove('active');
+    currentSlide = (n + totalSlides) % totalSlides;
+    slides[currentSlide].classList.add('active');
+    document.getElementById('current-slide').textContent = currentSlide + 1;
+    const sc = slides[currentSlide].querySelector('.slide-content');
+    sc.style.animation = 'none'; void sc.offsetHeight; sc.style.animation = null;
+    const animated = slides[currentSlide].querySelectorAll('.card,.comparison-item,.stat-card');
+    animated.forEach(el => { const orig = el.style.animation; el.style.animation = 'none'; void el.offsetHeight; el.style.animation = orig; });
+}
+function nextSlide() { showSlide(currentSlide + 1); }
+function prevSlide() { showSlide(currentSlide - 1); }
+document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); nextSlide(); }
+    else if (e.key === 'ArrowLeft') { e.preventDefault(); prevSlide(); }
+});
+let touchStartX = 0;
+document.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; });
+document.addEventListener('touchend', e => { const dx = e.changedTouches[0].screenX - touchStartX; if (dx < -50) nextSlide(); else if (dx > 50) prevSlide(); });
+</script>
+</body>
+</html>

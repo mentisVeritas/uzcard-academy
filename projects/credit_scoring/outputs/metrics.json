@@ -1,0 +1,108 @@
+{
+  "split": [
+    {
+      "split": "train",
+      "n": 4375,
+      "bad": 479,
+      "bad_rate": 0.1095,
+      "issue_from": "2023-06-02",
+      "issue_to": "2024-02-29"
+    },
+    {
+      "split": "valid",
+      "n": 956,
+      "bad": 108,
+      "bad_rate": 0.113,
+      "issue_from": "2024-03-01",
+      "issue_to": "2024-04-30"
+    },
+    {
+      "split": "test",
+      "n": 543,
+      "bad": 69,
+      "bad_rate": 0.1271,
+      "issue_from": "2024-05-01",
+      "issue_to": "2024-05-31"
+    }
+  ],
+  "features": {
+    "categorical": [
+      "channel",
+      "purpose",
+      "gender",
+      "region",
+      "customer_segment"
+    ],
+    "numeric": [
+      "requested_amount_uzs",
+      "term_months",
+      "declared_income_uzs",
+      "employment_months",
+      "age_at_decision",
+      "bureau_score",
+      "existing_debt_uzs",
+      "active_loans_cnt",
+      "inq_cnt_6m",
+      "txn_approved_6m",
+      "txn_declined_6m",
+      "spend_6m",
+      "salary_in_6m",
+      "salary_to_declared_ratio",
+      "amount_to_income"
+    ]
+  },
+  "models": {
+    "logistic_regression": {
+      "train": {
+        "auc": 0.6798,
+        "gini": 0.3597,
+        "ks": 0.2992
+      },
+      "valid": {
+        "auc": 0.6675,
+        "gini": 0.335,
+        "ks": 0.2979
+      },
+      "test": {
+        "auc": 0.6623,
+        "gini": 0.3246,
+        "ks": 0.2861
+      }
+    },
+    "gradient_boosting": {
+      "train": {
+        "auc": 0.8545,
+        "gini": 0.709,
+        "ks": 0.5495
+      },
+      "valid": {
+        "auc": 0.6845,
+        "gini": 0.369,
+        "ks": 0.2905
+      },
+      "test": {
+        "auc": 0.6389,
+        "gini": 0.2779,
+        "ks": 0.2706
+      }
+    },
+    "lightgbm": {
+      "train": {
+        "auc": 0.9745,
+        "gini": 0.949,
+        "ks": 0.8855
+      },
+      "valid": {
+        "auc": 0.6753,
+        "gini": 0.3507,
+        "ks": 0.2798
+      },
+      "test": {
+        "auc": 0.6564,
+        "gini": 0.3128,
+        "ks": 0.266
+      }
+    }
+  },
+  "best_model": "logistic_regression"
+}

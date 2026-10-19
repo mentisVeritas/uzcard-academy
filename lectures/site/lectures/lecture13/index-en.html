@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>pandas: data and types · Lecture 12</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700;800&display=swap');
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system,BlinkMacSystemFont,'Inter','SF Pro Display','Segoe UI',Roboto,sans-serif; background:#FFFFFF; color:#1d1d1f; line-height:1.1; overflow:hidden; -webkit-font-smoothing:antialiased; }
+.presentation { width:100vw; height:100vh; position:relative; }
+.slide { width:100%; height:100%; display:none; align-items:center; justify-content:center; position:absolute; top:0; left:0; padding:clamp(40px,6vh,80px) clamp(40px,6vw,80px); text-align:center; }
+.slide.active { display:flex; flex-direction:column; }
+.slide-content { max-width:1200px; width:100%; margin:0 auto; opacity:0; transform:translateY(20px); animation:fadeInUp 0.7s ease-out 0.15s forwards; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+@keyframes fadeInUp { to { opacity:1; transform:translateY(0); } }
+h1 { font-size:clamp(40px,6.5vw,96px); font-weight:700; letter-spacing:-0.025em; line-height:0.95; margin-bottom:clamp(16px,2.5vh,32px); }
+h2 { font-size:clamp(28px,4vw,56px); font-weight:600; letter-spacing:-0.02em; line-height:1.05; margin-bottom:clamp(16px,2vh,28px); }
+.subtitle { font-size:clamp(18px,2.2vw,28px); font-weight:400; color:#86868b; margin-bottom:clamp(20px,3vh,40px); line-height:1.3; max-width:900px; }
+.eyebrow { font-size:clamp(13px,1.2vw,16px); font-weight:600; color:#007aff; text-transform:uppercase; letter-spacing:0.18em; margin-bottom:18px; }
+.body-text { font-size:clamp(15px,1.8vw,22px); font-weight:400; color:#515154; line-height:1.45; max-width:820px; margin:0 auto; }
+code { font-family:'SF Mono','Menlo','Monaco','Consolas',monospace; font-size:0.9em; }
+.highlight { color:#007aff; font-weight:500; }
+.cards-container { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:clamp(14px,2vw,22px); margin-top:clamp(20px,3vh,36px); max-width:1100px; width:100%; }
+.card { background:rgba(0,0,0,0.025); border:1px solid rgba(0,0,0,0.06); border-radius:14px; padding:clamp(18px,2.2vw,26px); text-align:left; opacity:0; transform:translateY(20px); animation:cardSlideUp 0.55s ease-out forwards; }
+.card:nth-child(1){animation-delay:.35s}.card:nth-child(2){animation-delay:.42s}.card:nth-child(3){animation-delay:.5s}.card:nth-child(4){animation-delay:.58s}.card:nth-child(5){animation-delay:.66s}.card:nth-child(6){animation-delay:.74s}
+@keyframes cardSlideUp { to { opacity:1; transform:translateY(0); } }
+.card h3 { font-size:clamp(15px,1.8vw,20px); font-weight:600; margin-bottom:7px; color:#1d1d1f; }
+.card p { font-size:clamp(12px,1.45vw,15px); color:#6e6e73; line-height:1.4; }
+.card .mono { font-family:'SF Mono','Menlo','Monaco','Consolas',monospace; font-size:clamp(11px,1.3vw,13px); background:rgba(0,0,0,0.05); padding:2px 6px; border-radius:3px; display:block; margin-top:6px; color:#007aff; }
+.comparison-grid { display:grid; grid-template-columns:1fr 1fr; gap:clamp(20px,3vw,40px); max-width:1100px; width:100%; margin-top:clamp(20px,3vh,36px); align-items:stretch; }
+.comparison-item { text-align:left; padding:clamp(18px,2.2vw,28px); border-radius:14px; background:rgba(0,0,0,0.02); border:1px solid rgba(0,0,0,0.06); opacity:0; transform:scale(0.96); animation:scaleIn 0.6s ease-out forwards; }
+.comparison-item:nth-child(1){animation-delay:.35s}.comparison-item:nth-child(2){animation-delay:.5s}
+@keyframes scaleIn { to { opacity:1; transform:scale(1); } }
+.comparison-item .label { font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:0.14em; margin-bottom:10px; }
+.comparison-item.bad .label, .comparison-item.old .label { color:#ff3b30; }
+.comparison-item.good .label, .comparison-item.new .label { color:#34c759; }
+.comparison-item h3 { font-size:clamp(18px,2.2vw,24px); font-weight:600; margin-bottom:10px; }
+.comparison-item p { font-size:clamp(13px,1.6vw,17px); color:#515154; line-height:1.45; margin-bottom:8px; }
+.comparison-item ul { list-style:none; padding:0; }
+.comparison-item ul li { font-size:clamp(13px,1.55vw,16px); color:#515154; line-height:1.5; padding:4px 0 4px 16px; position:relative; }
+.comparison-item.bad ul li::before, .comparison-item.old ul li::before { content:"-"; position:absolute; left:0; color:#ff3b30; font-weight:600; }
+.comparison-item.good ul li::before, .comparison-item.new ul li::before { content:"+"; position:absolute; left:0; color:#34c759; font-weight:600; }
+.quote-card { margin-top:clamp(18px,2.5vh,28px); padding:clamp(16px,2vw,24px) clamp(20px,2.5vw,30px); border-left:3px solid #007aff; background:rgba(0,122,255,0.04); border-radius:8px; text-align:left; max-width:860px; }
+.quote-card.success { border-left-color:#34c759; background:rgba(52,199,89,0.05); }
+.quote-card.warning { border-left-color:#ff3b30; background:rgba(255,59,48,0.04); }
+.quote-card p { font-size:clamp(14px,1.6vw,18px); color:#1d1d1f; line-height:1.4; font-weight:500; }
+.code-block { background:#1d1d1f; color:#f5f5f7; border-radius:12px; padding:clamp(14px,1.7vw,22px); font-family:'SF Mono','Menlo','Monaco','Consolas',monospace; font-size:clamp(11px,1.35vw,15px); line-height:1.6; text-align:left; margin-top:14px; max-width:920px; width:100%; white-space:pre; overflow-x:auto; }
+.code-block .ck { color:#ff79c6; }
+.code-block .cs { color:#f1fa8c; }
+.code-block .cn { color:#f8f8f2; }
+.code-block .co { color:#6272a4; font-style:italic; }
+.code-block .cf { color:#8be9fd; }
+.code-block .cm { color:#bd93f9; }
+.code-block .cc { color:#50fa7b; }
+.checklist { list-style:none; padding:0; margin-top:16px; max-width:860px; text-align:left; }
+.checklist li { font-size:clamp(14px,1.65vw,18px); line-height:1.45; padding:9px 0 9px 36px; position:relative; border-bottom:1px solid rgba(0,0,0,0.05); }
+.checklist li:last-child { border-bottom:none; }
+.checklist li::before { content:"✓"; position:absolute; left:0; top:50%; transform:translateY(-50%); width:24px; height:24px; border-radius:50%; background:rgba(0,122,255,0.1); color:#007aff; font-size:12px; font-weight:700; display:flex; align-items:center; justify-content:center; }
+.steps-row { display:grid; grid-template-columns:repeat(3,1fr); gap:clamp(20px,3vw,40px); max-width:1000px; margin-top:clamp(24px,4vh,40px); }
+.step { text-align:center; opacity:0; transform:translateY(20px); animation:cardSlideUp 0.55s ease-out forwards; }
+.step:nth-child(1){animation-delay:.35s}.step:nth-child(2){animation-delay:.5s}.step:nth-child(3){animation-delay:.65s}
+.step .step-num { display:inline-flex; width:52px; height:52px; border-radius:50%; background:#007aff; color:#fff; font-size:20px; font-weight:700; align-items:center; justify-content:center; margin-bottom:14px; }
+.step h3 { font-size:clamp(17px,2vw,22px); font-weight:600; margin-bottom:8px; }
+.step p { font-size:clamp(13px,1.5vw,16px); color:#6e6e73; line-height:1.45; }
+.flow { display:grid; grid-template-columns:1fr 1fr; gap:10px 48px; max-width:900px; width:100%; margin-top:clamp(20px,3vh,32px); text-align:left; }
+.flow .it { display:flex; align-items:center; gap:12px; font-size:clamp(14px,1.6vw,19px); color:#1d1d1f; }
+.flow .it b { display:inline-flex; width:30px; height:30px; border-radius:50%; background:rgba(0,122,255,0.1); color:#007aff; font-size:14px; font-weight:700; align-items:center; justify-content:center; flex:0 0 auto; }
+.flow .it i { color:#86868b; font-size:0.82em; font-style:normal; margin-left:auto; font-family:'SF Mono','Menlo','Monaco','Consolas',monospace; }
+.layer-stack { display:flex; flex-direction:column; gap:8px; max-width:560px; width:100%; margin-top:clamp(18px,2.5vh,28px); }
+.layer { padding:13px 22px; border-radius:12px; background:rgba(0,0,0,0.03); border:1px solid rgba(0,0,0,0.06); font-size:clamp(13px,1.55vw,17px); color:#515154; text-align:left; }
+.layer.top { background:rgba(0,122,255,0.08); border-color:rgba(0,122,255,0.18); color:#1d1d1f; font-weight:500; }
+.lang-switcher { position:fixed; top:22px; right:28px; z-index:100; display:flex; gap:2px; background:rgba(255,255,255,0.95); -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px); border:1px solid rgba(0,0,0,0.06); border-radius:50px; padding:3px; box-shadow:0 2px 8px rgba(0,0,0,0.04); }
+.lang-switcher a { font-size:11px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:#86868b; text-decoration:none; padding:5px 12px; border-radius:50px; transition:all 0.2s ease; }
+.lang-switcher a.active { color:#fff; background:#007aff; }
+.lang-switcher a:not(.active):hover { color:#1d1d1f; }
+.slide-indicator { position:fixed; bottom:24px; left:50%; transform:translateX(-50%); font-size:13px; color:#86868b; z-index:100; letter-spacing:0.04em; }
+.nav-hint { position:fixed; bottom:24px; right:24px; font-size:12px; color:#c7c7cc; text-align:right; z-index:100; }
+.lesson-tag { position:fixed; top:24px; left:24px; font-size:11px; font-weight:600; color:#86868b; text-transform:uppercase; letter-spacing:0.16em; z-index:100; }
+.arr-box { display:inline-flex; gap:5px; align-items:center; justify-content:center; margin-top:12px; }
+.arr-cell { width:54px; height:40px; border:1px solid rgba(0,0,0,0.1); border-radius:8px; display:flex; align-items:center; justify-content:center; font-family:'SF Mono','Menlo','Monaco','Consolas',monospace; font-size:13px; background:#f5f5f7; color:#1d1d1f; }
+.ser-list { display:flex; flex-direction:column; gap:3px; align-items:center; margin-top:12px; }
+.ser-row { display:flex; border-radius:6px; overflow:hidden; border:1px solid rgba(0,0,0,0.09); }
+.ser-idx { padding:5px 14px; background:rgba(0,122,255,0.08); color:#007aff; font-family:'SF Mono','Menlo','Monaco','Consolas',monospace; font-size:12px; font-weight:600; border-right:1px solid rgba(0,122,255,0.12); min-width:32px; text-align:center; }
+.ser-val { padding:5px 16px; background:#f5f5f7; font-family:'SF Mono','Menlo','Monaco','Consolas',monospace; font-size:12px; color:#1d1d1f; }
+.df-viz { border-collapse:collapse; font-family:'SF Mono','Menlo','Monaco','Consolas',monospace; font-size:12px; margin-top:12px; }
+.df-viz th { background:rgba(0,122,255,0.08); color:#007aff; padding:5px 16px; font-weight:600; border:1px solid rgba(0,122,255,0.15); }
+.df-viz td { padding:5px 16px; border:1px solid rgba(0,0,0,0.07); background:#f5f5f7; color:#1d1d1f; }
+.df-viz .idx { background:rgba(0,0,0,0.03); color:#86868b; font-weight:500; }
+@media (max-width:768px) { .comparison-grid { grid-template-columns:1fr; gap:16px; } .cards-container { grid-template-columns:1fr; } .flow { grid-template-columns:1fr; } .steps-row { grid-template-columns:1fr; gap:16px; } }
+.data-table { width:100%; max-width:980px; margin-top:clamp(12px,1.8vh,20px); border-collapse:collapse; font-size:clamp(11px,1.3vw,14px); }
+.data-table th,.data-table td { text-align:left; padding:clamp(6px,1vw,10px) clamp(8px,1.2vw,13px); border-bottom:1px solid rgba(0,0,0,0.07); vertical-align:middle; }
+.data-table th { font-weight:600; border-bottom:2px solid rgba(0,0,0,0.13); background:rgba(0,0,0,0.025); }
+.data-table td { color:#515154; line-height:1.35; }
+.data-table tr:last-child td { border-bottom:none; }
+.data-table td code { background:rgba(0,0,0,0.06); padding:1px 5px; border-radius:3px; font-family:'SF Mono','Menlo','Monaco','Consolas',monospace; font-size:0.95em; color:#1d1d1f; }
+.tag-np { color:#ff9500; font-weight:700; font-size:0.82em; text-transform:uppercase; letter-spacing:0.06em; }
+.tag-pd { color:#007aff; font-weight:700; font-size:0.82em; text-transform:uppercase; letter-spacing:0.06em; }
+</style>
+</head>
+<body>
+<div class="lang-switcher"><a href="index.html">RU</a><a href="index-uz.html">UZ</a><a href="index-en.html" class="active">EN</a></div>
+<div class="presentation">
+
+<div class="slide active">
+<div class="slide-content">
+<p class="eyebrow">Lecture 12</p><h1>pandas</h1><p class="subtitle">Series · DataFrame · data types · loading · cleaning</p>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">History</p>
+<h2>pandas was created in 2008 to analyze financial data</h2>
+<p class="body-text">Wes McKinney wrote pandas while working at an investment fund. Python could crunch numbers but had no convenient tool for tables. Today pandas is installed on almost every machine that works with data.</p>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Definition</p>
+<h2>pandas is a programmable table</h2>
+<p class="body-text">A table with column names, row labels, different data types in one structure and a large set of operations over them. What people do with a mouse in Excel, here is done with code and right away on millions of rows.</p>
+<div class="quote-card"><p>A row is a record (one transaction). A column is a feature (amount, region, merchant). A cell is one value.</p></div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Why this matters</p>
+<h2>A hundred million transactions a month live in tables, not in arrays</h2>
+<p class="body-text">UZCARD processes about 100 million operations per month. Each one has an amount, region, merchant, time and status. A NumPy array stores numbers of one type and does not remember column names. pandas stores exactly the table.</p>
+<div class="comparison-grid">
+  <div class="comparison-item bad"><div class="label">NumPy array</div><h3>Numbers only</h3>
+    <ul><li>One data type for the whole array</li><li>No column names</li><li>Region and amount do not sit together</li></ul></div>
+  <div class="comparison-item good"><div class="label">pandas DataFrame</div><h3>Table</h3>
+    <ul><li>Columns of different types: number, text, date</li><li>Every column has a name</li><li>A row = one whole transaction</li></ul></div>
+</div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Ecosystem</p>
+<h2>pandas sits on top of NumPy</h2>
+<p class="body-text">Internally each pandas column is stored as a NumPy array. NumPy gives speed, pandas adds column names, a row index and different types in one table on top of it.</p>
+<div class="layer-stack">
+  <div class="layer top">pandas - tables: column names, index, different types</div>
+  <div class="layer">NumPy - arrays: vectorization, speed</div>
+  <div class="layer">C and memory - fast loops under the hood</div>
+</div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Three objects</p>
+<h2>NumPy array, Series, DataFrame</h2>
+<p class="body-text">Each next object is built on the previous one.</p>
+<div class="cards-container" style="grid-template-columns:repeat(3,1fr)">
+  <div class="card"><h3>NumPy array</h3><p>Numbers of one type, without labels. Pure speed.</p></div>
+  <div class="card"><h3>Series</h3><p>A one-dimensional array plus an index (row labels). One column.</p></div>
+  <div class="card"><h3>DataFrame</h3><p>A table: a set of Series columns with a shared index. The main object.</p></div>
+</div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">What they look like</p>
+<h2>NumPy, Series and DataFrame side by side</h2>
+<div class="cards-container" style="grid-template-columns:repeat(3,1fr);align-items:start;margin-top:clamp(20px,3vh,32px)">
+  <div class="card" style="text-align:center">
+    <h3>NumPy array</h3>
+    <p>A flat array without labels</p>
+    <div class="arr-box">
+      <div class="arr-cell">125k</div><div class="arr-cell">45k</div><div class="arr-cell">230k</div><div class="arr-cell">89k</div>
+    </div>
+    <div class="mono" style="margin-top:8px">dtype: int64</div>
+  </div>
+  <div class="card" style="text-align:center">
+    <h3>Series</h3>
+    <p>Array + row index</p>
+    <div class="ser-list">
+      <div class="ser-row"><span class="ser-idx">0</span><span class="ser-val">125 000</span></div>
+      <div class="ser-row"><span class="ser-idx">1</span><span class="ser-val"> 45 000</span></div>
+      <div class="ser-row"><span class="ser-idx">2</span><span class="ser-val">230 000</span></div>
+      <div class="ser-row"><span class="ser-idx">3</span><span class="ser-val"> 89 000</span></div>
+    </div>
+    <div class="mono" style="margin-top:6px">Name: amount</div>
+  </div>
+  <div class="card" style="text-align:center">
+    <h3>DataFrame</h3>
+    <p>A table of several columns</p>
+    <table class="df-viz" style="margin:10px auto 0">
+      <tr><th class="idx"></th><th>merchant</th><th>amount</th></tr>
+      <tr><td class="idx">0</td><td>Korzinka</td><td>125 000</td></tr>
+      <tr><td class="idx">1</td><td>Evos</td><td>45 000</td></tr>
+      <tr><td class="idx">2</td><td>Texnomart</td><td>230 000</td></tr>
+    </table>
+  </div>
+</div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Series</p>
+<h2>Series: a column with labeled rows</h2>
+<div class="comparison-grid" style="align-items:start">
+  <div style="text-align:left">
+    <p class="body-text" style="margin:0 0 14px">A Series is a one-dimensional NumPy array plus an index (row labels). It has a name, a type and the same vector operations as in Lecture 11.</p>
+    <div class="quote-card"><p>One column of a table is a Series. Its values are a NumPy array, and the index sets the row labels.</p></div>
+  </div>
+  <div style="text-align:center">
+    <p style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.12em;color:#86868b;margin-bottom:8px">df["amount"]</p>
+    <div class="ser-list">
+      <div class="ser-row"><span class="ser-idx">0</span><span class="ser-val">125 000</span></div>
+      <div class="ser-row"><span class="ser-idx">1</span><span class="ser-val"> 45 000</span></div>
+      <div class="ser-row"><span class="ser-idx">2</span><span class="ser-val">2 300 000</span></div>
+    </div>
+    <p style="font-size:11px;color:#86868b;margin-top:8px;font-family:'SF Mono','Menlo',monospace">Name: amount, dtype: int64</p>
+  </div>
+</div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">DataFrame</p>
+<h2>DataFrame: a set of columns with a shared index</h2>
+<div class="comparison-grid" style="align-items:start">
+  <div style="text-align:left">
+    <p class="body-text" style="margin:0 0 14px">A DataFrame is a table. Each column is a Series, all of the same length and with a shared row index. Accessing one column returns a Series.</p>
+    <div class="quote-card success"><p>Rows are transactions, columns are features. Table, column and cell are three levels of one object.</p></div>
+  </div>
+  <div style="text-align:center">
+    <p style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.12em;color:#86868b;margin-bottom:8px">df</p>
+    <table class="df-viz" style="margin:0 auto">
+      <tr><th class="idx"></th><th>merchant</th><th>amount</th><th>region</th></tr>
+      <tr><td class="idx">0</td><td>Korzinka</td><td>125 000</td><td>Tashkent</td></tr>
+      <tr><td class="idx">1</td><td>Evos</td><td>45 000</td><td>Samarkand</td></tr>
+      <tr><td class="idx">2</td><td>Texnomart</td><td>2 300 000</td><td>Tashkent</td></tr>
+    </table>
+  </div>
+</div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Example</p>
+<h2>A table in code</h2>
+<div class="code-block">df = pd.<span class="cf">DataFrame</span>({
+    <span class="cs">"merchant"</span>: [<span class="cs">"Korzinka"</span>, <span class="cs">"Evos"</span>, <span class="cs">"Texnomart"</span>],
+    <span class="cs">"amount"</span>:   [<span class="cm">125000</span>, <span class="cm">45000</span>, <span class="cm">2300000</span>],
+    <span class="cs">"region"</span>:   [<span class="cs">"Tashkent"</span>, <span class="cs">"Samarkand"</span>, <span class="cs">"Tashkent"</span>],
+})
+<span class="cf">print</span>(df.shape)      <span class="co"># (3, 3): rows, columns</span></div>
+<p class="body-text" style="margin-top:14px">A dictionary of columns turns into a table. Each key is a column name, each list is its values.</p>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Under the hood</p>
+<h2>Each column is a separate typed array</h2>
+<p class="body-text">A DataFrame stores columns as separate typed NumPy arrays. That is why an operation over a column runs at NumPy speed, and different columns can hold different types.</p>
+<div class="code-block"><span class="cf">print</span>(df.dtypes)
+<span class="co"># merchant    object   (text)</span>
+<span class="co"># amount      int64    (number)</span>
+<span class="co"># region      object   (text)</span></div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">When to use what</p>
+<h2>NumPy, Series or DataFrame</h2>
+<div class="cards-container" style="grid-template-columns:repeat(3,1fr)">
+  <div class="card"><h3>NumPy</h3><p>Pure numbers, matrices, linear algebra, maximum speed.</p></div>
+  <div class="card"><h3>Series</h3><p>One labeled column, fast lookup by label, one feature.</p></div>
+  <div class="card"><h3>DataFrame</h3><p>A table with mixed types, any real data analysis.</p></div>
+</div>
+<div class="quote-card"><p>In most real tasks you work with a DataFrame. You get a Series when you take one column. NumPy does the math under the hood.</p></div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Data types</p>
+<h2>Each column has one type</h2>
+<p class="body-text">A column's type decides three things: how much memory it takes, how fast operations run and what actions are possible. pandas picks the type itself when reading a file, but you often have to fix it.</p>
+<div class="quote-card"><p>Number, text and date are different types. You can add numbers, uppercase text, and subtract one date from another.</p></div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">NumPy</p>
+<h2>Numeric types: one size - one memory block</h2>
+<p class="body-text">NumPy's speed rests on one principle: all values of the same type occupy exactly the same number of bytes and sit in memory as one solid contiguous block. The processor knows where the next value is and steps through the block without involving Python.</p>
+<div class="cards-container" style="grid-template-columns:repeat(3,1fr)">
+  <div class="card"><h3>int8 / 16 / 32 / 64</h3><p>Integers. 1, 2, 4 or 8 bytes per value. The range depends on the size.</p></div>
+  <div class="card"><h3>float32 / float64</h3><p>Numbers with a fractional part. 4 or 8 bytes. float64 is the standard in data science.</p></div>
+  <div class="card"><h3>bool</h3><p>True or False. 1 byte. The foundation of the boolean masks from Lecture 11.</p></div>
+</div>
+<div class="quote-card"><p>With text this principle breaks down: strings can be of different lengths. NumPy solves the problem in three ways - and each has its own cost.</p></div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">NumPy: text</p>
+<h2>Three ways to store text in NumPy</h2>
+<p class="body-text">Each approach solves the length problem in its own way. The choice affects memory, speed and which languages can be stored at all.</p>
+<div class="cards-container" style="grid-template-columns:repeat(3,1fr)">
+  <div class="card"><h3>U - Unicode</h3><p>Fixed width. 4 bytes per character. Any language, including Russian. A string that is too long is silently truncated.</p></div>
+  <div class="card"><h3>S - bytes</h3><p>Fixed width. 1 byte per character. Latin only. 4 times more memory-efficient than U, but Cyrillic causes an error.</p></div>
+  <div class="card"><h3>object</h3><p>Not the value itself but an address (pointer) to a string in memory. Flexible but slow: vectorization does not work.</p></div>
+</div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">U in action</p>
+<h2>U: fixed width and silent truncation</h2>
+<div class="comparison-grid" style="align-items:start">
+  <div class="code-block" style="margin-top:0"><span class="cc">&gt;&gt;&gt;</span> a = np.<span class="cf">array</span>([<span class="cs">"Korzinka"</span>, <span class="cs">"Evos"</span>, <span class="cs">"Texnomart"</span>])
+<span class="cc">&gt;&gt;&gt;</span> a.dtype
+dtype(<span class="cs">'&lt;U9'</span>)        <span class="co"># width = longest string (9)</span>
+<span class="cc">&gt;&gt;&gt;</span> a[<span class="cm">0</span>] = <span class="cs">"Texnomart Plaza"</span>   <span class="co"># 15 characters</span>
+<span class="cc">&gt;&gt;&gt;</span> a
+array([<span class="cs">'Texnomart'</span>, <span class="cs">'Evos'</span>, <span class="cs">'Texnomart'</span>], dtype=<span class="cs">'&lt;U9'</span>)
+<span class="co">#       ↑ truncated to 9 — silently, no error</span></div>
+  <div style="text-align:center">
+    <p style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.12em;color:#86868b;margin-bottom:12px">a[0] = "Texnomart Plaza"</p>
+    <div style="display:inline-flex;gap:3px;flex-wrap:wrap;align-items:center;justify-content:center;max-width:360px">
+      <span style="width:26px;height:34px;border-radius:5px;display:inline-flex;align-items:center;justify-content:center;font-family:'SF Mono',monospace;font-size:14px;font-weight:600;background:rgba(0,122,255,0.1);border:1px solid rgba(0,122,255,0.28);color:#007aff">T</span><span style="width:26px;height:34px;border-radius:5px;display:inline-flex;align-items:center;justify-content:center;font-family:'SF Mono',monospace;font-size:14px;font-weight:600;background:rgba(0,122,255,0.1);border:1px solid rgba(0,122,255,0.28);color:#007aff">e</span><span style="width:26px;height:34px;border-radius:5px;display:inline-flex;align-items:center;justify-content:center;font-family:'SF Mono',monospace;font-size:14px;font-weight:600;background:rgba(0,122,255,0.1);border:1px solid rgba(0,122,255,0.28);color:#007aff">x</span><span style="width:26px;height:34px;border-radius:5px;display:inline-flex;align-items:center;justify-content:center;font-family:'SF Mono',monospace;font-size:14px;font-weight:600;background:rgba(0,122,255,0.1);border:1px solid rgba(0,122,255,0.28);color:#007aff">n</span><span style="width:26px;height:34px;border-radius:5px;display:inline-flex;align-items:center;justify-content:center;font-family:'SF Mono',monospace;font-size:14px;font-weight:600;background:rgba(0,122,255,0.1);border:1px solid rgba(0,122,255,0.28);color:#007aff">o</span><span style="width:26px;height:34px;border-radius:5px;display:inline-flex;align-items:center;justify-content:center;font-family:'SF Mono',monospace;font-size:14px;font-weight:600;background:rgba(0,122,255,0.1);border:1px solid rgba(0,122,255,0.28);color:#007aff">m</span><span style="width:26px;height:34px;border-radius:5px;display:inline-flex;align-items:center;justify-content:center;font-family:'SF Mono',monospace;font-size:14px;font-weight:600;background:rgba(0,122,255,0.1);border:1px solid rgba(0,122,255,0.28);color:#007aff">a</span><span style="width:26px;height:34px;border-radius:5px;display:inline-flex;align-items:center;justify-content:center;font-family:'SF Mono',monospace;font-size:14px;font-weight:600;background:rgba(0,122,255,0.1);border:1px solid rgba(0,122,255,0.28);color:#007aff">r</span><span style="width:26px;height:34px;border-radius:5px;display:inline-flex;align-items:center;justify-content:center;font-family:'SF Mono',monospace;font-size:14px;font-weight:600;background:rgba(0,122,255,0.1);border:1px solid rgba(0,122,255,0.28);color:#007aff">t</span><span style="display:inline-flex;align-items:center;color:#ff3b30;font-size:18px;padding:0 4px">✂</span><span style="height:34px;padding:0 12px;border-radius:5px;display:inline-flex;align-items:center;font-family:'SF Mono',monospace;font-size:14px;background:rgba(255,59,48,0.06);border:1px dashed rgba(255,59,48,0.35);color:#ff3b30;text-decoration:line-through">·Plaza</span>
+    </div>
+    <p style="margin-top:14px;font-size:14px;color:#515154;line-height:1.45;max-width:340px;margin-left:auto;margin-right:auto">The cell holds exactly <b style="color:#007aff">9 characters</b>. The rest is dropped <b style="color:#ff3b30">without an error</b> — data is lost silently.</p>
+  </div>
+</div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">S in action</p>
+<h2>S: one byte per character — and a crash on Cyrillic</h2>
+<div class="comparison-grid" style="align-items:start">
+  <div class="code-block" style="margin-top:0"><span class="cc">&gt;&gt;&gt;</span> b = np.<span class="cf">array</span>([<span class="cs">"Tashkent"</span>, <span class="cs">"Evos"</span>], dtype=<span class="cs">"S"</span>)
+<span class="cc">&gt;&gt;&gt;</span> b
+array([b<span class="cs">'Tashkent'</span>, b<span class="cs">'Evos'</span>], dtype=<span class="cs">'|S8'</span>)   <span class="co"># 1 byte/char</span>
+<span class="cc">&gt;&gt;&gt;</span> np.<span class="cf">array</span>([<span class="cs">"Ташкент"</span>], dtype=<span class="cs">"S"</span>)
+<span style="color:#ff5555">UnicodeEncodeError: 'ascii' codec can't</span>
+<span style="color:#ff5555">encode characters in position 0-6</span></div>
+  <div style="text-align:center;display:flex;flex-direction:column;gap:16px;justify-content:center">
+    <div>
+      <div style="display:flex;align-items:center;justify-content:center;gap:10px;padding:13px 18px;border-radius:10px;background:rgba(52,199,89,0.06);border:1px solid rgba(52,199,89,0.22)">
+        <span style="font-family:'SF Mono',monospace;font-size:14px;color:#1d1d1f">"Tashkent"</span><span style="color:#34c759;font-size:16px">→</span><span style="font-family:'SF Mono',monospace;font-size:14px;color:#1d1d1f">b'Tashkent'</span><span style="color:#34c759;font-weight:700;font-size:16px">✓</span>
+      </div>
+      <p style="font-size:12px;color:#86868b;margin-top:6px">Latin: each character is 1 ASCII byte</p>
+    </div>
+    <div>
+      <div style="display:flex;align-items:center;justify-content:center;gap:10px;padding:13px 18px;border-radius:10px;background:rgba(255,59,48,0.05);border:1px solid rgba(255,59,48,0.22)">
+        <span style="font-family:'SF Mono',monospace;font-size:14px;color:#1d1d1f">"Ташкент"</span><span style="color:#ff3b30;font-size:16px">→</span><span style="color:#ff3b30;font-weight:700;font-size:14px">✗ UnicodeEncodeError</span>
+      </div>
+      <p style="font-size:12px;color:#86868b;margin-top:6px">Cyrillic does not fit into ASCII</p>
+    </div>
+  </div>
+</div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">object in action</p>
+<h2>object: 8 bytes of pointer instead of a string</h2>
+<div class="comparison-grid" style="align-items:start">
+  <div class="code-block" style="margin-top:0"><span class="cc">&gt;&gt;&gt;</span> o = np.<span class="cf">array</span>([<span class="cs">"Ташкент"</span>, <span class="cs">"Самарканд"</span>], dtype=object)
+<span class="cc">&gt;&gt;&gt;</span> o.dtype
+dtype(<span class="cs">'O'</span>)
+<span class="cc">&gt;&gt;&gt;</span> o.itemsize
+<span class="cm">8</span>        <span class="co"># 8 bytes = a pointer, not a string</span></div>
+  <div style="text-align:center">
+    <p style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:#86868b;margin-bottom:8px">object array: pointers in a row</p>
+    <div style="display:inline-flex;gap:3px">
+      <span style="font-family:'SF Mono',monospace;font-size:12px;padding:8px 10px;border-radius:6px;background:rgba(0,122,255,0.1);border:1px solid rgba(0,122,255,0.28);color:#007aff">0x··a1</span><span style="font-family:'SF Mono',monospace;font-size:12px;padding:8px 10px;border-radius:6px;background:rgba(0,122,255,0.1);border:1px solid rgba(0,122,255,0.28);color:#007aff">0x··c8</span><span style="font-family:'SF Mono',monospace;font-size:12px;padding:8px 10px;border-radius:6px;background:rgba(0,122,255,0.1);border:1px solid rgba(0,122,255,0.28);color:#007aff">0x··04</span>
+    </div>
+    <div style="color:#c7c7cc;font-size:16px;letter-spacing:18px;margin:6px 0 2px;padding-left:18px">↓↓↓</div>
+    <p style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:#86868b;margin-bottom:8px">strings scattered across the heap</p>
+    <div style="position:relative;height:78px;max-width:340px;margin:0 auto">
+      <span style="position:absolute;left:6%;top:0;font-family:'SF Mono',monospace;font-size:12px;padding:6px 12px;border-radius:6px;background:#f5f5f7;border:1px solid rgba(0,0,0,0.1);color:#1d1d1f">"Самарканд"</span>
+      <span style="position:absolute;right:0;top:24px;font-family:'SF Mono',monospace;font-size:12px;padding:6px 12px;border-radius:6px;background:#f5f5f7;border:1px solid rgba(0,0,0,0.1);color:#1d1d1f">"Ташкент"</span>
+      <span style="position:absolute;left:24%;top:52px;font-family:'SF Mono',monospace;font-size:12px;padding:6px 12px;border-radius:6px;background:#f5f5f7;border:1px solid rgba(0,0,0,0.1);color:#1d1d1f">"Бухара"</span>
+    </div>
+  </div>
+</div>
+<div class="quote-card"><p>The array of pointers is tiny (50,000 regions — just 0.4 MB), but the strings themselves live as separate Python objects. The processor chases each one: a cache miss on every element, and vectorization does not work.</p></div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">NumPy</p>
+<h2>Text types: U and S</h2>
+<p class="body-text">In NumPy text is a fixed-width type: the width equals the longest string, and a value that is too long is silently truncated.</p>
+<div class="comparison-grid">
+  <div class="comparison-item old"><div class="label">S - bytes</div><h3>1 byte per character</h3>
+    <ul><li>Latin only (ASCII)</li><li>Fails with an error on Cyrillic</li><li>Saves memory</li></ul></div>
+  <div class="comparison-item new"><div class="label">U - Unicode</div><h3>4 bytes per character</h3>
+    <ul><li>Any language, including Russian</li><li>Takes more memory</li><li>The default choice for text</li></ul></div>
+</div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Under the hood</p>
+<h2>object: an array of pointers, not values</h2>
+<p class="body-text">The object type stores not the strings themselves but 64-bit addresses: pointers to places in RAM where the strings actually reside. The strings themselves are scattered across memory at random.</p>
+<div class="comparison-grid">
+  <div class="comparison-item bad"><div class="label">object - pointers</div><h3>Cache miss on every element</h3>
+    <ul><li>CPU reads the address</li><li>Jumps to another part of memory</li><li>Reads the string</li><li>Returns for the next address</li></ul></div>
+  <div class="comparison-item good"><div class="label">int64 - values</div><h3>Processor steps through the block</h3>
+    <ul><li>All values lie next to each other</li><li>Next = +8 bytes</li><li>CPU cache is not flushed</li><li>Vectorization works</li></ul></div>
+</div>
+<div class="quote-card success"><p>In pandas 3.0 a pure text column gets the str type by default, not object - this is the first step toward bringing speed back to text.</p></div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">pandas smart types</p>
+<h2>Extension types: missing values and savings</h2>
+<p class="body-text">pandas added extension types on top of NumPy. They store missing values right in the column and save memory.</p>
+<div class="cards-container" style="grid-template-columns:repeat(3,1fr)">
+  <div class="card"><h3>string</h3><p>A dedicated type for text columns. Supports NA. Does not allow mixing with numbers or lists.</p></div>
+  <div class="card"><h3>Int64, boolean</h3><p>Integers and boolean with NA support. The capital letter distinguishes them from their NumPy counterparts.</p></div>
+  <div class="card"><h3>category</h3><p>Unique values are stored once. The column holds numeric codes. Saves memory by 10-100 times.</p></div>
+  <div class="card"><h3>datetime (TZ)</h3><p>A moment in time with a time zone.</p></div>
+  <div class="card"><h3>Period</h3><p>A calendar span: quarter, month.</p></div>
+  <div class="card"><h3>Interval</h3><p>A numeric range, for example (0, 10].</p></div>
+</div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Missing values in integers</p>
+<h2>Int64: integer with a missing value</h2>
+<p class="body-text">A regular NumPy integer does not store NaN, so a single missing value turns the column into fractions and corrupts numeric ids.</p>
+<div class="comparison-grid">
+  <div class="comparison-item bad"><div class="label">regular int + NaN</div><h3>Turns into float</h3>
+    <ul><li>101 becomes 101.0</li><li>numeric id is corrupted</li></ul></div>
+  <div class="comparison-item good"><div class="label">Int64</div><h3>Stays an integer</h3>
+    <ul><li>101 stays 101</li><li>a missing value is &lt;NA&gt;</li></ul></div>
+</div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Memory</p>
+<h2>category: numeric codes instead of strings</h2>
+<p class="body-text">When a column has few distinct values repeated many times (cities, statuses), the category type stores each string once in a dictionary and keeps small codes in the column. On a column with thousands of repeats this cuts memory by tens of times.</p>
+<div class="quote-card"><p>Measure a column's memory: memory_usage(deep=True). The deep parameter is required for text, otherwise only the size of the references is counted.</p></div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Data types</p>
+<h2>NumPy and pandas: type reference table</h2>
+<table class="data-table">
+<thead><tr><th>Type</th><th>Where</th><th>What it stores</th><th>Missing value</th></tr></thead>
+<tbody>
+<tr><td><code>int8 / 16 / 32 / 64</code></td><td><span class="tag-np">NumPy</span></td><td>Integers</td><td>none (NaN promotes to float)</td></tr>
+<tr><td><code>float32 / float64</code></td><td><span class="tag-np">NumPy</span></td><td>Numbers with a fractional part</td><td>NaN</td></tr>
+<tr><td><code>bool</code></td><td><span class="tag-np">NumPy</span></td><td>True / False</td><td>none</td></tr>
+<tr><td><code>U</code> (Unicode)</td><td><span class="tag-np">NumPy</span></td><td>Text, fixed width, any language</td><td>none</td></tr>
+<tr><td><code>S</code> (bytes)</td><td><span class="tag-np">NumPy</span></td><td>Text, fixed width, ASCII only</td><td>none</td></tr>
+<tr><td><code>object</code></td><td><span class="tag-np">NumPy</span> / <span class="tag-pd">pandas</span></td><td>Pointers to Python objects</td><td>NaN</td></tr>
+<tr><td><code>Int8 / 16 / 32 / 64</code></td><td><span class="tag-pd">pandas</span></td><td>Integers</td><td>pd.NA</td></tr>
+<tr><td><code>Float32 / Float64</code></td><td><span class="tag-pd">pandas</span></td><td>Numbers with a fractional part</td><td>pd.NA</td></tr>
+<tr><td><code>boolean</code></td><td><span class="tag-pd">pandas</span></td><td>True / False</td><td>pd.NA</td></tr>
+<tr><td><code>string</code></td><td><span class="tag-pd">pandas</span></td><td>Text data</td><td>pd.NA</td></tr>
+<tr><td><code>category</code></td><td><span class="tag-pd">pandas</span></td><td>Repeated values (dictionary + codes)</td><td>pd.NA</td></tr>
+<tr><td><code>datetime (TZ)</code></td><td><span class="tag-pd">pandas</span></td><td>Date and time with a time zone</td><td>pd.NA</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow" style="color:#ff9500">Question</p>
+<h2>The status column has type string. df[df["status"].str.contains("success")] raises an error. The same code worked when the type was object. Why?</h2>
+<p class="body-text">str.contains() ran without error and returned a result. The error occurred when using that result as a mask for indexing.</p>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow" style="color:#34c759">Answer</p>
+<h2>string returns NA instead of False on empty cells - a mask with NA cannot be used</h2>
+<div class="quote-card success"><p>With type object an empty cell gives False in str.contains(). With type string - NA. pandas cannot use a mask containing NA for indexing. Solution: <code>df["status"].str.contains("success", na=False)</code> - the na=False parameter replaces NA with False.</p></div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Workflow</p>
+<h2>Sequence of steps: from raw file to report</h2>
+<p class="body-text">A real project always has one sequence of steps. We go through this route over two lectures: Lecture 12 (this one) prepares the data, Lecture 13 analyzes it.</p>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">10 steps</p>
+<h2>From raw file to report</h2>
+<div class="flow">
+  <div class="it"><b>1</b>Loading<i>read_csv</i></div>
+  <div class="it"><b>6</b>Merging<i>merge</i></div>
+  <div class="it"><b>2</b>Exploration<i>info, describe</i></div>
+  <div class="it"><b>7</b>Grouping<i>groupby</i></div>
+  <div class="it"><b>3</b>Cleaning<i>NaN, types</i></div>
+  <div class="it"><b>8</b>Sorting<i>sort_values</i></div>
+  <div class="it"><b>4</b>Selection<i>mask, loc</i></div>
+  <div class="it"><b>9</b>Time<i>resample</i></div>
+  <div class="it"><b>5</b>Transformation<i>new column</i></div>
+  <div class="it"><b>10</b>Saving<i>to_csv</i></div>
+</div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Cleaning</p>
+<h2>Cleaning takes 60-70% of a project's time</h2>
+<p class="body-text">Real data comes in dirty: missing values, numbers as text, duplicates, mixed case in categories. Cleaning comes before analysis, because bad data on the input gives wrong conclusions on the output.</p>
+<div class="quote-card warning"><p>Analysis on unclean data produces wrong results. Cleaning comes before any calculations.</p></div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Selection</p>
+<h2>Labels and positions: loc and iloc</h2>
+<p class="body-text">Rows and columns have both numbers (positions) and names (labels). pandas gives two ways to access them.</p>
+<div class="comparison-grid">
+  <div class="comparison-item old"><div class="label">iloc</div><h3>By positions</h3>
+    <ul><li>Row and column numbers from zero</li><li>Like array indexing in Lecture 11</li><li>The upper bound of a slice is excluded</li></ul></div>
+  <div class="comparison-item new"><div class="label">loc</div><h3>By labels</h3>
+    <ul><li>Row names (index) and column names</li><li>You can select rows with a mask</li><li>The upper bound of a slice is included</li></ul></div>
+</div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Filtering</p>
+<h2>A boolean mask selects rows by a condition</h2>
+<p class="body-text">Comparing a column with a number gives an array of True/False for each row. Inside square brackets it keeps only the rows where True. This is a continuation of the boolean masks from Lecture 11.</p>
+<div class="quote-card"><p>Several conditions are combined with &amp; (AND) and | (OR), each in parentheses. The words and and or do not work here.</p></div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow" style="color:#ff9500">Audience question</p><h2>You wrote filtered = df[df.amount &gt; 1e6], then filtered["fee"] = 0. Did the original df change?</h2><p class="body-text">Intuitively it seems yes, filtered is the same table. But Python shows a SettingWithCopyWarning.</p>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow" style="color:#34c759">Answer</p><h2>df did not change: filtering returned a copy</h2><div class="quote-card success"><p>Filtering may return a copy or a view - unpredictably. The write goes into the copy, the original does not change. The right way: df.loc[df.amount &gt; 1e6, "fee"] = 0 - one loc call guarantees the write into the original.</p></div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Missing values</p>
+<h2>NaN: a missing value</h2>
+<p class="body-text">In real data some of the values are missing and marked as NaN. NaN is not equal to anything, not even to itself, so you cannot catch it with the == comparison. Aggregates like mean skip NaN automatically.</p>
+<div class="quote-card"><p>Missing values are found with isna, removed with dropna or filled with fillna. What to choose depends on whether you can afford to lose the row.</p></div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Cheat sheet</p>
+<h2>Data and types on one slide</h2>
+<div class="cards-container" style="grid-template-columns:repeat(3,1fr)">
+  <div class="card"><h3>Series / DataFrame</h3><p>Column and table</p><div class="mono">df["amount"]</div></div>
+  <div class="card"><h3>Column type</h3><p>View and change</p><div class="mono">df.dtypes · astype</div></div>
+  <div class="card"><h3>string / object</h3><p>Types for text columns</p><div class="mono">dtype="string"</div></div>
+  <div class="card"><h3>Int64 / boolean</h3><p>Integer and boolean with NA</p><div class="mono">dtype="Int64"</div></div>
+  <div class="card"><h3>category</h3><p>Memory savings</p><div class="mono">astype("category")</div></div>
+  <div class="card"><h3>read_csv</h3><p>Loading from a file</p><div class="mono">pd.read_csv(...)</div></div>
+  <div class="card"><h3>Cleaning</h3><p>Text to number and date</p><div class="mono">to_numeric · to_datetime</div></div>
+  <div class="card"><h3>loc / iloc</h3><p>By labels / positions</p><div class="mono">df.loc[...]</div></div>
+  <div class="card"><h3>Mask</h3><p>Row filter</p><div class="mono">df[df.amount&gt;1e6]</div></div>
+</div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Check yourself</p>
+<ol style="text-align:left;max-width:880px;padding-left:24px;font-size:clamp(14px,1.55vw,17px);line-height:1.7">
+  <li>How is a Series different from a DataFrame?</li>
+  <li>Why does an array of integers with one NaN become float, and how does Int64 solve it?</li>
+  <li>How is the U type different from S and why does Russian need U?</li>
+  <li>Why does an object column work slowly?</li>
+  <li>What does the category type save and at the cost of what?</li>
+  <li>When does astype fail while to_numeric does not?</li>
+  <li>How is loc different from iloc?</li>
+  <li>How do you get a number from a text amount column?</li>
+</ol>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<h2>Questions?</h2>
+</div>
+</div>
+
+</div>
+<div class="lesson-tag">Lecture 12 · pandas: data and types</div><div class="slide-indicator"><span id="current-slide">1</span> / <span id="total-slides">1</span></div><div class="nav-hint">→ or Space next<br/>← back</div>
+<script>
+let currentSlide=0;const slides=document.querySelectorAll('.slide');const totalSlides=slides.length;document.getElementById('total-slides').textContent=totalSlides;function showSlide(n){slides[currentSlide].classList.remove('active');currentSlide=(n+totalSlides)%totalSlides;slides[currentSlide].classList.add('active');document.getElementById('current-slide').textContent=currentSlide+1;const sc=slides[currentSlide].querySelector('.slide-content');sc.style.animation='none';void sc.offsetHeight;sc.style.animation=null;slides[currentSlide].querySelectorAll('.card,.comparison-item,.step,.replay-anim').forEach(el=>{const o=el.style.animation;el.style.animation='none';void el.offsetHeight;el.style.animation=o;});}function nextSlide(){showSlide(currentSlide+1);}function prevSlide(){showSlide(currentSlide-1);}document.addEventListener('keydown',e=>{if(['textarea','input'].includes((e.target.tagName||'').toLowerCase()))return;if(e.key==='ArrowRight'||e.key===' '){e.preventDefault();nextSlide();}else if(e.key==='ArrowLeft'){e.preventDefault();prevSlide();}});let tX=0;document.addEventListener('touchstart',e=>{tX=e.changedTouches[0].screenX;});document.addEventListener('touchend',e=>{const dx=e.changedTouches[0].screenX-tX;if(dx<-50)nextSlide();else if(dx>50)prevSlide();});
+</script>
+</body>
+</html>

@@ -1,0 +1,65 @@
+{
+  "approve_reject_compare": [
+    {
+      "final_decision": "approved",
+      "avg_amt": 13718267.0,
+      "avg_income": 10192486.0,
+      "avg_bureau": 678.3,
+      "n": 11277
+    },
+    {
+      "final_decision": "rejected",
+      "avg_amt": 10779161.0,
+      "avg_income": 6384541.0,
+      "avg_bureau": 540.8,
+      "n": 6723
+    }
+  ],
+  "rejected": {
+    "rejected_cnt": 6723,
+    "old_would_approve": 612
+  },
+  "payments_diff": {
+    "only_one_side": 31874,
+    "value_diffs": 0
+  },
+  "collection_timing": {
+    "min_a": "2023-08-04",
+    "max_a": "2025-11-30",
+    "contracts": 2348
+  },
+  "eda_income": [],
+  "eda_term": [],
+  "eda_age": [],
+  "eda_gender": [],
+  "income_anomalies": {
+    "income_null": 0,
+    "emp_null": 863,
+    "high_burden": 0
+  },
+  "feature_nulls": {
+    "application_id": 0,
+    "client_id": 0,
+    "decision_date": 0,
+    "channel": 0,
+    "purpose": 0,
+    "requested_amount_uzs": 0,
+    "term_months": 0,
+    "declared_income_uzs": 0,
+    "employment_months": 863,
+    "gender": 3400,
+    "region": 3400,
+    "customer_segment": 3400,
+    "income_band": 3400,
+    "age_at_decision": 3400,
+    "bureau_score": 2341,
+    "existing_debt_uzs": 2341,
+    "active_loans_cnt": 2341,
+    "inq_cnt_6m": 0,
+    "txn_approved_6m": 0,
+    "txn_declined_6m": 0,
+    "spend_6m": 0,
+    "salary_in_6m": 0,
+    "salary_to_declared_ratio": 5728
+  }
+}

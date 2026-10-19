@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>pandas: анализ · Лекция 13</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700;800&display=swap');
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system,BlinkMacSystemFont,'Inter','SF Pro Display','Segoe UI',Roboto,sans-serif; background:#FFFFFF; color:#1d1d1f; line-height:1.1; overflow:hidden; -webkit-font-smoothing:antialiased; }
+.presentation { width:100vw; height:100vh; position:relative; }
+.slide { width:100%; height:100%; display:none; align-items:center; justify-content:center; position:absolute; top:0; left:0; padding:clamp(40px,6vh,80px) clamp(40px,6vw,80px); text-align:center; }
+.slide.active { display:flex; flex-direction:column; }
+.slide-content { max-width:1200px; width:100%; margin:0 auto; opacity:0; transform:translateY(20px); animation:fadeInUp 0.7s ease-out 0.15s forwards; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+@keyframes fadeInUp { to { opacity:1; transform:translateY(0); } }
+h1 { font-size:clamp(40px,6.5vw,96px); font-weight:700; letter-spacing:-0.025em; line-height:0.95; margin-bottom:clamp(16px,2.5vh,32px); }
+h2 { font-size:clamp(28px,4vw,56px); font-weight:600; letter-spacing:-0.02em; line-height:1.05; margin-bottom:clamp(16px,2vh,28px); }
+.subtitle { font-size:clamp(18px,2.2vw,28px); font-weight:400; color:#86868b; margin-bottom:clamp(20px,3vh,40px); line-height:1.3; max-width:900px; }
+.eyebrow { font-size:clamp(13px,1.2vw,16px); font-weight:600; color:#007aff; text-transform:uppercase; letter-spacing:0.18em; margin-bottom:18px; }
+.body-text { font-size:clamp(15px,1.8vw,22px); font-weight:400; color:#515154; line-height:1.45; max-width:820px; margin:0 auto; }
+code { font-family:'SF Mono','Menlo','Monaco','Consolas',monospace; font-size:0.9em; }
+.highlight { color:#007aff; font-weight:500; }
+.cards-container { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:clamp(14px,2vw,22px); margin-top:clamp(20px,3vh,36px); max-width:1100px; width:100%; }
+.card { background:rgba(0,0,0,0.025); border:1px solid rgba(0,0,0,0.06); border-radius:14px; padding:clamp(18px,2.2vw,26px); text-align:left; opacity:0; transform:translateY(20px); animation:cardSlideUp 0.55s ease-out forwards; }
+.card:nth-child(1){animation-delay:.35s}.card:nth-child(2){animation-delay:.42s}.card:nth-child(3){animation-delay:.5s}.card:nth-child(4){animation-delay:.58s}.card:nth-child(5){animation-delay:.66s}.card:nth-child(6){animation-delay:.74s}
+@keyframes cardSlideUp { to { opacity:1; transform:translateY(0); } }
+.card h3 { font-size:clamp(15px,1.8vw,20px); font-weight:600; margin-bottom:7px; color:#1d1d1f; }
+.card p { font-size:clamp(12px,1.45vw,15px); color:#6e6e73; line-height:1.4; }
+.card .mono { font-family:'SF Mono','Menlo','Monaco','Consolas',monospace; font-size:clamp(11px,1.3vw,13px); background:rgba(0,0,0,0.05); padding:2px 6px; border-radius:3px; display:block; margin-top:6px; color:#007aff; }
+.comparison-grid { display:grid; grid-template-columns:1fr 1fr; gap:clamp(20px,3vw,40px); max-width:1100px; width:100%; margin-top:clamp(20px,3vh,36px); align-items:stretch; }
+.comparison-item { text-align:left; padding:clamp(18px,2.2vw,28px); border-radius:14px; background:rgba(0,0,0,0.02); border:1px solid rgba(0,0,0,0.06); opacity:0; transform:scale(0.96); animation:scaleIn 0.6s ease-out forwards; }
+.comparison-item:nth-child(1){animation-delay:.35s}.comparison-item:nth-child(2){animation-delay:.5s}
+@keyframes scaleIn { to { opacity:1; transform:scale(1); } }
+.comparison-item .label { font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:0.14em; margin-bottom:10px; }
+.comparison-item.bad .label, .comparison-item.old .label { color:#ff3b30; }
+.comparison-item.good .label, .comparison-item.new .label { color:#34c759; }
+.comparison-item h3 { font-size:clamp(18px,2.2vw,24px); font-weight:600; margin-bottom:10px; }
+.comparison-item p { font-size:clamp(13px,1.6vw,17px); color:#515154; line-height:1.45; margin-bottom:8px; }
+.comparison-item ul { list-style:none; padding:0; }
+.comparison-item ul li { font-size:clamp(13px,1.55vw,16px); color:#515154; line-height:1.5; padding:4px 0 4px 16px; position:relative; }
+.comparison-item.bad ul li::before, .comparison-item.old ul li::before { content:"-"; position:absolute; left:0; color:#ff3b30; font-weight:600; }
+.comparison-item.good ul li::before, .comparison-item.new ul li::before { content:"+"; position:absolute; left:0; color:#34c759; font-weight:600; }
+.quote-card { margin-top:clamp(18px,2.5vh,28px); padding:clamp(16px,2vw,24px) clamp(20px,2.5vw,30px); border-left:3px solid #007aff; background:rgba(0,122,255,0.04); border-radius:8px; text-align:left; max-width:860px; }
+.quote-card.success { border-left-color:#34c759; background:rgba(52,199,89,0.05); }
+.quote-card.warning { border-left-color:#ff3b30; background:rgba(255,59,48,0.04); }
+.quote-card p { font-size:clamp(14px,1.6vw,18px); color:#1d1d1f; line-height:1.4; font-weight:500; }
+.code-block { background:#1d1d1f; color:#f5f5f7; border-radius:12px; padding:clamp(14px,1.7vw,22px); font-family:'SF Mono','Menlo','Monaco','Consolas',monospace; font-size:clamp(11px,1.35vw,15px); line-height:1.6; text-align:left; margin-top:14px; max-width:920px; width:100%; white-space:pre; overflow-x:auto; }
+.code-block .ck { color:#ff79c6; }
+.code-block .cs { color:#f1fa8c; }
+.code-block .cn { color:#f8f8f2; }
+.code-block .co { color:#6272a4; font-style:italic; }
+.code-block .cf { color:#8be9fd; }
+.code-block .cm { color:#bd93f9; }
+.code-block .cc { color:#50fa7b; }
+.checklist { list-style:none; padding:0; margin-top:16px; max-width:860px; text-align:left; }
+.checklist li { font-size:clamp(14px,1.65vw,18px); line-height:1.45; padding:9px 0 9px 36px; position:relative; border-bottom:1px solid rgba(0,0,0,0.05); }
+.checklist li:last-child { border-bottom:none; }
+.checklist li::before { content:"✓"; position:absolute; left:0; top:50%; transform:translateY(-50%); width:24px; height:24px; border-radius:50%; background:rgba(0,122,255,0.1); color:#007aff; font-size:12px; font-weight:700; display:flex; align-items:center; justify-content:center; }
+.steps-row { display:grid; grid-template-columns:repeat(3,1fr); gap:clamp(20px,3vw,40px); max-width:1000px; margin-top:clamp(24px,4vh,40px); }
+.step { text-align:center; opacity:0; transform:translateY(20px); animation:cardSlideUp 0.55s ease-out forwards; }
+.step:nth-child(1){animation-delay:.35s}.step:nth-child(2){animation-delay:.5s}.step:nth-child(3){animation-delay:.65s}
+.step .step-num { display:inline-flex; width:52px; height:52px; border-radius:50%; background:#007aff; color:#fff; font-size:20px; font-weight:700; align-items:center; justify-content:center; margin-bottom:14px; }
+.step h3 { font-size:clamp(17px,2vw,22px); font-weight:600; margin-bottom:8px; }
+.step p { font-size:clamp(13px,1.5vw,16px); color:#6e6e73; line-height:1.45; }
+.flow { display:grid; grid-template-columns:1fr 1fr; gap:10px 48px; max-width:900px; width:100%; margin-top:clamp(20px,3vh,32px); text-align:left; }
+.flow .it { display:flex; align-items:center; gap:12px; font-size:clamp(14px,1.6vw,19px); color:#1d1d1f; }
+.flow .it b { display:inline-flex; width:30px; height:30px; border-radius:50%; background:rgba(0,122,255,0.1); color:#007aff; font-size:14px; font-weight:700; align-items:center; justify-content:center; flex:0 0 auto; }
+.flow .it i { color:#86868b; font-size:0.82em; font-style:normal; margin-left:auto; font-family:'SF Mono','Menlo','Monaco','Consolas',monospace; }
+.layer-stack { display:flex; flex-direction:column; gap:8px; max-width:560px; width:100%; margin-top:clamp(18px,2.5vh,28px); }
+.layer { padding:13px 22px; border-radius:12px; background:rgba(0,0,0,0.03); border:1px solid rgba(0,0,0,0.06); font-size:clamp(13px,1.55vw,17px); color:#515154; text-align:left; }
+.layer.top { background:rgba(0,122,255,0.08); border-color:rgba(0,122,255,0.18); color:#1d1d1f; font-weight:500; }
+.lang-switcher { position:fixed; top:22px; right:28px; z-index:100; display:flex; gap:2px; background:rgba(255,255,255,0.95); -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px); border:1px solid rgba(0,0,0,0.06); border-radius:50px; padding:3px; box-shadow:0 2px 8px rgba(0,0,0,0.04); }
+.lang-switcher a { font-size:11px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:#86868b; text-decoration:none; padding:5px 12px; border-radius:50px; transition:all 0.2s ease; }
+.lang-switcher a.active { color:#fff; background:#007aff; }
+.lang-switcher a:not(.active):hover { color:#1d1d1f; }
+.slide-indicator { position:fixed; bottom:24px; left:50%; transform:translateX(-50%); font-size:13px; color:#86868b; z-index:100; letter-spacing:0.04em; }
+.nav-hint { position:fixed; bottom:24px; right:24px; font-size:12px; color:#c7c7cc; text-align:right; z-index:100; }
+.lesson-tag { position:fixed; top:24px; left:24px; font-size:11px; font-weight:600; color:#86868b; text-transform:uppercase; letter-spacing:0.16em; z-index:100; }
+.arr-box { display:inline-flex; gap:5px; align-items:center; justify-content:center; margin-top:12px; }
+.arr-cell { width:54px; height:40px; border:1px solid rgba(0,0,0,0.1); border-radius:8px; display:flex; align-items:center; justify-content:center; font-family:'SF Mono','Menlo','Monaco','Consolas',monospace; font-size:13px; background:#f5f5f7; color:#1d1d1f; }
+.ser-list { display:flex; flex-direction:column; gap:3px; align-items:center; margin-top:12px; }
+.ser-row { display:flex; border-radius:6px; overflow:hidden; border:1px solid rgba(0,0,0,0.09); }
+.ser-idx { padding:5px 14px; background:rgba(0,122,255,0.08); color:#007aff; font-family:'SF Mono','Menlo','Monaco','Consolas',monospace; font-size:12px; font-weight:600; border-right:1px solid rgba(0,122,255,0.12); min-width:32px; text-align:center; }
+.ser-val { padding:5px 16px; background:#f5f5f7; font-family:'SF Mono','Menlo','Monaco','Consolas',monospace; font-size:12px; color:#1d1d1f; }
+.df-viz { border-collapse:collapse; font-family:'SF Mono','Menlo','Monaco','Consolas',monospace; font-size:12px; margin-top:12px; }
+.df-viz th { background:rgba(0,122,255,0.08); color:#007aff; padding:5px 16px; font-weight:600; border:1px solid rgba(0,122,255,0.15); }
+.df-viz td { padding:5px 16px; border:1px solid rgba(0,0,0,0.07); background:#f5f5f7; color:#1d1d1f; }
+.df-viz .idx { background:rgba(0,0,0,0.03); color:#86868b; font-weight:500; }
+@media (max-width:768px) { .comparison-grid { grid-template-columns:1fr; gap:16px; } .cards-container { grid-template-columns:1fr; } .flow { grid-template-columns:1fr; } .steps-row { grid-template-columns:1fr; gap:16px; } }
+</style>
+</head>
+<body>
+<div class="lang-switcher"><a href="index.html" class="active">RU</a><a href="index-uz.html">UZ</a><a href="index-en.html">EN</a></div>
+<div class="presentation">
+
+<div class="slide active">
+<div class="slide-content">
+<p class="eyebrow">Лекция 13</p><h1>pandas: анализ</h1><p class="subtitle">merge · groupby · pivot · время · отчёт</p>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Где мы</p>
+<h2>Данные готовы к анализу</h2>
+<p class="body-text">В Лекции 12 мы загрузили сырую выгрузку и довели её до чистой типизированной таблицы. Теперь считаем по ней отчёты: объединяем со справочниками, группируем, сортируем, работаем со временем и сохраняем результат.</p>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Четыре операции</p>
+<h2>Любая задача это одна из четырёх операций</h2>
+<div class="cards-container" style="grid-template-columns:repeat(2,1fr)">
+  <div class="card"><h3>Отобрать строки</h3><p>Оставить строки по условию (фильтр, булева маска).</p></div>
+  <div class="card"><h3>Выбрать столбцы</h3><p>Взять нужные признаки по именам.</p></div>
+  <div class="card"><h3>Преобразовать</h3><p>Посчитать новый столбец из существующих.</p></div>
+  <div class="card"><h3>Свернуть в агрегат</h3><p>Сумма, среднее, количество по группам.</p></div>
+</div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Объединение</p>
+<h2>merge соединяет две таблицы по ключу</h2>
+<p class="body-text">Данные разнесены по таблицам: в транзакциях есть card_id, но нет сегмента клиента. merge подтягивает столбцы из второй таблицы по общему ключу. Это аналог JOIN из SQL, который будет в Лекции 15.</p>
+<div class="comparison-grid">
+  <div class="comparison-item old"><div class="label">transactions</div><h3>Транзакции</h3><ul><li>card_id, amount, region</li></ul></div>
+  <div class="comparison-item new"><div class="label">cards</div><h3>Справочник карт</h3><ul><li>card_id, segment</li><li>ключ соединения: card_id</li></ul></div>
+</div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Виды join</p>
+<h2>inner, left, right, outer</h2>
+<p class="body-text">Ключ может встречаться не во всех таблицах. Тип join решает, какие строки попадут в результат.</p>
+<div class="cards-container" style="grid-template-columns:repeat(2,1fr)">
+  <div class="card"><h3>inner</h3><p>Только общие ключи, есть в обеих таблицах.</p></div>
+  <div class="card"><h3>left</h3><p>Все строки левой таблицы, нет пары -&gt; NaN.</p></div>
+  <div class="card"><h3>right</h3><p>Все строки правой таблицы.</p></div>
+  <div class="card"><h3>outer</h3><p>Все ключи обеих таблиц.</p></div>
+</div>
+<div class="quote-card"><p>Чаще всего нужен left: сохранить все свои данные и подтянуть справочное, ничего не потеряв.</p></div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow" style="color:#ff9500">Вопрос</p><h2>После left merge таблица выросла с 10 000 до 12 000 строк. Как такое возможно при left join?</h2><p class="body-text">Left join должен сохранять все строки левой таблицы и не добавлять новые. Но строк стало больше.</p>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow" style="color:#34c759">Ответ</p><h2>Many-to-many: один card_id встретился в правой таблице несколько раз</h2><div class="quote-card success"><p>merge дублирует строку транзакции для каждой пары. Если один card_id в cards повторяется - каждая транзакция с этим id размножается. Решение: cards.drop_duplicates("card_id") перед merge.</p></div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Группировка</p>
+<h2>groupby делит таблицу на группы и считает агрегат</h2>
+<div class="comparison-grid">
+  <div class="comparison-item bad"><div class="label">Вручную</div><h3>Цикл с аккумулятором</h3>
+    <ul><li>Словарь сумм и счётчиков</li><li>Обход всех строк</li><li>Десяток строк кода</li></ul></div>
+  <div class="comparison-item good"><div class="label">groupby</div><h3>Одна строка</h3>
+    <ul><li>Группы по значению столбца</li><li>Агрегат внутри каждой группы</li><li>Те же sum, mean из Лекции 11, но по группам</li></ul></div>
+</div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Под капотом</p>
+<h2>split-apply-combine: разбить, посчитать, собрать</h2>
+<div class="steps-row">
+  <div class="step"><div class="step-num">1</div><h3>split</h3><p>Разбить строки на группы по значению ключа (региону)</p></div>
+  <div class="step"><div class="step-num">2</div><h3>apply</h3><p>Посчитать агрегат внутри каждой группы (среднее)</p></div>
+  <div class="step"><div class="step-num">3</div><h3>combine</h3><p>Собрать результаты групп в одну таблицу</p></div>
+</div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow" style="color:#ff9500">Вопрос</p><h2>В столбце region у 300 строк стоит NaN. Сколько из них войдёт в groupby("region").sum()?</h2><p class="body-text">Данные реальные: часть транзакций пришла без региона. groupby вызывается без дополнительных параметров.</p>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow" style="color:#34c759">Ответ</p><h2>Ни одна: groupby молча выбрасывает NaN-ключи</h2><div class="quote-card success"><p>По умолчанию groupby отбрасывает строки, где ключевой столбец NaN (dropna=True). 300 транзакций без региона не войдут ни в одну группу. Чтобы получить группу NaN: df.groupby("region", dropna=False).sum().</p></div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Сводные таблицы</p>
+<h2>pivot_table: агрегат по двум измерениям</h2>
+<p class="body-text">groupby сворачивает по одному ключу. pivot_table раскладывает агрегат по двум: одно измерение в строки, другое в столбцы. Например, оборот по регионам (строки) и категориям (столбцы) в одной таблице.</p>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Время</p>
+<h2>Дата это отдельный тип данных</h2>
+<p class="body-text">to_datetime превращает строку в дату. После этого аксессор .dt даёт час, день, месяц, а resample группирует строки по интервалам времени (по часам, по дням) и считает агрегат внутри каждого. Подробнее о временных рядах в следующих лекциях.</p>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Дальше</p>
+<h2>pandas как основа следующих инструментов</h2>
+<p class="body-text">pandas это слой данных под всем остальным курсом. Дальше он подаёт данные в каждый следующий инструмент.</p>
+<div class="cards-container" style="grid-template-columns:repeat(2,1fr)">
+  <div class="card"><h3>Визуализация (Л14)</h3><p>DataFrame подаёт данные в matplotlib и seaborn.</p></div>
+  <div class="card"><h3>SQL (Л15)</h3><p>merge, groupby и фильтры это те же JOIN, GROUP BY, WHERE.</p></div>
+  <div class="card"><h3>Статистика (Л16)</h3><p>describe и агрегаты это первый слой статистики.</p></div>
+  <div class="card"><h3>Машинное обучение (Л17+)</h3><p>Чистый DataFrame это вход для модели.</p></div>
+</div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Шпаргалка</p>
+<h2>Анализ на одном слайде</h2>
+<div class="cards-container" style="grid-template-columns:repeat(3,1fr)">
+  <div class="card"><h3>merge</h3><p>Соединить по ключу</p><div class="mono">df.merge(cards, on="card_id")</div></div>
+  <div class="card"><h3>Виды join</h3><p>inner / left / right / outer</p><div class="mono">how="left"</div></div>
+  <div class="card"><h3>concat</h3><p>Сложить таблицы по строкам</p><div class="mono">pd.concat([...])</div></div>
+  <div class="card"><h3>groupby</h3><p>Агрегат по группам</p><div class="mono">groupby("region")</div></div>
+  <div class="card"><h3>agg</h3><p>Несколько агрегатов</p><div class="mono">.agg(n=("amount","size"))</div></div>
+  <div class="card"><h3>pivot_table</h3><p>Сводка по двум осям</p><div class="mono">pivot_table(...)</div></div>
+  <div class="card"><h3>Сортировка</h3><p>Топ и ранги</p><div class="mono">sort_values · nlargest</div></div>
+  <div class="card"><h3>Время</h3><p>Ряды по интервалам</p><div class="mono">resample("h")</div></div>
+  <div class="card"><h3>Сохранение</h3><p>Отчёт в файл</p><div class="mono">to_csv(...)</div></div>
+</div>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<p class="eyebrow">Проверь себя</p>
+<ol style="text-align:left;max-width:880px;padding-left:24px;font-size:clamp(14px,1.55vw,17px);line-height:1.7">
+  <li>Что делает левый join и сколько строк остаётся?</li>
+  <li>Чем merge отличается от concat?</li>
+  <li>Три шага split-apply-combine?</li>
+  <li>Что вернёт groupby("region")["amount"].sum()?</li>
+  <li>Чем pivot_table отличается от groupby?</li>
+  <li>Зачем фильтровать status == "success" до groupby?</li>
+  <li>Что делает resample("h")?</li>
+  <li>Как сохранить отчёт без столбца индекса?</li>
+</ol>
+</div>
+</div>
+
+<div class="slide">
+<div class="slide-content">
+<h2>Вопросы?</h2>
+</div>
+</div>
+
+</div>
+<div class="lesson-tag">Лекция 13 · pandas: анализ</div><div class="slide-indicator"><span id="current-slide">1</span> / <span id="total-slides">1</span></div><div class="nav-hint">→ или Space далее<br/>← назад</div>
+<script>
+let currentSlide=0;const slides=document.querySelectorAll('.slide');const totalSlides=slides.length;document.getElementById('total-slides').textContent=totalSlides;function showSlide(n){slides[currentSlide].classList.remove('active');currentSlide=(n+totalSlides)%totalSlides;slides[currentSlide].classList.add('active');document.getElementById('current-slide').textContent=currentSlide+1;const sc=slides[currentSlide].querySelector('.slide-content');sc.style.animation='none';void sc.offsetHeight;sc.style.animation=null;slides[currentSlide].querySelectorAll('.card,.comparison-item,.step,.replay-anim').forEach(el=>{const o=el.style.animation;el.style.animation='none';void el.offsetHeight;el.style.animation=o;});}function nextSlide(){showSlide(currentSlide+1);}function prevSlide(){showSlide(currentSlide-1);}document.addEventListener('keydown',e=>{if(['textarea','input'].includes((e.target.tagName||'').toLowerCase()))return;if(e.key==='ArrowRight'||e.key===' '){e.preventDefault();nextSlide();}else if(e.key==='ArrowLeft'){e.preventDefault();prevSlide();}});let tX=0;document.addEventListener('touchstart',e=>{tX=e.changedTouches[0].screenX;});document.addEventListener('touchend',e=>{const dx=e.changedTouches[0].screenX-tX;if(dx<-50)nextSlide();else if(dx>50)prevSlide();});
+</script>
+</body>
+</html>

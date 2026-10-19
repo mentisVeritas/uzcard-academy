@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>pandas: jadvallarni birlashtirish va groupby · 16-maruza</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',sans-serif;background:#fff;color:#1d1d1f;overflow:hidden;-webkit-font-smoothing:antialiased;}
+.presentation{width:100vw;height:100vh;position:relative;}
+.slide{width:100%;height:100%;display:none;align-items:center;justify-content:center;position:absolute;top:0;left:0;padding:clamp(28px,4.5vh,60px) clamp(36px,5vw,72px);text-align:center;}
+.slide.active{display:flex;flex-direction:column;}
+.sc{max-width:1180px;width:100%;margin:0 auto;opacity:0;transform:translateY(16px);animation:up .6s ease-out .1s forwards;display:flex;flex-direction:column;align-items:center;}
+@keyframes up{to{opacity:1;transform:translateY(0);}}
+
+h1{font-size:clamp(36px,5.8vw,84px);font-weight:700;letter-spacing:-.025em;line-height:.95;margin-bottom:clamp(12px,2vh,24px);}
+h2{font-size:clamp(22px,3.4vw,48px);font-weight:600;letter-spacing:-.02em;line-height:1.05;margin-bottom:clamp(10px,1.6vh,20px);}
+.ey{font-size:clamp(10px,1vw,13px);font-weight:700;color:#007aff;text-transform:uppercase;letter-spacing:.18em;margin-bottom:14px;}
+.sub{font-size:clamp(15px,1.9vw,24px);color:#86868b;line-height:1.3;max-width:820px;}
+.bt{font-size:clamp(13px,1.5vw,18px);color:#515154;line-height:1.5;max-width:800px;margin:0 auto;}
+code{font-family:'SF Mono','Menlo','Consolas',monospace;font-size:.88em;}
+
+/* ---- Cards ---- */
+.cards{display:grid;gap:clamp(10px,1.6vw,18px);margin-top:clamp(14px,2vh,26px);max-width:1080px;width:100%;}
+.card{background:rgba(0,0,0,.025);border:1px solid rgba(0,0,0,.06);border-radius:12px;padding:clamp(14px,1.8vw,22px);text-align:left;opacity:0;transform:translateY(16px);animation:up .5s ease-out forwards;}
+.card:nth-child(1){animation-delay:.28s}.card:nth-child(2){animation-delay:.36s}.card:nth-child(3){animation-delay:.44s}.card:nth-child(4){animation-delay:.52s}.card:nth-child(5){animation-delay:.60s}
+.card h3{font-size:clamp(12px,1.5vw,17px);font-weight:600;margin-bottom:5px;}
+.card p{font-size:clamp(11px,1.2vw,13px);color:#6e6e73;line-height:1.4;}
+.num{font-size:clamp(20px,2.4vw,28px);font-weight:700;color:#007aff;line-height:1;margin-bottom:7px;}
+.mono{font-family:'SF Mono','Menlo','Consolas',monospace;font-size:clamp(9px,1vw,11px);background:rgba(0,0,0,.05);padding:2px 5px;border-radius:3px;display:inline-block;margin-top:5px;color:#007aff;}
+
+/* ---- Notes ---- */
+.note{margin-top:clamp(10px,1.6vh,18px);padding:clamp(11px,1.5vw,18px) clamp(14px,1.8vw,22px);border-left:3px solid #007aff;background:rgba(0,122,255,.04);border-radius:6px;text-align:left;max-width:920px;width:100%;}
+.note.warn{border-left-color:#ff9500;background:rgba(255,149,0,.04);}
+.note.danger{border-left-color:#ff3b30;background:rgba(255,59,48,.04);}
+.note.ok{border-left-color:#34c759;background:rgba(52,199,89,.05);}
+.note p{font-size:clamp(12px,1.4vw,16px);color:#1d1d1f;line-height:1.4;font-weight:500;}
+
+/* ---- Code block ---- */
+.cb{background:#1d1d1f;color:#f5f5f7;border-radius:10px;padding:clamp(10px,1.4vw,18px);font-family:'SF Mono','Menlo','Consolas',monospace;font-size:clamp(10px,1.2vw,13.5px);line-height:1.65;text-align:left;margin-top:10px;max-width:960px;width:100%;white-space:pre;overflow-x:auto;}
+.ck{color:#ff79c6;}.cs{color:#f1fa8c;}.co{color:#6272a4;font-style:italic;}.cf{color:#8be9fd;}.cm{color:#bd93f9;}.cc{color:#50fa7b;}
+
+/* ---- Data table ---- */
+.dt{width:100%;max-width:980px;margin-top:clamp(8px,1.3vh,16px);border-collapse:collapse;font-size:clamp(9px,1.1vw,12.5px);}
+.dt th,.dt td{text-align:left;padding:clamp(4px,.8vw,8px) clamp(6px,1vw,11px);border-bottom:1px solid rgba(0,0,0,.07);vertical-align:middle;}
+.dt th{font-weight:600;border-bottom:2px solid rgba(0,0,0,.11);background:rgba(0,0,0,.022);}
+.dt td{color:#515154;}.dt tr:last-child td{border-bottom:none;}
+.dt td code{background:rgba(0,0,0,.06);padding:1px 4px;border-radius:3px;font-size:.9em;color:#1d1d1f;}
+
+/* ---- Comparison grid ---- */
+.cg{display:grid;grid-template-columns:1fr 1fr;gap:clamp(14px,2vw,30px);max-width:1080px;width:100%;margin-top:clamp(12px,2vh,24px);}
+.ci{text-align:left;padding:clamp(14px,1.8vw,22px);border-radius:12px;background:rgba(0,0,0,.02);border:1px solid rgba(0,0,0,.06);opacity:0;transform:scale(.97);animation:sc .5s ease-out forwards;}
+.ci:nth-child(1){animation-delay:.28s}.ci:nth-child(2){animation-delay:.42s}
+@keyframes sc{to{opacity:1;transform:scale(1);}}
+.ci .lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.13em;margin-bottom:7px;}
+.ci.blue .lbl{color:#007aff;}.ci.green .lbl{color:#34c759;}.ci.red .lbl{color:#ff3b30;}.ci.orange .lbl{color:#ff9500;}
+.ci h3{font-size:clamp(14px,1.8vw,20px);font-weight:600;margin-bottom:7px;}
+.ci p{font-size:clamp(11px,1.3vw,15px);color:#515154;line-height:1.45;margin-bottom:5px;}
+
+/* ============================================================
+   JOIN VISUAL
+   ============================================================ */
+.jv-wrap{display:flex;flex-direction:column;align-items:center;gap:10px;max-width:940px;width:100%;margin-top:10px;}
+.jv-src{display:grid;grid-template-columns:1fr 52px 1fr;gap:10px;align-items:start;width:100%;}
+.jv-tl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:#86868b;margin-bottom:4px;}
+.jv-t{border-collapse:collapse;width:100%;font-size:clamp(9px,.95vw,11.5px);font-family:'SF Mono','Menlo','Consolas',monospace;}
+.jv-t th{background:rgba(0,0,0,.04);padding:3px 7px;font-weight:600;border-bottom:2px solid rgba(0,0,0,.08);text-align:left;white-space:nowrap;}
+.jv-t td{padding:3px 7px;border-bottom:1px solid rgba(0,0,0,.06);text-align:left;white-space:nowrap;}
+tr.m td{background:rgba(0,122,255,.08);}
+tr.nm td{background:rgba(255,59,48,.07);color:#86868b;}
+tr.nan td{background:rgba(255,149,0,.08);}
+.nan-v{color:#ff9500;font-style:italic;}
+.jv-arr{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding-top:20px;}
+.jv-arr .ic{font-size:18px;color:#007aff;line-height:1;}
+.jv-arr .tx{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:#86868b;white-space:nowrap;}
+.jv-leg{font-size:9px;color:#86868b;margin-top:5px;display:flex;gap:9px;align-items:center;flex-wrap:wrap;}
+.dot{display:inline-block;width:7px;height:7px;border-radius:50%;vertical-align:middle;}
+.dot.m{background:rgba(0,122,255,.45);}.dot.nm{background:rgba(255,59,48,.45);}.dot.nan{background:rgba(255,149,0,.55);}
+.jv-res{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;}
+.jv-rb{border-radius:8px;padding:9px 11px;}
+.jv-ib{border:1.5px solid rgba(0,122,255,.25);background:rgba(0,122,255,.025);}
+.jv-lb{border:1.5px solid rgba(52,199,89,.25);background:rgba(52,199,89,.025);}
+.jv-rl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;margin-bottom:6px;}
+.jv-ib .jv-rl{color:#007aff;}.jv-lb .jv-rl{color:#34c759;}
+.jv-n{font-size:9px;color:#86868b;margin-top:5px;}
+
+/* ============================================================
+   ROW EXPLOSION
+   ============================================================ */
+.rx-grid{display:grid;grid-template-columns:1fr 52px 1fr;gap:10px;align-items:start;max-width:920px;width:100%;margin-top:10px;}
+tr.rx td{background:rgba(255,59,48,.09)!important;}
+.rx-warn{background:rgba(255,59,48,.06);border:1px solid rgba(255,59,48,.18);border-radius:6px;padding:7px 12px;margin-top:7px;}
+.rx-warn p{font-size:11px;color:#ff3b30;font-weight:600;line-height:1.4;}
+
+/* ============================================================
+   GROUPBY VISUAL: proper flex flow
+   ============================================================ */
+.gb-flow{display:flex;align-items:flex-start;justify-content:center;gap:0;max-width:1000px;width:100%;margin-top:14px;}
+.gb-step{display:flex;flex-direction:column;align-items:center;}
+.gb-slbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:#86868b;margin-bottom:6px;text-align:center;}
+.gb-t{border-collapse:collapse;font-size:clamp(9px,.95vw,11.5px);font-family:'SF Mono','Menlo','Consolas',monospace;}
+.gb-t th{background:rgba(0,0,0,.04);padding:3px 9px;font-weight:600;border-bottom:2px solid rgba(0,0,0,.08);text-align:left;}
+.gb-t td{padding:3px 9px;border-bottom:1px solid rgba(0,0,0,.05);text-align:left;}
+tr.ga td{background:rgba(0,122,255,.09);}
+tr.gb td{background:rgba(52,199,89,.09);}
+tr.gc td{background:rgba(255,149,0,.09);}
+.gb-conn{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 14px 0;gap:2px;flex-shrink:0;}
+.gb-conn .ic{font-size:16px;color:#007aff;line-height:1;}
+.gb-conn .lb{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#86868b;white-space:nowrap;text-align:center;}
+.gb-groups{display:flex;flex-direction:column;gap:6px;margin-top:22px;}
+.gb-g{border-radius:7px;padding:6px 12px;font-size:clamp(9px,.95vw,11px);font-family:'SF Mono','Menlo','Consolas',monospace;text-align:left;line-height:1.45;}
+.gb-g.ga{background:rgba(0,122,255,.09);border-left:3px solid #007aff;}
+.gb-g.gb{background:rgba(52,199,89,.09);border-left:3px solid #34c759;}
+.gb-g.gc{background:rgba(255,149,0,.09);border-left:3px solid #ff9500;}
+.gb-g .gl{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;margin-bottom:2px;}
+.gb-g.ga .gl{color:#007aff;}.gb-g.gb .gl{color:#34c759;}.gb-g.gc .gl{color:#ff9500;}
+.gb-rt{border-collapse:collapse;font-size:clamp(9px,.95vw,11.5px);font-family:'SF Mono','Menlo','Consolas',monospace;margin-top:22px;}
+.gb-rt th{background:rgba(0,0,0,.04);padding:3px 9px;font-weight:600;border-bottom:2px solid rgba(0,0,0,.08);text-align:left;}
+.gb-rt td{padding:3px 9px;border-bottom:1px solid rgba(0,0,0,.05);}
+.gb-rt tr.ga td{background:rgba(0,122,255,.09);}
+.gb-rt tr.gb td{background:rgba(52,199,89,.09);}
+.gb-rt tr.gc td{background:rgba(255,149,0,.09);}
+
+/* ---- Fixed UI ---- */
+.lang-sw{position:fixed;top:18px;right:22px;z-index:100;display:flex;gap:2px;background:rgba(255,255,255,.96);backdrop-filter:blur(10px);border:1px solid rgba(0,0,0,.06);border-radius:50px;padding:3px;box-shadow:0 2px 8px rgba(0,0,0,.04);}
+.lang-sw a{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#86868b;text-decoration:none;padding:4px 11px;border-radius:50px;transition:all .2s;}
+.lang-sw a.active{color:#fff;background:#007aff;}
+.slide-ind{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);font-size:12px;color:#86868b;z-index:100;}
+.nav-hint{position:fixed;bottom:20px;right:20px;font-size:11px;color:#c7c7cc;z-index:100;}
+.ltag{position:fixed;top:20px;left:20px;font-size:10px;font-weight:700;color:#86868b;text-transform:uppercase;letter-spacing:.16em;z-index:100;}
+
+@media(max-width:768px){.cg,.jv-src,.jv-res,.rx-grid,.gb-flow{flex-direction:column;grid-template-columns:1fr;}.cards{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<div class="lang-sw"><a href="index.html">RU</a><a href="index-uz.html" class="active">UZ</a><a href="index-en.html">EN</a></div>
+<div class="ltag">16-maruza</div>
+<div class="presentation">
+
+<!-- 1 TITLE -->
+<div class="slide active">
+<div class="sc">
+  <p class="ey">pandas · 16-maruza</p>
+  <h1>Jadvallarni birlashtirish va groupby</h1>
+  <p class="sub">pd.merge · join turlari · edge case-lar · groupby + agg</p>
+</div>
+</div>
+
+<!-- 2 CLASSWORK-15 -->
+<div class="slide">
+<div class="sc">
+  <p class="ey">Classwork-15 tahlili</p>
+  <h2>concert_tickets.csv boʻyicha asosiy kuzatishlar</h2>
+  <div class="cards" style="grid-template-columns:repeat(3,1fr)">
+    <div class="card">
+      <h3>Maʻlumotdagi tipik xatolar</h3>
+      <p>Summa matn koʻrinishida, viloyat nomida probellar, turli sana formatlari. transactions-dagi kabi paternlar.</p>
+    </div>
+    <div class="card">
+      <h3>Yakuniy raqamlardagi farq</h3>
+      <p>Jurnalda asoslangan boʻlsa, ruxsat etiladi. Chiqindilar va NaN boʻyicha turli qarorlar turli natija beradi.</p>
+    </div>
+    <div class="card">
+      <h3>Asosiy tamoyil</h3>
+      <p>Maʻlumotni tozalash determinik emas. Har bir qaror muammolar jurnalida qayd etiladi.</p>
+    </div>
+  </div>
+  <div class="note" style="margin-top:14px">
+    <p>Dars mavzusi: bir nechta jadvaldan dataset yigʻish (<code>pd.merge</code>), uchta tipik xato va guruhlar boʻyicha agregatsiya (<code>groupby</code>).</p>
+  </div>
+</div>
+</div>
+
+<!-- 3 WHY MULTIPLE TABLES -->
+<div class="slide">
+<div class="sc">
+  <p class="ey">Relyatsion model</p>
+  <h2>Maʻlumot bir nechta jadvalga taqsimlangan</h2>
+  <div class="cards" style="grid-template-columns:repeat(3,1fr)">
+    <div class="card">
+      <div class="num">01</div>
+      <h3>Normalizatsiya</h3>
+      <p>Mijoz haqidagi maʻlumot alohida jadvalda bir marta saqlanadi va har bir tranzaksiyada takrorlanmaydi.</p>
+      <span class="mono">customers.csv</span>
+    </div>
+    <div class="card">
+      <div class="num">02</div>
+      <h3>Atributlar bilan boyitish</h3>
+      <p>Tranzaksiyaga mijoz segmenti, tovar kategoriyasi, viloyat aholisi maʻlumotnomadan qoʻshiladi.</p>
+      <span class="mono">products.csv</span>
+    </div>
+    <div class="card">
+      <div class="num">03</div>
+      <h3>Hisobot yigʻish</h3>
+      <p>Tahlil uchun yakuniy dataset bir nechta manbadan ketma-ket join orqali yigʻiladi.</p>
+      <span class="mono">orders + customers + products</span>
+    </div>
+  </div>
+  <div class="note">
+    <p>merge-dan oldin: oʻng jadvalda kalit yagonaligini tekshiring. <code>df["key"].nunique() == len(df)</code></p>
+  </div>
+</div>
+</div>
+
+<!-- 4 JOIN TYPES -->
+<div class="slide">
+<div class="sc">
+  <p class="ey">Birlashtirish turlari</p>
+  <h2>merge-ning toʻrt turi</h2>
+  <table class="dt" style="max-width:1020px">
+    <tr><th>Tur</th><th>Natijadagi qatorlar</th><th>Jufti yoʻq qatorlar</th><th>Qoʻllanilishi</th></tr>
+    <tr><td><code>inner</code></td><td>Faqat ikkala jadvalda mos kelgan qatorlar</td><td>Ogohlantirishsiz tashlanadi</td><td>Faqat toʻliq maʻlumot kerak</td></tr>
+    <tr><td><code>left</code></td><td>Chap jadvalning barcha qatorlari + oʻngdan mosliklar</td><td>Oʻng jadval ustunlarida NaN</td><td>Asosiy jadvalning barcha qatorlarini saqlash</td></tr>
+    <tr><td><code>right</code></td><td>Oʻng jadvalning barcha qatorlari + chapdan mosliklar</td><td>Chap jadval ustunlarida NaN</td><td>Kamdan-kam; jadvallar oʻrni almashtirilib left bilan almashtiriladi</td></tr>
+    <tr><td><code>outer</code></td><td>Ikkala jadvalning barcha qatorlari</td><td>Ikkala tomonda NaN</td><td>Nomuvofiqliklarni toʻliq diagnostika</td></tr>
+  </table>
+  <div class="note warn">
+    <p>Amalda <strong>inner</strong> va <strong>left</strong> ishlatiladi. inner jimgina jufti yoʻq qatorlarni oʻchiradi; left jimgina NaN yaratadi. Ikkalasi ham natijani tekshirishni talab qiladi.</p>
+  </div>
+</div>
+</div>
+
+<!-- 5 SYNTAX -->
+<div class="slide">
+<div class="sc">
+  <p class="ey">Sintaksis</p>
+  <h2>pd.merge: asosiy parametrlar</h2>
+  <div class="cb"><span class="co"># asosiy variant</span>
+result = pd.<span class="cf">merge</span>(left, right, on=<span class="cs">"key"</span>, how=<span class="cs">"inner"</span>)
+
+<span class="co"># ikki jadvalda turli nomli kalitlar</span>
+pd.<span class="cf">merge</span>(orders, customers,
+         left_on=<span class="cs">"cust_id"</span>, right_on=<span class="cs">"customer_id"</span>, how=<span class="cs">"left"</span>)
+
+<span class="co"># tarkibiy kalit</span>
+pd.<span class="cf">merge</span>(left, right, on=[<span class="cs">"region"</span>, <span class="cs">"date"</span>])
+
+<span class="co"># ustun nomlari ziddiyati -> suffikslar</span>
+pd.<span class="cf">merge</span>(left, right, on=<span class="cs">"id"</span>, suffixes=(<span class="cs">"_order"</span>, <span class="cs">"_product"</span>))
+
+<span class="co"># merge-dan keyin majburiy tekshiruv</span>
+<span class="cf">print</span>(<span class="cs">"Oldin:"</span>, <span class="cf">len</span>(left), <span class="cs">"Keyin:"</span>, <span class="cf">len</span>(result))
+result.<span class="cf">isna</span>().<span class="cf">sum</span>()</div>
+</div>
+</div>
+
+<!-- 6 INNER VS LEFT VISUAL -->
+<div class="slide">
+<div class="sc">
+  <p class="ey">Vizualizatsiya</p>
+  <h2>inner vs left: qatorlar taqdiri</h2>
+  <div class="jv-wrap">
+    <div class="jv-src">
+      <div>
+        <div class="jv-tl">transactions (chap jadval)</div>
+        <table class="jv-t">
+          <tr><th>tx_id</th><th>card_id</th><th>amount</th></tr>
+          <tr class="m"><td>T001</td><td>card_101</td><td>150 000</td></tr>
+          <tr class="m"><td>T002</td><td>card_102</td><td>230 000</td></tr>
+          <tr class="m"><td>T003</td><td>card_103</td><td>95 000</td></tr>
+          <tr class="nm"><td>T004</td><td>card_104</td><td>180 000</td></tr>
+        </table>
+        <div class="jv-leg"><span class="dot m"></span>kalit topildi &nbsp;<span class="dot nm"></span>cards-da kalit yoʻq</div>
+      </div>
+      <div class="jv-arr">
+        <div class="ic">&#8594;</div>
+        <div class="tx">pd.merge</div>
+        <div class="tx">on="card_id"</div>
+      </div>
+      <div>
+        <div class="jv-tl">cards (oʻng jadval)</div>
+        <table class="jv-t">
+          <tr><th>card_id</th><th>segment</th></tr>
+          <tr class="m"><td>card_101</td><td>Gold</td></tr>
+          <tr class="m"><td>card_102</td><td>Silver</td></tr>
+          <tr class="m"><td>card_103</td><td>Standard</td></tr>
+        </table>
+        <div class="jv-leg">card_104 yoʻq</div>
+      </div>
+    </div>
+    <div class="jv-res">
+      <div class="jv-rb jv-ib">
+        <div class="jv-rl">inner join</div>
+        <table class="jv-t">
+          <tr><th>tx_id</th><th>card_id</th><th>amount</th><th>segment</th></tr>
+          <tr class="m"><td>T001</td><td>card_101</td><td>150 000</td><td>Gold</td></tr>
+          <tr class="m"><td>T002</td><td>card_102</td><td>230 000</td><td>Silver</td></tr>
+          <tr class="m"><td>T003</td><td>card_103</td><td>95 000</td><td>Standard</td></tr>
+        </table>
+        <div class="jv-n">3 qator. T004 ogohlantirishsiz oʻchirildi.</div>
+      </div>
+      <div class="jv-rb jv-lb">
+        <div class="jv-rl">left join</div>
+        <table class="jv-t">
+          <tr><th>tx_id</th><th>card_id</th><th>amount</th><th>segment</th></tr>
+          <tr class="m"><td>T001</td><td>card_101</td><td>150 000</td><td>Gold</td></tr>
+          <tr class="m"><td>T002</td><td>card_102</td><td>230 000</td><td>Silver</td></tr>
+          <tr class="m"><td>T003</td><td>card_103</td><td>95 000</td><td>Standard</td></tr>
+          <tr class="nan"><td>T004</td><td>card_104</td><td>180 000</td><td class="nan-v">NaN</td></tr>
+        </table>
+        <div class="jv-n">4 qator. T004 saqlandi, segment = NaN.</div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- 7 EDGE CASE: ROW EXPLOSION -->
+<div class="slide">
+<div class="sc">
+  <p class="ey" style="color:#ff3b30">Edge case 1</p>
+  <h2>Oʻng jadvalda takror kalit: qatorlar portlashi</h2>
+  <div class="rx-grid">
+    <div>
+      <div class="jv-tl">orders (2 qator)</div>
+      <table class="jv-t" style="width:100%">
+        <tr><th>order_id</th><th>cust_id</th><th>qty</th></tr>
+        <tr class="m"><td>O5000</td><td>C1000</td><td>3</td></tr>
+        <tr class="m"><td>O5001</td><td>C1001</td><td>1</td></tr>
+      </table>
+    </div>
+    <div class="jv-arr" style="padding-top:20px">
+      <div class="ic">&#8594;</div>
+      <div class="tx">inner merge</div>
+      <div class="tx">on="cust_id"</div>
+    </div>
+    <div>
+      <div class="jv-tl">customers (C1000 ikki marta uchraydi)</div>
+      <table class="jv-t" style="width:100%">
+        <tr><th>cust_id</th><th>city</th><th>tier</th></tr>
+        <tr style="background:rgba(255,59,48,.1)"><td>C1000</td><td>Toshkent</td><td>Premium</td></tr>
+        <tr style="background:rgba(255,59,48,.1)"><td>C1000</td><td>Buxoro</td><td>VIP</td></tr>
+        <tr class="m"><td>C1001</td><td>Andijon</td><td>Standart</td></tr>
+      </table>
+    </div>
+  </div>
+  <div style="max-width:920px;width:100%;margin-top:10px">
+    <div class="jv-tl">Natija: 2 oʻrniga 3 qator</div>
+    <table class="jv-t" style="width:100%;max-width:680px">
+      <tr><th>order_id</th><th>cust_id</th><th>qty</th><th>city</th><th>tier</th></tr>
+      <tr class="rx"><td>O5000</td><td>C1000</td><td>3</td><td>Toshkent</td><td>Premium</td></tr>
+      <tr class="rx"><td>O5000</td><td>C1000</td><td>3</td><td>Buxoro</td><td>VIP</td></tr>
+      <tr class="m"><td>O5001</td><td>C1001</td><td>1</td><td>Andijon</td><td>Standart</td></tr>
+    </table>
+    <div class="rx-warn"><p>O5000 takrorlandi. Umumiy qty endi oshib ketgan. Xato yoʻq: pandas jimgina qatorlarni koʻpaytiradi.</p></div>
+  </div>
+  <div class="note danger">
+    <p>merge-dan oldin diagnostika: <code>assert customers["customer_id"].nunique() == len(customers)</code></p>
+  </div>
+</div>
+</div>
+
+<!-- 8 EDGE CASE: NaN KEY -->
+<div class="slide">
+<div class="sc">
+  <p class="ey" style="color:#ff9500">Edge case 2</p>
+  <h2>Kalit ustunda NaN: NaN NaN bilan mos kelmaydi</h2>
+  <div class="cg">
+    <div>
+      <div class="jv-tl">orders (O002 da customer_id yoʻq)</div>
+      <table class="jv-t" style="width:100%">
+        <tr><th>order_id</th><th>customer_id</th><th>amount</th></tr>
+        <tr class="m"><td>O001</td><td>C1000</td><td>15 000</td></tr>
+        <tr class="nan"><td>O002</td><td class="nan-v">NaN</td><td>32 000</td></tr>
+        <tr class="m"><td>O003</td><td>C1001</td><td>8 000</td></tr>
+      </table>
+    </div>
+    <div>
+      <div class="jv-tl">customers bilan left merge-dan keyin</div>
+      <table class="jv-t" style="width:100%">
+        <tr><th>order_id</th><th>customer_id</th><th>amount</th><th>city</th></tr>
+        <tr class="m"><td>O001</td><td>C1000</td><td>15 000</td><td>Toshkent</td></tr>
+        <tr class="nan"><td>O002</td><td class="nan-v">NaN</td><td>32 000</td><td class="nan-v">NaN</td></tr>
+        <tr class="m"><td>O003</td><td>C1001</td><td>8 000</td><td>Andijon</td></tr>
+      </table>
+    </div>
+  </div>
+  <div class="note warn">
+    <p><code>NaN == NaN</code> pandas-da qaytaradi <code>False</code>. NaN-kalitli qatorlar hech narsa bilan mos kelmaydi. merge-dan oldin: <code>df.dropna(subset=["customer_id"])</code> yoki <code>fillna</code>.</p>
+  </div>
+  <div class="cb" style="max-width:660px;margin-top:8px"><span class="co"># diagnostika</span>
+<span class="cf">print</span>(orders[<span class="cs">"customer_id"</span>].<span class="cf">isna</span>().<span class="cf">sum</span>(), <span class="cs">"kalitda NaN"</span>)</div>
+</div>
+</div>
+
+<!-- 9 EDGE CASE: DTYPE -->
+<div class="slide">
+<div class="sc">
+  <p class="ey" style="color:#ff3b30">Edge case 3</p>
+  <h2>Kalit turlari mos emas: xatosiz 0 qator</h2>
+  <div class="cg">
+    <div class="ci red">
+      <div class="lbl">Muammo</div>
+      <h3>int64 vs object (str)</h3>
+      <p>Bir jadvalda kalit <code>int64</code>, boshqasida <code>object</code>. Pandas turlarni avtomatik keltirmaydi: merge boʻsh DataFrame qaytaradi.</p>
+    </div>
+    <div class="ci green">
+      <div class="lbl">Yechim</div>
+      <h3>Turlarni aniq keltirish</h3>
+      <p>Ikkala jadval uchun <code>df.dtypes</code> ni tekshiring. Kalit ustunni <code>astype</code> orqali yagona turga keltiring.</p>
+    </div>
+  </div>
+  <div class="cb" style="margin-top:12px"><span class="co"># Misol: orders.product_id = int64, products.product_id = object</span>
+<span class="cf">print</span>(orders[<span class="cs">"product_id"</span>].dtype)    <span class="co"># int64</span>
+<span class="cf">print</span>(products[<span class="cs">"product_id"</span>].dtype)  <span class="co"># object</span>
+
+bad = pd.<span class="cf">merge</span>(orders, products, on=<span class="cs">"product_id"</span>)
+<span class="cf">print</span>(<span class="cf">len</span>(bad))   <span class="co"># 0, xato yoʻq</span>
+
+products[<span class="cs">"product_id"</span>] = products[<span class="cs">"product_id"</span>].<span class="cf">astype</span>(<span class="cf">int</span>)
+good = pd.<span class="cf">merge</span>(orders, products, on=<span class="cs">"product_id"</span>)
+<span class="cf">print</span>(<span class="cf">len</span>(good))  <span class="co"># 820</span></div>
+  <div class="note danger">
+    <p>Istisnosiz 0 qator: deyarli har doim dtype mismatch yoki kalit nomidagi xato.</p>
+  </div>
+</div>
+</div>
+
+<!-- 10 POST-MERGE CHECKLIST -->
+<div class="slide">
+<div class="sc">
+  <p class="ey">Sifat nazorati</p>
+  <h2>merge-dan keyin natijani tekshirish</h2>
+  <div class="cg">
+    <div>
+      <div class="cb" style="margin-top:0"><span class="co"># 1. Oʻlcham</span>
+<span class="cf">print</span>(<span class="cs">"Oldin:"</span>, <span class="cf">len</span>(orders), <span class="cs">"Keyin:"</span>, <span class="cf">len</span>(result))
+<span class="co"># left: == len(orders) boʻlishi kerak</span>
+<span class="co"># > len(orders) -> qatorlar portlashi</span>
+
+<span class="co"># 2. Yangi ustunlarda NaN</span>
+result[<span class="cs">"city"</span>].<span class="cf">isna</span>().<span class="cf">sum</span>()
+
+<span class="co"># 3. Qatorlar takrorlanishi</span>
+result.<span class="cf">duplicated</span>(subset=<span class="cs">"order_id"</span>).<span class="cf">sum</span>()
+
+<span class="co"># 4. Kutilgan yagona qiymatlar soni</span>
+result[<span class="cs">"city"</span>].<span class="cf">nunique</span>()</div>
+    </div>
+    <div>
+      <table class="dt" style="margin-top:0">
+        <tr><th>Alomat</th><th>Ehtimoliy sabab</th></tr>
+        <tr><td>Chapdagidan koʻp qator</td><td>Oʻngda takror kalit</td></tr>
+        <tr><td>Kutilgandan kam qator</td><td>inner jufti yoʻq qatorlarni yoʻqotdi</td></tr>
+        <tr><td>0 qator</td><td>dtype mismatch yoki notoʻgʻri kalit</td></tr>
+        <tr><td>Yangi ustunlarda koʻp NaN</td><td>NaN-kalitlar yoki qiymatlar mos emas</td></tr>
+        <tr><td>Ortiqcha _x, _y ustunlar</td><td>Nomlar ziddiyati, <code>suffixes=</code> kerak</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- 11 CONCAT -->
+<div class="slide">
+<div class="sc">
+  <p class="ey">Vertikal yelimlash</p>
+  <h2>pd.concat: bir xil tuzilishli jadvallarni birlashtirish</h2>
+  <p class="bt"><code>merge</code> jadvallarni kalit boʻyicha birlashtiradi. <code>concat</code> bir xil ustunli jadvallarni qatorlar boʻyicha yelimlaydi.</p>
+  <div class="cg" style="margin-top:14px">
+    <div>
+      <div class="cb" style="margin-top:0">jan = pd.<span class="cf">read_csv</span>(<span class="cs">"orders_jan.csv"</span>)
+feb = pd.<span class="cf">read_csv</span>(<span class="cs">"orders_feb.csv"</span>)
+mar = pd.<span class="cf">read_csv</span>(<span class="cs">"orders_mar.csv"</span>)
+
+all_data = pd.<span class="cf">concat</span>(
+    [jan, feb, mar],
+    ignore_index=<span class="cm">True</span>
+)
+<span class="cf">print</span>(all_data.shape)</div>
+    </div>
+    <div>
+      <table class="dt" style="margin-top:0">
+        <tr><th>Parametr</th><th>Vazifasi</th></tr>
+        <tr><td><code>ignore_index=True</code></td><td>Indekslarni tiklash; usiz takrorlanadi</td></tr>
+        <tr><td><code>axis=1</code></td><td>Ustunlar boʻyicha yelimlash</td></tr>
+        <tr><td><code>keys=["jan","feb"]</code></td><td>MultiIndex-da manba belgisi</td></tr>
+      </table>
+      <div class="note warn" style="margin-top:10px">
+        <p><code>ignore_index=True</code> boʻlmasa: <code>df.loc[0]</code> bir nechta qator qaytaradi, har fayldan bittadan.</p>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- 12 GROUPBY VISUAL -->
+<div class="slide">
+<div class="sc">
+  <p class="ey">groupby</p>
+  <h2>Split &rarr; Apply &rarr; Combine</h2>
+  <div class="gb-flow">
+
+    <!-- SOURCE TABLE -->
+    <div class="gb-step">
+      <div class="gb-slbl">DataFrame</div>
+      <table class="gb-t">
+        <tr><th>order</th><th>city</th><th>revenue</th></tr>
+        <tr class="ga"><td>O5000</td><td>Toshkent</td><td>44 178</td></tr>
+        <tr class="gb"><td>O5001</td><td>Andijon</td><td>11 812</td></tr>
+        <tr class="ga"><td>O5002</td><td>Toshkent</td><td>369 240</td></tr>
+        <tr class="gc"><td>O5003</td><td>Buxoro</td><td>88 530</td></tr>
+        <tr class="ga"><td>O5004</td><td>Toshkent</td><td>58 904</td></tr>
+        <tr class="gb"><td>O5005</td><td>Andijon</td><td>29 650</td></tr>
+      </table>
+    </div>
+
+    <!-- ARROW 1 -->
+    <div class="gb-conn">
+      <div class="ic">&#8594;</div>
+      <div class="lb">groupby</div>
+      <div class="lb">("city")</div>
+    </div>
+
+    <!-- GROUPS -->
+    <div class="gb-step">
+      <div class="gb-slbl">city boʻyicha Split</div>
+      <div class="gb-groups">
+        <div class="gb-g ga"><div class="gl">Toshkent</div>44 178 + 369 240 + 58 904</div>
+        <div class="gb-g gb"><div class="gl">Andijon</div>11 812 + 29 650</div>
+        <div class="gb-g gc"><div class="gl">Buxoro</div>88 530</div>
+      </div>
+    </div>
+
+    <!-- ARROW 2 -->
+    <div class="gb-conn">
+      <div class="ic">&#8594;</div>
+      <div class="lb">.sum()</div>
+    </div>
+
+    <!-- RESULT -->
+    <div class="gb-step">
+      <div class="gb-slbl">Combine</div>
+      <table class="gb-rt">
+        <tr><th>city</th><th>revenue</th></tr>
+        <tr class="ga"><td>Toshkent</td><td>472 322</td></tr>
+        <tr class="gb"><td>Andijon</td><td>41 462</td></tr>
+        <tr class="gc"><td>Buxoro</td><td>88 530</td></tr>
+      </table>
+    </div>
+
+  </div>
+  <div class="cb" style="max-width:620px;margin-top:14px">df.<span class="cf">groupby</span>(<span class="cs">"city"</span>)[<span class="cs">"revenue"</span>].<span class="cf">sum</span>().<span class="cf">sort_values</span>(ascending=<span class="cm">False</span>)</div>
+</div>
+</div>
+
+<!-- 13 GROUPBY SYNTAX -->
+<div class="slide">
+<div class="sc">
+  <p class="ey">groupby: sintaksis</p>
+  <h2>Bitta funksiya, bir nechta metrika, top-N</h2>
+  <div class="cb"><span class="co"># bitta agregatsiya</span>
+df.<span class="cf">groupby</span>(<span class="cs">"city"</span>)[<span class="cs">"revenue"</span>].<span class="cf">sum</span>()
+
+<span class="co"># bir nechta metrika</span>
+df.<span class="cf">groupby</span>(<span class="cs">"city"</span>)[<span class="cs">"revenue"</span>].<span class="cf">agg</span>([<span class="cs">"sum"</span>, <span class="cs">"mean"</span>, <span class="cs">"count"</span>])
+
+<span class="co"># nomlangan agregatsiyalar (pandas >= 0.25)</span>
+df.<span class="cf">groupby</span>(<span class="cs">"city"</span>).<span class="cf">agg</span>(
+    total  =(<span class="cs">"revenue"</span>, <span class="cs">"sum"</span>),
+    avg    =(<span class="cs">"revenue"</span>, <span class="cs">"mean"</span>),
+    orders =(<span class="cs">"order_id"</span>, <span class="cs">"count"</span>)
+)
+
+<span class="co"># top-5</span>
+df.<span class="cf">groupby</span>(<span class="cs">"city"</span>)[<span class="cs">"revenue"</span>].<span class="cf">sum</span>()\
+  .<span class="cf">sort_values</span>(ascending=<span class="cm">False</span>).<span class="cf">head</span>(<span class="cm">5</span>)
+
+<span class="co"># reset_index() -> oddiy DataFrame</span>
+df.<span class="cf">groupby</span>(<span class="cs">"city"</span>)[<span class="cs">"revenue"</span>].<span class="cf">sum</span>().<span class="cf">reset_index</span>()</div>
+</div>
+</div>
+
+<!-- 14 GROUPBY MULTI-KEY -->
+<div class="slide">
+<div class="sc">
+  <p class="ey">groupby: ikki kalit</p>
+  <h2>Ikki ustun boʻyicha guruhlash va qiymatlar matritsasi</h2>
+  <div class="cb"><span class="co"># ikki ustun boʻyicha guruhlash -> MultiIndex</span>
+matrix = df.<span class="cf">groupby</span>([<span class="cs">"city"</span>, <span class="cs">"category"</span>])[<span class="cs">"revenue"</span>].<span class="cf">sum</span>()
+
+<span class="co"># unstack: indeksning ikkinchi darajasi -> ustunlar</span>
+pivot = matrix.<span class="cf">unstack</span>(level=<span class="cs">"category"</span>).<span class="cf">fillna</span>(<span class="cm">0</span>)
+
+<span class="co"># pivot_table: xuddi shu, qisqaroq</span>
+pd.<span class="cf">pivot_table</span>(df,
+    values=<span class="cs">"revenue"</span>,
+    index=<span class="cs">"city"</span>,
+    columns=<span class="cs">"category"</span>,
+    aggfunc=<span class="cs">"sum"</span>,
+    fill_value=<span class="cm">0</span>
+)</div>
+  <div class="note">
+    <p><code>unstack</code> groupby natijasi bilan ishlaydi. <code>pivot_table</code> DataFrame-ni toʻgʻridan-toʻgʻri oladi. Natija bir xil.</p>
+  </div>
+</div>
+</div>
+
+<!-- 15 EDGE CASE: NaN IN GROUPBY -->
+<div class="slide">
+<div class="sc">
+  <p class="ey" style="color:#ff9500">Edge case: groupby</p>
+  <h2>Guruhlash ustunida NaN: guruh sukut boʻyicha yoʻqoladi</h2>
+  <div class="cg">
+    <div>
+      <div class="cb" style="margin-top:0"><span class="co"># left join-dan keyin city-da NaN</span>
+df[<span class="cs">"city"</span>].<span class="cf">isna</span>().<span class="cf">sum</span>()  <span class="co"># 15</span>
+
+<span class="co"># Sukut boʻyicha NaN-guruh yoʻqoladi</span>
+r1 = df.<span class="cf">groupby</span>(<span class="cs">"city"</span>)[<span class="cs">"revenue"</span>].<span class="cf">sum</span>()
+<span class="cf">print</span>(<span class="cf">len</span>(r1))   <span class="co"># 8 shahar</span>
+
+<span class="co"># dropna=False: NaN alohida guruh sifatida</span>
+r2 = df.<span class="cf">groupby</span>(<span class="cs">"city"</span>, dropna=<span class="cm">False</span>)[<span class="cs">"revenue"</span>].<span class="cf">sum</span>()
+<span class="cf">print</span>(<span class="cf">len</span>(r2))  <span class="co"># 9 guruh</span>
+
+<span class="co"># muqobil: groupby-dan oldin NaN ni toʻldirish</span>
+df[<span class="cs">"city"</span>] = df[<span class="cs">"city"</span>].<span class="cf">fillna</span>(<span class="cs">"Noma'lum"</span>)</div>
+    </div>
+    <div>
+      <table class="dt" style="margin-top:0">
+        <tr><th>city</th><th>dropna=True</th><th>dropna=False</th></tr>
+        <tr><td>Toshkent</td><td>472 322</td><td>472 322</td></tr>
+        <tr><td>Andijon</td><td>41 462</td><td>41 462</td></tr>
+        <tr><td>Buxoro</td><td>88 530</td><td>88 530</td></tr>
+        <tr style="color:#ff9500"><td>NaN</td><td style="color:#86868b">yoʻq</td><td>34 210</td></tr>
+      </table>
+      <div class="note warn" style="margin-top:10px">
+        <p><code>dropna=False</code>siz 34 210 daromad yoʻqoladi. Xato yoʻq. Yakuniy summani dastlabki maʻlumot bilan solishtiring.</p>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- 16 FULL PIPELINE -->
+<div class="slide">
+<div class="sc">
+  <p class="ey">Toʻliq pipeline</p>
+  <h2>Yuklash &rarr; tozalash &rarr; merge &rarr; groupby</h2>
+  <div class="cb"><span class="co"># 1. yuklash</span>
+orders    = pd.<span class="cf">read_csv</span>(<span class="cs">"orders.csv"</span>)
+customers = pd.<span class="cf">read_csv</span>(<span class="cs">"customers.csv"</span>)
+products  = pd.<span class="cf">read_csv</span>(<span class="cs">"products.csv"</span>)
+
+<span class="co"># 2. tozalash</span>
+products[<span class="cs">"price_uzs"</span>] = pd.<span class="cf">to_numeric</span>(
+    products[<span class="cs">"price_uzs"</span>].<span class="cf">astype</span>(<span class="cf">str</span>).<span class="cf">str</span>.<span class="cf">replace</span>(<span class="cs">r"[^\d]"</span>, <span class="cs">""</span>, regex=<span class="cm">True</span>), errors=<span class="cs">"coerce"</span>)
+customers[<span class="cs">"city"</span>] = customers[<span class="cs">"city"</span>].<span class="cf">str</span>.<span class="cf">strip</span>().<span class="cf">str</span>.<span class="cf">title</span>()
+
+<span class="co"># 3. kalitlar yagonaligini tekshirish</span>
+<span class="cf">assert</span> customers[<span class="cs">"customer_id"</span>].<span class="cf">nunique</span>() == <span class="cf">len</span>(customers)
+<span class="cf">assert</span> products[<span class="cs">"product_id"</span>].<span class="cf">nunique</span>() == <span class="cf">len</span>(products)
+
+<span class="co"># 4. yigʻish</span>
+df = pd.<span class="cf">merge</span>(orders,    customers, on=<span class="cs">"customer_id"</span>, how=<span class="cs">"left"</span>)
+df = pd.<span class="cf">merge</span>(df,       products,  on=<span class="cs">"product_id"</span>,  how=<span class="cs">"left"</span>)
+df[<span class="cs">"revenue"</span>] = df[<span class="cs">"price_uzs"</span>] * df[<span class="cs">"quantity"</span>]
+
+<span class="co"># 5. tahlil</span>
+df.<span class="cf">groupby</span>(<span class="cs">"city"</span>)[<span class="cs">"revenue"</span>].<span class="cf">sum</span>().<span class="cf">sort_values</span>(ascending=<span class="cm">False</span>)</div>
+</div>
+</div>
+
+<!-- 17 CHEATSHEET -->
+<div class="slide">
+<div class="sc">
+  <p class="ey">Maʻlumotnoma</p>
+  <h2>Asosiy vositalar va tipik xatolar</h2>
+  <table class="dt" style="max-width:1060px">
+    <tr><th>Vazifa</th><th>Vosita</th><th>Tipik xato</th></tr>
+    <tr><td>Kalit boʻyicha birlashtirish, faqat kesishma</td><td><code>pd.merge(how="inner")</code></td><td>Jimgina jufti yoʻq qatorlarni yoʻqotadi</td></tr>
+    <tr><td>Birlashtirish, butun chap jadvalni saqlash</td><td><code>pd.merge(how="left")</code></td><td>Yangi ustunlarda NaN</td></tr>
+    <tr><td>Bir xil tuzilishli jadvallarni yelimlash</td><td><code>pd.concat([...], ignore_index=True)</code></td><td>ignore_index-siz indekslar takrorlanadi</td></tr>
+    <tr><td>Guruhlar boʻyicha agregatsiya</td><td><code>groupby("col")["x"].sum()</code></td><td>NaN-guruhlar sukut boʻyicha yoʻqoladi</td></tr>
+    <tr><td>Bir oʻtishda bir nechta metrika</td><td><code>.agg(["sum","mean","count"])</code></td><td>Series emas, DataFrame qaytaradi</td></tr>
+    <tr><td>Ikki kategoriya matritsasi</td><td><code>pivot_table(values, index, columns)</code></td><td><code>fill_value=0</code> kerak</td></tr>
+    <tr><td>NaN-guruhni qoʻshish</td><td><code>groupby("col", dropna=False)</code></td><td>Xabarsiz yoʻqolgan daromad</td></tr>
+    <tr><td>Qatorlar portlashini tekshirish</td><td><code>assert len(result) == len(left)</code></td><td>Oʻng jadvalda takror kalit</td></tr>
+  </table>
+</div>
+</div>
+
+<!-- 18 CLASSWORK -->
+<div class="slide">
+<div class="sc">
+  <p class="ey">Mustaqil ish</p>
+  <h2>Internet-doʻkon: dataset yigʻish va tahlil</h2>
+  <div class="cards" style="grid-template-columns:repeat(3,1fr)">
+    <div class="card">
+      <div class="num">01</div>
+      <h3>orders.csv</h3>
+      <p>820 buyurtma. order_id, customer_id, product_id, order_date, quantity. Takrorlar bor.</p>
+    </div>
+    <div class="card">
+      <div class="num">02</div>
+      <h3>customers.csv</h3>
+      <p>120 mijoz. customer_id, name, city, tier. Shahar yozilishida nomuvofiqlik.</p>
+    </div>
+    <div class="card">
+      <div class="num">03</div>
+      <h3>products.csv</h3>
+      <p>40 tovar. product_id, name, category, price_uzs. Narx matn koʻrinishida yozilgan.</p>
+    </div>
+  </div>
+  <div class="note" style="margin-top:14px">
+    <p>Vazifa: uchala jadvalni tozalash, kalitlarni tekshirish, merge orqali yigʻish, <code>revenue = price_uzs * quantity</code> qoʻshish. Javob bering: shaharlar boʻyicha daromad, kategoriyalar boʻyicha, top-5 mijoz.</p>
+  </div>
+</div>
+</div>
+
+</div><!-- end presentation -->
+
+<div class="slide-ind"><span id="cur">1</span> / <span id="tot"></span></div>
+<div class="nav-hint">&#8592; &#8594; / probel</div>
+
+<script>
+const slides = document.querySelectorAll('.slide');
+let cur = 0;
+document.getElementById('tot').textContent = slides.length;
+function go(n){
+  slides[cur].classList.remove('active');
+  cur=(n+slides.length)%slides.length;
+  slides[cur].classList.add('active');
+  const sc=slides[cur].querySelector('.sc');
+  if(sc){sc.style.animation='none';sc.offsetHeight;sc.style.animation='';}
+  document.getElementById('cur').textContent=cur+1;
+}
+document.addEventListener('keydown',e=>{
+  if(e.key==='ArrowRight'||e.key===' '){e.preventDefault();go(cur+1);}
+  if(e.key==='ArrowLeft'){e.preventDefault();go(cur-1);}
+});
+let tx=0;
+document.addEventListener('touchstart',e=>{tx=e.touches[0].clientX;});
+document.addEventListener('touchend',e=>{const dx=e.changedTouches[0].clientX-tx;if(Math.abs(dx)>40)go(cur+(dx<0?1:-1));});
+</script>
+</body>
+</html>

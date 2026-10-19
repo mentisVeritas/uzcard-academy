@@ -1,0 +1,893 @@
+{
+  "scoring_applications": {
+    "row_count": 18000,
+    "columns": [
+      {
+        "column_name": "application_id",
+        "data_type": "bigint",
+        "is_nullable": "NO"
+      },
+      {
+        "column_name": "client_id",
+        "data_type": "bigint",
+        "is_nullable": "NO"
+      },
+      {
+        "column_name": "decision_date",
+        "data_type": "date",
+        "is_nullable": "NO"
+      },
+      {
+        "column_name": "channel",
+        "data_type": "text",
+        "is_nullable": "YES"
+      },
+      {
+        "column_name": "purpose",
+        "data_type": "text",
+        "is_nullable": "YES"
+      },
+      {
+        "column_name": "requested_amount_uzs",
+        "data_type": "bigint",
+        "is_nullable": "YES"
+      },
+      {
+        "column_name": "term_months",
+        "data_type": "integer",
+        "is_nullable": "YES"
+      },
+      {
+        "column_name": "declared_income_uzs",
+        "data_type": "bigint",
+        "is_nullable": "YES"
+      },
+      {
+        "column_name": "employment_months",
+        "data_type": "integer",
+        "is_nullable": "YES"
+      },
+      {
+        "column_name": "final_decision",
+        "data_type": "text",
+        "is_nullable": "YES"
+      },
+      {
+        "column_name": "approved_by_old_policy",
+        "data_type": "boolean",
+        "is_nullable": "YES"
+      }
+    ],
+    "primary_keys": [],
+    "foreign_keys": [],
+    "sample_columns": [
+      "application_id",
+      "client_id",
+      "decision_date",
+      "channel",
+      "purpose",
+      "requested_amount_uzs",
+      "term_months",
+      "declared_income_uzs",
+      "employment_months",
+      "final_decision",
+      "approved_by_old_policy"
+    ]
+  },
+  "scoring_applications_full": {
+    "row_count": 11277,
+    "columns": [
+      {
+        "column_name": "application_id",
+        "data_type": "bigint",
+        "is_nullable": "YES"
+      },
+      {
+        "column_name": "client_id",
+        "data_type": "bigint",
+        "is_nullable": "YES"
+      },
+      {
+        "column_name": "decision_date",
+        "data_type": "date",
+        "is_nullable": "YES"
+      },
+      {
+        "column_name": "requested_amount_uzs",
+        "data_type": "bigint",
+        "is_nullable": "YES"
+      },
+      {
+        "column_name": "term_months",
+        "data_type": "integer",
+        "is_nullable": "YES"
+      },
+      {
+        "column_name": "declared_income_uzs",
+        "data_type": "bigint",
+        "is_nullable": "YES"
+      },
+      {
+        "column_name": "bureau_score_latest",
+        "data_type": "integer",
+        "is_nullable": "YES"
+      },
+      {
+        "column_name": "dpd_max",
+        "data_type": "integer",
+        "is_nullable": "YES"
+      },
+      {
+        "column_name": "collection_calls_cnt",
+        "data_type": "integer",
+        "is_nullable": "YES"
+      },
+      {
+        "column_name": "contract_status_now",
+        "data_type": "text",
+        "is_nullable": "YES"
+      }
+    ],
+    "primary_keys": [],
+    "foreign_keys": [],
+    "sample_columns": [
+      "application_id",
+      "client_id",
+      "decision_date",
+      "requested_amount_uzs",
+      "term_months",
+      "declared_income_uzs",
+      "bureau_score_latest",
+      "dpd_max",
+      "collection_calls_cnt",
+      "contract_status_now"
+    ]
+  },
+  "scoring_bureau_inquiries": {
+    "row_count": 31383,
+    "columns": [
+      {
+        "column_name": "inquiry_id",
+        "data_type": "bigint",
+        "is_nullable": "NO"
+      },
+      {
+        "column_name": "client_id",
+        "data_type": "bigint",
+        "is_nullable": "YES"
+      },
+      {
+        "column_name": "inquiry_date",
+        "data_type": "date",
+        "is_nullable": "YES"
+      },
+      {
+        "column_name": "creditor_name",
+        "data_type": "text",
+        "is_nullable": "YES"
+      },
+      {
+        "column_name": "inquiry_type",
+        "data_type": "text",
+        "is_nullable": "YES"
+      }
+    ],
+    "primary_keys": [],
+    "foreign_keys": [],
+    "sample_columns": [
+      "inquiry_id",
+      "client_id",
+      "inquiry_date",
+      "creditor_name",
+      "inquiry_type"
+    ]
+  },
+  "scoring_bureau_loans": {
+    "row_count": 34684,
+    "columns": [
+      {
+        "column_name": "bureau_loan_id",
+        "data_type": "bigint",
+        "is_nullable": "NO"
+      },
+      {
+        "column_name": "client_id",
+        "data_type": "bigint",
+        "is_nullable": "YES"
+      },
+      {
+        "column_name": "creditor_name",
+        "data_type": "text",
+        "is_nullable": "YES"
+      },
+      {
+        "column_name": "open_date",
+        "data_type": "date",
+        "is_nullable": "YES"
+      },
+      {
+        "column_name": "planned_close_date",
+        "data_type": "date",
+        "is_nullable": "YES"
+      },
+      {
+        "column_name": "close_date",
+        "data_type": "date",
+        "is_nullable": "YES"
+      },
+      {
+        "column_name": "loan_amount_uzs",
+        "data_type": "bigint",
+        "is_nullable": "YES"
+      },
+      {
+        "column_name": "monthly_payment_uzs",
+        "data_type": "bigint",
+        "is_nullable": "YES"
+      },
+      {
+        "column_name": "outstanding_uzs",
+        "data_type": "bigint",
+        "is_nullable": "YES"
+      },
+      {
+        "column_name": "status",
+        "data_type": "text",
+        "is_nullable": "YES"
+      },
+      {
+        "column_name": "current_dpd_bucket",
+        "data_type": "text",
+        "is_nullable": "YES"
+      },
+      {
+        "column_name": "worst_dpd_ever",
+        "data_type": "integer",
+        "is_nullable": "YES"
+      }
+    ],
+    "primary_keys": [],
+    "foreign_keys": [],
+    "sample_columns": [
+      "bureau_loan_id",
+      "client_id",
+      "creditor_name",
+      "open_date",
+      "planned_close_date",
+      "close_date",
+      "loan_amount_uzs",
+      "monthly_payment_uzs",
+      "outstanding_uzs",
+      "status",
+      "current_dpd_bucket",
+      "worst_dpd_ever"
+    ]
+  },
+  "scoring_bureau_snapshots": {
+    "row_count": 86161,
+    "columns": [
+      {
+        "column_name": "client_id",
+        "data_type": "bigint",
+        "is_nullable": "YES"
+      },
+      {
+        "column_name": "snapshot_date",
+        "data_type": "date",
+        "is_nullable": "YES"
+      },
+      {
+        "column_name": "bureau_score",
+        "data_type": "integer",
+        "is_nullable": "YES"
+      },
+      {
+        "column_name": "existing_debt_uzs",
+        "data_type": "bigint",
+        "is_nullable": "YES"
+      },
+      {
+        "column_name": "active_loans_cnt",
+        "data_type": "integer",
+        "is_nullable": "YES"
+      }
+    ],
+    "primary_keys": [],
+    "foreign_keys": [],
+    "sample_columns": [
+      "client_id",
+      "snapshot_date",
+      "bureau_score",
+      "existing_debt_uzs",
+      "active_loans_cnt"
+    ]
+  },
+  "scoring_card_disputes": {
+    "row_count": 2467,
+    "columns": [
+      {
+        "column_name": "dispute_id",
+        "data_type": "bigint",
+        "is_nullable": "NO"
+      },
+      {
+        "column_name": "txn_id",
+        "data_type": "bigint",
+        "is_nullable": "YES"
+      },
+      {
+        "column_name": "opened_date",
+        "data_type": "date",
+        "is_nullable": "YES"
+      },
+      {
+        "column_name": "reason_code",
+        "data_type": "text",
+        "is_nullable": "YES"
+      },
+      {
+        "column_name": "dispute_amount_uzs",
+        "data_type": "bigint",
+        "is_nullable": "YES"
+      },
+      {
+        "column_name": "status",
+        "data_type": "text",
+        "is_nullable": "YES"
+      }
+    ],
+    "primary_keys": [],
+    "foreign_keys": [],
+    "sample_columns": [
+      "dispute_id",
+      "txn_id",
+      "opened_date",
+      "reason_code",
+      "dispute_amount_uzs",
+      "status"
+    ]
+  },
+  "scoring_card_transactions": {
+    "row_count": 1044743,
+    "columns": [
+      {
+        "column_name": "txn_id",
+        "data_type": "bigint",
+        "is_nullable": "NO"
+      },
+      {
+        "column_name": "card_id",
+        "data_type": "bigint",
+        "is_nullable": "YES"
+      },
+      {
+        "column_name": "client_id",
+        "data_type": "bigint",
+        "is_nullable": "YES"
+      },
+      {
+        "column_name": "txn_ts",
+        "data_type": "timestamp without time zone",
+        "is_nullable": "YES"
+      },
+      {
+        "column_name": "txn_type",
+        "data_type": "text",
+        "is_nullable": "YES"
+      },
+      {
+        "column_name": "mcc_group",
+        "data_type": "text",
+        "is_nullable": "YES"
+      },
+      {
+        "column_name": "amount_uzs",
+        "data_type": "bigint",
+        "is_nullable": "YES"
+      },
+      {
+        "column_name": "status",
+        "data_type": "text",
+        "is_nullable": "YES"
+      },
+      {
+        "column_name": "decline_reason",
+        "data_type": "text",
+        "is_nullable": "YES"
+      }
+    ],
+    "primary_keys": [],
+    "foreign_keys": [],
+    "sample_columns": [
+      "txn_id",
+      "card_id",
+      "client_id",
+      "txn_ts",
+      "txn_type",
+      "mcc_group",
+      "amount_uzs",
+      "status",
+      "decline_reason"
+    ]
+  },
+  "scoring_cards": {
+    "row_count": 12614,
+    "columns": [
+      {
+        "column_name": "card_id",
+        "data_type": "bigint",
+        "is_nullable": "NO"
+      },
+      {
+        "column_name": "customer_id",
+        "data_type": "bigint",
+        "is_nullable": "YES"
+      },
+      {
+        "column_name": "card_type",
+        "data_type": "text",
+        "is_nullable": "YES"
+      },
+      {
+        "column_name": "scheme",
+        "data_type": "text",
+        "is_nullable": "YES"
+      },
+      {
+        "column_name": "issue_date",
+        "data_type": "date",
+        "is_nullable": "YES"
+      },
+      {
+        "column_name": "expiry_date",
+        "data_type": "date",
+        "is_nullable": "YES"
+      },
+      {
+        "column_name": "status",
+        "data_type": "text",
+        "is_nullable": "YES"
+      },
+      {
+        "column_name": "credit_limit_uzs",
+        "data_type": "bigint",
+        "is_nullable": "YES"
+      }
+    ],
+    "primary_keys": [],
+    "foreign_keys": [],
+    "sample_columns": [
+      "card_id",
+      "customer_id",
+      "card_type",
+      "scheme",
+      "issue_date",
+      "expiry_date",
+      "status",
+      "credit_limit_uzs"
+    ]
+  },
+  "scoring_clients_old": {
+    "row_count": 6000,
+    "columns": [
+      {
+        "column_name": "client_id",
+        "data_type": "bigint",
+        "is_nullable": "YES"
+      },
+      {
+        "column_name": "full_name",
+        "data_type": "text",
+        "is_nullable": "YES"
+      },
+      {
+        "column_name": "birthdate",
+        "data_type": "date",
+        "is_nullable": "YES"
+      },
+      {
+        "column_name": "oblast",
+        "data_type": "text",
+        "is_nullable": "YES"
+      },
+      {
+        "column_name": "segment_2022",
+        "data_type": "text",
+        "is_nullable": "YES"
+      },
+      {
+        "column_name": "income_band_old",
+        "data_type": "text",
+        "is_nullable": "YES"
+      }
+    ],
+    "primary_keys": [],
+    "foreign_keys": [],
+    "sample_columns": [
+      "client_id",
+      "full_name",
+      "birthdate",
+      "oblast",
+      "segment_2022",
+      "income_band_old"
+    ]
+  },
+  "scoring_collection_actions": {
+    "row_count": 9135,
+    "columns": [
+      {
+        "column_name": "contract_id",
+        "data_type": "bigint",
+        "is_nullable": "YES"
+      },
+      {
+        "column_name": "action_date",
+        "data_type": "date",
+        "is_nullable": "YES"
+      },
+      {
+        "column_name": "action_type",
+        "data_type": "text",
+        "is_nullable": "YES"
+      },
+      {
+        "column_name": "contact_result",
+        "data_type": "text",
+        "is_nullable": "YES"
+      }
+    ],
+    "primary_keys": [],
+    "foreign_keys": [],
+    "sample_columns": [
+      "contract_id",
+      "action_date",
+      "action_type",
+      "contact_result"
+    ]
+  },
+  "scoring_contracts": {
+    "row_count": 11277,
+    "columns": [
+      {
+        "column_name": "contract_id",
+        "data_type": "bigint",
+        "is_nullable": "NO"
+      },
+      {
+        "column_name": "application_id",
+        "data_type": "bigint",
+        "is_nullable": "YES"
+      },
+      {
+        "column_name": "client_id",
+        "data_type": "bigint",
+        "is_nullable": "YES"
+      },
+      {
+        "column_name": "issue_date",
+        "data_type": "date",
+        "is_nullable": "YES"
+      },
+      {
+        "column_name": "issued_amount_uzs",
+        "data_type": "bigint",
+        "is_nullable": "YES"
+      },
+      {
+        "column_name": "term_months",
+        "data_type": "integer",
+        "is_nullable": "YES"
+      },
+      {
+        "column_name": "annual_rate_pct",
+        "data_type": "numeric",
+        "is_nullable": "YES"
+      },
+      {
+        "column_name": "monthly_payment_uzs",
+        "data_type": "bigint",
+        "is_nullable": "YES"
+      }
+    ],
+    "primary_keys": [],
+    "foreign_keys": [],
+    "sample_columns": [
+      "contract_id",
+      "application_id",
+      "client_id",
+      "issue_date",
+      "issued_amount_uzs",
+      "term_months",
+      "annual_rate_pct",
+      "monthly_payment_uzs"
+    ]
+  },
+  "scoring_customers": {
+    "row_count": 8000,
+    "columns": [
+      {
+        "column_name": "customer_id",
+        "data_type": "bigint",
+        "is_nullable": "NO"
+      },
+      {
+        "column_name": "full_name",
+        "data_type": "text",
+        "is_nullable": "YES"
+      },
+      {
+        "column_name": "birth_date",
+        "data_type": "date",
+        "is_nullable": "YES"
+      },
+      {
+        "column_name": "gender",
+        "data_type": "text",
+        "is_nullable": "YES"
+      },
+      {
+        "column_name": "region",
+        "data_type": "text",
+        "is_nullable": "YES"
+      },
+      {
+        "column_name": "customer_segment",
+        "data_type": "text",
+        "is_nullable": "YES"
+      },
+      {
+        "column_name": "onboarding_date",
+        "data_type": "date",
+        "is_nullable": "YES"
+      },
+      {
+        "column_name": "income_band",
+        "data_type": "text",
+        "is_nullable": "YES"
+      }
+    ],
+    "primary_keys": [],
+    "foreign_keys": [],
+    "sample_columns": [
+      "customer_id",
+      "full_name",
+      "birth_date",
+      "gender",
+      "region",
+      "customer_segment",
+      "onboarding_date",
+      "income_band"
+    ]
+  },
+  "scoring_model_v1_scores": {
+    "row_count": 18000,
+    "columns": [
+      {
+        "column_name": "application_id",
+        "data_type": "bigint",
+        "is_nullable": "YES"
+      },
+      {
+        "column_name": "score_v1",
+        "data_type": "integer",
+        "is_nullable": "YES"
+      },
+      {
+        "column_name": "decision_recommend",
+        "data_type": "text",
+        "is_nullable": "YES"
+      }
+    ],
+    "primary_keys": [],
+    "foreign_keys": [],
+    "sample_columns": [
+      "application_id",
+      "score_v1",
+      "decision_recommend"
+    ]
+  },
+  "scoring_payments": {
+    "row_count": 103150,
+    "columns": [
+      {
+        "column_name": "payment_id",
+        "data_type": "bigint",
+        "is_nullable": "NO"
+      },
+      {
+        "column_name": "contract_id",
+        "data_type": "bigint",
+        "is_nullable": "YES"
+      },
+      {
+        "column_name": "installment_no",
+        "data_type": "integer",
+        "is_nullable": "YES"
+      },
+      {
+        "column_name": "due_date",
+        "data_type": "date",
+        "is_nullable": "YES"
+      },
+      {
+        "column_name": "due_amount_uzs",
+        "data_type": "bigint",
+        "is_nullable": "YES"
+      },
+      {
+        "column_name": "paid_date",
+        "data_type": "date",
+        "is_nullable": "YES"
+      },
+      {
+        "column_name": "paid_amount_uzs",
+        "data_type": "bigint",
+        "is_nullable": "YES"
+      }
+    ],
+    "primary_keys": [],
+    "foreign_keys": [],
+    "sample_columns": [
+      "payment_id",
+      "contract_id",
+      "installment_no",
+      "due_date",
+      "due_amount_uzs",
+      "paid_date",
+      "paid_amount_uzs"
+    ]
+  },
+  "scoring_payments_backup": {
+    "row_count": 73421,
+    "columns": [
+      {
+        "column_name": "payment_id",
+        "data_type": "bigint",
+        "is_nullable": "YES"
+      },
+      {
+        "column_name": "contract_id",
+        "data_type": "bigint",
+        "is_nullable": "YES"
+      },
+      {
+        "column_name": "installment_no",
+        "data_type": "integer",
+        "is_nullable": "YES"
+      },
+      {
+        "column_name": "due_date",
+        "data_type": "date",
+        "is_nullable": "YES"
+      },
+      {
+        "column_name": "due_amount_uzs",
+        "data_type": "bigint",
+        "is_nullable": "YES"
+      },
+      {
+        "column_name": "paid_date",
+        "data_type": "date",
+        "is_nullable": "YES"
+      },
+      {
+        "column_name": "paid_amount_uzs",
+        "data_type": "bigint",
+        "is_nullable": "YES"
+      }
+    ],
+    "primary_keys": [],
+    "foreign_keys": [],
+    "sample_columns": [
+      "payment_id",
+      "contract_id",
+      "installment_no",
+      "due_date",
+      "due_amount_uzs",
+      "paid_date",
+      "paid_amount_uzs"
+    ]
+  },
+  "scoring_temp": {
+    "row_count": 0,
+    "columns": [
+      {
+        "column_name": "id",
+        "data_type": "bigint",
+        "is_nullable": "YES"
+      },
+      {
+        "column_name": "val",
+        "data_type": "text",
+        "is_nullable": "YES"
+      },
+      {
+        "column_name": "note",
+        "data_type": "text",
+        "is_nullable": "YES"
+      }
+    ],
+    "primary_keys": [],
+    "foreign_keys": [],
+    "sample_columns": [
+      "id",
+      "val",
+      "note"
+    ]
+  },
+  "scoring_txn_sample": {
+    "row_count": 5000,
+    "columns": [
+      {
+        "column_name": "transaction_id",
+        "data_type": "bigint",
+        "is_nullable": "YES"
+      },
+      {
+        "column_name": "card_id",
+        "data_type": "bigint",
+        "is_nullable": "YES"
+      },
+      {
+        "column_name": "merchant_id",
+        "data_type": "bigint",
+        "is_nullable": "YES"
+      },
+      {
+        "column_name": "terminal_id",
+        "data_type": "bigint",
+        "is_nullable": "YES"
+      },
+      {
+        "column_name": "txn_ts",
+        "data_type": "timestamp without time zone",
+        "is_nullable": "YES"
+      },
+      {
+        "column_name": "amount_uzs",
+        "data_type": "bigint",
+        "is_nullable": "YES"
+      },
+      {
+        "column_name": "txn_status",
+        "data_type": "text",
+        "is_nullable": "YES"
+      },
+      {
+        "column_name": "decline_reason",
+        "data_type": "text",
+        "is_nullable": "YES"
+      },
+      {
+        "column_name": "is_recurring",
+        "data_type": "boolean",
+        "is_nullable": "YES"
+      },
+      {
+        "column_name": "entry_mode",
+        "data_type": "text",
+        "is_nullable": "YES"
+      },
+      {
+        "column_name": "is_disputed",
+        "data_type": "boolean",
+        "is_nullable": "YES"
+      }
+    ],
+    "primary_keys": [],
+    "foreign_keys": [],
+    "sample_columns": [
+      "transaction_id",
+      "card_id",
+      "merchant_id",
+      "terminal_id",
+      "txn_ts",
+      "amount_uzs",
+      "txn_status",
+      "decline_reason",
+      "is_recurring",
+      "entry_mode",
+      "is_disputed"
+    ]
+  }
+}

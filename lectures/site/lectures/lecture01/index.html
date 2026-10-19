@@ -1,0 +1,1553 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Курс по машинному обучению - Урок 1</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700;800&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+            background: #FFFFFF;
+            color: #1d1d1f;
+            line-height: 1.1;
+            overflow: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .presentation { width: 100vw; height: 100vh; position: relative; }
+
+        .slide {
+            width: 100%; height: 100%;
+            display: none;
+            align-items: center; justify-content: center;
+            position: absolute; top: 0; left: 0;
+            padding: clamp(40px, 6vh, 80px) clamp(40px, 6vw, 80px);
+            text-align: center;
+        }
+
+        .slide.active { display: flex; flex-direction: column; }
+
+        .slide-content {
+            max-width: 1200px; width: 100%; margin: 0 auto;
+            opacity: 0; transform: translateY(20px);
+            animation: fadeInUp 0.8s ease-out 0.2s forwards;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+        }
+
+        @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
+
+        h1 {
+            font-size: clamp(40px, 6.5vw, 96px);
+            font-weight: 700;
+            letter-spacing: -0.025em;
+            line-height: 0.95;
+            margin-bottom: clamp(16px, 2.5vh, 32px);
+            color: #1d1d1f;
+        }
+
+        h2 {
+            font-size: clamp(28px, 4vw, 56px);
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            line-height: 1.05;
+            margin-bottom: clamp(16px, 2vh, 28px);
+            color: #1d1d1f;
+        }
+
+        .subtitle {
+            font-size: clamp(18px, 2.2vw, 28px);
+            font-weight: 400;
+            color: #86868b;
+            margin-bottom: clamp(24px, 4vh, 48px);
+            line-height: 1.3;
+            max-width: 900px;
+        }
+
+        .eyebrow {
+            font-size: clamp(13px, 1.2vw, 16px);
+            font-weight: 600;
+            color: #007aff;
+            text-transform: uppercase;
+            letter-spacing: 0.18em;
+            margin-bottom: 18px;
+        }
+
+        .hero-text {
+            font-size: clamp(22px, 3.4vw, 48px);
+            font-weight: 500;
+            line-height: 1.15;
+            letter-spacing: -0.015em;
+            margin-bottom: clamp(16px, 2.5vh, 32px);
+            max-width: 1100px;
+        }
+
+        .body-text {
+            font-size: clamp(15px, 1.8vw, 22px);
+            font-weight: 400;
+            color: #515154;
+            line-height: 1.45;
+            max-width: 820px;
+            margin: 0 auto;
+        }
+
+        .highlight { color: #007aff; font-weight: 500; }
+        .accent-green { color: #34c759; font-weight: 500; }
+        .accent-red { color: #ff3b30; font-weight: 500; }
+
+        /* Hero image styling */
+        .hero-image {
+            max-width: min(560px, 70vw);
+            max-height: 50vh;
+            border-radius: 18px;
+            object-fit: contain;
+            margin-bottom: clamp(20px, 3vh, 32px);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.08);
+        }
+
+        .hero-image.flat {
+            box-shadow: none;
+            background: transparent;
+        }
+
+        .hero-image.wide {
+            max-width: min(820px, 85vw);
+            max-height: 56vh;
+        }
+
+        .hero-image.portrait {
+            max-width: min(280px, 50vw);
+            max-height: 40vh;
+            border-radius: 50%;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.1);
+        }
+
+        /* Cards grid */
+        .cards-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: clamp(16px, 2.5vw, 28px);
+            margin-top: clamp(24px, 4vh, 40px);
+            max-width: 1100px; width: 100%;
+        }
+
+        .card {
+            background: rgba(0, 0, 0, 0.025);
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            border-radius: 14px;
+            padding: clamp(20px, 2.5vw, 32px);
+            text-align: left;
+            opacity: 0; transform: translateY(24px);
+            animation: cardSlideUp 0.55s ease-out forwards;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            background: rgba(0, 0, 0, 0.04);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+        }
+
+        .card:nth-child(1) { animation-delay: 0.4s; }
+        .card:nth-child(2) { animation-delay: 0.5s; }
+        .card:nth-child(3) { animation-delay: 0.6s; }
+        .card:nth-child(4) { animation-delay: 0.7s; }
+        .card:nth-child(5) { animation-delay: 0.8s; }
+        .card:nth-child(6) { animation-delay: 0.9s; }
+
+        @keyframes cardSlideUp { to { opacity: 1; transform: translateY(0); } }
+
+        .card .num {
+            font-size: clamp(28px, 3vw, 36px);
+            font-weight: 700;
+            color: #007aff;
+            line-height: 1;
+            margin-bottom: 12px;
+            letter-spacing: -0.02em;
+        }
+
+        .card h3 {
+            font-size: clamp(17px, 2vw, 22px);
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #1d1d1f;
+            letter-spacing: -0.01em;
+        }
+
+        .card p {
+            font-size: clamp(13px, 1.55vw, 16px);
+            color: #6e6e73;
+            line-height: 1.45;
+        }
+
+        .card ul { list-style: none; padding: 0; }
+        .card ul li {
+            font-size: clamp(13px, 1.5vw, 16px);
+            color: #515154;
+            line-height: 1.5;
+            padding: 4px 0 4px 16px;
+            position: relative;
+        }
+        .card ul li::before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: #007aff;
+            font-weight: 700;
+        }
+
+        /* Two-column comparison */
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: clamp(24px, 4vw, 56px);
+            max-width: 1100px;
+            width: 100%;
+            margin-top: clamp(24px, 4vh, 40px);
+            align-items: stretch;
+        }
+
+        .comparison-item {
+            text-align: left;
+            opacity: 0; transform: scale(0.96);
+            animation: scaleIn 0.6s ease-out forwards;
+            padding: clamp(24px, 3vw, 36px);
+            border-radius: 16px;
+            background: rgba(0,0,0,0.02);
+            border: 1px solid rgba(0,0,0,0.06);
+        }
+
+        .comparison-item:nth-child(1) { animation-delay: 0.4s; }
+        .comparison-item:nth-child(2) { animation-delay: 0.55s; }
+
+        @keyframes scaleIn { to { opacity: 1; transform: scale(1); } }
+
+        .comparison-item .label {
+            font-size: clamp(12px, 1.1vw, 14px);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.16em;
+            margin-bottom: 12px;
+        }
+        .comparison-item.old .label { color: #ff3b30; }
+        .comparison-item.new .label { color: #34c759; }
+
+        .comparison-item h3 {
+            font-size: clamp(20px, 2.6vw, 30px);
+            font-weight: 600;
+            margin-bottom: 14px;
+            color: #1d1d1f;
+            line-height: 1.15;
+        }
+
+        .comparison-item p, .comparison-item li {
+            font-size: clamp(14px, 1.7vw, 18px);
+            color: #515154;
+            line-height: 1.45;
+        }
+
+        .comparison-item ul { list-style: none; padding: 0; margin-top: 8px; }
+        .comparison-item ul li {
+            padding: 6px 0 6px 18px;
+            position: relative;
+        }
+        .comparison-item.old ul li::before {
+            content: "→"; position: absolute; left: 0; color: #ff3b30; font-weight: 600;
+        }
+        .comparison-item.new ul li::before {
+            content: "→"; position: absolute; left: 0; color: #34c759; font-weight: 600;
+        }
+
+        /* Big number */
+        .big-number {
+            font-size: clamp(80px, 14vw, 220px);
+            font-weight: 700;
+            color: #007aff;
+            line-height: 0.85;
+            margin-bottom: clamp(16px, 2.5vh, 32px);
+            letter-spacing: -0.05em;
+        }
+
+        /* Footer card / quote */
+        .quote-card {
+            margin-top: clamp(24px, 4vh, 40px);
+            padding: clamp(20px, 2.5vw, 28px) clamp(24px, 3vw, 36px);
+            border-left: 3px solid #007aff;
+            background: rgba(0, 122, 255, 0.04);
+            border-radius: 8px;
+            text-align: left;
+            max-width: 820px;
+        }
+        .quote-card .label {
+            font-size: 12px; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 0.16em;
+            color: #007aff; margin-bottom: 8px;
+        }
+        .quote-card p {
+            font-size: clamp(15px, 1.8vw, 20px);
+            color: #1d1d1f; line-height: 1.4; font-weight: 500;
+        }
+
+        /* Numbered steps row */
+        .steps-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: clamp(20px, 3vw, 40px);
+            max-width: 1100px;
+            margin-top: clamp(24px, 4vh, 40px);
+        }
+        .step {
+            text-align: center;
+            opacity: 0; transform: translateY(20px);
+            animation: cardSlideUp 0.55s ease-out forwards;
+        }
+        .step:nth-child(1) { animation-delay: 0.4s; }
+        .step:nth-child(2) { animation-delay: 0.55s; }
+        .step:nth-child(3) { animation-delay: 0.7s; }
+        .step .step-num {
+            display: inline-flex;
+            width: 56px; height: 56px;
+            border-radius: 50%;
+            background: #007aff; color: #fff;
+            font-size: 22px; font-weight: 700;
+            align-items: center; justify-content: center;
+            margin-bottom: 16px;
+        }
+        .step h3 {
+            font-size: clamp(18px, 2.2vw, 24px);
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #1d1d1f;
+        }
+        .step p {
+            font-size: clamp(13px, 1.55vw, 16px);
+            color: #6e6e73;
+            line-height: 1.45;
+        }
+
+        /* Distribution diagram (slide 20) */
+        .dist-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: clamp(20px, 3vw, 40px);
+            max-width: 1000px;
+            margin-top: clamp(24px, 4vh, 40px);
+        }
+        .dist-card { text-align: center; }
+        .dist-card svg { width: 100%; height: auto; max-height: 140px; }
+        .dist-card .name {
+            font-size: clamp(14px, 1.7vw, 18px);
+            font-weight: 600;
+            color: #1d1d1f;
+            margin-top: 8px;
+        }
+        .dist-card .desc {
+            font-size: clamp(12px, 1.4vw, 14px);
+            color: #86868b;
+            margin-top: 4px;
+        }
+
+        /* Sample vs Population diagram */
+        .sample-pop {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: clamp(30px, 5vw, 60px);
+            max-width: 900px;
+            margin-top: clamp(20px, 3vh, 32px);
+            align-items: center;
+        }
+        .circle-vis {
+            position: relative;
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .circle-vis .pop {
+            width: 100%; aspect-ratio: 1;
+            border-radius: 50%;
+            background: rgba(0,0,0,0.04);
+            border: 2px dashed rgba(0,0,0,0.15);
+            position: relative;
+        }
+        .circle-vis .sample {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 45%; aspect-ratio: 1;
+            border-radius: 50%;
+            background: rgba(0, 122, 255, 0.18);
+            border: 2px solid #007aff;
+        }
+        .sp-label {
+            text-align: left;
+        }
+        .sp-label h3 {
+            font-size: clamp(20px, 2.4vw, 28px);
+            font-weight: 600; margin-bottom: 12px;
+        }
+        .sp-label p {
+            font-size: clamp(14px, 1.7vw, 18px);
+            color: #515154; line-height: 1.45;
+        }
+        .sp-label .tag {
+            display: inline-block;
+            font-size: 12px; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 0.14em;
+            padding: 4px 10px; border-radius: 50px;
+            margin-bottom: 10px;
+        }
+        .sp-label .tag.sample { background: rgba(0,122,255,0.12); color: #007aff; }
+        .sp-label .tag.pop { background: rgba(0,0,0,0.06); color: #515154; }
+
+        /* CRISP-DM diagram */
+        .crispdm-wrap {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: clamp(24px, 4vw, 56px);
+            max-width: 1150px;
+            margin-top: clamp(20px, 3vh, 32px);
+            align-items: center;
+        }
+        .crispdm-img {
+            width: 100%;
+            border-radius: 12px;
+        }
+        .crispdm-notes { text-align: left; }
+        .crispdm-notes .note {
+            padding: 14px 18px;
+            margin-bottom: 14px;
+            border-radius: 10px;
+            background: rgba(0,0,0,0.03);
+            border-left: 3px solid #007aff;
+        }
+        .crispdm-notes .note h4 {
+            font-size: clamp(14px, 1.6vw, 17px);
+            font-weight: 600; margin-bottom: 4px; color: #1d1d1f;
+        }
+        .crispdm-notes .note p {
+            font-size: clamp(13px, 1.5vw, 15px);
+            color: #515154; line-height: 1.45;
+        }
+
+        /* Career scenario */
+        .scenario-card {
+            background: rgba(0,0,0,0.025);
+            border: 1px solid rgba(0,0,0,0.06);
+            border-radius: 16px;
+            padding: clamp(28px, 3.5vw, 44px);
+            max-width: 900px;
+            margin-top: clamp(20px, 3vh, 32px);
+            text-align: left;
+        }
+        .scenario-card .role {
+            font-size: 12px; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 0.16em;
+            color: #007aff; margin-bottom: 12px;
+        }
+        .scenario-card h3 {
+            font-size: clamp(20px, 2.4vw, 28px);
+            font-weight: 600; line-height: 1.25;
+            margin-bottom: 16px;
+        }
+        .scenario-card p {
+            font-size: clamp(14px, 1.7vw, 18px);
+            color: #515154; line-height: 1.5;
+        }
+        .scenario-card .cities {
+            margin-top: 16px;
+            display: flex; gap: 12px; flex-wrap: wrap;
+        }
+        .scenario-card .city-pill {
+            padding: 6px 14px;
+            border-radius: 50px;
+            background: rgba(0,122,255,0.1);
+            color: #007aff;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        /* Resources list */
+        .resources {
+            display: flex; flex-wrap: wrap;
+            gap: 10px; justify-content: center;
+            margin-top: clamp(20px, 3vh, 32px);
+        }
+        .resources .pill {
+            padding: 10px 20px;
+            border-radius: 50px;
+            background: rgba(0,0,0,0.05);
+            color: #1d1d1f;
+            font-size: clamp(13px, 1.5vw, 16px);
+            font-weight: 500;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        /* Quality issues 2x2 grid (slide 19) */
+        .quality-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: clamp(16px, 2.5vw, 24px);
+            max-width: 1000px;
+            width: 100%;
+            margin-top: clamp(20px, 3vh, 28px);
+        }
+        .quality-cell {
+            background: rgba(0,0,0,0.025);
+            border: 1px solid rgba(0,0,0,0.06);
+            border-radius: 14px;
+            padding: clamp(18px, 2.5vw, 28px);
+            text-align: left;
+        }
+        .quality-cell .icon {
+            font-size: clamp(24px, 3vw, 32px);
+            margin-bottom: 10px;
+        }
+        .quality-cell h3 {
+            font-size: clamp(16px, 2vw, 21px);
+            font-weight: 600; margin-bottom: 8px;
+        }
+        .quality-cell p {
+            font-size: clamp(12px, 1.5vw, 15px);
+            color: #6e6e73; line-height: 1.45;
+        }
+
+        /* Footer / nav */
+        .slide-indicator {
+            position: fixed;
+            bottom: 28px; left: 50%;
+            transform: translateX(-50%);
+            font-size: 13px; color: #86868b;
+            font-weight: 400; z-index: 100;
+            letter-spacing: 0.04em;
+        }
+        .nav-hint {
+            position: fixed;
+            bottom: 28px; right: 28px;
+            font-size: 12px; color: #c7c7cc;
+            font-weight: 400; text-align: right;
+            z-index: 100;
+        }
+        .lesson-tag {
+            position: fixed;
+            top: 28px; left: 28px;
+            font-size: 11px; font-weight: 600;
+            color: #86868b; text-transform: uppercase;
+            letter-spacing: 0.18em;
+            z-index: 100;
+        }
+
+        /* Two-column with image */
+        .image-text-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: clamp(24px, 4vw, 56px);
+            max-width: 1150px;
+            align-items: center;
+        }
+        .image-text-row.text-left {
+            grid-template-columns: 1fr 1fr;
+        }
+        .image-text-row .text-col { text-align: left; }
+        .image-text-row .text-col h2 {
+            font-size: clamp(28px, 3.6vw, 48px);
+            margin-bottom: 16px;
+        }
+        .image-text-row .text-col p {
+            font-size: clamp(14px, 1.7vw, 19px);
+            color: #515154; line-height: 1.5;
+        }
+        .image-text-row img {
+            width: 100%; border-radius: 14px;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.08);
+        }
+        .image-text-row img.flat { box-shadow: none; border-radius: 8px; }
+
+        /* Questions slide */
+        .questions-list {
+            list-style: none; padding: 0;
+            max-width: 900px; margin-top: 30px;
+        }
+        .questions-list li {
+            font-size: clamp(17px, 2.2vw, 26px);
+            color: #1d1d1f; font-weight: 500;
+            padding: 16px 0 16px 56px;
+            position: relative;
+            border-bottom: 1px solid rgba(0,0,0,0.06);
+            text-align: left;
+            line-height: 1.3;
+        }
+        .questions-list li:last-child { border-bottom: none; }
+        .questions-list li::before {
+            counter-increment: q;
+            content: counter(q);
+            position: absolute;
+            left: 0; top: 50%;
+            transform: translateY(-50%);
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            background: rgba(0,122,255,0.1);
+            color: #007aff;
+            font-size: 16px; font-weight: 700;
+            display: flex;
+            align-items: center; justify-content: center;
+        }
+        .questions-list { counter-reset: q; }
+
+        /* Person dict slide 3 */
+        .person-row {
+            display: grid;
+            grid-template-columns: 1fr 1.2fr;
+            gap: clamp(28px, 4vw, 56px);
+            max-width: 1050px;
+            align-items: center;
+        }
+        .person-row .text-col { text-align: left; }
+        .person-row .text-col h2 {
+            font-size: clamp(28px, 3.6vw, 48px);
+            margin-bottom: 16px;
+        }
+        .code-block {
+            background: #1d1d1f;
+            color: #f5f5f7;
+            border-radius: 12px;
+            padding: clamp(18px, 2vw, 28px);
+            font-family: 'SF Mono', 'Menlo', 'Monaco', 'Consolas', monospace;
+            font-size: clamp(13px, 1.55vw, 17px);
+            line-height: 1.6;
+            text-align: left;
+            margin-top: 18px;
+        }
+        .code-block .ck { color: #ff79c6; }
+        .code-block .cs { color: #50fa7b; }
+        .code-block .cn { color: #f1fa8c; }
+
+        /* ===== Stat metrics (slide A) ===== */
+        .stat-cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: clamp(16px, 2vw, 24px);
+            max-width: 1100px;
+            width: 100%;
+            margin-top: clamp(24px, 4vh, 36px);
+        }
+        .stat-card {
+            border: 1px solid rgba(0,0,0,0.06);
+            border-radius: 14px;
+            padding: clamp(20px, 2.2vw, 26px);
+            background: #fff;
+            text-align: left;
+        }
+        .stat-card .big {
+            font-size: clamp(38px, 4.6vw, 60px);
+            font-weight: 700;
+            color: #007aff;
+            line-height: 1;
+            letter-spacing: -0.02em;
+        }
+        .stat-card .lbl {
+            margin-top: 10px;
+            font-size: clamp(13px, 1.4vw, 16px);
+            font-weight: 500;
+            color: #1d1d1f;
+            line-height: 1.35;
+        }
+        .stat-card .sub {
+            margin-top: 4px;
+            color: #86868b;
+            font-size: clamp(11px, 1.1vw, 13px);
+            line-height: 1.35;
+        }
+        .stat-card .chart {
+            margin-top: 14px;
+            height: 50px;
+        }
+        .stat-card .chart svg { width: 100%; height: 100%; }
+        .card-source {
+            margin-top: 14px;
+            padding-top: 12px;
+            border-top: 1px solid rgba(0,0,0,0.06);
+            font-size: clamp(10px, 1vw, 12px);
+            color: #86868b;
+            line-height: 1.4;
+            font-family: 'SF Mono', 'Menlo', 'Monaco', 'Consolas', monospace;
+            letter-spacing: 0.01em;
+        }
+
+        /* SVG line draw animation */
+        .draw-line {
+            stroke-dasharray: 600;
+            stroke-dashoffset: 600;
+            transition: stroke-dashoffset 1.4s cubic-bezier(0.16, 1, 0.3, 1) 0.4s;
+        }
+        .slide.active .draw-line { stroke-dashoffset: 0; }
+
+        /* ===== Chip groups (slide B) ===== */
+        .chip-section {
+            max-width: 1000px;
+            width: 100%;
+            margin-top: clamp(20px, 3vh, 32px);
+        }
+        .chip-section .group-label {
+            font-size: clamp(11px, 1.1vw, 13px);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.16em;
+            color: #86868b;
+            margin: clamp(14px, 2vh, 22px) 0 10px 0;
+        }
+        .chip-section .group-label:first-child { margin-top: 0; }
+        .chip-row {
+            display: flex; flex-wrap: wrap; gap: 8px;
+        }
+        .chip-pill {
+            font-size: clamp(12px, 1.4vw, 15px);
+            font-weight: 500;
+            color: #1d1d1f;
+            background: rgba(0,0,0,0.04);
+            border: 1px solid rgba(0,0,0,0.05);
+            padding: 8px 14px;
+            border-radius: 50px;
+        }
+        .chip-pill.accent {
+            color: #007aff;
+            background: rgba(0,122,255,0.08);
+            border-color: rgba(0,122,255,0.18);
+        }
+
+        /* ===== Animated bars (slide C) ===== */
+        .bars-block {
+            width: 100%;
+            max-width: 820px;
+            margin-top: clamp(24px, 4vh, 36px);
+            display: flex; flex-direction: column;
+            gap: 16px;
+        }
+        .bar-row {
+            display: grid;
+            grid-template-columns: minmax(220px, 360px) 1fr 50px;
+            align-items: center;
+            gap: 18px;
+        }
+        .bar-row .lbl {
+            font-size: clamp(13px, 1.5vw, 16px);
+            color: #515154;
+            text-align: left;
+        }
+        .bar-track {
+            height: 8px;
+            background: rgba(0,0,0,0.05);
+            border-radius: 999px;
+            overflow: hidden;
+        }
+        .bar-fill {
+            height: 100%;
+            background: #007aff;
+            border-radius: 999px;
+            width: 0;
+            transition: width 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.3s;
+        }
+        .slide.active .bar-fill[data-w="50"] { width: 50%; }
+        .slide.active .bar-fill[data-w="40"] { width: 40%; transition-delay: 0.5s; }
+        .slide.active .bar-fill[data-w="10"] { width: 10%; transition-delay: 0.7s; background: #86868b; }
+        .bar-row .pct {
+            text-align: right;
+            font-weight: 700;
+            color: #1d1d1f;
+            font-size: clamp(13px, 1.5vw, 16px);
+        }
+
+        /* ===== Closing quote (slide E) ===== */
+        .closing-quote {
+            font-size: clamp(26px, 3.6vw, 48px);
+            font-weight: 500;
+            line-height: 1.25;
+            letter-spacing: -0.015em;
+            color: #1d1d1f;
+            max-width: 1000px;
+            text-align: center;
+        }
+        .closing-quote .accent { color: #007aff; }
+
+        @media (max-width: 768px) {
+            .comparison-grid, .image-text-row, .person-row,
+            .crispdm-wrap, .sample-pop, .quality-grid,
+            .steps-row, .dist-row, .stat-cards {
+                grid-template-columns: 1fr; gap: 24px;
+            }
+            .cards-container { grid-template-columns: 1fr; }
+            .bar-row { grid-template-columns: 1fr; gap: 6px; }
+            .bar-row .pct { text-align: left; }
+        }
+            .lang-switcher {
+            position: fixed;
+            top: 22px; right: 28px;
+            z-index: 100;
+            display: flex;
+            gap: 2px;
+            background: rgba(255,255,255,0.95);
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0,0,0,0.06);
+            border-radius: 50px;
+            padding: 3px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        .lang-switcher a {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: #86868b;
+            text-decoration: none;
+            padding: 5px 12px;
+            border-radius: 50px;
+            transition: all 0.2s ease;
+        }
+        .lang-switcher a.active {
+            color: #fff;
+            background: #007aff;
+        }
+        .lang-switcher a:not(.active):hover {
+            color: #1d1d1f;
+        }
+
+</style>
+</head>
+<body>
+    <div class="lang-switcher">
+        <a href="index.html" class="active">RU</a>
+        <a href="index-uz.html">UZ</a>
+        <a href="index-en.html">EN</a>
+    </div>
+
+    <div class="presentation">
+
+        <!-- 1: Title -->
+        <div class="slide active">
+            <div class="slide-content">
+                <img src="photos/slide1.png" alt="Title" class="hero-image" />
+                <p class="eyebrow">Лекция 1</p>
+                <h1>Почему бизнес-контекст<br/>важнее модели</h1>
+                <p class="subtitle">Фундамент. Контекст. Импакт.</p>
+            </div>
+        </div>
+
+        <!-- 2: Lesson 1 -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Урок 01</p>
+                <h1>Понимание<br/>бизнеса</h1>
+                <p class="subtitle">Прежде чем переходить к алгоритмам и моделям -<br/>понять, какие проблемы мы решаем и почему они важны.</p>
+            </div>
+        </div>
+
+        <!-- 3: About me -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="person-row">
+                    <div style="text-align: center;">
+                        <img src="photos/slide3.png" alt="Bota" class="hero-image portrait" style="margin-bottom: 0;" />
+                    </div>
+                    <div class="text-col">
+                        <p class="eyebrow">О себе</p>
+                        <h2>Привет, я Бота</h2>
+                        <p style="font-size: clamp(14px, 1.7vw, 18px); color: #515154; line-height: 1.5;">
+                            Родилась в Алматы, Казахстан. Чтобы работать в IT, не обязательно уметь программировать - <span class="highlight">80–90% должностей</span> в Microsoft, Google и Facebook не требуют кода.
+                        </p>
+                        <div class="code-block">
+<span class="ck">me</span> = {<br/>
+&nbsp;&nbsp;<span class="cn">"name"</span>: <span class="cs">"Bota"</span>,<br/>
+&nbsp;&nbsp;<span class="cn">"city"</span>: <span class="cs">"Almaty, KZ"</span>,<br/>
+&nbsp;&nbsp;<span class="cn">"born"</span>: <span class="cs">"1989-12-19"</span>,<br/>
+&nbsp;&nbsp;<span class="cn">"linkedin"</span>: <span class="cs">"<a href="https://uk.linkedin.com/in/bota-abdraimova" target="_blank" rel="noopener" style="color: #50fa7b; text-decoration: underline; word-break: break-all;">https://uk.linkedin.com/in/bota-abdraimova</a>"</span><br/>
+}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4: ML everywhere meme -->
+        <div class="slide">
+            <div class="slide-content">
+                <img src="photos/slide4.png" alt="ML everywhere" class="hero-image wide" />
+                <h2>Machine Learning <span class="highlight">везде</span></h2>
+            </div>
+        </div>
+
+        <!-- 4b: Demand for ML is real (positive slide A) -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">За цифрами</p>
+                <h2>Рынок ML: реальный спрос в цифрах</h2>
+                <div class="stat-cards">
+                    <div class="stat-card">
+                        <div class="big">+34%</div>
+                        <div class="lbl">Прогноз роста рабочих мест Data / ML</div>
+                        <div class="sub">2024 / 2034 · США</div>
+                        <div class="chart">
+                            <svg viewBox="0 0 240 50" preserveAspectRatio="none">
+                                <line x1="0" y1="44" x2="240" y2="44" stroke="rgba(0,0,0,0.06)"/>
+                                <polyline class="draw-line" points="0,40 40,38 80,34 120,28 160,20 200,12 240,4" fill="none" stroke="#007aff" stroke-width="2" stroke-linecap="round"/>
+                                <circle cx="240" cy="4" r="3" fill="#007aff"/>
+                            </svg>
+                        </div>
+                        <div class="card-source">U.S. Bureau of Labor Statistics · Occupational Outlook Handbook, 2024-2034</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="big">$120K</div>
+                        <div class="lbl">Медианная зарплата в год</div>
+                        <div class="sub">диапазон $78K - $193K+</div>
+                        <div class="chart">
+                            <svg viewBox="0 0 240 50" preserveAspectRatio="none">
+                                <line x1="20" y1="26" x2="220" y2="26" stroke="rgba(0,0,0,0.08)" stroke-width="3" stroke-linecap="round"/>
+                                <line x1="20" y1="26" x2="120" y2="26" stroke="#007aff" stroke-width="3" stroke-linecap="round" class="draw-line"/>
+                                <circle cx="20"  cy="26" r="4" fill="#fff" stroke="#86868b" stroke-width="1.5"/>
+                                <circle cx="120" cy="26" r="5" fill="#007aff"/>
+                                <circle cx="220" cy="26" r="4" fill="#fff" stroke="#1d1d1f" stroke-width="1.5"/>
+                                <text x="20"  y="46" font-family="SF Mono, Menlo, monospace" font-size="9" fill="#86868b">$78K</text>
+                                <text x="120" y="46" font-family="SF Mono, Menlo, monospace" font-size="9" fill="#007aff" text-anchor="middle" font-weight="700">$120K</text>
+                                <text x="220" y="46" font-family="SF Mono, Menlo, monospace" font-size="9" fill="#86868b" text-anchor="end">$193K</text>
+                            </svg>
+                        </div>
+                        <div class="card-source">U.S. Bureau of Labor Statistics · May 2023</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="big">+256%</div>
+                        <div class="lbl">Рост вакансий с 2013 года</div>
+                        <div class="sub">накопленный, по миру</div>
+                        <div class="chart">
+                            <svg viewBox="0 0 240 50" preserveAspectRatio="none">
+                                <g fill="rgba(0,122,255,0.25)">
+                                    <rect x="10"  y="36" width="22" height="8"/>
+                                    <rect x="42"  y="30" width="22" height="14"/>
+                                    <rect x="74"  y="24" width="22" height="20"/>
+                                    <rect x="106" y="18" width="22" height="26"/>
+                                    <rect x="138" y="12" width="22" height="32"/>
+                                    <rect x="170" y="6"  width="22" height="38"/>
+                                </g>
+                                <rect x="202" y="0" width="22" height="44" fill="#007aff"/>
+                            </svg>
+                        </div>
+                        <div class="card-source">Market.us · LinkedIn Jobs Report</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5: ML paradigms -->
+        <div class="slide">
+            <div class="slide-content">
+                <h1>Парадигмы ML</h1>
+                <p class="subtitle">Три способа, которыми машины учатся</p>
+                <img src="photos/slide5.png" alt="ML paradigms mind map" class="hero-image wide flat" />
+            </div>
+        </div>
+
+        <!-- 6: Principles vs Application -->
+        <div class="slide">
+            <div class="slide-content">
+                <h2>Принципы или применение?</h2>
+                <p class="subtitle">Два подхода к обучению</p>
+                <div class="comparison-grid">
+                    <div class="comparison-item old">
+                        <div class="label">Академический</div>
+                        <h3>Сначала - принципы</h3>
+                        <ul>
+                            <li>Изучить теорию</li>
+                            <li>Вывести заключения</li>
+                            <li>Применить на практике</li>
+                        </ul>
+                    </div>
+                    <div class="comparison-item new">
+                        <div class="label">Практический</div>
+                        <h3>Сначала - применение</h3>
+                        <ul>
+                            <li>Сразу брать готовые инструменты</li>
+                            <li>Постепенно заполнять пробелы</li>
+                            <li>От 80% к 100%</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="quote-card">
+                    <div class="label">Карьерный совет</div>
+                    <p>Не стремитесь быть дата-сайентистом или инженером - станьте <span class="highlight">мостом</span> между бизнесом и технической командой.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 7: Disclaimer -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Дисклеймер</p>
+                <h2>О чём этот курс - и о чём нет</h2>
+                <div class="cards-container" style="grid-template-columns: 1fr 1fr; max-width: 950px;">
+                    <div class="card">
+                        <div class="num">01</div>
+                        <h3>Прикладной ML</h3>
+                        <p>Не победы на Kaggle. Не создание передовых AI-систем с нуля. Реальные задачи бизнеса.</p>
+                    </div>
+                    <div class="card">
+                        <div class="num">02</div>
+                        <h3>Фокус - бизнес</h3>
+                        <p>Мир ML огромен. Мы концентрируемся на практическом применении в реальных бизнес-задачах.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 8: Career scenario -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Ситуация</p>
+                <h2>Вы - Head of Data Science</h2>
+                <div class="scenario-card">
+                    <div class="role">Финтех-стартап</div>
+                    <h3>Стали бы вы собеседовать кандидата без финансового опыта, без опыта в стартапах, который занимался только дашбордами и немного ML?</h3>
+                    <p>Вы нанимаете удалённо со всего мира.</p>
+                    <div class="cities">
+                        <span class="city-pill">New York</span>
+                        <span class="city-pill">London</span>
+                        <span class="city-pill">Madrid</span>
+                    </div>
+                </div>
+                <div class="quote-card">
+                    <div class="label">Карьерный совет</div>
+                    <p>Не показывайте, что вы делали в прошлом. Покажите, <span class="highlight">что вы можете сделать для них</span>. Желательно - через рекомендацию напрямую к нанимающему менеджеру.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 9: Review questions -->
+        <div class="slide">
+            <div class="slide-content">
+                <h1>Вопросы для повторения</h1>
+                <ol class="questions-list">
+                    <li>Важно ли ML для дата-сайентистов?</li>
+                    <li>Нужно ли знать ML, чтобы получить работу дата-сайентиста?</li>
+                    <li>Что самое важное знать дата-сайентисту?</li>
+                    <li>Какой существует стандартный фреймворк/процесс для добычи данных?</li>
+                </ol>
+            </div>
+        </div>
+
+        <!-- 9b: Question - What's most important in IT? -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Вопрос аудитории</p>
+                <h1>Что самое важное<br/>в IT?</h1>
+                <p class="subtitle" style="margin-top: 32px;">Подумайте минуту →</p>
+            </div>
+        </div>
+
+        <!-- 9c: Answer - Data -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Ответ</p>
+                <div style="font-size: clamp(96px, 16vw, 220px); font-weight: 700; color: #007aff; letter-spacing: -0.05em; line-height: 0.9; margin-bottom: clamp(24px, 4vh, 40px);">ДАННЫЕ</div>
+                <p class="hero-text" style="max-width: 900px;">Не код. Не алгоритмы. Не серверы.</p>
+                <div class="cards-container" style="grid-template-columns: 1fr 1fr 1fr; max-width: 1000px;">
+                    <div class="card">
+                        <h3>Что такое данные?</h3>
+                        <p>Любая зафиксированная информация: транзакции, клики, сенсоры, тексты, изображения, голос.</p>
+                    </div>
+                    <div class="card">
+                        <h3>Почему это важно?</h3>
+                        <p>Данные - топливо для ML. Без них модель не обучится, продукт не поймёт пользователя.</p>
+                    </div>
+                    <div class="card">
+                        <h3>Главный принцип</h3>
+                        <p>Garbage in - garbage out. Качество данных определяет качество всего, что построено сверху.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 9d: Where data is applied (positive slide B) -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">На практике</p>
+                <h2>Где это работает</h2>
+                <p class="subtitle">Чаще всего это тихие системы внутри компаний, а не лаборатории с роботами.</p>
+                <div class="chip-section">
+                    <div class="group-label">Финансы и риски</div>
+                    <div class="chip-row">
+                        <span class="chip-pill accent">Кредитный скоринг</span>
+                        <span class="chip-pill accent">Антифрод</span>
+                        <span class="chip-pill accent">Кредитные риски</span>
+                        <span class="chip-pill accent">Стратегия collection</span>
+                    </div>
+                    <div class="group-label">Маркетинг и продукт</div>
+                    <div class="chip-row">
+                        <span class="chip-pill">Прогноз оттока</span>
+                        <span class="chip-pill">Сегментация клиентов</span>
+                        <span class="chip-pill">Next-best-offer</span>
+                        <span class="chip-pill">Рекомендательные системы</span>
+                        <span class="chip-pill">Оптимизация цен</span>
+                    </div>
+                    <div class="group-label">Операции и AI</div>
+                    <div class="chip-row">
+                        <span class="chip-pill">Прогноз спроса</span>
+                        <span class="chip-pill">NLP по документам</span>
+                        <span class="chip-pill">Граф фрод-сети</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 10: CRISP-DM -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Фреймворк</p>
+                <h2>CRISP-DM</h2>
+                <p class="subtitle">CRoss-Industry Standard Process for Data Mining</p>
+                <div class="crispdm-wrap">
+                    <img src="photos/slide10.png" alt="CRISP-DM cycle" class="crispdm-img" />
+                    <div class="crispdm-notes">
+                        <div class="note">
+                            <h4>Понимание бизнеса + данных</h4>
+                            <p>То, что отличает <span class="highlight">хорошего</span> дата-сайентиста от <span class="highlight">великого</span>.</p>
+                        </div>
+                        <div class="note">
+                            <h4>Развёртывание</h4>
+                            <p>Единственное, что реально важно в прикладном ML - <span class="highlight">доставленный результат</span>.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 12: Understanding data - 3 steps -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Шаг 1</p>
+                <h2>Понимание данных</h2>
+                <p class="subtitle">Три последовательных шага</p>
+                <div class="steps-row">
+                    <div class="step">
+                        <div class="step-num">1</div>
+                        <h3>Сбор данных</h3>
+                        <p>Собрать данные - или понять, как они были собраны</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-num">2</div>
+                        <h3>Качество данных</h3>
+                        <p>Выявить проблемы с качеством до анализа</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-num">3</div>
+                        <h3>Анализ (EDA)</h3>
+                        <p>Найти подгруппы и сформировать гипотезы</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 13a: Survivorship bias WWII - Question only -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="image-text-row">
+                    <img src="photos/slide13.png" alt="WWII bullet holes" class="flat" style="background: #fafafa; padding: 20px;" />
+                    <div class="text-col">
+                        <p class="eyebrow">Эффект выжившего · WWII</p>
+                        <h2>Какие части усилить?</h2>
+                        <p>Самолёты, вернувшиеся домой, имели пулевые пробоины на крыльях и фюзеляже.</p>
+                        <p style="margin-top: 20px; font-size: clamp(15px, 1.8vw, 20px); color: #86868b; font-style: italic;">Подумайте минуту, прежде чем смотреть ответ →</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 13b: Survivorship bias WWII - First-obvious answer -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="image-text-row">
+                    <img src="photos/slide13.png" alt="WWII bullet holes" class="flat" style="background: #fafafa; padding: 20px;" />
+                    <div class="text-col">
+                        <p class="eyebrow">Эффект выжившего · WWII</p>
+                        <h2>Какие части усилить?</h2>
+                        <div style="margin-top: 16px; padding: 18px 22px; border-radius: 12px; background: rgba(255, 59, 48, 0.06); border-left: 3px solid #ff3b30;">
+                            <p style="font-size: clamp(13px, 1.4vw, 15px); font-weight: 600; text-transform: uppercase; letter-spacing: 0.14em; color: #ff3b30; margin-bottom: 8px;">Первоочевидный ответ</p>
+                            <p style="font-size: clamp(15px, 1.9vw, 20px); color: #1d1d1f; line-height: 1.4;">Усилить области с пробоинами - там, где попадания.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 13c: Survivorship bias WWII - Correct answer -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="image-text-row">
+                    <img src="photos/slide13.png" alt="WWII bullet holes" class="flat" style="background: #fafafa; padding: 20px;" />
+                    <div class="text-col">
+                        <p class="eyebrow">Эффект выжившего · WWII</p>
+                        <h2>Какие части усилить?</h2>
+                        <div style="margin-top: 14px; padding: 14px 18px; border-radius: 10px; background: rgba(255, 59, 48, 0.06); border-left: 3px solid #ff3b30; opacity: 0.6;">
+                            <p style="font-size: clamp(11px, 1.2vw, 13px); font-weight: 600; text-transform: uppercase; letter-spacing: 0.14em; color: #ff3b30; margin-bottom: 4px;">Первоочевидный ответ</p>
+                            <p style="font-size: clamp(13px, 1.55vw, 16px); color: #515154; line-height: 1.4;">Усилить области с пробоинами.</p>
+                        </div>
+                        <div style="margin-top: 14px; padding: 18px 22px; border-radius: 12px; background: rgba(52, 199, 89, 0.08); border-left: 3px solid #34c759;">
+                            <p style="font-size: clamp(13px, 1.4vw, 15px); font-weight: 600; text-transform: uppercase; letter-spacing: 0.14em; color: #34c759; margin-bottom: 8px;">Правильный ответ</p>
+                            <p style="font-size: clamp(14px, 1.8vw, 19px); color: #1d1d1f; line-height: 1.4;">Усилить там, где пробоин <span class="highlight">нет</span> - двигатели и кабину. Самолёты с попаданиями туда просто не вернулись.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 14a: Survivorship bias WWI helmets - setup only -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Эффект выжившего · WWI</p>
+                <h2>Каски и травмы головы</h2>
+                <div class="image-text-row" style="margin-top: 24px;">
+                    <img src="photos/image11.jpg" alt="WWI soldiers" />
+                    <div class="text-col">
+                        <div class="comparison-grid" style="grid-template-columns: 1fr; gap: 16px; margin-top: 0;">
+                            <div class="comparison-item old" style="padding: 18px 22px;">
+                                <div class="label">До</div>
+                                <h3 style="font-size: clamp(18px, 2.2vw, 24px); margin-bottom: 8px;">Фуражки</h3>
+                                <p style="font-size: clamp(13px, 1.6vw, 17px);">Британские солдаты носили мягкие фуражки. Зафиксированных травм головы - мало.</p>
+                            </div>
+                            <div class="comparison-item new" style="padding: 18px 22px;">
+                                <div class="label">После</div>
+                                <h3 style="font-size: clamp(18px, 2.2vw, 24px); margin-bottom: 8px;">Каски</h3>
+                                <p style="font-size: clamp(13px, 1.6vw, 17px);">Перешли на стальные каски - число <span class="highlight">зарегистрированных травм головы возросло</span>.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <p style="margin-top: 24px; font-size: clamp(15px, 1.8vw, 20px); color: #86868b; font-style: italic;">Парадокс? Подумайте, прежде чем смотреть вывод →</p>
+            </div>
+        </div>
+
+        <!-- 14b: Survivorship bias WWI helmets - reveal -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Эффект выжившего · WWI</p>
+                <h2>Каски и травмы головы</h2>
+                <div class="image-text-row" style="margin-top: 24px;">
+                    <img src="photos/image11.jpg" alt="WWI soldiers" />
+                    <div class="text-col">
+                        <div class="comparison-grid" style="grid-template-columns: 1fr; gap: 16px; margin-top: 0;">
+                            <div class="comparison-item old" style="padding: 18px 22px;">
+                                <div class="label">До</div>
+                                <h3 style="font-size: clamp(18px, 2.2vw, 24px); margin-bottom: 8px;">Фуражки</h3>
+                                <p style="font-size: clamp(13px, 1.6vw, 17px);">Британские солдаты носили мягкие фуражки. Зафиксированных травм головы - мало.</p>
+                            </div>
+                            <div class="comparison-item new" style="padding: 18px 22px;">
+                                <div class="label">После</div>
+                                <h3 style="font-size: clamp(18px, 2.2vw, 24px); margin-bottom: 8px;">Каски</h3>
+                                <p style="font-size: clamp(13px, 1.6vw, 17px);">Перешли на стальные каски - число <span class="highlight">зарегистрированных травм головы возросло</span>.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="quote-card" style="margin-top: 20px;">
+                    <div class="label">Неочевидный вывод</div>
+                    <p>Каски работают. Солдаты стали <span class="highlight">выживать</span> после ранений, которые раньше были смертельными - поэтому их стали регистрировать. Данные без контекста вводят в заблуждение.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 14b: What separates a strong DS (positive slide D) -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Что отличает</p>
+                <h2>Модель построит каждый.<br/>Заметить, где она ошибается, - сложнее.</h2>
+                <div class="cards-container" style="grid-template-columns: 1fr 1fr 1fr; max-width: 1100px;">
+                    <div class="card">
+                        <div class="num">/01</div>
+                        <h3>Контекст данных</h3>
+                        <p>Откуда взялись данные, кто и как их собирал, что в них могло быть упущено.</p>
+                    </div>
+                    <div class="card">
+                        <div class="num">/02</div>
+                        <h3>Здоровый скепсис</h3>
+                        <p>Кто попал в выборку, а кто нет. Что мы видим - и чего не видим.</p>
+                    </div>
+                    <div class="card">
+                        <div class="num">/03</div>
+                        <h3>Перевод на язык бизнеса</h3>
+                        <p>Объяснить результат тому, кто не работает с моделями, без потери смысла.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 15: Sample vs Population -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Повторение статистики</p>
+                <h2>Выборка vs Генеральная совокупность</h2>
+                <div class="sample-pop">
+                    <div class="circle-vis">
+                        <div class="pop">
+                            <div class="sample"></div>
+                        </div>
+                    </div>
+                    <div class="sp-label">
+                        <span class="tag sample">Sample · Выборка</span>
+                        <h3 style="margin-bottom: 18px;">То, что мы видим</h3>
+                        <p>Наш датасет. На нём мы обучаем модель.</p>
+                        <span class="tag pop" style="margin-top: 18px;">Population · Совокупность</span>
+                        <h3 style="margin-bottom: 12px; margin-top: 8px;">То, чего мы не видим</h3>
+                        <p>Реальный мир, на котором модель должна работать.</p>
+                    </div>
+                </div>
+                <div class="quote-card" style="margin-top: 32px;">
+                    <div class="label">Ключевой вопрос</div>
+                    <p>Действительно ли наша выборка <span class="highlight">репрезентативна</span>?</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 16: Other data sources - Open Data Portal UZ -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Сбор данных</p>
+                <h2>За пределами CSV и баз</h2>
+                <p class="subtitle">Публичные порталы открытых данных - полноценный источник для ML</p>
+                <img src="photos/slide16.png" alt="Open Data Portal Uzbekistan" class="hero-image wide" />
+                <p class="body-text" style="margin-top: 16px;"><span class="highlight">data.egov.uz</span> - 10 424 датасета: Территория, Экономика, Здравоохранение, Образование, Культура, Бизнес, Недвижимость, ЦУР.</p>
+            </div>
+        </div>
+
+        <!-- 17: APIs -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Сбор данных</p>
+                <h2>API</h2>
+                <p class="subtitle">Application Programming Interface</p>
+                <div class="cards-container" style="grid-template-columns: 1fr 1fr 1fr; max-width: 1000px;">
+                    <div class="card">
+                        <div class="num">→</div>
+                        <h3>Получать данные</h3>
+                        <p>Помимо CSV и SQL - научитесь работать с API напрямую</p>
+                    </div>
+                    <div class="card">
+                        <div class="num">{ }</div>
+                        <h3>JSON</h3>
+                        <p>Поймите формат, в котором приходят данные</p>
+                    </div>
+                    <div class="card">
+                        <div class="num">py</div>
+                        <h3>Python dict</h3>
+                        <p>Структура данных, на которой строится работа с JSON</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 18: Data quality issues part 1 -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="image-text-row">
+                    <img src="photos/slide18.png" alt="Data quality" class="flat" style="background: #fafafa; padding: 20px;" />
+                    <div class="text-col">
+                        <p class="eyebrow">Качество данных · Часть 1</p>
+                        <h2>Когда данных нет - или они есть, но без смысла</h2>
+                        <div style="margin-top: 20px;">
+                            <h3 style="font-size: clamp(16px, 2vw, 20px); font-weight: 600; margin-bottom: 8px;">Неполные данные (null)</h3>
+                            <p style="font-size: clamp(13px, 1.55vw, 16px); color: #6e6e73; line-height: 1.45;">Необязательные поля, изменение схемы, сломанный датчик. Иногда null несёт смысл - «бесконечность», «не знаю».</p>
+                        </div>
+                        <div style="margin-top: 20px;">
+                            <h3 style="font-size: clamp(16px, 2vw, 20px); font-weight: 600; margin-bottom: 8px;">Полные данные без смысла</h3>
+                            <p style="font-size: clamp(13px, 1.55vw, 16px); color: #6e6e73; line-height: 1.45;">Строковые «unknown», «None», «null», нули и предопределённые константы без контекста.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 19: Data quality issues part 2 -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Качество данных · Часть 2</p>
+                <h2>Ещё четыре типа проблем</h2>
+                <div class="quality-grid">
+                    <div class="quality-cell">
+                        <div class="icon">⚠️</div>
+                        <h3>Некорректные данные</h3>
+                        <p>Значения вне допустимого диапазона - например, возраст &lt; 18 в банковских данных.</p>
+                    </div>
+                    <div class="quality-cell">
+                        <div class="icon">📐</div>
+                        <h3>Разные форматы</h3>
+                        <p>Даты в разном написании, валюты, температура в C / F / K.</p>
+                    </div>
+                    <div class="quality-cell">
+                        <div class="icon">📈</div>
+                        <h3>Выбросы</h3>
+                        <p>Это баг данных - или особенность? Один из главных вопросов EDA.</p>
+                    </div>
+                    <div class="quality-cell">
+                        <div class="icon">🔁</div>
+                        <h3>Дубликаты</h3>
+                        <p>Какая комбинация столбцов должна быть уникальной для строки?</p>
+                    </div>
+                </div>
+                <div class="quote-card" style="margin-top: 24px;">
+                    <div class="label">Pro tip</div>
+                    <p>В BI всегда добавляйте проверки на <span class="highlight">допустимые значения, not-null и уникальность</span>.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 19b: Where time actually goes (positive slide C) -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Реальная работа</p>
+                <h2>На что уходит время дата-сайентиста</h2>
+                <p class="subtitle">Большая часть - это не моделирование. Это то, что в курсах часто пропускают.</p>
+                <div class="bars-block">
+                    <div class="bar-row">
+                        <div class="lbl">Постановка задачи и понимание бизнеса</div>
+                        <div class="bar-track"><div class="bar-fill" data-w="50"></div></div>
+                        <div class="pct">50%</div>
+                    </div>
+                    <div class="bar-row">
+                        <div class="lbl">Feature engineering и качество данных</div>
+                        <div class="bar-track"><div class="bar-fill" data-w="40"></div></div>
+                        <div class="pct">40%</div>
+                    </div>
+                    <div class="bar-row">
+                        <div class="lbl">Само моделирование</div>
+                        <div class="bar-track"><div class="bar-fill" data-w="10"></div></div>
+                        <div class="pct">10%</div>
+                    </div>
+                </div>
+                <p class="body-text" style="margin-top: 28px; font-size: clamp(13px, 1.5vw, 16px); color: #86868b;">Модель - лёгкая часть. Понять вопрос - вот это работа.</p>
+            </div>
+        </div>
+
+        <!-- 20: EDA - distributions -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Анализ данных</p>
+                <h2>Exploratory Data Analysis</h2>
+                <p class="subtitle">Асимметрия · описательная статистика · распределения</p>
+                <div class="dist-row">
+                    <div class="dist-card">
+                        <svg viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M 10 100 Q 30 95, 60 70 Q 90 30, 130 25 Q 170 28, 190 95 L 190 110 L 10 110 Z"
+                                  fill="rgba(0,122,255,0.15)" stroke="#007aff" stroke-width="2"/>
+                            <line x1="65" y1="55" x2="65" y2="110" stroke="#34c759" stroke-width="2" stroke-dasharray="3,3"/>
+                            <line x1="100" y1="40" x2="100" y2="110" stroke="#ff9500" stroke-width="2" stroke-dasharray="3,3"/>
+                            <line x1="130" y1="25" x2="130" y2="110" stroke="#ff3b30" stroke-width="2" stroke-dasharray="3,3"/>
+                        </svg>
+                        <div class="name">Левостороннее</div>
+                        <div class="desc">Среднее &lt; медиана &lt; мода</div>
+                    </div>
+                    <div class="dist-card">
+                        <svg viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M 10 110 Q 50 105, 80 60 Q 100 20, 120 60 Q 150 105, 190 110 L 190 110 L 10 110 Z"
+                                  fill="rgba(0,122,255,0.15)" stroke="#007aff" stroke-width="2"/>
+                            <line x1="100" y1="20" x2="100" y2="110" stroke="#ff3b30" stroke-width="2" stroke-dasharray="3,3"/>
+                        </svg>
+                        <div class="name">Нормальное</div>
+                        <div class="desc">Среднее = медиана = мода</div>
+                    </div>
+                    <div class="dist-card">
+                        <svg viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M 10 95 Q 30 28, 70 25 Q 110 30, 140 70 Q 170 95, 190 100 L 190 110 L 10 110 Z"
+                                  fill="rgba(0,122,255,0.15)" stroke="#007aff" stroke-width="2"/>
+                            <line x1="70" y1="25" x2="70" y2="110" stroke="#ff3b30" stroke-width="2" stroke-dasharray="3,3"/>
+                            <line x1="100" y1="40" x2="100" y2="110" stroke="#ff9500" stroke-width="2" stroke-dasharray="3,3"/>
+                            <line x1="135" y1="65" x2="135" y2="110" stroke="#34c759" stroke-width="2" stroke-dasharray="3,3"/>
+                        </svg>
+                        <div class="name">Правостороннее</div>
+                        <div class="desc">Мода &lt; медиана &lt; среднее</div>
+                    </div>
+                </div>
+                <div style="display:flex; gap: 24px; justify-content: center; margin-top: 28px; flex-wrap: wrap;">
+                    <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#515154;">
+                        <span style="display:inline-block;width:14px;height:2px;background:#ff3b30;"></span> Мода
+                    </div>
+                    <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#515154;">
+                        <span style="display:inline-block;width:14px;height:2px;background:#ff9500;"></span> Медиана
+                    </div>
+                    <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#515154;">
+                        <span style="display:inline-block;width:14px;height:2px;background:#34c759;"></span> Среднее
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Closing inspiration (positive slide E) -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="closing-quote">
+                    Цель ML - не строить модели.<br/>
+                    А помогать <span class="accent">принимать решения лучше</span> - быстрее и с меньшим числом догадок.
+                </p>
+            </div>
+        </div>
+
+        <!-- Final: Questions? -->
+        <div class="slide">
+            <div class="slide-content">
+                <h1 style="font-size: clamp(72px, 14vw, 200px);">Questions?</h1>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="lesson-tag">UZCARD Academy</div>
+    <div class="slide-indicator">
+        <span id="current-slide">1</span> / <span id="total-slides">20</span>
+    </div>
+    <div class="nav-hint">→ или Space - далее<br/>← - назад</div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+        document.getElementById('total-slides').textContent = totalSlides;
+
+        function showSlide(n) {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (n + totalSlides) % totalSlides;
+            slides[currentSlide].classList.add('active');
+            document.getElementById('current-slide').textContent = currentSlide + 1;
+
+            const slideContent = slides[currentSlide].querySelector('.slide-content');
+            slideContent.style.animation = 'none';
+            void slideContent.offsetHeight;
+            slideContent.style.animation = null;
+
+            const animated = slides[currentSlide].querySelectorAll('.card, .comparison-item, .step');
+            animated.forEach(el => {
+                el.style.animation = 'none';
+                void el.offsetHeight;
+                el.style.animation = null;
+            });
+        }
+
+        function nextSlide() { showSlide(currentSlide + 1); }
+        function prevSlide() { showSlide(currentSlide - 1); }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); nextSlide(); }
+            else if (e.key === 'ArrowLeft') { e.preventDefault(); prevSlide(); }
+            else if (e.key === 'Home') { showSlide(0); }
+            else if (e.key === 'End') { showSlide(totalSlides - 1); }
+        });
+
+        let touchStartX = 0, touchEndX = 0;
+        document.addEventListener('touchstart', (e) => { touchStartX = e.changedTouches[0].screenX; });
+        document.addEventListener('touchend', (e) => {
+            touchEndX = e.changedTouches[0].screenX;
+            if (touchStartX - touchEndX > 50) nextSlide();
+            else if (touchEndX - touchStartX > 50) prevSlide();
+        });
+    </script>
+</body>
+</html>

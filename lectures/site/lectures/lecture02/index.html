@@ -1,0 +1,1947 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Введение в Python - Урок 2</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700;800&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+            background: #FFFFFF;
+            color: #1d1d1f;
+            line-height: 1.1;
+            overflow: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .presentation { width: 100vw; height: 100vh; position: relative; }
+
+        .slide {
+            width: 100%; height: 100%;
+            display: none;
+            align-items: center; justify-content: center;
+            position: absolute; top: 0; left: 0;
+            padding: clamp(40px, 6vh, 80px) clamp(40px, 6vw, 80px);
+            text-align: center;
+        }
+
+        .slide.active { display: flex; flex-direction: column; }
+
+        .slide-content {
+            max-width: 1200px; width: 100%; margin: 0 auto;
+            opacity: 0; transform: translateY(20px);
+            animation: fadeInUp 0.8s ease-out 0.2s forwards;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+        }
+
+        @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
+
+        h1 {
+            font-size: clamp(40px, 6.5vw, 96px);
+            font-weight: 700;
+            letter-spacing: -0.025em;
+            line-height: 0.95;
+            margin-bottom: clamp(16px, 2.5vh, 32px);
+            color: #1d1d1f;
+        }
+
+        h2 {
+            font-size: clamp(28px, 4vw, 56px);
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            line-height: 1.05;
+            margin-bottom: clamp(16px, 2vh, 28px);
+            color: #1d1d1f;
+        }
+
+        .subtitle {
+            font-size: clamp(18px, 2.2vw, 28px);
+            font-weight: 400;
+            color: #86868b;
+            margin-bottom: clamp(24px, 4vh, 48px);
+            line-height: 1.3;
+            max-width: 900px;
+        }
+
+        .eyebrow {
+            font-size: clamp(13px, 1.2vw, 16px);
+            font-weight: 600;
+            color: #007aff;
+            text-transform: uppercase;
+            letter-spacing: 0.18em;
+            margin-bottom: 18px;
+        }
+
+        .hero-text {
+            font-size: clamp(22px, 3.4vw, 48px);
+            font-weight: 500;
+            line-height: 1.15;
+            letter-spacing: -0.015em;
+            margin-bottom: clamp(16px, 2.5vh, 32px);
+            max-width: 1100px;
+        }
+
+        .body-text {
+            font-size: clamp(15px, 1.8vw, 22px);
+            font-weight: 400;
+            color: #515154;
+            line-height: 1.45;
+            max-width: 820px;
+            margin: 0 auto;
+        }
+
+        .highlight { color: #007aff; font-weight: 500; }
+        .accent-green { color: #34c759; font-weight: 500; }
+        .accent-red { color: #ff3b30; font-weight: 500; }
+
+        /* Image placeholder */
+        .img-placeholder {
+            border: 2px dashed rgba(0, 122, 255, 0.35);
+            background: rgba(0, 122, 255, 0.04);
+            border-radius: 14px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #007aff;
+            font-size: clamp(12px, 1.2vw, 14px);
+            font-weight: 500;
+            text-align: center;
+            padding: 20px;
+            line-height: 1.4;
+        }
+        .img-placeholder .ph-tag {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.16em;
+            color: #007aff;
+            opacity: 0.7;
+            margin-bottom: 6px;
+        }
+        .img-placeholder.hero {
+            width: min(640px, 80vw);
+            height: 320px;
+            margin-bottom: clamp(20px, 3vh, 32px);
+        }
+        .img-placeholder.wide {
+            width: min(820px, 85vw);
+            height: 280px;
+        }
+        .img-placeholder.portrait {
+            width: 220px; height: 220px;
+            border-radius: 50%;
+        }
+        .img-placeholder.square {
+            width: 100%;
+            aspect-ratio: 1;
+        }
+        .img-placeholder.banner {
+            width: 100%;
+            height: 200px;
+        }
+        .img-placeholder.thin {
+            width: 100%;
+            height: 140px;
+        }
+
+        /* Cards */
+        .cards-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: clamp(16px, 2.5vw, 28px);
+            margin-top: clamp(24px, 4vh, 40px);
+            max-width: 1100px; width: 100%;
+        }
+
+        .card {
+            background: rgba(0, 0, 0, 0.025);
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            border-radius: 14px;
+            padding: clamp(20px, 2.5vw, 32px);
+            text-align: left;
+            opacity: 0; transform: translateY(24px);
+            animation: cardSlideUp 0.55s ease-out forwards;
+            transition: all 0.3s ease;
+        }
+        .card:hover {
+            background: rgba(0, 0, 0, 0.04);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+        }
+        .card:nth-child(1) { animation-delay: 0.4s; }
+        .card:nth-child(2) { animation-delay: 0.5s; }
+        .card:nth-child(3) { animation-delay: 0.6s; }
+        .card:nth-child(4) { animation-delay: 0.7s; }
+        .card:nth-child(5) { animation-delay: 0.8s; }
+        .card:nth-child(6) { animation-delay: 0.9s; }
+
+        @keyframes cardSlideUp { to { opacity: 1; transform: translateY(0); } }
+
+        .card .num {
+            font-size: clamp(28px, 3vw, 36px);
+            font-weight: 700;
+            color: #007aff;
+            line-height: 1;
+            margin-bottom: 12px;
+            letter-spacing: -0.02em;
+        }
+        .card h3 {
+            font-size: clamp(17px, 2vw, 22px);
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #1d1d1f;
+            letter-spacing: -0.01em;
+        }
+        .card p {
+            font-size: clamp(13px, 1.55vw, 16px);
+            color: #6e6e73;
+            line-height: 1.45;
+        }
+
+        /* Comparison */
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: clamp(24px, 4vw, 56px);
+            max-width: 1100px;
+            width: 100%;
+            margin-top: clamp(24px, 4vh, 40px);
+            align-items: stretch;
+        }
+        .comparison-item {
+            text-align: left;
+            opacity: 0; transform: scale(0.96);
+            animation: scaleIn 0.6s ease-out forwards;
+            padding: clamp(24px, 3vw, 36px);
+            border-radius: 16px;
+            background: rgba(0,0,0,0.02);
+            border: 1px solid rgba(0,0,0,0.06);
+        }
+        .comparison-item:nth-child(1) { animation-delay: 0.4s; }
+        .comparison-item:nth-child(2) { animation-delay: 0.55s; }
+        @keyframes scaleIn { to { opacity: 1; transform: scale(1); } }
+        .comparison-item .label {
+            font-size: clamp(12px, 1.1vw, 14px);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.16em;
+            margin-bottom: 12px;
+        }
+        .comparison-item.old .label { color: #ff3b30; }
+        .comparison-item.new .label { color: #34c759; }
+        .comparison-item h3 {
+            font-size: clamp(20px, 2.6vw, 30px);
+            font-weight: 600;
+            margin-bottom: 14px;
+            color: #1d1d1f;
+            line-height: 1.15;
+        }
+        .comparison-item p, .comparison-item li {
+            font-size: clamp(14px, 1.7vw, 18px);
+            color: #515154;
+            line-height: 1.45;
+        }
+        .comparison-item ul { list-style: none; padding: 0; margin-top: 8px; }
+        .comparison-item ul li {
+            padding: 6px 0 6px 18px;
+            position: relative;
+        }
+        .comparison-item.old ul li::before { content: "→"; position: absolute; left: 0; color: #ff3b30; font-weight: 600; }
+        .comparison-item.new ul li::before { content: "→"; position: absolute; left: 0; color: #34c759; font-weight: 600; }
+
+        /* Big number */
+        .big-number {
+            font-size: clamp(80px, 14vw, 220px);
+            font-weight: 700;
+            color: #007aff;
+            line-height: 0.85;
+            margin-bottom: clamp(16px, 2.5vh, 32px);
+            letter-spacing: -0.05em;
+        }
+
+        /* Quote card */
+        .quote-card {
+            margin-top: clamp(24px, 4vh, 40px);
+            padding: clamp(20px, 2.5vw, 28px) clamp(24px, 3vw, 36px);
+            border-left: 3px solid #007aff;
+            background: rgba(0, 122, 255, 0.04);
+            border-radius: 8px;
+            text-align: left;
+            max-width: 820px;
+        }
+        .quote-card .label {
+            font-size: 12px; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 0.16em;
+            color: #007aff; margin-bottom: 8px;
+        }
+        .quote-card p {
+            font-size: clamp(15px, 1.8vw, 20px);
+            color: #1d1d1f; line-height: 1.4; font-weight: 500;
+        }
+
+        /* Numbered steps */
+        .steps-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: clamp(20px, 3vw, 40px);
+            max-width: 1100px;
+            margin-top: clamp(24px, 4vh, 40px);
+        }
+        .step {
+            text-align: center;
+            opacity: 0; transform: translateY(20px);
+            animation: cardSlideUp 0.55s ease-out forwards;
+        }
+        .step:nth-child(1) { animation-delay: 0.4s; }
+        .step:nth-child(2) { animation-delay: 0.55s; }
+        .step:nth-child(3) { animation-delay: 0.7s; }
+        .step:nth-child(4) { animation-delay: 0.85s; }
+        .step .step-num {
+            display: inline-flex;
+            width: 56px; height: 56px;
+            border-radius: 50%;
+            background: #007aff; color: #fff;
+            font-size: 22px; font-weight: 700;
+            align-items: center; justify-content: center;
+            margin-bottom: 16px;
+        }
+        .step h3 {
+            font-size: clamp(18px, 2.2vw, 24px);
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #1d1d1f;
+        }
+        .step p {
+            font-size: clamp(13px, 1.55vw, 16px);
+            color: #6e6e73;
+            line-height: 1.45;
+        }
+
+        /* Code block */
+        .code-block {
+            background: #1d1d1f;
+            color: #f5f5f7;
+            border-radius: 12px;
+            padding: clamp(18px, 2vw, 28px);
+            font-family: 'SF Mono', 'Menlo', 'Monaco', 'Consolas', monospace;
+            font-size: clamp(13px, 1.55vw, 17px);
+            line-height: 1.7;
+            text-align: left;
+            margin-top: 18px;
+            max-width: 860px;
+            width: 100%;
+            white-space: pre;
+            overflow-x: auto;
+        }
+        .code-block .ck { color: #ff79c6; }   /* keyword */
+        .code-block .cs { color: #50fa7b; }   /* string */
+        .code-block .cn { color: #f1fa8c; }   /* name/identifier-like */
+        .code-block .co { color: #6272a4; font-style: italic; } /* comment */
+        .code-block .cf { color: #8be9fd; }   /* function */
+        .code-block .cm { color: #bd93f9; }   /* number */
+        .code-block .ce { color: #ff5555; }   /* error */
+
+        /* Two-column with image */
+        .image-text-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: clamp(24px, 4vw, 56px);
+            max-width: 1150px;
+            align-items: center;
+        }
+        .image-text-row .text-col { text-align: left; }
+        .image-text-row .text-col h2 {
+            font-size: clamp(28px, 3.6vw, 48px);
+            margin-bottom: 16px;
+        }
+        .image-text-row .text-col p {
+            font-size: clamp(14px, 1.7vw, 19px);
+            color: #515154; line-height: 1.5;
+        }
+
+        /* Person row */
+        .person-row {
+            display: grid;
+            grid-template-columns: 0.8fr 1.2fr;
+            gap: clamp(28px, 4vw, 56px);
+            max-width: 1100px;
+            align-items: center;
+        }
+        .person-row .text-col { text-align: left; }
+        .person-row .text-col h2 {
+            font-size: clamp(28px, 3.6vw, 48px);
+            margin-bottom: 12px;
+        }
+
+        /* Timeline */
+        .timeline {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 24px;
+            position: relative;
+        }
+        .timeline::before {
+            content: "";
+            position: absolute;
+            top: 50%; left: 0; right: 0;
+            height: 2px;
+            background: rgba(0,0,0,0.08);
+            z-index: 0;
+        }
+        .timeline .tl-node {
+            position: relative;
+            z-index: 1;
+            background: #fff;
+            padding: 6px 14px;
+            border-radius: 50px;
+            border: 1.5px solid rgba(0,0,0,0.08);
+            font-size: clamp(11px, 1.2vw, 13px);
+            font-weight: 600;
+            color: #515154;
+        }
+        .timeline .tl-node.active {
+            background: #007aff;
+            color: #fff;
+            border-color: #007aff;
+        }
+
+        /* Strikethrough list */
+        .strike-list {
+            list-style: none;
+            padding: 0;
+            margin-top: 16px;
+        }
+        .strike-list li {
+            font-size: clamp(14px, 1.7vw, 18px);
+            color: #6e6e73;
+            line-height: 1.5;
+            padding: 8px 0 8px 24px;
+            position: relative;
+            text-decoration: line-through;
+            text-decoration-color: rgba(0, 122, 255, 0.5);
+            text-decoration-thickness: 2px;
+        }
+        .strike-list li::before {
+            content: "✕";
+            position: absolute;
+            left: 0;
+            color: #007aff;
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        /* Two converging circles */
+        .converge-vis {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 24px;
+            margin-top: 32px;
+            margin-bottom: 24px;
+        }
+        .conv-circle {
+            width: 120px; height: 120px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: 600;
+            text-align: center;
+            color: #515154;
+            border: 2px solid rgba(0, 122, 255, 0.4);
+            background: rgba(0, 122, 255, 0.04);
+        }
+        .conv-circle.half {
+            background: linear-gradient(90deg, rgba(0,122,255,0.18) 50%, rgba(0,122,255,0.04) 50%);
+        }
+        .conv-arrow {
+            font-size: 32px;
+            color: #007aff;
+            opacity: 0.6;
+        }
+        .conv-target {
+            width: 140px; height: 140px;
+            border-radius: 50%;
+            background: #007aff;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 600;
+            text-align: center;
+            box-shadow: 0 12px 32px rgba(0, 122, 255, 0.25);
+        }
+
+        /* 30/70 chart */
+        .ratio-chart {
+            display: flex;
+            width: 100%;
+            max-width: 720px;
+            height: 80px;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-top: 24px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+        }
+        .ratio-chart .ratio-seg {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-weight: 600;
+            font-size: clamp(14px, 1.6vw, 18px);
+        }
+        .ratio-chart .seg-30 {
+            width: 30%;
+            background: rgba(0, 122, 255, 0.2);
+            color: #007aff;
+        }
+        .ratio-chart .seg-70 {
+            width: 70%;
+            background: #007aff;
+        }
+
+        /* Checklist */
+        .checklist {
+            list-style: none;
+            padding: 0;
+            margin-top: 20px;
+            max-width: 800px;
+            text-align: left;
+        }
+        .checklist li {
+            font-size: clamp(15px, 1.9vw, 20px);
+            color: #1d1d1f;
+            line-height: 1.5;
+            padding: 12px 0 12px 40px;
+            position: relative;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+        .checklist li:last-child { border-bottom: none; }
+        .checklist li::before {
+            content: "✓";
+            position: absolute;
+            left: 0; top: 50%;
+            transform: translateY(-50%);
+            width: 28px; height: 28px;
+            border-radius: 50%;
+            background: rgba(0, 122, 255, 0.1);
+            color: #007aff;
+            font-size: 14px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Type table */
+        .type-table {
+            width: 100%;
+            max-width: 820px;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-top: 20px;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid rgba(0,0,0,0.06);
+        }
+        .type-table th, .type-table td {
+            padding: 14px 20px;
+            text-align: left;
+            font-size: clamp(13px, 1.6vw, 17px);
+            border-bottom: 1px solid rgba(0,0,0,0.06);
+        }
+        .type-table tr:last-child td { border-bottom: none; }
+        .type-table th {
+            background: rgba(0,0,0,0.025);
+            font-size: clamp(11px, 1.1vw, 13px);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.14em;
+            color: #86868b;
+        }
+        .type-table .ttype {
+            font-family: 'SF Mono', 'Menlo', monospace;
+            color: #007aff;
+            font-weight: 600;
+        }
+        .type-table .tex {
+            font-family: 'SF Mono', 'Menlo', monospace;
+            color: #515154;
+            font-size: clamp(12px, 1.5vw, 16px);
+        }
+
+        /* Three-axes table for slide 8 */
+        .axes-table {
+            width: 100%;
+            max-width: 820px;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-top: 16px;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid rgba(0,0,0,0.06);
+        }
+        .axes-table td {
+            padding: 14px 20px;
+            text-align: left;
+            font-size: clamp(13px, 1.6vw, 16px);
+            border-bottom: 1px solid rgba(0,0,0,0.06);
+            line-height: 1.4;
+        }
+        .axes-table tr:last-child td { border-bottom: none; }
+        .axes-table .axis {
+            color: #1d1d1f;
+            font-weight: 500;
+        }
+        .axes-table .ex {
+            font-family: 'SF Mono', 'Menlo', monospace;
+            color: #515154;
+            font-size: clamp(12px, 1.5vw, 15px);
+        }
+
+        /* Two-column ✓ ✗ for variable names */
+        .name-rules {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: clamp(20px, 3vw, 40px);
+            max-width: 1000px;
+            margin-top: 24px;
+        }
+        .name-col {
+            text-align: left;
+        }
+        .name-col .col-label {
+            font-size: clamp(12px, 1.2vw, 14px);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.14em;
+            margin-bottom: 12px;
+        }
+        .name-col.good .col-label { color: #34c759; }
+        .name-col.bad .col-label { color: #ff3b30; }
+        .name-col .name-line {
+            display: grid;
+            grid-template-columns: 130px 1fr;
+            gap: 16px;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            font-size: clamp(13px, 1.5vw, 16px);
+        }
+        .name-col .name-line:last-child { border-bottom: none; }
+        .name-col .name-code {
+            font-family: 'SF Mono', 'Menlo', monospace;
+            font-weight: 600;
+            color: #1d1d1f;
+        }
+        .name-col.bad .name-code { color: #515154; opacity: 0.85; }
+        .name-col .reason {
+            font-size: clamp(11px, 1.3vw, 14px);
+            color: #6e6e73;
+        }
+        .name-col .mark {
+            font-weight: 700;
+        }
+        .name-col.good .mark { color: #34c759; }
+        .name-col.bad .mark { color: #ff3b30; }
+
+        /* Pills row */
+        .pill-row {
+            display: flex; flex-wrap: wrap;
+            gap: 10px; justify-content: center;
+            margin-top: 18px;
+        }
+        .pill-row .pill {
+            padding: 10px 18px;
+            border-radius: 50px;
+            background: rgba(0,0,0,0.04);
+            color: #1d1d1f;
+            font-size: clamp(13px, 1.5vw, 16px);
+            font-weight: 500;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+        .pill-row .pill.accent {
+            background: rgba(0,122,255,0.08);
+            color: #007aff;
+            border-color: rgba(0,122,255,0.18);
+        }
+
+        /* Topic grid 6 cards */
+        .topic-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            max-width: 880px;
+            margin-top: 28px;
+        }
+        .topic-cell {
+            padding: 16px 20px;
+            background: rgba(0,0,0,0.025);
+            border: 1px solid rgba(0,0,0,0.06);
+            border-radius: 12px;
+            font-family: 'SF Mono', 'Menlo', monospace;
+            font-size: clamp(14px, 1.7vw, 18px);
+            font-weight: 600;
+            color: #007aff;
+            text-align: center;
+        }
+
+        /* Code-output split */
+        .code-output {
+            display: grid;
+            grid-template-columns: 1.1fr 1fr;
+            gap: 16px;
+            margin-top: 24px;
+            width: 100%;
+            max-width: 1050px;
+        }
+        .code-output .term {
+            background: #1d1d1f;
+            color: #f5f5f7;
+            border-radius: 12px;
+            padding: 20px;
+            font-family: 'SF Mono', 'Menlo', monospace;
+            font-size: clamp(12px, 1.4vw, 16px);
+            line-height: 1.7;
+            text-align: left;
+            white-space: pre;
+            overflow-x: auto;
+        }
+        .term .prompt { color: #50fa7b; }
+        .term .out { color: #f8f8f2; opacity: 0.85; }
+        .term .err { color: #ff5555; }
+
+        /* Boxes visualization for variables */
+        .boxes-vis {
+            display: flex;
+            justify-content: center;
+            gap: 28px;
+            margin-top: 24px;
+            margin-bottom: 8px;
+        }
+        .box-var {
+            width: 130px;
+            text-align: center;
+        }
+        .box-var .box {
+            border: 2px solid #007aff;
+            border-radius: 12px;
+            background: rgba(0,122,255,0.06);
+            height: 90px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'SF Mono', 'Menlo', monospace;
+            font-size: clamp(13px, 1.5vw, 16px);
+            font-weight: 600;
+            color: #007aff;
+            margin-bottom: 8px;
+        }
+        .box-var .name {
+            font-family: 'SF Mono', 'Menlo', monospace;
+            font-size: clamp(12px, 1.3vw, 14px);
+            color: #515154;
+        }
+
+        /* Resources */
+        .resources {
+            display: flex; flex-wrap: wrap;
+            gap: 10px; justify-content: center;
+            margin-top: clamp(20px, 3vh, 32px);
+        }
+        .resources .pill {
+            padding: 10px 20px;
+            border-radius: 50px;
+            background: rgba(0,0,0,0.05);
+            color: #1d1d1f;
+            font-size: clamp(13px, 1.5vw, 16px);
+            font-weight: 500;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+        .res-section .res-label {
+            font-size: clamp(11px, 1.1vw, 13px);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.16em;
+            color: #86868b;
+            margin: 18px 0 8px 0;
+        }
+
+        /* Progress bar visualization (timer placeholder) */
+        .timer-display {
+            font-family: 'SF Mono', 'Menlo', monospace;
+            font-size: clamp(56px, 9vw, 120px);
+            font-weight: 700;
+            color: #007aff;
+            line-height: 1;
+            letter-spacing: -0.04em;
+            margin: 12px 0 24px 0;
+        }
+
+        /* Footer / nav */
+        .slide-indicator {
+            position: fixed;
+            bottom: 28px; left: 50%;
+            transform: translateX(-50%);
+            font-size: 13px; color: #86868b;
+            font-weight: 400; z-index: 100;
+            letter-spacing: 0.04em;
+        }
+        .nav-hint {
+            position: fixed;
+            bottom: 28px; right: 28px;
+            font-size: 12px; color: #c7c7cc;
+            font-weight: 400; text-align: right;
+            z-index: 100;
+        }
+        .lesson-tag {
+            position: fixed;
+            top: 28px; left: 28px;
+            font-size: 11px; font-weight: 600;
+            color: #86868b; text-transform: uppercase;
+            letter-spacing: 0.18em;
+            z-index: 100;
+        }
+        .lang-switcher {
+            position: fixed;
+            top: 22px; right: 28px;
+            z-index: 100;
+            display: flex;
+            gap: 2px;
+            background: rgba(255,255,255,0.95);
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0,0,0,0.06);
+            border-radius: 50px;
+            padding: 3px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        .lang-switcher a {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: #86868b;
+            text-decoration: none;
+            padding: 5px 12px;
+            border-radius: 50px;
+            transition: all 0.2s ease;
+        }
+        .lang-switcher a.active {
+            color: #fff;
+            background: #007aff;
+        }
+        .lang-switcher a:not(.active):hover {
+            color: #1d1d1f;
+        }
+
+        /* Big arrow flow */
+        .flow-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+            flex-wrap: wrap;
+            margin-top: 24px;
+            font-family: 'SF Mono', 'Menlo', monospace;
+            font-size: clamp(13px, 1.5vw, 17px);
+        }
+        .flow-row .step-pill {
+            padding: 10px 18px;
+            border-radius: 50px;
+            background: rgba(0,122,255,0.08);
+            color: #007aff;
+            font-weight: 600;
+            border: 1px solid rgba(0,122,255,0.18);
+        }
+        .flow-row .arrow {
+            color: #86868b;
+            font-size: 18px;
+        }
+
+        /* Quiz / question options */
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            max-width: 820px;
+            width: 100%;
+            margin-top: 24px;
+        }
+        .options-grid.single { grid-template-columns: 1fr; max-width: 640px; }
+        .option-card {
+            background: rgba(0, 0, 0, 0.025);
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            border-radius: 12px;
+            padding: 16px 22px;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            font-size: clamp(14px, 1.7vw, 18px);
+            font-weight: 500;
+            color: #1d1d1f;
+            line-height: 1.35;
+            opacity: 0; transform: translateY(20px);
+            animation: cardSlideUp 0.5s ease-out forwards;
+        }
+        .option-card:nth-child(1) { animation-delay: 0.4s; }
+        .option-card:nth-child(2) { animation-delay: 0.5s; }
+        .option-card:nth-child(3) { animation-delay: 0.6s; }
+        .option-card:nth-child(4) { animation-delay: 0.7s; }
+        .option-card:nth-child(5) { animation-delay: 0.8s; }
+        .option-card .option-letter {
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            background: rgba(0, 122, 255, 0.1);
+            color: #007aff;
+            font-size: 14px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .option-card code {
+            font-family: 'SF Mono', 'Menlo', 'Monaco', 'Consolas', monospace;
+            color: #007aff;
+            font-weight: 600;
+        }
+        .think-hint {
+            margin-top: clamp(20px, 3vh, 32px);
+            font-size: clamp(14px, 1.7vw, 19px);
+            color: #86868b;
+            font-style: italic;
+        }
+
+        @media (max-width: 768px) {
+            .comparison-grid, .image-text-row, .person-row,
+            .steps-row, .name-rules, .topic-grid, .code-output,
+            .cards-container, .boxes-vis, .options-grid {
+                grid-template-columns: 1fr; gap: 20px;
+                flex-direction: column;
+            }
+            .timeline { flex-wrap: wrap; gap: 8px; justify-content: center; }
+            .timeline::before { display: none; }
+            .converge-vis { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <div class="presentation">
+
+        <!-- 1: Title -->
+        <div class="slide active">
+            <div class="slide-content">
+                <img src="python-logo.png" alt="Python logo" style="width: min(240px, 55vw); height: auto; margin-bottom: clamp(20px, 3vh, 32px);" />
+                <p class="eyebrow">Лекция 2</p>
+                <h1>Python: основы</h1>
+                <p class="subtitle">Переменные, типы данных, I/O, арифметика, if/elif/else</p>
+            </div>
+        </div>
+
+        <!-- 2: About me -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="person-row">
+                    <div style="text-align: center;">
+                        <img src="myphoto.jpg" alt="Photo" style="width: 220px; height: 220px; border-radius: 50%; object-fit: cover; box-shadow: 0 12px 40px rgba(0,0,0,0.1);" />
+                    </div>
+                    <div class="text-col">
+                        <p class="eyebrow">О себе</p>
+                        <h2>Обо мне</h2>
+                        <p style="font-size: clamp(15px, 1.8vw, 19px); color: #515154; line-height: 1.5;">
+                            Team Lead, AI / ML. 4-5 лет в индустрии. Начал работать ещё на бакалавриате.
+                        </p>
+                        <div class="timeline">
+                            <span class="tl-node">Junior</span>
+                            <span class="tl-node active">Team Lead</span>
+                        </div>
+                        <p style="margin-top: 24px; font-size: clamp(13px, 1.5vw, 16px); color: #86868b; font-weight: 500; text-transform: uppercase; letter-spacing: 0.1em;">Прошёл тот же путь</p>
+                        <ul class="strike-list">
+                            <li>Использовал термины, не понимая их до конца</li>
+                            <li>Прыгал на популярные темы, не закрыв основы</li>
+                            <li>Копировал код, не разбираясь как он работает</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2b: Speech Analytics -->
+        <div class="slide">
+            <div class="slide-content">
+                <h2 style="font-size: clamp(22px, 2.8vw, 38px); margin-bottom: 0;">Speech Analytics</h2>
+                <div style="width: min(880px, 76vw); overflow: hidden; border-radius: 14px; box-shadow: 0 12px 40px rgba(0,0,0,0.12); margin-top: clamp(6px, 1vh, 14px); max-height: 62vh; line-height: 0;">
+                    <video src="speech_analytics.mp4" autoplay loop muted playsinline preload="auto" style="width: 100%; height: auto; display: block; margin-top: -8%;"></video>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3: Уровень подготовки -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Про уровень</p>
+                <h2>Уровень подготовки</h2>
+                <div class="converge-vis">
+                    <div class="conv-circle">с нуля</div>
+                    <div class="conv-arrow">→</div>
+                    <div class="conv-target">фундамент<br/>у всех</div>
+                    <div class="conv-arrow">←</div>
+                    <div class="conv-circle half">с опытом</div>
+                </div>
+                <p class="body-text" style="margin-top: 8px;">
+                    Если уже есть опыт - оставайтесь. У всех, кто учился сам, есть пробелы.<br/>
+                    Будут дополнительные материалы. Хотите разобрать что-то отдельно - после урока или в Telegram.
+                </p>
+            </div>
+        </div>
+
+        <!-- 4: Силлабус -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">План курса</p>
+                <h1>Силлабус</h1>
+            </div>
+        </div>
+
+        <!-- 5: Формат занятий -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Формат</p>
+                <h2>Формат занятий</h2>
+                <div class="ratio-chart">
+                    <div class="ratio-seg seg-30">30% теория</div>
+                    <div class="ratio-seg seg-70">70% практика</div>
+                </div>
+                <div class="cards-container" style="grid-template-columns: 1fr 1fr; max-width: 880px; margin-top: 36px;">
+                    <div class="card">
+                        <h3>Где пишем код</h3>
+                        <p>VS Code и Jupyter Notebook. Большую часть времени - в редакторе.</p>
+                    </div>
+                    <div class="card">
+                        <h3>Домашнее задание</h3>
+                        <p>Каждую неделю - обязательная. После каждого урока - дополнительная, по желанию.</p>
+                    </div>
+                </div>
+                <p class="body-text" style="margin-top: 24px; font-size: clamp(13px, 1.5vw, 16px); color: #86868b;">Вопросы: в личных сообщениях или в групповом чате.</p>
+            </div>
+        </div>
+
+        <!-- 6: Правила -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Правила</p>
+                <h2>Правила курса</h2>
+                <ul class="checklist">
+                    <li>Не мешайте друг другу</li>
+                    <li>Помогайте друг другу</li>
+                    <li>ChatGPT и Claude - как помощник, не замена</li>
+                </ul>
+                <img src="meme3.webp" alt="ChatGPT meme" style="max-width: min(480px, 80vw); height: auto; border-radius: 12px; margin-top: 24px; box-shadow: 0 8px 30px rgba(0,0,0,0.12);" />
+            </div>
+        </div>
+
+        <!-- 7: Платформа -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Платформа</p>
+                <h2>Платформа и контакты</h2>
+                <div class="cards-container" style="grid-template-columns: 1fr 1fr 1fr; max-width: 980px;">
+                    <div class="card">
+                        <div class="num">→</div>
+                        <h3>Платформа курса</h3>
+                        <p>Все материалы, домашнее задание и слайды.<br/><span class="highlight">TBA</span></p>
+                    </div>
+                    <div class="card">
+                        <div class="num">tg</div>
+                        <h3>Telegram-чат</h3>
+                        <p>Общие вопросы и обсуждения.<br/><span class="highlight">TBA</span></p>
+                    </div>
+                    <div class="card">
+                        <div class="num">@</div>
+                        <h3>Личные сообщения</h3>
+                        <p>Для индивидуальных вопросов.<br/><span class="highlight">@gokalqurt</span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 7q: Question - In honor of what is Python named? -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Вопрос</p>
+                <h1>В честь чего<br/>назван Python?</h1>
+                <div class="options-grid">
+                    <div class="option-card"><span class="option-letter">A</span>В честь змеи</div>
+                    <div class="option-card"><span class="option-letter">B</span>Monty Python's Flying Circus</div>
+                    <div class="option-card"><span class="option-letter">C</span>В честь автора - Гвидо ван Россума</div>
+                    <div class="option-card"><span class="option-letter">D</span>Аббревиатура от Process Your Thoughts</div>
+                </div>
+                <p class="think-hint">Подумайте минуту →</p>
+            </div>
+        </div>
+
+        <!-- 8: Что такое Python -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Что такое Python</p>
+                <h2>История языка</h2>
+                <div class="image-text-row" style="margin-top: 16px;">
+                    <div style="display: flex; flex-direction: column; align-items: center; gap: 12px;">
+                        <img src="monty.jpg" alt="Monty Python's Flying Circus" style="width: 100%; max-width: 280px; height: auto; border-radius: 12px; box-shadow: 0 12px 40px rgba(0,0,0,0.12);" />
+                        <p style="font-size: clamp(12px, 1.4vw, 14px); color: #86868b; text-align: center; max-width: 320px;">
+                            Назван в честь Monty Python's Flying Circus.<br/>Не змеи.
+                        </p>
+                    </div>
+                    <div class="text-col">
+                        <table class="axes-table">
+                            <tr>
+                                <td class="axis">Низкий / Высокий уровень</td>
+                                <td class="ex">C / <span class="highlight">Python</span></td>
+                            </tr>
+                            <tr>
+                                <td class="axis">Компилируемый / Интерпретируемый</td>
+                                <td class="ex">C++ / <span class="highlight">Python</span></td>
+                            </tr>
+                            <tr>
+                                <td class="axis">Статическая / Динамическая типизация</td>
+                                <td class="ex">Java / <span class="highlight">Python</span></td>
+                            </tr>
+                        </table>
+                        <p style="margin-top: 16px; font-size: clamp(13px, 1.5vw, 16px); color: #515154; line-height: 1.5;">
+                            Python - <span class="highlight">высокоуровневый, интерпретируемый, динамически типизированный.</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 9: Почему Python для AI / ML / DS -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Почему Python</p>
+                <h2>Python в AI, ML и Data Science</h2>
+                <div class="image-text-row" style="margin-top: 16px;">
+                    <div>
+                        <p style="font-size: clamp(11px, 1.1vw, 13px); font-weight: 600; text-transform: uppercase; letter-spacing: 0.14em; color: #86868b; margin-bottom: 12px;">Библиотеки</p>
+                        <div class="pill-row" style="justify-content: flex-start;">
+                            <span class="pill accent">NumPy</span>
+                            <span class="pill accent">Pandas</span>
+                            <span class="pill accent">scikit-learn</span>
+                            <span class="pill accent">PyTorch</span>
+                            <span class="pill accent">TensorFlow</span>
+                        </div>
+                        <p style="font-size: clamp(11px, 1.1vw, 13px); font-weight: 600; text-transform: uppercase; letter-spacing: 0.14em; color: #86868b; margin: 18px 0 12px 0;">Где используется</p>
+                        <div class="pill-row" style="justify-content: flex-start;">
+                            <span class="pill">Google</span>
+                            <span class="pill">Meta</span>
+                            <span class="pill">Netflix</span>
+                            <span class="pill">OpenAI</span>
+                            <span class="pill">Anthropic</span>
+                        </div>
+                    </div>
+                    <div class="text-col">
+                        <ul style="list-style: none; padding: 0;">
+                            <li style="padding: 8px 0 8px 22px; position: relative; font-size: clamp(14px, 1.6vw, 17px); color: #515154; line-height: 1.45;">
+                                <span style="position: absolute; left: 0; color: #007aff; font-weight: 700;">→</span>
+                                Простой синтаксис, доступен не только программистам
+                            </li>
+                            <li style="padding: 8px 0 8px 22px; position: relative; font-size: clamp(14px, 1.6vw, 17px); color: #515154; line-height: 1.45;">
+                                <span style="position: absolute; left: 0; color: #007aff; font-weight: 700;">→</span>
+                                Крупнейшее сообщество среди языков для данных
+                            </li>
+                            <li style="padding: 8px 0 8px 22px; position: relative; font-size: clamp(14px, 1.6vw, 17px); color: #515154; line-height: 1.45;">
+                                <span style="position: absolute; left: 0; color: #007aff; font-weight: 700;">→</span>
+                                Интеграция с C / C++ для ускорения вычислений
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="quote-card" style="margin-top: 28px;">
+                    <div class="label">🔒 GIL</div>
+                    <p>Один поток выполняет код одновременно. Для ML не проблема - вычисления уходят в C-библиотеки. Подробнее позже.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 10: Установка -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Установка</p>
+                <h2>Установка окружения</h2>
+                <div class="steps-row" style="grid-template-columns: repeat(3, 1fr);">
+                    <div class="step">
+                        <div class="step-num">1</div>
+                        <h3>Python</h3>
+                        <p style="margin-bottom: 14px;"><span class="highlight">python.org</span></p>
+                        <p style="font-size: clamp(12px, 1.4vw, 14px); color: #515154; line-height: 1.45; margin-bottom: 10px;">
+                            Windows: галочка<br/>«Add Python to PATH»
+                        </p>
+                        <p style="margin-top: 10px; font-family: 'SF Mono', monospace; font-size: clamp(11px, 1.3vw, 13px); color: #86868b;">python --version</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-num">2</div>
+                        <h3>VS Code</h3>
+                        <p style="margin-bottom: 14px;"><span class="highlight">code.visualstudio.com</span></p>
+                        <p style="font-size: clamp(12px, 1.4vw, 14px); color: #515154; line-height: 1.45;">
+                            Удобный редактор для Python и других языков.
+                        </p>
+                    </div>
+                    <div class="step">
+                        <div class="step-num">3</div>
+                        <h3>Расширения</h3>
+                        <p style="font-size: clamp(12px, 1.4vw, 14px); color: #515154; line-height: 1.45; margin-bottom: 12px;">
+                            Установите через панель Extensions:
+                        </p>
+                        <ul style="list-style: none; padding: 0; text-align: left; font-size: clamp(12px, 1.4vw, 14px); line-height: 1.7;">
+                            <li style="padding-left: 16px; position: relative; color: #1d1d1f;"><span style="position: absolute; left: 0; color: #007aff; font-weight: 700;">→</span><span style="font-weight: 600;">Python</span> <span style="color: #86868b;">(Microsoft)</span></li>
+                            <li style="padding-left: 16px; position: relative; color: #1d1d1f;"><span style="position: absolute; left: 0; color: #007aff; font-weight: 700;">→</span><span style="font-weight: 600;">Pylance</span> <span style="color: #86868b;">автодополнение</span></li>
+                            <li style="padding-left: 16px; position: relative; color: #1d1d1f;"><span style="position: absolute; left: 0; color: #007aff; font-weight: 700;">→</span><span style="font-weight: 600;">Jupyter</span> <span style="color: #86868b;">.ipynb ноутбуки</span></li>
+                            <li style="padding-left: 16px; position: relative; color: #1d1d1f;"><span style="position: absolute; left: 0; color: #007aff; font-weight: 700;">→</span><span style="font-weight: 600;">Black Formatter</span> <span style="color: #86868b;">форматирование</span></li>
+                            <li style="padding-left: 16px; position: relative; color: #1d1d1f;"><span style="position: absolute; left: 0; color: #007aff; font-weight: 700;">→</span><span style="font-weight: 600;">GitLens</span> <span style="color: #86868b;">история git</span></li>
+                            <li style="padding-left: 16px; position: relative; color: #1d1d1f;"><span style="position: absolute; left: 0; color: #007aff; font-weight: 700;">→</span><span style="font-weight: 600;">Docker</span> <span style="color: #86868b;">контейнеры</span></li>
+                        </ul>
+                    </div>
+                </div>
+                <p class="body-text" style="margin-top: 24px; font-size: clamp(13px, 1.5vw, 16px); color: #ff3b30;">
+                    Порядок: сначала Python, потом VS Code.
+                </p>
+            </div>
+        </div>
+
+        <!-- 11: Создаём папку курса -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Терминал</p>
+                <h2>Рабочая папка курса</h2>
+                <p class="subtitle">Терминал в VS Code: <span style="font-family: 'SF Mono', monospace; color: #007aff;">Ctrl + ~</span></p>
+                <div class="code-output">
+                    <div class="term"><span class="prompt">$</span> <span class="cn">pwd</span>
+<span class="out">/Users/you</span>
+
+<span class="prompt">$</span> <span class="cn">cd</span> Desktop
+<span class="prompt">$</span> <span class="cn">mkdir</span> python-course
+<span class="prompt">$</span> <span class="cn">cd</span> python-course
+
+<span class="prompt">$</span> <span class="cn">code</span> .
+<span class="out">opening VS Code...</span></div>
+                    <div style="text-align: left;">
+                        <p style="font-size: clamp(11px, 1.1vw, 13px); font-weight: 600; text-transform: uppercase; letter-spacing: 0.14em; color: #86868b; margin-bottom: 12px;">Шпаргалка</p>
+                        <table style="width: 100%; font-size: clamp(12px, 1.4vw, 15px); line-height: 1.7;">
+                            <tr><td style="font-family: 'SF Mono', monospace; color: #007aff; padding-right: 16px;">pwd</td><td style="color: #515154;">текущая директория</td></tr>
+                            <tr><td style="font-family: 'SF Mono', monospace; color: #007aff; padding-right: 16px;">ls / dir</td><td style="color: #515154;">содержимое папки</td></tr>
+                            <tr><td style="font-family: 'SF Mono', monospace; color: #007aff; padding-right: 16px;">cd &lt;папка&gt;</td><td style="color: #515154;">перейти в папку</td></tr>
+                            <tr><td style="font-family: 'SF Mono', monospace; color: #007aff; padding-right: 16px;">cd ..</td><td style="color: #515154;">на уровень выше</td></tr>
+                            <tr><td style="font-family: 'SF Mono', monospace; color: #007aff; padding-right: 16px;">mkdir &lt;имя&gt;</td><td style="color: #515154;">создать папку</td></tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 12: Первый файл -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Первая программа</p>
+                <h2>hello.py</h2>
+                <div class="code-output">
+                    <div class="code-block" style="margin-top: 0;"><span class="co"># hello.py</span>
+<span class="cf">print</span>(<span class="cs">"Hello, world!"</span>)</div>
+                    <div class="term"><span class="prompt">$</span> python hello.py
+<span class="out">Hello, world!</span></div>
+                </div>
+                <div class="quote-card" style="margin-top: 28px;">
+                    <div class="label">Если возникла ошибка</div>
+                    <p>Ошибка - это traceback. Читать снизу вверх. Последняя строка говорит, что сломалось. Строка выше - где именно.</p>
+                </div>
+                <!-- POTENTIAL MEME SPOT: первый Hello World мем -->
+            </div>
+        </div>
+
+        <!-- 13: Тема первого урока -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Первая тема</p>
+                <h1>Переменные<br/>и типы данных</h1>
+                <div class="topic-grid">
+                    <div class="topic-cell">print()</div>
+                    <div class="topic-cell">переменные</div>
+                    <div class="topic-cell">int · float</div>
+                    <div class="topic-cell">str · bool</div>
+                    <div class="topic-cell">input()</div>
+                    <div class="topic-cell">f-строки</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 14: print() -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Тема 01</p>
+                <h2>print()</h2>
+                <div class="code-output">
+                    <div class="code-block" style="margin-top: 0;"><span class="cf">print</span>(<span class="cs">"Привет!"</span>)
+<span class="cf">print</span>(<span class="cs">"Имя:"</span>, <span class="cs">"Миркомиль"</span>)
+<span class="cf">print</span>(<span class="cs">"2 + 2 ="</span>, <span class="cm">2</span> + <span class="cm">2</span>)
+<span class="cf">print</span>()</div>
+                    <div class="term"><span class="out">Привет!
+Имя: Миркомиль
+2 + 2 = 4
+</span></div>
+                </div>
+                <ul style="list-style: none; padding: 0; margin-top: 24px; max-width: 860px; text-align: left;">
+                    <li style="padding: 6px 0 6px 22px; position: relative; font-size: clamp(13px, 1.55vw, 17px); color: #515154;">
+                        <span style="position: absolute; left: 0; color: #007aff; font-weight: 700;">→</span>
+                        В кавычках - текст, выводится как есть
+                    </li>
+                    <li style="padding: 6px 0 6px 22px; position: relative; font-size: clamp(13px, 1.55vw, 17px); color: #515154;">
+                        <span style="position: absolute; left: 0; color: #007aff; font-weight: 700;">→</span>
+                        Без кавычек - Python вычисляет, выводит результат
+                    </li>
+                    <li style="padding: 6px 0 6px 22px; position: relative; font-size: clamp(13px, 1.55vw, 17px); color: #515154;">
+                        <span style="position: absolute; left: 0; color: #007aff; font-weight: 700;">→</span>
+                        Запятая - пробел между аргументами
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 15: Переменные -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Тема 02</p>
+                <h2>Переменные</h2>
+                <p class="subtitle">Коробка с именем. Кладёте значение, обращаетесь по имени.</p>
+                <div class="boxes-vis">
+                    <div class="box-var">
+                        <div class="box">"Миркомиль"</div>
+                        <div class="name">name</div>
+                    </div>
+                    <div class="box-var">
+                        <div class="box">25</div>
+                        <div class="name">age</div>
+                    </div>
+                    <div class="box-var">
+                        <div class="box">19.99</div>
+                        <div class="name">price</div>
+                    </div>
+                </div>
+                <div class="code-block" style="max-width: 720px;"><span class="cn">name</span> = <span class="cs">"Миркомиль"</span>
+<span class="cn">age</span> = <span class="cm">25</span>
+<span class="cn">price</span> = <span class="cm">19.99</span>
+
+<span class="cf">print</span>(<span class="cn">name</span>)
+<span class="cf">print</span>(<span class="cs">"Мне"</span>, <span class="cn">age</span>, <span class="cs">"лет"</span>)</div>
+                <p class="body-text" style="margin-top: 18px; font-size: clamp(13px, 1.5vw, 16px); color: #86868b;">
+                    <span style="color: #007aff; font-weight: 600;">=</span> это присваивание, не равенство. Слева имя, справа значение.
+                </p>
+            </div>
+        </div>
+
+        <!-- 15q: Question - Which variable names are valid? -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Вопрос</p>
+                <h2>Какие имена переменных<br/>можно использовать?</h2>
+                <div class="options-grid">
+                    <div class="option-card"><span class="option-letter">A</span><code>user_name</code></div>
+                    <div class="option-card"><span class="option-letter">B</span><code>2name</code></div>
+                    <div class="option-card"><span class="option-letter">C</span><code>price2</code></div>
+                    <div class="option-card"><span class="option-letter">D</span><code>user-age</code></div>
+                    <div class="option-card"><span class="option-letter">E</span><code>class</code></div>
+                </div>
+                <p class="think-hint">Подумайте минуту →</p>
+            </div>
+        </div>
+
+        <!-- 16: Имена переменных -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Тема 03</p>
+                <h2>Имена переменных</h2>
+                <div class="name-rules">
+                    <div class="name-col good">
+                        <div class="col-label">Можно</div>
+                        <div class="name-line">
+                            <span class="name-code">user_name</span>
+                            <span class="mark">✓</span>
+                        </div>
+                        <div class="name-line">
+                            <span class="name-code">price2</span>
+                            <span class="mark">✓</span>
+                        </div>
+                    </div>
+                    <div class="name-col bad">
+                        <div class="col-label">Нельзя</div>
+                        <div class="name-line">
+                            <span class="name-code">2name</span>
+                            <span class="reason">начинается с цифры</span>
+                        </div>
+                        <div class="name-line">
+                            <span class="name-code">user-age</span>
+                            <span class="reason">дефис - оператор вычитания</span>
+                        </div>
+                        <div class="name-line">
+                            <span class="name-code">class</span>
+                            <span class="reason">зарезервированное слово</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="quote-card" style="margin-top: 28px;">
+                    <div class="label">Соглашение</div>
+                    <p><span style="font-family: 'SF Mono', monospace; color: #007aff;">snake_case</span>. Имя должно отражать содержимое.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 16q: Question - What type is each value? -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Вопрос</p>
+                <h2>Какой тип у этих значений?</h2>
+                <div class="code-block" style="max-width: 520px;"><span class="cf">type</span>(<span class="cm">25</span>)
+<span class="cf">type</span>(<span class="cm">25.0</span>)
+<span class="cf">type</span>(<span class="cs">"25"</span>)
+<span class="cf">type</span>(<span class="cm">True</span>)</div>
+                <p class="think-hint">Подумайте минуту →</p>
+            </div>
+        </div>
+
+        <!-- 17: Типы данных -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Тема 04</p>
+                <h2>Типы данных</h2>
+                <table class="type-table">
+                    <tr>
+                        <th>Тип</th>
+                        <th>Что</th>
+                        <th>Пример</th>
+                    </tr>
+                    <tr>
+                        <td class="ttype">int</td>
+                        <td>целое число</td>
+                        <td class="tex">25, -3</td>
+                    </tr>
+                    <tr>
+                        <td class="ttype">float</td>
+                        <td>дробное</td>
+                        <td class="tex">3.14</td>
+                    </tr>
+                    <tr>
+                        <td class="ttype">str</td>
+                        <td>строка</td>
+                        <td class="tex">"Привет"</td>
+                    </tr>
+                    <tr>
+                        <td class="ttype">bool</td>
+                        <td>логика</td>
+                        <td class="tex">True, False</td>
+                    </tr>
+                </table>
+                <div class="code-block" style="max-width: 720px; margin-top: 24px;"><span class="cf">print</span>(<span class="cf">type</span>(<span class="cm">25</span>))      <span class="co"># &lt;class 'int'&gt;</span></div>
+                <p class="body-text" style="margin-top: 18px; font-size: clamp(13px, 1.5vw, 16px); color: #86868b;">
+                    Тип определяется автоматически. Это и есть динамическая типизация.
+                </p>
+            </div>
+        </div>
+
+        <!-- 17q: Question - What does each expression output? -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Вопрос</p>
+                <h2>Что выведет каждая строка?</h2>
+                <div class="code-block" style="max-width: 520px;"><span class="cm">10</span> / <span class="cm">3</span>     <span class="co"># ?</span>
+<span class="cm">10</span> // <span class="cm">3</span>    <span class="co"># ?</span>
+<span class="cm">10</span> % <span class="cm">3</span>     <span class="co"># ?</span>
+<span class="cm">2</span> ** <span class="cm">3</span>     <span class="co"># ?</span></div>
+                <p class="think-hint">Подумайте минуту →</p>
+            </div>
+        </div>
+
+        <!-- 18: Операции -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Тема 05</p>
+                <h2>Операции</h2>
+                <div class="code-output">
+                    <div class="code-block" style="margin-top: 0;"><span class="cm">10</span> / <span class="cm">3</span>     <span class="co"># 3.333... деление</span>
+<span class="cm">10</span> // <span class="cm">3</span>    <span class="co"># 3       целочисленное</span>
+<span class="cm">10</span> % <span class="cm">3</span>     <span class="co"># 1       остаток</span>
+<span class="cm">2</span> ** <span class="cm">3</span>     <span class="co"># 8       степень</span></div>
+                    <div class="code-block" style="margin-top: 0;"><span class="cs">"Hi"</span> + <span class="cs">" "</span> + <span class="cs">"you"</span>    <span class="co"># "Hi you"</span>
+<span class="cs">"ha"</span> * <span class="cm">3</span>             <span class="co"># "hahaha"</span>
+
+<span class="cs">"Возраст: "</span> + <span class="cm">25</span>      <span class="ce"># ошибка</span>
+<span class="cs">"Возраст: "</span> + <span class="cf">str</span>(<span class="cm">25</span>) <span class="co"># корректно</span></div>
+                </div>
+                <p class="body-text" style="margin-top: 24px; font-size: clamp(13px, 1.5vw, 16px); color: #86868b; max-width: 900px;">
+                    Строку с числом сложить нельзя. Нужно явное преобразование через <span style="color: #007aff; font-family: 'SF Mono', monospace;">str()</span>.
+                </p>
+            </div>
+        </div>
+
+        <!-- 18q: Question - input() gotcha -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Вопрос с ловушкой</p>
+                <h2>Что выведет этот код?</h2>
+                <div class="code-block" style="max-width: 640px;"><span class="cn">age</span> = <span class="cf">input</span>(<span class="cs">"Возраст: "</span>)
+<span class="co"># пользователь ввёл: 25</span>
+<span class="cf">print</span>(<span class="cn">age</span> + <span class="cm">5</span>)</div>
+                <div class="options-grid">
+                    <div class="option-card"><span class="option-letter">A</span><code>30</code></div>
+                    <div class="option-card"><span class="option-letter">B</span><code>"255"</code></div>
+                    <div class="option-card"><span class="option-letter">C</span><code>TypeError</code></div>
+                    <div class="option-card"><span class="option-letter">D</span><code>25 5</code></div>
+                </div>
+                <p class="think-hint">Подумайте минуту →</p>
+            </div>
+        </div>
+
+        <!-- 19: input() -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Тема 06</p>
+                <h2>input()</h2>
+                <p class="subtitle"><span class="accent-red">Всегда</span> возвращает строку. Даже если ввели число.</p>
+                <div class="code-output">
+                    <div class="code-block" style="margin-top: 0;"><span class="cn">name</span> = <span class="cf">input</span>(<span class="cs">"Как вас зовут? "</span>)
+<span class="cf">print</span>(<span class="cs">"Привет,"</span>, <span class="cn">name</span>)</div>
+                    <div class="term"><span class="prompt">&gt;</span> Как вас зовут? <span style="color: #f1fa8c;">Миркомиль</span>
+<span class="out">Привет, Миркомиль</span></div>
+                </div>
+                <div class="code-output" style="margin-top: 16px;">
+                    <div class="code-block" style="margin-top: 0;"><span class="cn">age</span> = <span class="cf">input</span>(<span class="cs">"Возраст: "</span>)
+<span class="cf">print</span>(<span class="cn">age</span> + <span class="cm">5</span>)               <span class="ce"># ошибка</span>
+
+<span class="cn">age</span> = <span class="cf">int</span>(<span class="cf">input</span>(<span class="cs">"Возраст: "</span>))
+<span class="cf">print</span>(<span class="cn">age</span> + <span class="cm">5</span>)               <span class="co"># корректно</span></div>
+                    <div style="text-align: left; padding: 18px;">
+                        <p style="font-size: clamp(11px, 1.1vw, 13px); font-weight: 600; text-transform: uppercase; letter-spacing: 0.14em; color: #ff3b30; margin-bottom: 8px;">Распространённая ошибка</p>
+                        <p style="font-size: clamp(13px, 1.6vw, 17px); color: #515154; line-height: 1.5;">
+                            Если нужна арифметика - оборачивайте в <span style="font-family: 'SF Mono', monospace; color: #007aff;">int()</span> или <span style="font-family: 'SF Mono', monospace; color: #007aff;">float()</span>. Запомните сейчас.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 20: f-строки -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Тема 07</p>
+                <h2>f-строки</h2>
+                <p class="subtitle">Самый удобный способ вставить переменные в текст.</p>
+                <div class="code-block" style="max-width: 880px;"><span class="cn">name</span> = <span class="cs">"Миркомиль"</span>
+<span class="cn">age</span> = <span class="cm">25</span>
+
+<span class="cf">print</span>(<span class="cs">f"Меня зовут <span style="color: #ff79c6;">{name}</span>, мне <span style="color: #ff79c6;">{age}</span> лет"</span>)
+<span class="cf">print</span>(<span class="cs">f"Через год будет <span style="color: #ff79c6;">{age + 1}</span>"</span>)</div>
+                <div style="display: flex; gap: 24px; margin-top: 24px; flex-wrap: wrap; justify-content: center;">
+                    <div style="padding: 12px 20px; background: rgba(0,122,255,0.08); border-radius: 12px; font-family: 'SF Mono', monospace; color: #007aff;">
+                        <span style="color: #ff79c6; font-weight: 700;">f</span> перед кавычками
+                    </div>
+                    <div style="padding: 12px 20px; background: rgba(0,122,255,0.08); border-radius: 12px; font-family: 'SF Mono', monospace; color: #007aff;">
+                        переменная или выражение в <span style="color: #ff79c6; font-weight: 700;">{ }</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 21: Комментарии -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Тема 08</p>
+                <h2>Комментарии</h2>
+                <div class="code-block" style="max-width: 820px;"><span class="co"># Python игнорирует эту строку</span>
+<span class="cn">name</span> = <span class="cs">"Миркомиль"</span>  <span class="co"># комментарий в конце строки</span>
+
+<span class="co"># Зачем:</span>
+<span class="co"># - объяснить неочевидное решение</span>
+<span class="co"># - оставить заметку</span>
+<span class="co"># - временно отключить строку</span></div>
+                <div class="quote-card" style="margin-top: 28px;">
+                    <div class="label">Хорошее правило</div>
+                    <p>Комментарии для людей, не для Python. Объясняйте <span class="highlight">почему</span>, а не что делает строка.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 22: Практика -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Практика</p>
+                <h2>Практическая задача</h2>
+                <div class="timer-display">15:00</div>
+                <ol style="list-style: none; padding: 0; max-width: 760px; counter-reset: q; text-align: left;">
+                    <li style="padding: 12px 0 12px 48px; position: relative; font-size: clamp(15px, 1.8vw, 19px); color: #1d1d1f; border-bottom: 1px solid rgba(0,0,0,0.06); counter-increment: q;">
+                        <span style="position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 30px; height: 30px; border-radius: 50%; background: rgba(0,122,255,0.1); color: #007aff; font-size: 14px; font-weight: 700; display: flex; align-items: center; justify-content: center;">1</span>
+                        Спросить имя
+                    </li>
+                    <li style="padding: 12px 0 12px 48px; position: relative; font-size: clamp(15px, 1.8vw, 19px); color: #1d1d1f; border-bottom: 1px solid rgba(0,0,0,0.06);">
+                        <span style="position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 30px; height: 30px; border-radius: 50%; background: rgba(0,122,255,0.1); color: #007aff; font-size: 14px; font-weight: 700; display: flex; align-items: center; justify-content: center;">2</span>
+                        Спросить год рождения
+                    </li>
+                    <li style="padding: 12px 0 12px 48px; position: relative; font-size: clamp(15px, 1.8vw, 19px); color: #1d1d1f; border-bottom: 1px solid rgba(0,0,0,0.06);">
+                        <span style="position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 30px; height: 30px; border-radius: 50%; background: rgba(0,122,255,0.1); color: #007aff; font-size: 14px; font-weight: 700; display: flex; align-items: center; justify-content: center;">3</span>
+                        Спросить любимое число
+                    </li>
+                    <li style="padding: 12px 0 12px 48px; position: relative; font-size: clamp(15px, 1.8vw, 19px); color: #1d1d1f;">
+                        <span style="position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 30px; height: 30px; border-radius: 50%; background: rgba(0,122,255,0.1); color: #007aff; font-size: 14px; font-weight: 700; display: flex; align-items: center; justify-content: center;">4</span>
+                        Вывести: <span style="font-family: 'SF Mono', monospace; color: #007aff; font-size: 0.9em;">Привет, [имя]! Вам [возраст] лет, ваше число × 2 = [результат]</span>
+                    </li>
+                </ol>
+                <p class="body-text" style="margin-top: 28px; font-size: clamp(13px, 1.5vw, 16px); color: #86868b;">
+                    Пишем самостоятельно. Если задача не решается за две минуты - поднимите руку. Кто справился раньше, помогите соседу.
+                </p>
+            </div>
+        </div>
+
+        <!-- 23: Решение -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Решение</p>
+                <h2>Разбор решения</h2>
+                <div class="code-block" style="max-width: 880px;"><span class="cn">name</span> = <span class="cf">input</span>(<span class="cs">"Как вас зовут? "</span>)
+<span class="cn">year</span> = <span class="cf">int</span>(<span class="cf">input</span>(<span class="cs">"Год рождения: "</span>))
+<span class="cn">fav</span>  = <span class="cf">int</span>(<span class="cf">input</span>(<span class="cs">"Любимое число: "</span>))
+
+<span class="cn">age</span>     = <span class="cm">2026</span> - <span class="cn">year</span>
+<span class="cn">doubled</span> = <span class="cn">fav</span> * <span class="cm">2</span>
+
+<span class="cf">print</span>(<span class="cs">f"Привет, <span style="color: #ff79c6;">{name}</span>! Вам <span style="color: #ff79c6;">{age}</span> лет, "</span>
+      <span class="cs">f"ваше число × 2 = <span style="color: #ff79c6;">{doubled}</span>"</span>)</div>
+                <div class="flow-row">
+                    <span class="step-pill">ввод</span>
+                    <span class="arrow">→</span>
+                    <span class="step-pill">int()</span>
+                    <span class="arrow">→</span>
+                    <span class="step-pill">арифметика</span>
+                    <span class="arrow">→</span>
+                    <span class="step-pill">f-строка</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 30: Условия и управление потоком (bridge) -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Следующая тема</p>
+                <h1>Условия и<br/>управление потоком</h1>
+                <p class="subtitle">Программа принимает решения на основе входных данных</p>
+                <div class="topic-grid" style="grid-template-columns: repeat(2, 1fr); max-width: 600px;">
+                    <div class="topic-cell">Сравнения</div>
+                    <div class="topic-cell">and · or · not</div>
+                    <div class="topic-cell">if / elif / else</div>
+                    <div class="topic-cell">Отступы</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 31: Сравнение значений -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Тема 09</p>
+                <h2>Сравнение значений</h2>
+                <p class="subtitle">Операторы сравнения возвращают True или False</p>
+                <div class="code-block" style="max-width: 720px;"><span class="cm">5</span> == <span class="cm">5</span>      <span class="co"># True</span>
+<span class="cm">5</span> != <span class="cm">3</span>      <span class="co"># True</span>
+<span class="cm">5</span> &lt; <span class="cm">3</span>       <span class="co"># False</span>
+<span class="cm">5</span> &gt; <span class="cm">3</span>       <span class="co"># True</span>
+<span class="cm">5</span> &gt;= <span class="cm">5</span>      <span class="co"># True</span>
+<span class="cs">"a"</span> == <span class="cs">"a"</span>  <span class="co"># True</span></div>
+                <div class="quote-card" style="margin-top: 28px;">
+                    <div class="label">Внимание</div>
+                    <p>Не путайте <span style="font-family: 'SF Mono', monospace; color: #007aff;">==</span> (сравнение) и <span style="font-family: 'SF Mono', monospace; color: #007aff;">=</span> (присваивание).</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 32: Логические операторы -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Тема 10</p>
+                <h2>Логические операторы</h2>
+                <p class="subtitle">and · or · not</p>
+                <div class="code-block" style="max-width: 760px;"><span class="cn">age</span> = <span class="cm">25</span>
+
+<span class="cn">age</span> &gt;= <span class="cm">18</span> <span class="ck">and</span> <span class="cn">age</span> &lt; <span class="cm">65</span>   <span class="co"># True</span>
+<span class="cn">age</span> &lt; <span class="cm">18</span> <span class="ck">or</span> <span class="cn">age</span> &gt; <span class="cm">65</span>     <span class="co"># False</span>
+<span class="ck">not</span> (<span class="cn">age</span> &gt;= <span class="cm">18</span>)            <span class="co"># False</span></div>
+                <div class="quote-card" style="margin-top: 24px;">
+                    <div class="label">Семантика</div>
+                    <p><span style="font-family: 'SF Mono', monospace; color: #007aff;">and</span> требует оба условия истинными. <span style="font-family: 'SF Mono', monospace; color: #007aff;">or</span> требует хотя бы одно. <span style="font-family: 'SF Mono', monospace; color: #007aff;">not</span> инвертирует значение.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 33: Вопрос - сравнение разных типов -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Вопрос</p>
+                <h2>Что выведет код?</h2>
+                <div class="code-block" style="max-width: 480px;"><span class="cn">x</span> = <span class="cm">10</span>
+
+<span class="cf">print</span>(<span class="cn">x</span> == <span class="cs">"10"</span>)</div>
+                <div class="options-grid">
+                    <div class="option-card"><span class="option-letter">A</span><code>True</code></div>
+                    <div class="option-card"><span class="option-letter">B</span><code>False</code></div>
+                    <div class="option-card"><span class="option-letter">C</span><code>TypeError</code></div>
+                    <div class="option-card"><span class="option-letter">D</span><code>"10"</code></div>
+                </div>
+                <p class="think-hint">Подумайте минуту →</p>
+            </div>
+        </div>
+
+        <!-- 34: Условный оператор if -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Тема 11</p>
+                <h2>Условный оператор if</h2>
+                <p class="subtitle">Двоеточие в конце строки. Отступ четыре пробела.</p>
+                <div class="code-block" style="max-width: 760px;"><span class="cn">age</span> = <span class="cm">20</span>
+
+<span class="ck">if</span> <span class="cn">age</span> &gt;= <span class="cm">18</span>:
+    <span class="cf">print</span>(<span class="cs">"Совершеннолетний"</span>)
+    <span class="cf">print</span>(<span class="cs">"Имеет право голосовать"</span>)</div>
+                <div class="quote-card" style="margin-top: 28px;">
+                    <div class="label">Важно</div>
+                    <p>Отступ это часть синтаксиса языка, а не оформление. Без отступа Python выдаст <span style="font-family: 'SF Mono', monospace; color: #ff3b30;">IndentationError</span>.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 35: if / else -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Тема 12</p>
+                <h2>if / else</h2>
+                <p class="subtitle">Две взаимоисключающие ветви исполнения</p>
+                <div class="code-output">
+                    <div class="code-block" style="margin-top: 0;"><span class="cn">age</span> = <span class="cm">15</span>
+
+<span class="ck">if</span> <span class="cn">age</span> &gt;= <span class="cm">18</span>:
+    <span class="cf">print</span>(<span class="cs">"Совершеннолетний"</span>)
+<span class="ck">else</span>:
+    <span class="cf">print</span>(<span class="cs">"Несовершеннолетний"</span>)</div>
+                    <div style="display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 12px;">
+                        <div style="padding: 12px 24px; border: 2px solid #007aff; border-radius: 50px; background: rgba(0,122,255,0.06); font-family: 'SF Mono', monospace; font-size: clamp(13px, 1.5vw, 15px); color: #007aff; font-weight: 600;">age &gt;= 18 ?</div>
+                        <div style="display: flex; gap: 16px;">
+                            <div style="text-align: center;">
+                                <div style="font-size: 11px; color: #34c759; font-weight: 700; letter-spacing: 0.14em;">TRUE</div>
+                                <div style="margin-top: 6px; padding: 10px 14px; border: 1px solid rgba(52,199,89,0.3); border-radius: 12px; font-size: clamp(12px, 1.4vw, 14px); color: #1d1d1f;">«Совершеннолетний»</div>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="font-size: 11px; color: #ff3b30; font-weight: 700; letter-spacing: 0.14em;">FALSE</div>
+                                <div style="margin-top: 6px; padding: 10px 14px; border: 1px solid rgba(255,59,48,0.3); border-radius: 12px; font-size: clamp(12px, 1.4vw, 14px); color: #1d1d1f;">«Несовершеннолетний»</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 36: if / elif / else -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Тема 13</p>
+                <h2>if / elif / else</h2>
+                <p class="subtitle">Несколько последовательных условий</p>
+                <div class="code-block" style="max-width: 800px;"><span class="cn">score</span> = <span class="cm">85</span>
+
+<span class="ck">if</span> <span class="cn">score</span> &gt;= <span class="cm">90</span>:
+    <span class="cn">grade</span> = <span class="cs">"A"</span>
+<span class="ck">elif</span> <span class="cn">score</span> &gt;= <span class="cm">80</span>:
+    <span class="cn">grade</span> = <span class="cs">"B"</span>
+<span class="ck">elif</span> <span class="cn">score</span> &gt;= <span class="cm">70</span>:
+    <span class="cn">grade</span> = <span class="cs">"C"</span>
+<span class="ck">else</span>:
+    <span class="cn">grade</span> = <span class="cs">"F"</span>
+
+<span class="cf">print</span>(<span class="cn">grade</span>)</div>
+                <div class="quote-card" style="margin-top: 24px;">
+                    <div class="label">Замечание</div>
+                    <p><span style="font-family: 'SF Mono', monospace; color: #007aff;">elif</span> это сокращение от <span style="font-family: 'SF Mono', monospace; color: #007aff;">else if</span>. Количество ветвей не ограничено.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 37: Практика 2 -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Практика 2</p>
+                <h2>Определение чётности</h2>
+                <div class="timer-display">15:00</div>
+                <ol style="list-style: none; padding: 0; max-width: 760px; counter-reset: q; text-align: left;">
+                    <li style="padding: 12px 0 12px 48px; position: relative; font-size: clamp(15px, 1.8vw, 19px); color: #1d1d1f; border-bottom: 1px solid rgba(0,0,0,0.06); counter-increment: q;">
+                        <span style="position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 30px; height: 30px; border-radius: 50%; background: rgba(0,122,255,0.1); color: #007aff; font-size: 14px; font-weight: 700; display: flex; align-items: center; justify-content: center;">1</span>
+                        Запросить у пользователя целое число
+                    </li>
+                    <li style="padding: 12px 0 12px 48px; position: relative; font-size: clamp(15px, 1.8vw, 19px); color: #1d1d1f; border-bottom: 1px solid rgba(0,0,0,0.06);">
+                        <span style="position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 30px; height: 30px; border-radius: 50%; background: rgba(0,122,255,0.1); color: #007aff; font-size: 14px; font-weight: 700; display: flex; align-items: center; justify-content: center;">2</span>
+                        Если значение равно нулю - вывести «Ноль»
+                    </li>
+                    <li style="padding: 12px 0 12px 48px; position: relative; font-size: clamp(15px, 1.8vw, 19px); color: #1d1d1f; border-bottom: 1px solid rgba(0,0,0,0.06);">
+                        <span style="position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 30px; height: 30px; border-radius: 50%; background: rgba(0,122,255,0.1); color: #007aff; font-size: 14px; font-weight: 700; display: flex; align-items: center; justify-content: center;">3</span>
+                        Если число делится на 2 без остатка - вывести «Чётное»
+                    </li>
+                    <li style="padding: 12px 0 12px 48px; position: relative; font-size: clamp(15px, 1.8vw, 19px); color: #1d1d1f;">
+                        <span style="position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 30px; height: 30px; border-radius: 50%; background: rgba(0,122,255,0.1); color: #007aff; font-size: 14px; font-weight: 700; display: flex; align-items: center; justify-content: center;">4</span>
+                        В противном случае - вывести «Нечётное»
+                    </li>
+                </ol>
+                <p class="body-text" style="margin-top: 28px; font-size: clamp(13px, 1.5vw, 16px); color: #86868b;">
+                    Подсказка: оператор <span style="font-family: 'SF Mono', monospace; color: #007aff;">%</span> возвращает остаток от деления.
+                </p>
+            </div>
+        </div>
+
+        <!-- 38: Разбор решения 2 -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Решение</p>
+                <h2>Разбор решения 2</h2>
+                <div class="code-block" style="max-width: 820px;"><span class="cn">n</span> = <span class="cf">int</span>(<span class="cf">input</span>(<span class="cs">"Введите целое число: "</span>))
+
+<span class="ck">if</span> <span class="cn">n</span> == <span class="cm">0</span>:
+    <span class="cf">print</span>(<span class="cs">"Ноль"</span>)
+<span class="ck">elif</span> <span class="cn">n</span> % <span class="cm">2</span> == <span class="cm">0</span>:
+    <span class="cf">print</span>(<span class="cs">f"<span style="color: #ff79c6;">{n}</span> - чётное"</span>)
+<span class="ck">else</span>:
+    <span class="cf">print</span>(<span class="cs">f"<span style="color: #ff79c6;">{n}</span> - нечётное"</span>)</div>
+                <div class="flow-row">
+                    <span class="step-pill">ввод</span>
+                    <span class="arrow">→</span>
+                    <span class="step-pill">проверка нуля</span>
+                    <span class="arrow">→</span>
+                    <span class="step-pill">проверка остатка</span>
+                    <span class="arrow">→</span>
+                    <span class="step-pill">вывод</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 39: Итоги -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Итоги</p>
+                <h2>Итоги урока</h2>
+                <ul class="checklist" style="max-width: 820px; columns: 2; column-gap: 40px;">
+                    <li>Python и VS Code установлены</li>
+                    <li>Терминал и базовые команды</li>
+                    <li>Первый .py файл, запуск программы</li>
+                    <li>print() и input()</li>
+                    <li>int, float, str, bool</li>
+                    <li>Арифметика, f-строки, комментарии</li>
+                    <li>Чтение traceback</li>
+                    <li>Сравнение значений</li>
+                    <li>Логические операторы</li>
+                    <li>if / elif / else</li>
+                </ul>
+                <div class="quote-card" style="margin-top: 32px;">
+                    <div class="label">Следующий урок</div>
+                    <p>Циклы <span style="color: #86868b; font-weight: 400;">- while, for и списки</span></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Jupyter Notebook download -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Практические задания</p>
+                <h2>Jupyter Notebook</h2>
+                <p class="subtitle">10 задач по темам урока. Откройте в Jupyter или VS Code и выполните самостоятельно.</p>
+                <div style="display: flex; align-items: center; gap: 18px; padding: 24px 32px; background: rgba(0,0,0,0.025); border: 1px solid rgba(0,0,0,0.06); border-radius: 14px; margin-top: 12px;">
+                    <div style="width: 64px; height: 64px; border-radius: 12px; background: rgba(243, 118, 38, 0.12); color: #f37626; display: flex; align-items: center; justify-content: center; font-family: 'SF Mono', monospace; font-size: 14px; font-weight: 700; flex-shrink: 0;">.ipynb</div>
+                    <div style="text-align: left;">
+                        <div style="font-size: clamp(15px, 1.7vw, 19px); font-weight: 600; color: #1d1d1f;">lesson1_tasks.ipynb</div>
+                        <div style="font-size: clamp(12px, 1.4vw, 15px); color: #86868b; margin-top: 2px;">10 практических заданий</div>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 12px; margin-top: 24px; flex-wrap: wrap; justify-content: center;">
+                    <a href="lesson1_tasks_ru.ipynb" download style="display: inline-flex; align-items: center; gap: 10px; padding: 14px 28px; background: #007aff; color: #fff; border-radius: 50px; font-size: clamp(14px, 1.6vw, 17px); font-weight: 600; text-decoration: none; box-shadow: 0 6px 20px rgba(0,122,255,0.25);">
+                        <span style="font-size: 1.2em;">↓</span> Скачать RU
+                    </a>
+                    <a href="lesson1_tasks_uz.ipynb" download style="display: inline-flex; align-items: center; gap: 10px; padding: 14px 28px; background: #fff; color: #007aff; border: 1.5px solid #007aff; border-radius: 50px; font-size: clamp(14px, 1.6vw, 17px); font-weight: 600; text-decoration: none;">
+                        <span style="font-size: 1.2em;">↓</span> Yuklab olish UZ
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Q&A -->
+        <div class="slide">
+            <div class="slide-content">
+                <h1 style="font-size: clamp(80px, 16vw, 220px);">Вопросы?</h1>
+                <p class="subtitle" style="margin-top: 32px;">Telegram: <span class="highlight">@gokalqurt</span></p>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="lesson-tag">Python · Урок 2</div>
+    <div class="lang-switcher">
+        <a href="index.html" class="active">RU</a>
+        <a href="index-uz.html">UZ</a>
+    </div>
+    <div class="slide-indicator">
+        <span id="current-slide">1</span> / <span id="total-slides">41</span>
+    </div>
+    <div class="nav-hint">→ или Space - далее<br/>← - назад</div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+        document.getElementById('total-slides').textContent = totalSlides;
+
+        function showSlide(n) {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (n + totalSlides) % totalSlides;
+            slides[currentSlide].classList.add('active');
+            document.getElementById('current-slide').textContent = currentSlide + 1;
+
+            const slideContent = slides[currentSlide].querySelector('.slide-content');
+            slideContent.style.animation = 'none';
+            void slideContent.offsetHeight;
+            slideContent.style.animation = null;
+
+            const animated = slides[currentSlide].querySelectorAll('.card, .comparison-item, .step');
+            animated.forEach(el => {
+                el.style.animation = 'none';
+                void el.offsetHeight;
+                el.style.animation = null;
+            });
+        }
+
+        function nextSlide() { showSlide(currentSlide + 1); }
+        function prevSlide() { showSlide(currentSlide - 1); }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); nextSlide(); }
+            else if (e.key === 'ArrowLeft') { e.preventDefault(); prevSlide(); }
+        });
+
+        let touchStartX = 0;
+        document.addEventListener('touchstart', (e) => { touchStartX = e.changedTouches[0].screenX; });
+        document.addEventListener('touchend', (e) => {
+            const dx = e.changedTouches[0].screenX - touchStartX;
+            if (dx < -50) nextSlide();
+            else if (dx > 50) prevSlide();
+        });
+    </script>
+</body>
+</html>

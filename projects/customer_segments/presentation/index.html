@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#e6e2da" />
+  <title>Типы клиентов, не квартили — Uzcard Academy</title>
+  <style>
+    :root {
+      --bg: #e6e2da;
+      --slide: #e6e2da;
+      --ink: #2d3038;
+      --muted: #5c616b;
+      --dim: #7a7f88;
+      --accent: #355f8c;
+      --warn: #9a3b36;
+      --ok: #2f6b64;
+      --line: #ddd9d2;
+      --card: #ddd9d1;
+      --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      height: 100%;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: var(--sans);
+      overflow: hidden;
+    }
+    .stage {
+      height: 100%;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 0 36px;
+    }
+    .deck {
+      position: relative;
+      width: min(100%, calc((100vh - 36px) * 16 / 9));
+      aspect-ratio: 16 / 9;
+      height: auto;
+      background: var(--slide);
+      overflow: hidden;
+    }
+    .slide {
+      position: absolute;
+      inset: 0;
+      padding: 4.4% 5.2% 8%;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      opacity: 0;
+      pointer-events: none;
+    }
+    .slide.on { opacity: 1; pointer-events: auto; }
+    .kicker {
+      font-size: 13px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin: 0 0 10px;
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+    h1, h2 {
+      margin: 0;
+      font-weight: 600;
+      line-height: 1.18;
+      letter-spacing: -.02em;
+    }
+    h1 { font-size: clamp(2rem, 4.4vw, 3.4rem); max-width: 18ch; }
+    h2 { font-size: clamp(1.35rem, 2.5vw, 2.05rem); max-width: 30ch; flex-shrink: 0; }
+    .lede {
+      margin: 14px 0 0;
+      font-size: clamp(.95rem, 1.35vw, 1.12rem);
+      color: var(--muted);
+      max-width: 46rem;
+      line-height: 1.5;
+    }
+    table.pct {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 16px;
+      font-size: clamp(.82rem, 1.15vw, 1.02rem);
+    }
+    table.pct th, table.pct td {
+      text-align: left;
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--line);
+    }
+    table.pct th {
+      color: var(--dim);
+      font-weight: 600;
+      font-size: 11px;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      background: var(--card);
+    }
+    table.pct tr.pick td { background: #dde6ee; font-weight: 600; }
+    table.pct td.num, table.pct th.num { text-align: right; }
+    .meta { margin-top: 24px; color: var(--dim); font-size: 14px; }
+    .row {
+      display: grid;
+      gap: clamp(12px, 2vw, 22px);
+      margin-top: 18px;
+      align-items: stretch;
+    }
+    .row.cols-3 { grid-template-columns: repeat(3, 1fr); }
+    .row.cols-2 { grid-template-columns: 1.15fr .85fr; }
+    .row.eq { grid-template-columns: 1fr 1fr; }
+    .row.cols-5 { grid-template-columns: repeat(5, 1fr); }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      padding: 14px 16px 16px;
+    }
+    .card h3 {
+      margin: 0 0 8px;
+      font-size: 12px;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--accent);
+      font-weight: 600;
+    }
+    .card p, .card li {
+      margin: 0;
+      color: var(--muted);
+      font-size: clamp(.88rem, 1.12vw, 1rem);
+      line-height: 1.45;
+    }
+    .stat {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding: 16px 18px;
+      background: var(--card);
+      border: 1px solid var(--line);
+    }
+    .stat b {
+      font-size: clamp(1.5rem, 3.2vw, 2.4rem);
+      letter-spacing: -.03em;
+      font-weight: 600;
+      line-height: 1;
+    }
+    .stat span { color: var(--muted); font-size: 14px; line-height: 1.4; }
+    .stat.warn b { color: var(--warn); }
+    .stat.accent b { color: var(--accent); }
+    .stat.ok b { color: var(--ok); }
+    .photo {
+      margin-top: 10px;
+      flex: 1 1 0;
+      min-height: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    .photo img, .zoom img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+    }
+    .zoom {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 100%;
+      min-height: 0;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      cursor: zoom-in;
+    }
+    .timeline {
+      margin-top: 16px;
+      display: grid;
+      grid-template-columns: 1.2fr .2fr 1.4fr;
+      gap: 0;
+    }
+    .tl {
+      padding: 14px 16px 16px;
+      border: 1px solid var(--line);
+      background: var(--card);
+    }
+    .tl b { display: block; font-size: 12px; letter-spacing: .1em; text-transform: uppercase; margin-bottom: 6px; }
+    .tl span { color: var(--muted); font-size: 15px; line-height: 1.4; }
+    .tl.t0 {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      text-align: center;
+    }
+    .tl.t0 b { color: #fff; }
+    .tl.t0 span { color: #d7e4f2; }
+    .chrome {
+      position: absolute;
+      left: 0; right: 0; bottom: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 5.2% 12px;
+      font-size: 12px;
+      color: var(--dim);
+      border-top: 1px solid var(--line);
+      background: var(--slide);
+      z-index: 5;
+    }
+    .chrome b { color: var(--muted); font-weight: 600; }
+    .progress {
+      position: absolute;
+      top: 0; left: 0; height: 3px;
+      background: var(--accent);
+      width: 0;
+      z-index: 6;
+    }
+    .hint {
+      position: fixed;
+      right: 18px;
+      bottom: 12px;
+      font-size: 12px;
+      color: #7a7f88;
+      letter-spacing: .06em;
+      z-index: 5;
+    }
+    .phrase { margin: 8px 0 12px; font-size: clamp(1.15rem, 2vw, 1.55rem); color: var(--ink); max-width: 36ch; }
+    .lightbox {
+      position: fixed;
+      inset: 0;
+      z-index: 20;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 28px;
+      background: rgba(45, 48, 56, .72);
+      cursor: zoom-out;
+    }
+    .lightbox.on { display: flex; }
+    .lightbox img {
+      max-width: min(96vw, 1600px);
+      max-height: 92vh;
+      background: var(--slide);
+    }
+    @media (max-width: 860px) {
+      .deck { width: 100%; height: 100%; aspect-ratio: auto; }
+      .row.cols-3, .row.cols-2, .row.eq, .row.cols-5, .timeline { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="stage">
+    <div class="deck" id="deck">
+      <div class="progress" id="bar"></div>
+
+      <section class="slide on">
+        <p class="kicker">Uzcard Academy · домашнее задание 6</p>
+        <h1>Один тариф на двадцать тысяч</h1>
+        <p class="lede">Продукт просит типы клиентов для новой линейки. Готового сегмента в базе нет — A/B/C/D из старой витрины не ответ. Типологию строим сами и защищаем цифрой.</p>
+        <p class="meta">20 000 клиентов · standard 15 000 UZS/мес · срез 2025-12-31</p>
+      </section>
+
+      <section class="slide">
+        <p class="kicker">Что не берём</p>
+        <h2>Чужой сегмент — не наша работа</h2>
+        <div class="row cols-3">
+          <div class="card">
+            <h3>seg_customers_360</h3>
+            <p>Готовый <b>crm_segment A/B/C/D</b>. Средний оборот у всех четырёх почти одинаковый. Выдавать за свой результат нельзя.</p>
+          </div>
+          <div class="card">
+            <h3>seg_rfm_old</h3>
+            <p>Чужой RFM: recency, frequency, monetary уже посчитаны. Это готовая типология.</p>
+          </div>
+          <div class="card">
+            <h3>archive</h3>
+            <p>2.7 млн txn_id совпадают 1:1 с основной таблицей. Первые шесть месяцев 2024, копия.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <p class="kicker">Окно</p>
+        <h2>Шесть месяцев, персональный старт</h2>
+        <div class="timeline">
+          <div class="tl">
+            <b>30 мая 2025</b>
+            <span>Начало окна. У кого signup позже — считаем с даты регистрации. Таких 714.</span>
+          </div>
+          <div class="tl t0">
+            <b>t0</b>
+            <span>30 ноября</span>
+          </div>
+          <div class="tl">
+            <b>Не берём</b>
+            <span>Декабрь обрезан. 273 человека моложе 90 дней. 396 без операций в окне — тип «Спящие», не KMeans.</span>
+          </div>
+        </div>
+        <div class="row cols-3" style="margin-top:16px">
+          <div class="stat"><b>19 331</b><span>кластеризуем</span></div>
+          <div class="stat accent"><b>0.985</b><span>корр. оборота H1 vs H2 2025</span></div>
+          <div class="stat"><b>/ мес. окна</b><span>не сумма за 6 месяцев — иначе короткая история = «мало тратит»</span></div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <p class="kicker">Оси</p>
+        <h2>Не все колонки подряд</h2>
+        <div class="row eq">
+          <div class="card">
+            <h3>В модели — 9 признаков</h3>
+            <p>Интенсивность в месяц окна. Доли POS / ecom / ATM. Остаток и доход банка. Число продуктов и recency.</p>
+          </div>
+          <div class="card">
+            <h3>Не в модели</h3>
+            <p>Возраст, пол, регион, стаж — это «кто человек», не «как пользуется». Иначе кластеры станут «старые / новые».</p>
+          </div>
+        </div>
+        <p class="lede">Выбросы до 7 млрд/мес: winsorize 1–99%, логарифм, StandardScaler. Иначе киты утащат центроиды.</p>
+      </section>
+
+      <section class="slide">
+        <p class="kicker">Число классов</p>
+        <h2>Пять типов. Локоть здесь ни при чём</h2>
+        <div class="photo">
+          <button type="button" class="zoom" aria-label="Метрики выбора K">
+            <img src="assets/k_metrics.png" alt="Inertia, silhouette и доля самого маленького класса для K=2..8">
+          </button>
+        </div>
+        <p class="lede">K=6 даёт класс на 2% — тариф под 400 человек не заводим. K=4 склеивает «хранят деньги» и «крупный оборот»: ставка на остаток и премиум за траты — разные продукты. Silhouette 0.26 — типы пересекаются, это нормально.</p>
+      </section>
+
+      <section class="slide">
+        <p class="kicker">Тип · повседневные · 8 194 · 42%</p>
+        <p class="phrase">Карта для снятия и магазинов, живут как все.</p>
+        <div class="row cols-3">
+          <div class="stat"><b>11</b><span>операций в месяц, медиана</span></div>
+          <div class="stat"><b>2.7 млн</b><span>оборот / мес.</span></div>
+          <div class="stat warn"><b>34%</b><span>доли ATM — больше всех</span></div>
+        </div>
+        <div class="card" style="margin-top:16px">
+          <h3>Тариф «Стандарт» · 15 000</h3>
+          <p>Оставить как есть. Кэшбэк в grocery/POS. Новый прайс ломает 42% базы. Доход банка за 6 мес. — 1.42 млрд, из них interchange и заметный ATM cost.</p>
+        </div>
+      </section>
+
+      <section class="slide">
+        <p class="kicker">Тип · онлайн · 4 329 · 22%</p>
+        <p class="phrase">Платят в интернете, почти не снимают.</p>
+        <div class="row cols-3">
+          <div class="stat"><b>43</b><span>операций в месяц</span></div>
+          <div class="stat accent"><b>46%</b><span>ecom, ATM только 10%</span></div>
+          <div class="stat"><b>2.26 млрд</b><span>доход банка за 6 мес.</span></div>
+        </div>
+        <div class="card" style="margin-top:16px">
+          <h3>Тариф «Онлайн» · 19 000</h3>
+          <p>Чуть выше плата, кэшбэк в ecom. Interchange с маркетплейсов уже кормит этот тип — кэшбэк удерживает оборот в карте.</p>
+        </div>
+      </section>
+
+      <section class="slide">
+        <p class="kicker">Тип · крупный оборот · 1 854 · 9.6%</p>
+        <p class="phrase">Мало людей — почти половина дохода банка.</p>
+        <div class="row cols-3">
+          <div class="stat warn"><b>47%</b><span>всего net revenue за 6 мес.</span></div>
+          <div class="stat"><b>45 млн</b><span>оборот / мес., медиана</span></div>
+          <div class="stat"><b>350 тыс.</b><span>доход банка / мес. с человека</span></div>
+        </div>
+        <div class="card" style="margin-top:16px">
+          <h3>Тариф «Премиум» · 30 000</h3>
+          <p>Абонентка 15к для них копейки. Премиум-сервис, высокий лимит ATM, кэшбэк. Не отдавать этот тип «наличному» тарифу — 6.24 млрд за полгода.</p>
+        </div>
+      </section>
+
+      <section class="slide">
+        <p class="kicker">Тип · хранят деньги · 3 125 · 16%</p>
+        <p class="phrase">Редко платят, на карте лежит остаток.</p>
+        <div class="row cols-3">
+          <div class="stat ok"><b>13.4 млн</b><span>медианный остаток</span></div>
+          <div class="stat"><b>9.6</b><span>операций в месяц</span></div>
+          <div class="stat"><b>1.91 млрд</b><span>float за 6 мес. — основной доход</span></div>
+        </div>
+        <div class="card" style="margin-top:16px">
+          <h3>Тариф «Остаток» · 20 000</h3>
+          <p>Плата чуть выше плюс ставка или пакет на остаток. На K=4 этот тип склеивается с китами — поэтому не четыре класса, а пять.</p>
+        </div>
+      </section>
+
+      <section class="slide">
+        <p class="kicker">Тип · редкая карта · 1 829 · 9.5%</p>
+        <p class="phrase">Раз в месяц ткнули POS.</p>
+        <div class="row cols-3">
+          <div class="stat"><b>1.3</b><span>операции в месяц</span></div>
+          <div class="stat warn"><b>16 дн.</b><span>медианная пауза</span></div>
+          <div class="stat"><b>60 млн</b><span>net за 6 мес. vs 165 млн абонентки</span></div>
+        </div>
+        <div class="card" style="margin-top:16px">
+          <h3>Тариф «Лайт» · 5 000</h3>
+          <p>Сейчас берут 15 000 почти ни за что. Либо уйдут, либо карта мёртвая. Лайт без кэшбэка. Рядом 396 спящих — тариф «Пауза», 0 сум.</p>
+        </div>
+      </section>
+
+      <section class="slide">
+        <p class="kicker">Люди и деньги</p>
+        <h2>Квартиль оборота этого не видит</h2>
+        <div class="photo">
+          <button type="button" class="zoom" aria-label="Доля людей против доли дохода">
+            <img src="assets/people_vs_revenue.png" alt="Повседневные 42% людей и 11% дохода, киты 10% людей и 47% дохода">
+          </button>
+        </div>
+        <p class="lede">Silhouette квартилей на наших осях — 0.03, у типов — 0.26. ARI между разбиениями 0.18. Внутри Q4 у «хранят деньги» остаток 13 млн, у повседневных — 1.5 млн. Квартиль предлагает один тариф на всех богатых. Мы — нет.</p>
+      </section>
+
+      <section class="slide">
+        <p class="kicker">Устойчивость</p>
+        <h2>Совпадение разбиений — числом, не «на глаз»</h2>
+        <table class="pct">
+          <thead>
+            <tr>
+              <th>Проверка</th>
+              <th class="num">ARI</th>
+              <th>Как читать</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="pick"><td>Другой random_state</td><td class="num">1.00</td><td>Не от зерна</td></tr>
+            <tr class="pick"><td>Половина выборки</td><td class="num">0.98</td><td>Не от этих конкретных людей</td></tr>
+            <tr class="pick"><td>Окно без ноября</td><td class="num">0.87</td><td>Один месяц не переписывает тип</td></tr>
+            <tr><td>Без recency и продуктов</td><td class="num">0.82</td><td>Лёгкий сдвиг набора — те же типы</td></tr>
+            <tr><td>Без каналов</td><td class="num">0.53</td><td>Каналы — несущая ось</td></tr>
+            <tr><td>Без баланса и дохода</td><td class="num">0.48</td><td>Деньги банка — тоже</td></tr>
+          </tbody>
+        </table>
+        <p class="lede">Низкий ARI без осей — не провал. Без них получается другая типология. Значит, оси выбраны не «все подряд».</p>
+      </section>
+
+      <section class="slide">
+        <p class="kicker">Новый клиент</p>
+        <h2>Ближайший центроид. Holdout ARI 0.99</h2>
+        <div class="row cols-2">
+          <div class="card">
+            <h3>Правило</h3>
+            <p>Нет операций → Спящие. Иначе те же 9 признаков за персональное окно → winsorize границами обучения → log → scaler → ближайший центроид. Файл: <b>models/segment_pipeline.joblib</b>.</p>
+          </div>
+          <div>
+            <div class="stat ok"><b>0.99</b><span>ARI на 3 867 людях вне обучения центроидов</span></div>
+            <div class="stat" style="margin-top:12px"><b>0.94</b><span>если holdout кластеризовать заново — типы там есть</span></div>
+          </div>
+        </div>
+        <p class="lede">Шпаргалка для PM (дерево глубины 3, точность 88%): мало операций → редкая карта; много ecom → онлайн; большой оборот → киты; большой остаток при средних тратах → хранят деньги. Остальные — повседневные.</p>
+      </section>
+
+      <section class="slide">
+        <p class="kicker">Линейка</p>
+        <h2>Что предлагаем и что это даёт</h2>
+        <table class="pct">
+          <thead>
+            <tr>
+              <th>Тип</th>
+              <th class="num">Людей</th>
+              <th>Тариф</th>
+              <th class="num">Абонентка</th>
+              <th class="num">Дельта / год</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>Повседневные</td><td class="num">8 194</td><td>Стандарт</td><td class="num">15 000</td><td class="num">0</td></tr>
+            <tr><td>Онлайн</td><td class="num">4 329</td><td>Онлайн</td><td class="num">19 000</td><td class="num">+208 млн</td></tr>
+            <tr class="pick"><td>Крупный оборот</td><td class="num">1 854</td><td>Премиум</td><td class="num">30 000</td><td class="num">+334 млн</td></tr>
+            <tr><td>Хранят деньги</td><td class="num">3 125</td><td>Остаток</td><td class="num">20 000</td><td class="num">+188 млн</td></tr>
+            <tr><td>Редкая карта</td><td class="num">1 829</td><td>Лайт</td><td class="num">5 000</td><td class="num">−219 млн</td></tr>
+            <tr><td>Спящие</td><td class="num">396</td><td>Пауза</td><td class="num">0</td><td class="num">−71 млн</td></tr>
+          </tbody>
+        </table>
+        <p class="lede">По абонентке +438 млн UZS/год. Это не главный P&amp;L: киты уже приносят 6.24 млрд за полгода interchange. Главное — не отдать их дешёвому тарифу и не брать 15 000 с мёртвой карты.</p>
+      </section>
+
+      <section class="slide">
+        <p class="kicker">Итог</p>
+        <h2>Шесть типов, одно правило, линейка</h2>
+        <div class="row cols-3">
+          <div class="card">
+            <h3>Завтра</h3>
+            <p>Новый клиент: 90 дней смотрим, потом центроид. Спящих не кластеризуем.</p>
+          </div>
+          <div class="card">
+            <h3>Не делать</h3>
+            <p>Тариф под 2% базы. Один «богатый» тариф на китов и хранителей остатка. Квартили оборота.</p>
+          </div>
+          <div class="card">
+            <h3>Сдать</h3>
+            <p>Ноутбук, SQL признаков, эти слайды. Код: <b>scripts/cluster.py</b>.</p>
+          </div>
+        </div>
+        <p class="meta">Каналы: presentation/assets · окно 2025-05-30 … 2025-11-30</p>
+      </section>
+
+      <div class="chrome">
+        <span>ДЗ6 · типология</span>
+        <span><b id="cur">01</b> / <span id="tot">16</span></span>
+      </div>
+    </div>
+  </div>
+  <div class="hint">← →</div>
+  <div class="lightbox" id="lightbox" hidden>
+    <img id="lightbox-img" alt="">
+  </div>
+  <script>
+    (function () {
+      var slides = [].slice.call(document.querySelectorAll(".slide"));
+      var n = slides.length;
+      var i = 0;
+      var bar = document.getElementById("bar");
+      var cur = document.getElementById("cur");
+      var box = document.getElementById("lightbox");
+      var boxImg = document.getElementById("lightbox-img");
+      document.getElementById("tot").textContent = String(n).padStart(2, "0");
+
+      function openBox(src, alt) {
+        boxImg.src = src;
+        boxImg.alt = alt || "";
+        box.hidden = false;
+        box.classList.add("on");
+      }
+      function closeBox() {
+        box.classList.remove("on");
+        box.hidden = true;
+        boxImg.removeAttribute("src");
+      }
+      function go(to) {
+        i = Math.max(0, Math.min(n - 1, to));
+        slides.forEach(function (s, k) { s.classList.toggle("on", k === i); });
+        cur.textContent = String(i + 1).padStart(2, "0");
+        bar.style.width = (n === 1 ? 100 : (i / (n - 1)) * 100) + "%";
+        if (history.replaceState) history.replaceState(null, "", "#" + (i + 1));
+      }
+      function fromHash() {
+        var h = parseInt((location.hash || "").replace("#", ""), 10);
+        if (h >= 1 && h <= n) go(h - 1);
+        else go(0);
+      }
+      document.addEventListener("click", function (e) {
+        var btn = e.target.closest(".zoom");
+        if (btn) {
+          var img = btn.querySelector("img") || btn;
+          openBox(img.currentSrc || img.src, img.alt);
+          return;
+        }
+        if (box.classList.contains("on")) closeBox();
+      });
+      document.addEventListener("keydown", function (e) {
+        if (box.classList.contains("on")) {
+          if (e.key === "Escape" || e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            closeBox();
+          }
+          return;
+        }
+        if (e.key === "ArrowRight" || e.key === "PageDown" || e.key === " ") {
+          e.preventDefault(); go(i + 1);
+        } else if (e.key === "ArrowLeft" || e.key === "PageUp" || e.key === "Backspace") {
+          e.preventDefault(); go(i - 1);
+        } else if (e.key === "Home") go(0);
+        else if (e.key === "End") go(n - 1);
+      });
+      window.addEventListener("hashchange", fromHash);
+      fromHash();
+    })();
+  </script>
+</body>
+</html>

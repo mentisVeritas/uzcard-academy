@@ -24,3 +24,15 @@ Thumbs.db
 
 # Submodule venvs
 projects/**/.venv/
+
+# Отдельный клон репозитория MerchantHub (в этот репо он подключён submodule'ом в projects/mars/merchanthub)
+/uzcard-merchanthub/
+
+# Сырые выгрузки из БД: большие (до 130 МБ), восстанавливаются скриптами download_raw
+projects/*/data_raw/**
+!projects/*/data_raw/**/
+!projects/*/data_raw/README.md
+!projects/*/data_raw/.gitignore
+
+# Промежуточные датасеты оттока (~50 МБ), пересобираются ноутбуком
+projects/customer_churn/data/**/*.csv

@@ -1,0 +1,1901 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2-4 takrorlash · qisqa versiya · Leksiya 5</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700;800&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+            background: #FFFFFF;
+            color: #1d1d1f;
+            line-height: 1.1;
+            overflow: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .presentation { width: 100vw; height: 100vh; position: relative; }
+
+        .slide {
+            width: 100%; height: 100%;
+            display: none;
+            align-items: center; justify-content: center;
+            position: absolute; top: 0; left: 0;
+            padding: clamp(40px, 6vh, 80px) clamp(40px, 6vw, 80px);
+            text-align: center;
+        }
+
+        .slide.active { display: flex; flex-direction: column; }
+
+        .slide-content {
+            max-width: 1200px; width: 100%; margin: 0 auto;
+            opacity: 0; transform: translateY(20px);
+            animation: fadeInUp 0.8s ease-out 0.2s forwards;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+        }
+
+        @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
+
+        h1 {
+            font-size: clamp(40px, 6.5vw, 96px);
+            font-weight: 700;
+            letter-spacing: -0.025em;
+            line-height: 0.95;
+            margin-bottom: clamp(16px, 2.5vh, 32px);
+            color: #1d1d1f;
+        }
+
+        h2 {
+            font-size: clamp(28px, 4vw, 56px);
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            line-height: 1.05;
+            margin-bottom: clamp(16px, 2vh, 28px);
+            color: #1d1d1f;
+        }
+
+        .subtitle {
+            font-size: clamp(18px, 2.2vw, 28px);
+            font-weight: 400;
+            color: #86868b;
+            margin-bottom: clamp(24px, 4vh, 48px);
+            line-height: 1.3;
+            max-width: 900px;
+        }
+
+        .eyebrow {
+            font-size: clamp(13px, 1.2vw, 16px);
+            font-weight: 600;
+            color: #007aff;
+            text-transform: uppercase;
+            letter-spacing: 0.18em;
+            margin-bottom: 18px;
+        }
+
+        .body-text {
+            font-size: clamp(15px, 1.8vw, 22px);
+            font-weight: 400;
+            color: #515154;
+            line-height: 1.45;
+            max-width: 820px;
+            margin: 0 auto;
+        }
+
+        .highlight { color: #007aff; font-weight: 500; }
+        .accent-green { color: #34c759; font-weight: 500; }
+        .accent-red { color: #ff3b30; font-weight: 500; }
+        .accent-purple { color: #af52de; font-weight: 500; }
+
+        .cards-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: clamp(16px, 2.5vw, 28px);
+            margin-top: clamp(24px, 4vh, 40px);
+            max-width: 1100px; width: 100%;
+        }
+
+        .card {
+            background: rgba(0, 0, 0, 0.025);
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            border-radius: 14px;
+            padding: clamp(20px, 2.5vw, 32px);
+            text-align: left;
+            opacity: 0; transform: translateY(24px);
+            animation: cardSlideUp 0.55s ease-out forwards;
+            transition: all 0.3s ease;
+        }
+        .card:nth-child(1) { animation-delay: 0.4s; }
+        .card:nth-child(2) { animation-delay: 0.5s; }
+        .card:nth-child(3) { animation-delay: 0.6s; }
+        .card:nth-child(4) { animation-delay: 0.7s; }
+        .card:nth-child(5) { animation-delay: 0.8s; }
+        .card:nth-child(6) { animation-delay: 0.9s; }
+
+        @keyframes cardSlideUp { to { opacity: 1; transform: translateY(0); } }
+
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: clamp(24px, 4vw, 56px);
+            max-width: 1100px;
+            width: 100%;
+            margin-top: clamp(24px, 4vh, 40px);
+            align-items: stretch;
+        }
+        .comparison-item {
+            text-align: left;
+            opacity: 0; transform: scale(0.96);
+            animation: scaleIn 0.6s ease-out forwards;
+            padding: clamp(24px, 3vw, 36px);
+            border-radius: 16px;
+            background: rgba(0,0,0,0.02);
+            border: 1px solid rgba(0,0,0,0.06);
+        }
+        .comparison-item:nth-child(1) { animation-delay: 0.4s; }
+        .comparison-item:nth-child(2) { animation-delay: 0.55s; }
+        @keyframes scaleIn { to { opacity: 1; transform: scale(1); } }
+        .comparison-item .label {
+            font-size: clamp(12px, 1.1vw, 14px);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.16em;
+            margin-bottom: 12px;
+        }
+        .comparison-item.old .label { color: #ff3b30; }
+        .comparison-item.new .label { color: #34c759; }
+        .comparison-item h3 {
+            font-size: clamp(20px, 2.6vw, 30px);
+            font-weight: 600;
+            margin-bottom: 14px;
+            color: #1d1d1f;
+            line-height: 1.15;
+        }
+        .comparison-item p, .comparison-item li {
+            font-size: clamp(14px, 1.7vw, 18px);
+            color: #515154;
+            line-height: 1.45;
+        }
+
+        .quote-card {
+            margin-top: clamp(24px, 4vh, 40px);
+            padding: clamp(20px, 2.5vw, 28px) clamp(24px, 3vw, 36px);
+            border-left: 3px solid #007aff;
+            background: rgba(0, 122, 255, 0.04);
+            border-radius: 8px;
+            text-align: left;
+            max-width: 820px;
+        }
+        .quote-card.warning {
+            border-left-color: #ff3b30;
+            background: rgba(255, 59, 48, 0.04);
+        }
+        .quote-card.success {
+            border-left-color: #34c759;
+            background: rgba(52, 199, 89, 0.05);
+        }
+        .quote-card .label {
+            font-size: 12px; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 0.16em;
+            color: #007aff; margin-bottom: 8px;
+        }
+        .quote-card.warning .label { color: #ff3b30; }
+        .quote-card.success .label { color: #34c759; }
+        .quote-card p {
+            font-size: clamp(15px, 1.8vw, 20px);
+            color: #1d1d1f; line-height: 1.4; font-weight: 500;
+        }
+
+        .code-block {
+            background: #1d1d1f;
+            color: #f5f5f7;
+            border-radius: 12px;
+            padding: clamp(18px, 2vw, 28px);
+            font-family: 'SF Mono', 'Menlo', 'Monaco', 'Consolas', monospace;
+            font-size: clamp(13px, 1.55vw, 17px);
+            line-height: 1.7;
+            text-align: left;
+            margin-top: 18px;
+            max-width: 860px;
+            width: 100%;
+            white-space: pre;
+            overflow-x: auto;
+        }
+        .code-block .ck { color: #ff79c6; }
+        .code-block .cs { color: #50fa7b; }
+        .code-block .cn { color: #f1fa8c; }
+        .code-block .co { color: #6272a4; font-style: italic; }
+        .code-block .cf { color: #8be9fd; }
+        .code-block .cm { color: #bd93f9; }
+        .code-block .ce { color: #ff5555; }
+
+        .code-output {
+            display: grid;
+            grid-template-columns: 1.1fr 1fr;
+            gap: 16px;
+            margin-top: 24px;
+            width: 100%;
+            max-width: 1050px;
+        }
+        .code-output .term {
+            background: #1d1d1f;
+            color: #f5f5f7;
+            border-radius: 12px;
+            padding: 20px;
+            font-family: 'SF Mono', 'Menlo', monospace;
+            font-size: clamp(12px, 1.4vw, 16px);
+            line-height: 1.7;
+            text-align: left;
+            white-space: pre;
+            overflow-x: auto;
+        }
+        .term .out { color: #f8f8f2; opacity: 0.85; }
+
+        .topic-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            max-width: 880px;
+            margin-top: 28px;
+        }
+        .topic-cell {
+            padding: 16px 20px;
+            background: rgba(0,0,0,0.025);
+            border: 1px solid rgba(0,0,0,0.06);
+            border-radius: 12px;
+            font-family: 'SF Mono', 'Menlo', monospace;
+            font-size: clamp(14px, 1.7vw, 18px);
+            font-weight: 600;
+            color: #007aff;
+            text-align: center;
+        }
+
+        .type-table {
+            width: 100%;
+            max-width: 820px;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-top: 20px;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid rgba(0,0,0,0.06);
+        }
+        .type-table th, .type-table td {
+            padding: 14px 20px;
+            text-align: left;
+            font-size: clamp(13px, 1.6vw, 17px);
+            border-bottom: 1px solid rgba(0,0,0,0.06);
+        }
+        .type-table tr:last-child td { border-bottom: none; }
+        .type-table th {
+            background: rgba(0,0,0,0.025);
+            font-size: clamp(11px, 1.1vw, 13px);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.14em;
+            color: #86868b;
+        }
+        .type-table .ttype {
+            font-family: 'SF Mono', 'Menlo', monospace;
+            color: #007aff;
+            font-weight: 600;
+        }
+        .type-table .tex {
+            font-family: 'SF Mono', 'Menlo', monospace;
+            color: #515154;
+            font-size: clamp(12px, 1.5vw, 16px);
+        }
+
+        .checklist {
+            list-style: none;
+            padding: 0;
+            margin-top: 20px;
+            max-width: 800px;
+            text-align: left;
+        }
+        .checklist li {
+            font-size: clamp(15px, 1.9vw, 20px);
+            color: #1d1d1f;
+            line-height: 1.5;
+            padding: 12px 0 12px 40px;
+            position: relative;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+        .checklist li:last-child { border-bottom: none; }
+        .checklist li::before {
+            content: "✓";
+            position: absolute;
+            left: 0; top: 50%;
+            transform: translateY(-50%);
+            width: 28px; height: 28px;
+            border-radius: 50%;
+            background: rgba(0, 122, 255, 0.1);
+            color: #007aff;
+            font-size: 14px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .timer-display {
+            font-family: 'SF Mono', 'Menlo', monospace;
+            font-size: clamp(56px, 9vw, 120px);
+            font-weight: 700;
+            color: #007aff;
+            line-height: 1;
+            letter-spacing: -0.04em;
+            margin: 12px 0 24px 0;
+        }
+
+        .flow-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+            flex-wrap: wrap;
+            margin-top: 24px;
+            font-family: 'SF Mono', 'Menlo', monospace;
+            font-size: clamp(13px, 1.5vw, 17px);
+        }
+        .flow-row .step-pill {
+            padding: 10px 18px;
+            border-radius: 50px;
+            background: rgba(0,122,255,0.08);
+            color: #007aff;
+            font-weight: 600;
+            border: 1px solid rgba(0,122,255,0.18);
+        }
+        .flow-row .arrow {
+            color: #86868b;
+            font-size: 18px;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            max-width: 820px;
+            width: 100%;
+            margin-top: 24px;
+        }
+        .option-card {
+            background: rgba(0, 0, 0, 0.025);
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            border-radius: 12px;
+            padding: 16px 22px;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            font-size: clamp(14px, 1.7vw, 18px);
+            font-weight: 500;
+            color: #1d1d1f;
+            line-height: 1.35;
+            opacity: 0; transform: translateY(20px);
+            animation: cardSlideUp 0.5s ease-out forwards;
+        }
+        .option-card:nth-child(1) { animation-delay: 0.4s; }
+        .option-card:nth-child(2) { animation-delay: 0.5s; }
+        .option-card:nth-child(3) { animation-delay: 0.6s; }
+        .option-card:nth-child(4) { animation-delay: 0.7s; }
+        .option-card .option-letter {
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            background: rgba(0, 122, 255, 0.1);
+            color: #007aff;
+            font-size: 14px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .option-card code {
+            font-family: 'SF Mono', 'Menlo', 'Monaco', 'Consolas', monospace;
+            color: #007aff;
+            font-weight: 600;
+        }
+        .think-hint {
+            margin-top: clamp(20px, 3vh, 32px);
+            font-size: clamp(14px, 1.7vw, 19px);
+            color: #86868b;
+            font-style: italic;
+        }
+
+        .func-machine {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 18px;
+            margin: 22px auto 28px;
+            flex-wrap: wrap;
+        }
+        .func-machine .input-pill, .func-machine .output-pill {
+            padding: 14px 22px;
+            background: rgba(0,122,255,0.08);
+            border: 1.5px solid rgba(0,122,255,0.3);
+            border-radius: 12px;
+            font-family: 'SF Mono', monospace;
+            font-size: clamp(14px, 1.7vw, 18px);
+            font-weight: 600;
+            color: #007aff;
+        }
+        .func-machine .output-pill {
+            background: rgba(52, 199, 89, 0.08);
+            border-color: rgba(52, 199, 89, 0.4);
+            color: #34c759;
+        }
+        .func-machine .machine-box {
+            padding: 22px 32px;
+            background: linear-gradient(135deg, #1d1d1f 0%, #2c2c2e 100%);
+            border-radius: 14px;
+            color: #fff;
+            font-family: 'SF Mono', monospace;
+            font-weight: 700;
+            font-size: clamp(15px, 1.9vw, 20px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+            position: relative;
+        }
+        .func-machine .machine-box::before {
+            content: '⚙';
+            position: absolute;
+            top: -16px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #fff;
+            color: #007aff;
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            border: 1.5px solid rgba(0,122,255,0.3);
+        }
+        .func-machine .arrow {
+            color: #86868b;
+            font-size: 22px;
+            font-weight: 300;
+        }
+
+        .dict-vis {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin: 18px auto 22px;
+            max-width: 520px;
+            width: 100%;
+        }
+        .dict-row {
+            display: grid;
+            grid-template-columns: 1fr auto 1.2fr;
+            gap: 12px;
+            align-items: center;
+        }
+        .dict-row .key-cell {
+            padding: 12px 16px;
+            background: #fff;
+            border: 1.5px solid rgba(175, 82, 222, 0.4);
+            border-radius: 10px;
+            font-family: 'SF Mono', monospace;
+            font-size: clamp(13px, 1.5vw, 16px);
+            font-weight: 600;
+            color: #af52de;
+            text-align: center;
+        }
+        .dict-row .val-cell {
+            padding: 12px 16px;
+            background: #fff;
+            border: 1.5px solid rgba(0,122,255,0.4);
+            border-radius: 10px;
+            font-family: 'SF Mono', monospace;
+            font-size: clamp(13px, 1.5vw, 16px);
+            font-weight: 600;
+            color: #007aff;
+            text-align: center;
+        }
+        .dict-row .arrow-cell {
+            color: #86868b;
+            font-size: 22px;
+            font-weight: 300;
+        }
+        .dict-vis-header {
+            display: grid;
+            grid-template-columns: 1fr auto 1.2fr;
+            gap: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            color: #86868b;
+            text-transform: uppercase;
+            letter-spacing: 0.16em;
+            margin-bottom: 4px;
+        }
+        .dict-vis-header span { text-align: center; }
+
+        .set-vis {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 22px auto;
+            gap: 24px;
+            flex-wrap: wrap;
+        }
+        .set-circle {
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            border: 2.5px solid rgba(0, 122, 255, 0.4);
+            background: rgba(0, 122, 255, 0.04);
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 36px;
+            position: relative;
+        }
+        .set-circle::before {
+            content: attr(data-name);
+            position: absolute;
+            top: -14px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #fff;
+            color: #007aff;
+            padding: 2px 14px;
+            font-size: 13px;
+            font-weight: 700;
+            font-family: 'SF Mono', monospace;
+            letter-spacing: 0.04em;
+        }
+        .set-circle .item {
+            padding: 6px 12px;
+            background: #fff;
+            border: 1.5px solid rgba(0,122,255,0.35);
+            border-radius: 50px;
+            font-family: 'SF Mono', monospace;
+            font-size: 14px;
+            font-weight: 600;
+            color: #007aff;
+        }
+
+        .scope-vis {
+            position: relative;
+            max-width: 720px;
+            width: 100%;
+            margin: 22px auto;
+            padding: 32px 28px 28px;
+            background: rgba(255, 59, 48, 0.04);
+            border: 2px dashed rgba(255, 59, 48, 0.35);
+            border-radius: 14px;
+            text-align: left;
+        }
+        .scope-vis::before {
+            content: 'GLOBAL';
+            position: absolute;
+            top: -12px;
+            left: 24px;
+            background: #fff;
+            color: #ff3b30;
+            padding: 2px 12px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.16em;
+            font-family: 'SF Mono', monospace;
+        }
+        .scope-vis .global-line {
+            font-family: 'SF Mono', monospace;
+            font-size: clamp(12px, 1.4vw, 15px);
+            color: #ff3b30;
+            margin-bottom: 14px;
+        }
+        .scope-vis .local-box {
+            position: relative;
+            padding: 28px 22px 18px;
+            background: rgba(0, 122, 255, 0.04);
+            border: 2px dashed rgba(0, 122, 255, 0.35);
+            border-radius: 12px;
+            margin-top: 12px;
+        }
+        .scope-vis .local-box::before {
+            content: 'LOCAL (def)';
+            position: absolute;
+            top: -10px;
+            left: 18px;
+            background: #fff;
+            color: #007aff;
+            padding: 2px 10px;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.16em;
+            font-family: 'SF Mono', monospace;
+        }
+        .scope-vis .local-line {
+            font-family: 'SF Mono', monospace;
+            font-size: clamp(12px, 1.4vw, 15px);
+            color: #007aff;
+            line-height: 1.7;
+        }
+
+        .args-vis {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 18px;
+            align-items: center;
+            max-width: 760px;
+            margin: 18px auto 24px;
+            text-align: left;
+        }
+        .args-vis .label-pill {
+            padding: 10px 18px;
+            background: rgba(175, 82, 222, 0.1);
+            color: #af52de;
+            border-radius: 50px;
+            font-family: 'SF Mono', monospace;
+            font-weight: 600;
+            font-size: clamp(13px, 1.5vw, 16px);
+            text-align: center;
+        }
+        .args-vis .pack-row {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .args-vis .pack-row .item {
+            padding: 8px 14px;
+            background: #fff;
+            border: 1.5px solid rgba(0, 122, 255, 0.35);
+            border-radius: 8px;
+            font-family: 'SF Mono', monospace;
+            font-size: clamp(12px, 1.4vw, 15px);
+            font-weight: 600;
+            color: #007aff;
+            max-width: 100%;
+            overflow-wrap: break-word;
+            word-break: break-word;
+            text-align: center;
+        }
+
+        .list-vis {
+            display: flex;
+            justify-content: center;
+            gap: 4px;
+            margin: 18px auto 24px;
+        }
+        .list-vis .cell {
+            min-width: 64px;
+            padding: 14px 12px;
+            background: #fff;
+            border: 1.5px solid rgba(0,122,255,0.4);
+            border-radius: 10px;
+            font-family: 'SF Mono', monospace;
+            font-size: clamp(13px, 1.5vw, 16px);
+            font-weight: 600;
+            color: #1d1d1f;
+            text-align: center;
+            position: relative;
+        }
+        .list-vis .cell.tuple {
+            border-color: rgba(175, 82, 222, 0.4);
+        }
+        .list-vis .cell .idx {
+            position: absolute;
+            top: -22px;
+            left: 0; right: 0;
+            font-size: 11px;
+            font-weight: 600;
+            color: #86868b;
+            font-family: 'SF Mono', monospace;
+        }
+        .list-vis-wrapper {
+            margin-top: 28px;
+            margin-bottom: 24px;
+        }
+
+        .slide-indicator {
+            position: fixed;
+            bottom: 28px; left: 50%;
+            transform: translateX(-50%);
+            font-size: 13px; color: #86868b;
+            font-weight: 400; z-index: 100;
+            letter-spacing: 0.04em;
+        }
+        .nav-hint {
+            position: fixed;
+            bottom: 28px; right: 28px;
+            font-size: 12px; color: #c7c7cc;
+            font-weight: 400; text-align: right;
+            z-index: 100;
+        }
+        .lesson-tag {
+            position: fixed;
+            top: 28px; left: 28px;
+            font-size: 11px; font-weight: 600;
+            color: #86868b; text-transform: uppercase;
+            letter-spacing: 0.18em;
+            z-index: 100;
+        }
+        .lang-switcher {
+            position: fixed;
+            top: 22px; right: 28px;
+            z-index: 100;
+            display: flex;
+            gap: 2px;
+            background: rgba(255,255,255,0.95);
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0,0,0,0.06);
+            border-radius: 50px;
+            padding: 3px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        .lang-switcher a {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: #86868b;
+            text-decoration: none;
+            padding: 5px 12px;
+            border-radius: 50px;
+            transition: all 0.2s ease;
+        }
+        .lang-switcher a.active {
+            color: #fff;
+            background: #007aff;
+        }
+        .lang-switcher a:not(.active):hover {
+            color: #1d1d1f;
+        }
+
+        .trace-wrap {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 28px;
+            max-width: 1050px;
+            width: 100%;
+            margin-top: 8px;
+            align-items: start;
+        }
+        .trace-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid rgba(0,0,0,0.06);
+            font-size: clamp(13px, 1.5vw, 15px);
+            background: #fff;
+        }
+        .trace-table th {
+            background: rgba(0,0,0,0.025);
+            padding: 12px 16px;
+            text-align: left;
+            font-size: clamp(10px, 1vw, 12px);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.14em;
+            color: #86868b;
+            border-bottom: 1px solid rgba(0,0,0,0.06);
+        }
+        .trace-table td {
+            padding: 10px 16px;
+            border-bottom: 1px solid rgba(0,0,0,0.04);
+            font-family: 'SF Mono', 'Menlo', monospace;
+            color: #1d1d1f;
+        }
+        .trace-table tbody tr:last-child td { border-bottom: none; }
+        .trace-row {
+            opacity: 0;
+            transform: translateX(-12px);
+        }
+        .slide.active .trace-row {
+            animation: traceRowIn 0.4s ease-out forwards;
+        }
+        .slide.active .trace-row.r1 { animation-delay: 0.5s; }
+        .slide.active .trace-row.r2 { animation-delay: 0.95s; }
+        .slide.active .trace-row.r3 { animation-delay: 1.4s; }
+        .slide.active .trace-row.r4 { animation-delay: 1.85s; }
+        .slide.active .trace-row.r5 { animation-delay: 2.3s; }
+        @keyframes traceRowIn {
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        /* === Interactive widgets === */
+        .interactive-btn {
+            padding: 10px 22px;
+            background: #007aff;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: clamp(13px, 1.5vw, 16px);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .interactive-btn:hover { background: #0066d6; transform: translateY(-1px); }
+        .interactive-btn:active { transform: translateY(0); }
+        .interactive-btn.secondary {
+            background: rgba(0,122,255,0.1);
+            color: #007aff;
+        }
+        .interactive-btn.secondary:hover { background: rgba(0,122,255,0.18); }
+        .interactive-btn[disabled] { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+        .range-slider-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            max-width: 580px;
+            margin: 14px auto 22px;
+            padding: 12px 22px;
+            background: rgba(0,122,255,0.04);
+            border-radius: 50px;
+            border: 1px solid rgba(0,122,255,0.18);
+        }
+        .range-slider-wrapper .lbl {
+            font-family: 'SF Mono', monospace;
+            font-size: 13px;
+            color: #007aff;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        .range-slider {
+            flex: 1;
+            -webkit-appearance: none;
+            appearance: none;
+            height: 4px;
+            background: rgba(0,122,255,0.2);
+            border-radius: 4px;
+            outline: none;
+        }
+        .range-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 22px;
+            height: 22px;
+            background: #007aff;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0,122,255,0.4);
+        }
+        .range-slider::-moz-range-thumb {
+            width: 22px;
+            height: 22px;
+            background: #007aff;
+            border-radius: 50%;
+            cursor: pointer;
+            border: none;
+        }
+        .range-value {
+            min-width: 28px;
+            text-align: center;
+            font-family: 'SF Mono', monospace;
+            font-size: 17px;
+            font-weight: 700;
+            color: #007aff;
+        }
+
+        .live-args .pack-row .item { animation: popIn 0.28s ease-out; }
+        @keyframes popIn {
+            from { opacity: 0; transform: scale(0.55); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .live-args .result-line {
+            font-family: 'SF Mono', monospace;
+            font-size: clamp(13px, 1.5vw, 16px);
+            color: #34c759;
+            font-weight: 600;
+            margin-top: 12px;
+            text-align: center;
+        }
+
+        .trace-controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 18px;
+        }
+        .trace-table .trace-row.manual {
+            opacity: 0;
+            transform: translateX(-12px);
+            animation: none;
+        }
+        .trace-table .trace-row.manual.shown {
+            animation: traceRowIn 0.35s ease-out forwards;
+        }
+
+        .scope-vis .clickable {
+            cursor: pointer;
+            border-radius: 4px;
+            padding: 0 4px;
+            transition: background 0.2s;
+            border-bottom: 1px dashed currentColor;
+        }
+        .scope-vis .clickable:hover { background: rgba(0,122,255,0.18); }
+        .scope-vis .global-line.found-here {
+            background: rgba(52,199,89,0.18);
+            border-radius: 6px;
+            outline: 2px solid #34c759;
+            outline-offset: 2px;
+        }
+        .scope-vis .local-box.scanning {
+            outline: 2px dashed #007aff;
+            outline-offset: 4px;
+            transition: all 0.3s;
+        }
+        .scope-vis .local-box.found-here {
+            outline: 2px solid #34c759;
+            outline-offset: 4px;
+            background: rgba(52,199,89,0.06);
+        }
+        .scope-vis .local-box.error-here {
+            outline: 2px solid #ff3b30;
+            outline-offset: 4px;
+            background: rgba(255,59,48,0.06);
+        }
+        .scope-status {
+            margin-top: 16px;
+            padding: 10px 18px;
+            border-radius: 10px;
+            font-family: 'SF Mono', monospace;
+            font-size: 14px;
+            font-weight: 600;
+            text-align: center;
+            min-height: 22px;
+            transition: all 0.3s;
+            background: rgba(0,0,0,0.04);
+            color: #86868b;
+        }
+        .scope-status.success { background: rgba(52,199,89,0.1); color: #34c759; }
+        .scope-status.error { background: rgba(255,59,48,0.1); color: #ff3b30; }
+
+        .sort-demo {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-width: 480px;
+            margin: 14px auto 14px;
+            width: 100%;
+            position: relative;
+        }
+        .sort-demo .person-card {
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            align-items: center;
+            gap: 14px;
+            padding: 12px 18px;
+            background: #fff;
+            border: 1.5px solid rgba(0,122,255,0.3);
+            border-radius: 10px;
+            font-family: 'SF Mono', monospace;
+            font-size: clamp(13px, 1.5vw, 15px);
+            font-weight: 600;
+            color: #1d1d1f;
+            transition: transform 0.55s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.3s, border-color 0.3s;
+            will-change: transform;
+        }
+        .sort-demo .person-card .name { text-align: left; }
+        .sort-demo .person-card .age {
+            color: #007aff;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+        }
+        .sort-demo .person-card .num {
+            width: 22px; height: 22px;
+            border-radius: 50%;
+            background: rgba(0,122,255,0.1);
+            color: #007aff;
+            font-size: 11px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .sort-buttons {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin-top: 8px;
+            flex-wrap: wrap;
+        }
+        .sort-buttons .interactive-btn {
+            padding: 8px 18px;
+            font-size: clamp(12px, 1.4vw, 14px);
+        }
+
+        .playground {
+            width: 100%;
+            max-width: 920px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 6px;
+        }
+        .playground textarea {
+            width: 100%;
+            min-height: 170px;
+            background: #1d1d1f;
+            color: #f5f5f7;
+            border: 1px solid rgba(0,0,0,0.1);
+            border-radius: 12px;
+            padding: 16px 20px;
+            font-family: 'SF Mono', 'Menlo', monospace;
+            font-size: clamp(12px, 1.4vw, 15px);
+            line-height: 1.6;
+            resize: vertical;
+            outline: none;
+            tab-size: 4;
+        }
+        .playground textarea:focus {
+            border-color: rgba(0,122,255,0.5);
+            box-shadow: 0 0 0 3px rgba(0,122,255,0.15);
+        }
+        .playground-controls {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+        .playground-output {
+            background: #1d1d1f;
+            color: #f5f5f7;
+            border-radius: 12px;
+            padding: 16px 20px;
+            font-family: 'SF Mono', 'Menlo', monospace;
+            font-size: clamp(12px, 1.4vw, 15px);
+            line-height: 1.6;
+            min-height: 56px;
+            white-space: pre-wrap;
+            text-align: left;
+            overflow-x: auto;
+            max-height: 180px;
+            overflow-y: auto;
+        }
+        .playground-output.empty { color: #6e6e73; font-style: italic; }
+        .playground-output .err { color: #ff5555; }
+        .playground-output .ok { color: #50fa7b; }
+        .playground-status {
+            font-size: 12px;
+            color: #86868b;
+            font-family: 'SF Mono', monospace;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .playground-status .dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: #c7c7cc;
+        }
+        .playground-status.loading .dot {
+            background: #007aff;
+            animation: pulse 1s infinite;
+        }
+        .playground-status.ready .dot { background: #34c759; }
+        .playground-status.error .dot { background: #ff3b30; }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.4); }
+        }
+
+        /* Try-it chips & inputs */
+        .tryout-hint {
+            font-size: clamp(13px, 1.5vw, 15px);
+            color: #86868b;
+            margin: 14px 0 12px;
+            text-align: center;
+        }
+        .tryout-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            margin-bottom: 14px;
+            max-width: 880px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .expr-chip {
+            padding: 9px 16px;
+            background: rgba(0,122,255,0.08);
+            color: #007aff;
+            border: 1px solid rgba(0,122,255,0.18);
+            border-radius: 50px;
+            font-family: 'SF Mono', monospace;
+            font-size: clamp(12px, 1.4vw, 14px);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .expr-chip:hover {
+            background: rgba(0,122,255,0.16);
+            transform: translateY(-1px);
+        }
+        .expr-chip:active { transform: translateY(0); }
+        .expr-chip.danger {
+            background: rgba(255,59,48,0.06);
+            color: #ff3b30;
+            border-color: rgba(255,59,48,0.2);
+        }
+        .expr-chip.danger:hover { background: rgba(255,59,48,0.12); }
+        .expr-chip.active {
+            background: #007aff;
+            color: #fff;
+            border-color: #007aff;
+        }
+        .expr-chip.danger.active {
+            background: #ff3b30;
+            color: #fff;
+            border-color: #ff3b30;
+        }
+        .tryout-output {
+            background: #1d1d1f;
+            color: #50fa7b;
+            border-radius: 12px;
+            padding: 16px 22px;
+            font-family: 'SF Mono', monospace;
+            font-size: clamp(14px, 1.6vw, 17px);
+            font-weight: 600;
+            text-align: center;
+            min-height: 28px;
+            transition: color 0.25s;
+            max-width: 620px;
+            margin: 0 auto;
+            white-space: pre-wrap;
+        }
+        .tryout-output.error { color: #ff5555; }
+        .tryout-output.empty { color: #6e6e73; font-weight: 400; font-style: italic; }
+
+        .kw-inputs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            max-width: 640px;
+            width: 100%;
+            margin: 16px auto 14px;
+        }
+        .kw-inputs label {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            text-align: left;
+        }
+        .kw-inputs label .lbl {
+            font-family: 'SF Mono', monospace;
+            font-size: 12px;
+            font-weight: 600;
+            color: #86868b;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            justify-content: space-between;
+        }
+        .kw-inputs label .lbl small {
+            font-weight: 400;
+            color: #c7c7cc;
+            font-size: 11px;
+            font-style: italic;
+        }
+        .kw-inputs input {
+            padding: 10px 14px;
+            border: 1.5px solid rgba(0,0,0,0.1);
+            border-radius: 10px;
+            background: #fff;
+            font-family: 'SF Mono', monospace;
+            font-size: clamp(13px, 1.5vw, 16px);
+            color: #1d1d1f;
+            outline: none;
+            transition: all 0.2s;
+        }
+        .kw-inputs input:focus {
+            border-color: rgba(0,122,255,0.5);
+            box-shadow: 0 0 0 3px rgba(0,122,255,0.15);
+        }
+        .kw-inputs input::placeholder { color: #c7c7cc; font-style: italic; }
+
+        @media (max-width: 600px) {
+            .kw-inputs { grid-template-columns: 1fr; }
+        }
+
+        /* === Reveal-on-next mechanic === */
+        .reveal-output:not(.term) {
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+        .reveal-output:not(.term).revealed {
+            opacity: 1;
+        }
+        .term.reveal-output {
+            position: relative;
+            min-height: 60px;
+        }
+        .term.reveal-output > * {
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+        .term.reveal-output.revealed > * {
+            opacity: 1;
+        }
+        .term.reveal-output::before {
+            content: attr(data-prompt);
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #86868b;
+            font-style: italic;
+            font-weight: 400;
+            font-size: clamp(11px, 1.3vw, 14px);
+            white-space: nowrap;
+            pointer-events: none;
+            transition: opacity 0.3s;
+            font-family: 'SF Mono', 'Menlo', monospace;
+        }
+        .term.reveal-output.revealed::before {
+            opacity: 0;
+        }
+
+        @media (max-width: 768px) {
+            .comparison-grid, .topic-grid, .code-output,
+            .cards-container, .options-grid, .trace-wrap {
+                grid-template-columns: 1fr; gap: 20px;
+            }
+            .list-vis, .func-machine, .set-vis { flex-wrap: wrap; }
+        }
+    </style>
+</head>
+<body>
+    <div class="presentation">
+
+        <!-- 1: Title -->
+        <div class="slide active">
+            <div class="slide-content">
+                <p class="eyebrow">Leksiya 5</p>
+                <h1>Python asoslarini takrorlash</h1>
+                <p class="subtitle">2-4-leksiyalar bo'yicha tezkor recap</p>
+            </div>
+        </div>
+
+        <!-- 2: Topics map -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Nimani takrorlaymiz</p>
+                <h2>Olti mavzu · bitta sahifa</h2>
+                <div class="topic-grid">
+                    <div class="topic-cell">turlar · if/elif</div>
+                    <div class="topic-cell">for · while · range</div>
+                    <div class="topic-cell">list · kesmalar</div>
+                    <div class="topic-cell">tuple · set · dict</div>
+                    <div class="topic-cell">def · *args · **kwargs</div>
+                    <div class="topic-cell">lambda · sorted</div>
+                </div>
+                <p class="body-text" style="margin-top: 26px; font-size: clamp(13px, 1.5vw, 16px); color: #86868b;">
+                    Yangi mavzular yoʻq - faqat siz allaqachon bilgan narsalar bir kadrda. Keyin - <span class="highlight">25 ta vazifa</span> Jupyter da.
+                </p>
+            </div>
+        </div>
+
+        <!-- 3: Lesson 1 in one slide -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">2-dars</p>
+                <h2>Oʻzgaruvchilar, turlar, kiritish, shartlar</h2>
+                <div class="code-output" style="max-width: 980px;">
+                    <div class="code-block" style="margin-top: 0; font-size: clamp(11px, 1.3vw, 14px); padding: 16px;"><span class="co"># turlar avtomatik aniqlanadi</span>
+<span class="cn">name</span>  = <span class="cs">"Anya"</span>         <span class="co"># str</span>
+<span class="cn">age</span>   = <span class="cm">30</span>             <span class="co"># int</span>
+<span class="cn">price</span> = <span class="cm">19.99</span>          <span class="co"># float</span>
+<span class="cn">ok</span>    = <span class="cm">True</span>           <span class="co"># bool</span>
+
+<span class="co"># kiritish va konversiya</span>
+<span class="cn">n</span> = <span class="cf">int</span>(<span class="cf">input</span>(<span class="cs">"Son: "</span>))     <span class="co"># input doim str!</span>
+
+<span class="co"># shartlar</span>
+<span class="ck">if</span> <span class="cn">n</span> &gt; <span class="cm">0</span>:
+    <span class="cf">print</span>(<span class="cs">"plyus"</span>)
+<span class="ck">elif</span> <span class="cn">n</span> &lt; <span class="cm">0</span>:
+    <span class="cf">print</span>(<span class="cs">"minus"</span>)
+<span class="ck">else</span>:
+    <span class="cf">print</span>(<span class="cs">"nol"</span>)</div>
+                    <div style="background: rgba(0,122,255,0.04); border: 1px solid rgba(0,122,255,0.18); border-radius: 12px; padding: 18px 22px; text-align: left;">
+                        <div style="font-size: clamp(11px, 1.2vw, 13px); font-weight: 600; color: #007aff; text-transform: uppercase; letter-spacing: 0.14em; margin-bottom: 12px;">Asosiy nuqtalar</div>
+                        <ul style="list-style: none; padding: 0; margin: 0;">
+                            <li style="padding: 6px 0 6px 22px; position: relative; font-size: clamp(12px, 1.4vw, 15px); color: #1d1d1f; line-height: 1.5;"><span style="position: absolute; left: 0; color: #007aff; font-weight: 700;">›</span><code style="font-family:'SF Mono',monospace; color:#007aff;">type(x)</code> - oʻzgaruvchi turini koʻramiz</li>
+                            <li style="padding: 6px 0 6px 22px; position: relative; font-size: clamp(12px, 1.4vw, 15px); color: #1d1d1f; line-height: 1.5;"><span style="position: absolute; left: 0; color: #007aff; font-weight: 700;">›</span><code style="font-family:'SF Mono',monospace; color:#007aff;">int()</code>, <code style="font-family:'SF Mono',monospace; color:#007aff;">float()</code>, <code style="font-family:'SF Mono',monospace; color:#007aff;">str()</code> - tur konversiyasi</li>
+                            <li style="padding: 6px 0 6px 22px; position: relative; font-size: clamp(12px, 1.4vw, 15px); color: #1d1d1f; line-height: 1.5;"><span style="position: absolute; left: 0; color: #007aff; font-weight: 700;">›</span>ikki nuqta va otstup majburiy</li>
+                            <li style="padding: 6px 0 6px 22px; position: relative; font-size: clamp(12px, 1.4vw, 15px); color: #1d1d1f; line-height: 1.5;"><span style="position: absolute; left: 0; color: #007aff; font-weight: 700;">›</span>taqqoslash: <code style="font-family:'SF Mono',monospace; color:#007aff;">== != &lt; &gt; &lt;= &gt;=</code></li>
+                            <li style="padding: 6px 0 6px 22px; position: relative; font-size: clamp(12px, 1.4vw, 15px); color: #1d1d1f; line-height: 1.5;"><span style="position: absolute; left: 0; color: #007aff; font-weight: 700;">›</span>mantiqiy: <code style="font-family:'SF Mono',monospace; color:#007aff;">and / or / not</code></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4: Lesson 2 in one slide -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">3-dars</p>
+                <h2>Sikllar va roʻyxatlar</h2>
+                <div class="code-output" style="max-width: 980px;">
+                    <div class="code-block" style="margin-top: 0; font-size: clamp(11px, 1.3vw, 14px); padding: 16px;"><span class="co"># for + range</span>
+<span class="ck">for</span> <span class="cn">i</span> <span class="ck">in</span> <span class="cf">range</span>(<span class="cm">1</span>, <span class="cm">6</span>):       <span class="co"># 1..5 (6 siz)</span>
+    <span class="cf">print</span>(<span class="cn">i</span>)
+
+<span class="co"># while + break/continue</span>
+<span class="cn">n</span> = <span class="cm">0</span>
+<span class="ck">while</span> <span class="cn">n</span> &lt; <span class="cm">10</span>:
+    <span class="cn">n</span> += <span class="cm">1</span>
+    <span class="ck">if</span> <span class="cn">n</span> % <span class="cm">2</span>: <span class="ck">continue</span>     <span class="co"># toq sonni oʻtkazib yuborish</span>
+    <span class="ck">if</span> <span class="cn">n</span> &gt; <span class="cm">6</span>:    <span class="ck">break</span>
+
+<span class="co"># roʻyxatlar va kesmalar</span>
+<span class="cn">a</span> = [<span class="cm">10</span>, <span class="cm">20</span>, <span class="cm">30</span>, <span class="cm">40</span>, <span class="cm">50</span>]
+<span class="cn">a</span>[<span class="cm">0</span>]; <span class="cn">a</span>[-<span class="cm">1</span>]                  <span class="co"># 10, 50</span>
+<span class="cn">a</span>[<span class="cm">1</span>:<span class="cm">4</span>]; <span class="cn">a</span>[::-<span class="cm">1</span>]                <span class="co"># kesma, teskari</span>
+<span class="cn">a</span>.append(<span class="cm">60</span>); <span class="cn">a</span>.pop(); <span class="cn">a</span>.sort()</div>
+                    <div style="background: rgba(0,122,255,0.04); border: 1px solid rgba(0,122,255,0.18); border-radius: 12px; padding: 18px 22px; text-align: left;">
+                        <div style="font-size: clamp(11px, 1.2vw, 13px); font-weight: 600; color: #007aff; text-transform: uppercase; letter-spacing: 0.14em; margin-bottom: 12px;">Eslab qoling</div>
+                        <ul style="list-style: none; padding: 0; margin: 0;">
+                            <li style="padding: 6px 0 6px 22px; position: relative; font-size: clamp(12px, 1.4vw, 15px); color: #1d1d1f; line-height: 1.5;"><span style="position: absolute; left: 0; color: #007aff; font-weight: 700;">›</span><code style="font-family:'SF Mono',monospace; color:#007aff;">range(start, stop, step)</code> - yuqori chegara kirmaydi</li>
+                            <li style="padding: 6px 0 6px 22px; position: relative; font-size: clamp(12px, 1.4vw, 15px); color: #1d1d1f; line-height: 1.5;"><span style="position: absolute; left: 0; color: #007aff; font-weight: 700;">›</span><code style="font-family:'SF Mono',monospace; color:#007aff;">break</code> - sikldan chiqish, <code style="font-family:'SF Mono',monospace; color:#007aff;">continue</code> - iteratsiyani oʻtkazib yuborish</li>
+                            <li style="padding: 6px 0 6px 22px; position: relative; font-size: clamp(12px, 1.4vw, 15px); color: #1d1d1f; line-height: 1.5;"><span style="position: absolute; left: 0; color: #007aff; font-weight: 700;">›</span>indekslar 0 dan, <code style="font-family:'SF Mono',monospace; color:#007aff;">-1</code> - oxirgi element</li>
+                            <li style="padding: 6px 0 6px 22px; position: relative; font-size: clamp(12px, 1.4vw, 15px); color: #1d1d1f; line-height: 1.5;"><span style="position: absolute; left: 0; color: #007aff; font-weight: 700;">›</span><code style="font-family:'SF Mono',monospace; color:#007aff;">[start:stop:step]</code> - roʻyxat kesmasi</li>
+                            <li style="padding: 6px 0 6px 22px; position: relative; font-size: clamp(12px, 1.4vw, 15px); color: #1d1d1f; line-height: 1.5;"><span style="position: absolute; left: 0; color: #007aff; font-weight: 700;">›</span>list oʻzgaruvchan, tuple - yoʻq</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5: Lesson 3 - collections in one slide -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">4-dars · 1-qism</p>
+                <h2>Kolleksiyalar - maslahat varaqasi</h2>
+                <table class="type-table" style="max-width: 980px;">
+                    <thead>
+                        <tr>
+                            <th>Tur</th>
+                            <th>Literal</th>
+                            <th>Oʻzgaruvchan</th>
+                            <th>Qachon olish</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td class="ttype">list</td><td class="tex">[1, 2, 3]</td><td class="tex">ha</td><td class="tex">oʻsuvchi ketma-ketlik</td></tr>
+                        <tr><td class="ttype">tuple</td><td class="tex">(1, 2, 3)</td><td class="tex">yoʻq</td><td class="tex">qatʼiy toʻplam (x, y)</td></tr>
+                        <tr><td class="ttype">set</td><td class="tex">{1, 2, 3}</td><td class="tex">ha</td><td class="tex">noyob · tez <code>in</code> O(1)</td></tr>
+                        <tr><td class="ttype">dict</td><td class="tex">{"k": 1}</td><td class="tex">ha</td><td class="tex">nom boʻyicha qidiruv O(1)</td></tr>
+                    </tbody>
+                </table>
+                <div class="code-output" style="max-width: 980px; margin-top: 18px;">
+                    <div class="code-block" style="margin-top: 0; font-size: clamp(11px, 1.3vw, 14px); padding: 14px;"><span class="cn">u</span> = {<span class="cs">"name"</span>: <span class="cs">"Anya"</span>, <span class="cs">"age"</span>: <span class="cm">30</span>}
+<span class="cn">u</span>[<span class="cs">"name"</span>]; <span class="cn">u</span>.get(<span class="cs">"city"</span>, <span class="cs">"-"</span>)  <span class="co"># kirish + default</span>
+<span class="ck">for</span> <span class="cn">k</span>, <span class="cn">v</span> <span class="ck">in</span> <span class="cn">u</span>.items(): <span class="cf">print</span>(<span class="cn">k</span>, <span class="cn">v</span>)
+
+<span class="cn">a</span>, <span class="cn">b</span> = {<span class="cm">1</span>,<span class="cm">2</span>,<span class="cm">3</span>}, {<span class="cm">2</span>,<span class="cm">3</span>,<span class="cm">4</span>}
+<span class="cn">a</span> | <span class="cn">b</span>;  <span class="cn">a</span> &amp; <span class="cn">b</span>;  <span class="cn">a</span> - <span class="cn">b</span>           <span class="co"># birlashma, kesishma, ayirma</span></div>
+                    <div style="background: rgba(0,122,255,0.04); border: 1px solid rgba(0,122,255,0.18); border-radius: 12px; padding: 18px 22px; text-align: left;">
+                        <div style="font-size: clamp(11px, 1.2vw, 13px); font-weight: 600; color: #007aff; text-transform: uppercase; letter-spacing: 0.14em; margin-bottom: 12px;">Kolleksiya tanlash</div>
+                        <ul style="list-style: none; padding: 0; margin: 0;">
+                            <li style="padding: 6px 0 6px 22px; position: relative; font-size: clamp(12px, 1.4vw, 15px); color: #1d1d1f; line-height: 1.5;"><span style="position: absolute; left: 0; color: #007aff; font-weight: 700;">›</span>«nom boʻyicha qidiraman» - <code style="font-family:'SF Mono',monospace; color:#007aff;">dict</code></li>
+                            <li style="padding: 6px 0 6px 22px; position: relative; font-size: clamp(12px, 1.4vw, 15px); color: #1d1d1f; line-height: 1.5;"><span style="position: absolute; left: 0; color: #007aff; font-weight: 700;">›</span>«noyob qiymatlar» - <code style="font-family:'SF Mono',monospace; color:#007aff;">set</code></li>
+                            <li style="padding: 6px 0 6px 22px; position: relative; font-size: clamp(12px, 1.4vw, 15px); color: #1d1d1f; line-height: 1.5;"><span style="position: absolute; left: 0; color: #007aff; font-weight: 700;">›</span>«oʻzgarmaydi» - <code style="font-family:'SF Mono',monospace; color:#007aff;">tuple</code></li>
+                            <li style="padding: 6px 0 6px 22px; position: relative; font-size: clamp(12px, 1.4vw, 15px); color: #1d1d1f; line-height: 1.5;"><span style="position: absolute; left: 0; color: #007aff; font-weight: 700;">›</span>«oʻzgaradi, tartibda» - <code style="font-family:'SF Mono',monospace; color:#007aff;">list</code></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 6: Lesson 3 - functions in one slide -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">4-dars · 2-qism</p>
+                <h2>Funksiyalar: def, *args, lambda</h2>
+                <div class="code-output" style="max-width: 980px;">
+                    <div class="code-block" style="margin-top: 0; font-size: clamp(11px, 1.3vw, 14px); padding: 16px;"><span class="co"># default li oddiy funksiya</span>
+<span class="ck">def</span> <span class="cf">price_tax</span>(<span class="cn">p</span>, <span class="cn">tax</span>=<span class="cm">0.12</span>):
+    <span class="ck">return</span> <span class="cn">p</span> * (<span class="cm">1</span> + <span class="cn">tax</span>)
+
+<span class="co"># *args - tuple, **kwargs - dict</span>
+<span class="ck">def</span> <span class="cf">log</span>(<span class="cn">level</span>, *<span class="cn">parts</span>, **<span class="cn">meta</span>):
+    <span class="cf">print</span>(<span class="cn">level</span>, <span class="cn">parts</span>, <span class="cn">meta</span>)
+
+<span class="cf">log</span>(<span class="cs">"INFO"</span>, <span class="cs">"user"</span>, <span class="cs">"in"</span>, <span class="cn">id</span>=<span class="cm">42</span>)
+
+<span class="co"># lambda + sorted</span>
+<span class="cn">people</span> = [(<span class="cs">"Anya"</span>, <span class="cm">30</span>), (<span class="cs">"Boris"</span>, <span class="cm">25</span>)]
+<span class="cf">sorted</span>(<span class="cn">people</span>, <span class="cn">key</span>=<span class="ck">lambda</span> <span class="cn">p</span>: <span class="cn">p</span>[<span class="cm">1</span>])</div>
+                    <div style="background: rgba(0,122,255,0.04); border: 1px solid rgba(0,122,255,0.18); border-radius: 12px; padding: 18px 22px; text-align: left;">
+                        <div style="font-size: clamp(11px, 1.2vw, 13px); font-weight: 600; color: #007aff; text-transform: uppercase; letter-spacing: 0.14em; margin-bottom: 12px;">Eslab qoling</div>
+                        <ul style="list-style: none; padding: 0; margin: 0;">
+                            <li style="padding: 6px 0 6px 22px; position: relative; font-size: clamp(12px, 1.4vw, 15px); color: #1d1d1f; line-height: 1.5;"><span style="position: absolute; left: 0; color: #007aff; font-weight: 700;">›</span><code style="font-family:'SF Mono',monospace; color:#007aff;">return</code> funksiyani tugatadi</li>
+                            <li style="padding: 6px 0 6px 22px; position: relative; font-size: clamp(12px, 1.4vw, 15px); color: #1d1d1f; line-height: 1.5;"><span style="position: absolute; left: 0; color: #007aff; font-weight: 700;">›</span>default faqat immutable turlar uchun <span style="color: #86868b;">(EMAS <code style="font-family:'SF Mono',monospace;">[]</code>, EMAS <code style="font-family:'SF Mono',monospace;">{}</code>)</span></li>
+                            <li style="padding: 6px 0 6px 22px; position: relative; font-size: clamp(12px, 1.4vw, 15px); color: #1d1d1f; line-height: 1.5;"><span style="position: absolute; left: 0; color: #007aff; font-weight: 700;">›</span><code style="font-family:'SF Mono',monospace; color:#007aff;">*args</code> - pozitsion tuple, <code style="font-family:'SF Mono',monospace; color:#007aff;">**kwargs</code> - nomli dict</li>
+                            <li style="padding: 6px 0 6px 22px; position: relative; font-size: clamp(12px, 1.4vw, 15px); color: #1d1d1f; line-height: 1.5;"><span style="position: absolute; left: 0; color: #007aff; font-weight: 700;">›</span><code style="font-family:'SF Mono',monospace; color:#007aff;">lambda x: expr</code> - bitta qator, bitta ifoda</li>
+                            <li style="padding: 6px 0 6px 22px; position: relative; font-size: clamp(12px, 1.4vw, 15px); color: #1d1d1f; line-height: 1.5;"><span style="position: absolute; left: 0; color: #007aff; font-weight: 700;">›</span>koʻrinish sohasi - <code style="font-family:'SF Mono',monospace; color:#007aff;">LEGB</code> qoidasi</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 7: Combined example -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Hammasi birga</p>
+                <h2>Yakuniy misol</h2>
+                <p class="subtitle">Bitta funksiya, uch darsning hammasi: turlar, sikl, dict, list, *args, default, lambda.</p>
+                <div class="code-output" style="max-width: 980px;">
+                    <div class="code-block" style="margin-top: 0; font-size: clamp(11px, 1.3vw, 14px); padding: 16px;"><span class="ck">def</span> <span class="cf">analyze</span>(*<span class="cn">scores</span>, <span class="cn">passing</span>=<span class="cm">60</span>):
+    <span class="cn">passed</span> = [<span class="cn">s</span> <span class="ck">for</span> <span class="cn">s</span> <span class="ck">in</span> <span class="cn">scores</span> <span class="ck">if</span> <span class="cn">s</span> &gt;= <span class="cn">passing</span>]
+    <span class="ck">return</span> {
+        <span class="cs">"total"</span>:  <span class="cf">len</span>(<span class="cn">scores</span>),
+        <span class="cs">"passed"</span>: <span class="cf">len</span>(<span class="cn">passed</span>),
+        <span class="cs">"avg"</span>:    <span class="cf">sum</span>(<span class="cn">passed</span>) / <span class="cf">len</span>(<span class="cn">passed</span>) <span class="ck">if</span> <span class="cn">passed</span> <span class="ck">else</span> <span class="cm">0</span>,
+        <span class="cs">"top"</span>:    <span class="cf">max</span>(<span class="cn">scores</span>, <span class="cn">default</span>=<span class="cm">0</span>),
+    }
+
+<span class="cf">print</span>(<span class="cf">analyze</span>(<span class="cm">85</span>, <span class="cm">42</span>, <span class="cm">73</span>, <span class="cm">91</span>, <span class="cm">55</span>))</div>
+                    <div class="term reveal-output" data-prompt="▶ natija uchun → bosing" style="font-size: clamp(11px, 1.3vw, 14px); padding: 16px;"><span class="out">{'total': 5,
+ 'passed': 3,
+ 'avg': 83.0,
+ 'top': 91}</span></div>
+                </div>
+                <p class="body-text reveal-output" style="margin-top: 18px; font-size: clamp(13px, 1.5vw, 16px); color: #86868b;">
+                    Agar bu kod tushunarli boʻlsa - <span class="highlight">hammasi joyida</span>. Agar yoʻq boʻlsa - amaliyotga oʻtamiz.
+                </p>
+            </div>
+        </div>
+
+        <!-- 8: Practice intro + notebook -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Amaliyot</p>
+                <h1>Jupyterda 15 ta vazifa</h1>
+                <div style="display: flex; align-items: center; gap: 18px; padding: 20px 28px; background: rgba(0,0,0,0.025); border: 1px solid rgba(0,0,0,0.06); border-radius: 14px; margin-top: 12px; max-width: 720px;">
+                    <div style="width: 56px; height: 56px; border-radius: 12px; background: rgba(243, 118, 38, 0.12); color: #f37626; display: flex; align-items: center; justify-content: center; font-family: 'SF Mono', monospace; font-size: 13px; font-weight: 700; flex-shrink: 0;">.ipynb</div>
+                    <div style="text-align: left;">
+                        <div style="font-size: clamp(15px, 1.7vw, 19px); font-weight: 600; color: #1d1d1f;">lecture04_tasks.ipynb</div>
+                        <div style="font-size: clamp(12px, 1.4vw, 15px); color: #86868b; margin-top: 2px;">5 boʻlim · 15 ta vazifa</div>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 10px; margin-top: 22px; flex-wrap: wrap; justify-content: center;">
+                    <a href="lecture04_tasks_ru.ipynb" download style="display: inline-flex; align-items: center; gap: 8px; padding: 11px 20px; background: #fff; color: #007aff; border: 1.5px solid #007aff; border-radius: 50px; font-size: clamp(13px, 1.5vw, 16px); font-weight: 600; text-decoration: none;">
+                        <span style="font-size: 1.2em;">↓</span> Skachat RU
+                    </a>
+                    <a href="lecture04_tasks_uz.ipynb" download style="display: inline-flex; align-items: center; gap: 8px; padding: 11px 20px; background: #007aff; color: #fff; border-radius: 50px; font-size: clamp(13px, 1.5vw, 16px); font-weight: 600; text-decoration: none; box-shadow: 0 6px 20px rgba(0,122,255,0.25);">
+                        <span style="font-size: 1.2em;">↓</span> Yuklab olish UZ
+                    </a>
+                    <a href="lecture04_tasks_en.ipynb" download style="display: inline-flex; align-items: center; gap: 8px; padding: 11px 20px; background: #fff; color: #007aff; border: 1.5px solid #007aff; border-radius: 50px; font-size: clamp(13px, 1.5vw, 16px); font-weight: 600; text-decoration: none;">
+                        <span style="font-size: 1.2em;">↓</span> Download EN
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 9: Summary -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Amaliyotdan keyin</p>
+                <h2>Siz qila olasiz</h2>
+                <ul class="checklist" style="max-width: 800px; columns: 2; column-gap: 40px;">
+                    <li>Turlar bilan ishonchli ishlash</li>
+                    <li>Maslahat varaqasiz if/elif/else yozish</li>
+                    <li>Kesmalar va range ni tushunish</li>
+                    <li>list/tuple/set/dict ni tanlash</li>
+                    <li>*args/**kwargs li funksiyalar yozish</li>
+                    <li>lambda va sorted/filter/map ni qoʻllash</li>
+                </ul>
+                <div class="quote-card" style="margin-top: 28px;">
+                    <div class="label">Keyingi qadam</div>
+                    <p>4-dars - OOP: klasslar, metodlar, vorislik. Maʼlumot va xulq-atvorni birlashtiramiz.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 10: Q&A -->
+        <div class="slide">
+            <div class="slide-content">
+                <h1 style="font-size: clamp(80px, 16vw, 220px);">Savollar?</h1>
+                <p class="subtitle" style="margin-top: 32px;">Telegram: <span class="highlight">@gokalqurt</span></p>
+            </div>
+        </div>
+
+
+    </div>
+
+    <div class="lesson-tag">Python · Takrorlash · qisqa</div>
+    <div class="lang-switcher">
+        <a href="index.html">RU</a>
+        <a href="index-uz.html" class="active">UZ</a>
+        <a href="index-en.html">EN</a>
+    </div>
+    <div class="slide-indicator">
+        <span id="current-slide">1</span> / <span id="total-slides">10</span>
+    </div>
+    <div class="nav-hint">→ yoki Space - keyingi<br/>← - oldingi</div>
+
+    <script>
+        // === Interactive widgets ===
+        function runTrace(id) {
+            const rows = document.querySelectorAll('#' + id + ' .trace-row.manual');
+            rows.forEach((row, i) => {
+                row.classList.remove('shown');
+                void row.offsetHeight;
+                setTimeout(() => row.classList.add('shown'), 100 + i * 450);
+            });
+        }
+        function resetTrace(id) {
+            document.querySelectorAll('#' + id + ' .trace-row.manual').forEach(r => r.classList.remove('shown'));
+        }
+
+        function updateArgs(n) {
+            n = parseInt(n);
+            document.getElementById('args-value').textContent = n;
+            const call = document.getElementById('args-call');
+            const packed = document.getElementById('args-packed');
+            const callCode = document.getElementById('args-call-code');
+            const output = document.getElementById('args-output');
+            call.innerHTML = '';
+            const nums = [];
+            for (let i = 1; i <= n; i++) {
+                const span = document.createElement('span');
+                span.className = 'item';
+                span.textContent = i;
+                call.appendChild(span);
+                nums.push(i);
+            }
+            if (n === 0) call.innerHTML = '<span class="item" style="opacity: 0.4;">-</span>';
+            packed.textContent = '(' + nums.join(', ') + (n === 1 ? ',' : '') + ')';
+            const sum = nums.reduce((a, b) => a + b, 0);
+            if (callCode) callCode.textContent = nums.join(', ');
+            if (output) output.textContent = sum;
+        }
+
+        const kwargsPool = [
+            ['name', '"Anya"'],
+            ['age', '30'],
+            ['city', '"Toshkent"'],
+            ['role', '"admin"'],
+            ['active', 'True'],
+        ];
+        function updateKwargs(n) {
+            n = parseInt(n);
+            document.getElementById('kwargs-value').textContent = n;
+            const call = document.getElementById('kwargs-call');
+            const packed = document.getElementById('kwargs-packed');
+            const callCode = document.getElementById('kwargs-call-code');
+            const output = document.getElementById('kwargs-output');
+            call.innerHTML = '';
+            const pairs = [];
+            const callParts = [];
+            const outLines = [];
+            for (let i = 0; i < n; i++) {
+                const [k, v] = kwargsPool[i];
+                const span = document.createElement('span');
+                span.className = 'item';
+                span.textContent = k + '=' + v;
+                call.appendChild(span);
+                pairs.push('"' + k + '": ' + v);
+                callParts.push(k + '=' + v);
+                const valStripped = v.replace(/^"|"$/g, '');
+                outLines.push(k + ': ' + valStripped);
+            }
+            if (n === 0) call.innerHTML = '<span class="item" style="opacity: 0.4;">-</span>';
+            packed.textContent = '{' + pairs.join(', ') + '}';
+            if (callCode) callCode.textContent = callParts.join(', ');
+            if (output) output.textContent = n === 0 ? '(natija yoʻq)' : outLines.join('\n');
+        }
+
+        async function lookupName(name, where) {
+            const status = document.getElementById('scope-status');
+            const gLine = document.getElementById('g-line');
+            const lBox = document.getElementById('l-box');
+            gLine.classList.remove('found-here');
+            lBox.classList.remove('scanning', 'found-here', 'error-here');
+            status.className = 'scope-status';
+            status.textContent = '"' + name + '" nomini qidiryapman...';
+
+            await sleep(400);
+
+            if (where === 'inside') {
+                lBox.classList.add('scanning');
+                status.textContent = 'L: demo() local-scope ichida qidiryapman';
+                await sleep(800);
+
+                if (name === 'y') {
+                    lBox.classList.remove('scanning');
+                    lBox.classList.add('found-here');
+                    status.className = 'scope-status success';
+                    status.textContent = '✓ Local da topildi: y = 5';
+                } else if (name === 'x') {
+                    lBox.classList.remove('scanning');
+                    status.textContent = 'L: topmadim - Global ga koʻtariladi';
+                    await sleep(700);
+                    gLine.classList.add('found-here');
+                    status.className = 'scope-status success';
+                    status.textContent = '✓ Global da topildi: x = 100';
+                }
+            } else {
+                status.textContent = 'G: global-scope ichida qidiryapman';
+                await sleep(700);
+                if (name === 'y') {
+                    lBox.classList.add('error-here');
+                    status.className = 'scope-status error';
+                    status.textContent = '✗ NameError: name "y" is not defined - y faqat demo() ichida yashaydi';
+                }
+            }
+        }
+        function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+        function sortPeople(key, reverse) {
+            const container = document.getElementById('sort-demo');
+            const cards = Array.from(container.children);
+            const oldRects = new Map();
+            cards.forEach(c => oldRects.set(c, c.getBoundingClientRect()));
+            cards.sort((a, b) => {
+                if (key === 'original') return parseInt(a.querySelector('.num').textContent) - parseInt(b.querySelector('.num').textContent);
+                if (key === 'age') return parseInt(a.dataset.age) - parseInt(b.dataset.age);
+                if (key === 'name') return a.dataset.name.localeCompare(b.dataset.name);
+                return 0;
+            });
+            if (reverse) cards.reverse();
+            cards.forEach(c => container.appendChild(c));
+            cards.forEach(c => {
+                const newRect = c.getBoundingClientRect();
+                const oldRect = oldRects.get(c);
+                const dy = oldRect.top - newRect.top;
+                if (dy !== 0) {
+                    c.style.transition = 'none';
+                    c.style.transform = 'translateY(' + dy + 'px)';
+                    requestAnimationFrame(() => {
+                        c.style.transition = '';
+                        c.style.transform = '';
+                    });
+                }
+            });
+
+            const codeEl = document.getElementById('sort-code');
+            const outEl = document.getElementById('sort-output');
+            if (codeEl && outEl) {
+                let codeHTML = '';
+                if (key === 'original') {
+                    codeHTML = '<span class="cn">people</span>  <span class="co"># asl</span>';
+                } else if (key === 'age' && !reverse) {
+                    codeHTML = '<span class="cf">sorted</span>(<span class="cn">people</span>, <span class="cn">key</span>=<span class="ck">lambda</span> <span class="cn">p</span>: <span class="cn">p</span>[<span class="cm">1</span>])';
+                } else if (key === 'age' && reverse) {
+                    codeHTML = '<span class="cf">sorted</span>(<span class="cn">people</span>, <span class="cn">key</span>=<span class="ck">lambda</span> <span class="cn">p</span>: <span class="cn">p</span>[<span class="cm">1</span>], <span class="cn">reverse</span>=<span class="cm">True</span>)';
+                } else if (key === 'name') {
+                    codeHTML = '<span class="cf">sorted</span>(<span class="cn">people</span>, <span class="cn">key</span>=<span class="ck">lambda</span> <span class="cn">p</span>: <span class="cn">p</span>[<span class="cm">0</span>])';
+                }
+                codeEl.innerHTML = codeHTML;
+
+                const lines = ['['];
+                cards.forEach(c => {
+                    lines.push("    ('" + c.dataset.name + "', " + c.dataset.age + "),");
+                });
+                lines.push(']');
+                outEl.textContent = lines.join('\n');
+            }
+        }
+
+        let pyodideInstance = null;
+        let pyodideLoading = false;
+        const initialPyCode = document.getElementById('py-code') ? document.getElementById('py-code').value : '';
+
+        function setPyStatus(state, msg) {
+            const s = document.getElementById('py-status');
+            const t = document.getElementById('py-status-text');
+            if (!s) return;
+            s.className = 'playground-status' + (state ? ' ' + state : '');
+            t.textContent = msg;
+        }
+
+        async function loadPyodideOnDemand() {
+            if (pyodideInstance) return pyodideInstance;
+            if (pyodideLoading) {
+                while (!pyodideInstance) await sleep(100);
+                return pyodideInstance;
+            }
+            pyodideLoading = true;
+            setPyStatus('loading', 'Pyodide yuklanmoqda (~10 MB, faqat bir marta)...');
+            await new Promise((resolve, reject) => {
+                if (window.loadPyodide) return resolve();
+                const s = document.createElement('script');
+                s.src = 'https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js';
+                s.onload = resolve;
+                s.onerror = reject;
+                document.head.appendChild(s);
+            });
+            pyodideInstance = await window.loadPyodide({
+                indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.26.4/full/'
+            });
+            setPyStatus('ready', 'Pyodide tayyor');
+            pyodideLoading = false;
+            return pyodideInstance;
+        }
+
+        async function runPyCode() {
+            const out = document.getElementById('py-output');
+            const code = document.getElementById('py-code').value;
+            const btn = document.getElementById('py-run');
+            btn.disabled = true;
+            out.classList.remove('empty');
+            try {
+                const py = await loadPyodideOnDemand();
+                py.runPython(`
+import sys, io
+sys.stdout = io.StringIO()
+sys.stderr = io.StringIO()
+                `);
+                let ret;
+                try {
+                    ret = await py.runPythonAsync(code);
+                } catch (err) {
+                    out.innerHTML = '<span class="err">' + escapeHtml(err.message) + '</span>';
+                    btn.disabled = false;
+                    return;
+                }
+                const stdout = py.runPython('sys.stdout.getvalue()');
+                const stderr = py.runPython('sys.stderr.getvalue()');
+                let html = '';
+                if (stdout) html += escapeHtml(stdout);
+                if (stderr) html += '<span class="err">' + escapeHtml(stderr) + '</span>';
+                if (ret !== undefined && ret !== null) html += '<span class="ok">' + escapeHtml(String(ret)) + '</span>';
+                if (!html) html = '<span style="opacity: 0.6;">// (no output)</span>';
+                out.innerHTML = html;
+            } catch (e) {
+                out.innerHTML = '<span class="err">Xato: ' + escapeHtml(e.message) + '</span>';
+                setPyStatus('error', 'Yuklash xatosi');
+            }
+            btn.disabled = false;
+        }
+        function resetPyCode() {
+            const ta = document.getElementById('py-code');
+            if (ta) ta.value = initialPyCode;
+            const out = document.getElementById('py-output');
+            if (out) {
+                out.classList.add('empty');
+                out.innerHTML = '// Natija shu yerda paydo boʻladi';
+            }
+        }
+        function escapeHtml(s) {
+            return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+        }
+
+        // Dict access try-it
+        const userDict = { name: '"Alisa"', age: '30' };
+        function tryDict(btn) {
+            document.querySelectorAll('.expr-chip').forEach(c => c.classList.remove('active'));
+            btn.classList.add('active');
+            const out = document.getElementById('dict-output');
+            const expr = btn.dataset.expr;
+            const key = btn.dataset.key;
+            out.classList.remove('error', 'empty');
+            if (expr === 'bracket') {
+                if (key in userDict) {
+                    out.textContent = userDict[key];
+                } else {
+                    out.classList.add('error');
+                    out.textContent = "KeyError: '" + key + "'";
+                }
+            } else if (expr === 'get') {
+                out.textContent = key in userDict ? userDict[key] : 'None';
+            } else if (expr === 'getDefault') {
+                out.textContent = key in userDict ? userDict[key] : '"' + btn.dataset.default + '"';
+            }
+        }
+
+        // Default args try-it
+        function tryDefaults() {
+            const name = document.getElementById('kw-name').value;
+            const greeting = document.getElementById('kw-greeting').value || 'Salom';
+            const out = document.getElementById('kw-output');
+            if (!name) {
+                out.classList.add('empty');
+                out.textContent = '(ismni kiriting)';
+            } else {
+                out.classList.remove('empty');
+                out.textContent = greeting + ', ' + name + '!';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (document.getElementById('args-slider')) updateArgs(3);
+            if (document.getElementById('kwargs-slider')) updateKwargs(3);
+        });
+
+        // === Slide nav ===
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+        document.getElementById('total-slides').textContent = totalSlides;
+
+        function showSlide(n) {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (n + totalSlides) % totalSlides;
+            slides[currentSlide].classList.add('active');
+            document.getElementById('current-slide').textContent = currentSlide + 1;
+
+            const slideContent = slides[currentSlide].querySelector('.slide-content');
+            slideContent.style.animation = 'none';
+            void slideContent.offsetHeight;
+            slideContent.style.animation = null;
+
+            const animated = slides[currentSlide].querySelectorAll('.card, .comparison-item, .option-card, .trace-row');
+            animated.forEach(el => {
+                el.style.animation = 'none';
+                void el.offsetHeight;
+                el.style.animation = null;
+            });
+
+            const slide = slides[currentSlide];
+            if (slide.querySelector('#args-slider')) updateArgs(document.getElementById('args-slider').value);
+            if (slide.querySelector('#kwargs-slider')) updateKwargs(document.getElementById('kwargs-slider').value);
+            if (slide.querySelector('#scope-status')) {
+                const st = document.getElementById('scope-status');
+                st.className = 'scope-status';
+                st.textContent = 'Istalgan oʻzgaruvchi ustiga bosing - qidiruv yoʻlini koʻrasiz';
+                document.getElementById('g-line').classList.remove('found-here');
+                document.getElementById('l-box').classList.remove('scanning', 'found-here', 'error-here');
+            }
+            if (slide.querySelector('#dict-output')) {
+                const d = document.getElementById('dict-output');
+                d.className = 'tryout-output empty';
+                d.textContent = '// istalgan ifoda ustiga bosing';
+                slide.querySelectorAll('.expr-chip').forEach(c => c.classList.remove('active'));
+            }
+            if (slide.querySelector('#kw-output')) tryDefaults();
+            if (slide.querySelector('#sort-demo')) sortPeople('original', false);
+            slide.querySelectorAll('.reveal-output.revealed').forEach(el => el.classList.remove('revealed'));
+        }
+
+        function nextSlide() {
+            const slide = slides[currentSlide];
+            const nextReveal = slide.querySelector('.reveal-output:not(.revealed)');
+            if (nextReveal) {
+                nextReveal.classList.add('revealed');
+                return;
+            }
+            showSlide(currentSlide + 1);
+        }
+        function prevSlide() {
+            const slide = slides[currentSlide];
+            const revealedEls = slide.querySelectorAll('.reveal-output.revealed');
+            if (revealedEls.length > 0) {
+                revealedEls[revealedEls.length - 1].classList.remove('revealed');
+                return;
+            }
+            showSlide(currentSlide - 1);
+        }
+
+        document.addEventListener('keydown', (e) => {
+            const tag = (e.target.tagName || '').toLowerCase();
+            if (tag === 'textarea' || tag === 'input') return;
+            if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); nextSlide(); }
+            else if (e.key === 'ArrowLeft') { e.preventDefault(); prevSlide(); }
+        });
+
+        let touchStartX = 0;
+        document.addEventListener('touchstart', (e) => { touchStartX = e.changedTouches[0].screenX; });
+        document.addEventListener('touchend', (e) => {
+            const dx = e.changedTouches[0].screenX - touchStartX;
+            if (dx < -50) nextSlide();
+            else if (dx > 50) prevSlide();
+        });
+    </script>
+</body>
+</html>

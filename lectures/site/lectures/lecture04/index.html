@@ -1,0 +1,3202 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Функции и коллекции - Урок 4</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700;800&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+            background: #FFFFFF;
+            color: #1d1d1f;
+            line-height: 1.1;
+            overflow: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .presentation { width: 100vw; height: 100vh; position: relative; }
+
+        .slide {
+            width: 100%; height: 100%;
+            display: none;
+            align-items: center; justify-content: center;
+            position: absolute; top: 0; left: 0;
+            padding: clamp(40px, 6vh, 80px) clamp(40px, 6vw, 80px);
+            text-align: center;
+        }
+
+        .slide.active { display: flex; flex-direction: column; }
+
+        .slide-content {
+            max-width: 1200px; width: 100%; margin: 0 auto;
+            opacity: 0; transform: translateY(20px);
+            animation: fadeInUp 0.8s ease-out 0.2s forwards;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+        }
+
+        @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
+
+        h1 {
+            font-size: clamp(40px, 6.5vw, 96px);
+            font-weight: 700;
+            letter-spacing: -0.025em;
+            line-height: 0.95;
+            margin-bottom: clamp(16px, 2.5vh, 32px);
+            color: #1d1d1f;
+        }
+
+        h2 {
+            font-size: clamp(28px, 4vw, 56px);
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            line-height: 1.05;
+            margin-bottom: clamp(16px, 2vh, 28px);
+            color: #1d1d1f;
+        }
+
+        .subtitle {
+            font-size: clamp(18px, 2.2vw, 28px);
+            font-weight: 400;
+            color: #86868b;
+            margin-bottom: clamp(24px, 4vh, 48px);
+            line-height: 1.3;
+            max-width: 900px;
+        }
+
+        .eyebrow {
+            font-size: clamp(13px, 1.2vw, 16px);
+            font-weight: 600;
+            color: #007aff;
+            text-transform: uppercase;
+            letter-spacing: 0.18em;
+            margin-bottom: 18px;
+        }
+
+        .body-text {
+            font-size: clamp(15px, 1.8vw, 22px);
+            font-weight: 400;
+            color: #515154;
+            line-height: 1.45;
+            max-width: 820px;
+            margin: 0 auto;
+        }
+
+        .highlight { color: #007aff; font-weight: 500; }
+        .accent-green { color: #34c759; font-weight: 500; }
+        .accent-red { color: #ff3b30; font-weight: 500; }
+        .accent-purple { color: #af52de; font-weight: 500; }
+
+        /* Cards */
+        .cards-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: clamp(16px, 2.5vw, 28px);
+            margin-top: clamp(24px, 4vh, 40px);
+            max-width: 1100px; width: 100%;
+        }
+
+        .card {
+            background: rgba(0, 0, 0, 0.025);
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            border-radius: 14px;
+            padding: clamp(20px, 2.5vw, 32px);
+            text-align: left;
+            opacity: 0; transform: translateY(24px);
+            animation: cardSlideUp 0.55s ease-out forwards;
+            transition: all 0.3s ease;
+        }
+        .card:nth-child(1) { animation-delay: 0.4s; }
+        .card:nth-child(2) { animation-delay: 0.5s; }
+        .card:nth-child(3) { animation-delay: 0.6s; }
+        .card:nth-child(4) { animation-delay: 0.7s; }
+        .card:nth-child(5) { animation-delay: 0.8s; }
+        .card:nth-child(6) { animation-delay: 0.9s; }
+
+        @keyframes cardSlideUp { to { opacity: 1; transform: translateY(0); } }
+
+        .card .num {
+            font-size: clamp(28px, 3vw, 36px);
+            font-weight: 700;
+            color: #007aff;
+            line-height: 1;
+            margin-bottom: 12px;
+            letter-spacing: -0.02em;
+        }
+        .card h3 {
+            font-size: clamp(17px, 2vw, 22px);
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #1d1d1f;
+            letter-spacing: -0.01em;
+        }
+        .card p {
+            font-size: clamp(13px, 1.55vw, 16px);
+            color: #6e6e73;
+            line-height: 1.45;
+        }
+
+        /* Comparison */
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: clamp(24px, 4vw, 56px);
+            max-width: 1100px;
+            width: 100%;
+            margin-top: clamp(24px, 4vh, 40px);
+            align-items: stretch;
+        }
+        .comparison-item {
+            text-align: left;
+            opacity: 0; transform: scale(0.96);
+            animation: scaleIn 0.6s ease-out forwards;
+            padding: clamp(24px, 3vw, 36px);
+            border-radius: 16px;
+            background: rgba(0,0,0,0.02);
+            border: 1px solid rgba(0,0,0,0.06);
+        }
+        .comparison-item:nth-child(1) { animation-delay: 0.4s; }
+        .comparison-item:nth-child(2) { animation-delay: 0.55s; }
+        @keyframes scaleIn { to { opacity: 1; transform: scale(1); } }
+        .comparison-item .label {
+            font-size: clamp(12px, 1.1vw, 14px);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.16em;
+            margin-bottom: 12px;
+        }
+        .comparison-item.old .label { color: #ff3b30; }
+        .comparison-item.new .label { color: #34c759; }
+        .comparison-item h3 {
+            font-size: clamp(20px, 2.6vw, 30px);
+            font-weight: 600;
+            margin-bottom: 14px;
+            color: #1d1d1f;
+            line-height: 1.15;
+        }
+        .comparison-item p, .comparison-item li {
+            font-size: clamp(14px, 1.7vw, 18px);
+            color: #515154;
+            line-height: 1.45;
+        }
+
+        /* Quote card */
+        .quote-card {
+            margin-top: clamp(24px, 4vh, 40px);
+            padding: clamp(20px, 2.5vw, 28px) clamp(24px, 3vw, 36px);
+            border-left: 3px solid #007aff;
+            background: rgba(0, 122, 255, 0.04);
+            border-radius: 8px;
+            text-align: left;
+            max-width: 820px;
+        }
+        .quote-card.warning {
+            border-left-color: #ff3b30;
+            background: rgba(255, 59, 48, 0.04);
+        }
+        .quote-card.success {
+            border-left-color: #34c759;
+            background: rgba(52, 199, 89, 0.05);
+        }
+        .quote-card .label {
+            font-size: 12px; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 0.16em;
+            color: #007aff; margin-bottom: 8px;
+        }
+        .quote-card.warning .label { color: #ff3b30; }
+        .quote-card.success .label { color: #34c759; }
+        .quote-card p {
+            font-size: clamp(15px, 1.8vw, 20px);
+            color: #1d1d1f; line-height: 1.4; font-weight: 500;
+        }
+
+        /* Code block */
+        .code-block {
+            background: #1d1d1f;
+            color: #f5f5f7;
+            border-radius: 12px;
+            padding: clamp(18px, 2vw, 28px);
+            font-family: 'SF Mono', 'Menlo', 'Monaco', 'Consolas', monospace;
+            font-size: clamp(13px, 1.55vw, 17px);
+            line-height: 1.7;
+            text-align: left;
+            margin-top: 18px;
+            max-width: 860px;
+            width: 100%;
+            white-space: pre;
+            overflow-x: auto;
+        }
+        .code-block .ck { color: #ff79c6; }
+        .code-block .cs { color: #50fa7b; }
+        .code-block .cn { color: #f1fa8c; }
+        .code-block .co { color: #6272a4; font-style: italic; }
+        .code-block .cf { color: #8be9fd; }
+        .code-block .cm { color: #bd93f9; }
+        .code-block .ce { color: #ff5555; }
+
+        /* Code-output split */
+        .code-output {
+            display: grid;
+            grid-template-columns: 1.1fr 1fr;
+            gap: 16px;
+            margin-top: 24px;
+            width: 100%;
+            max-width: 1050px;
+        }
+        .code-output .term {
+            background: #1d1d1f;
+            color: #f5f5f7;
+            border-radius: 12px;
+            padding: 20px;
+            font-family: 'SF Mono', 'Menlo', monospace;
+            font-size: clamp(12px, 1.4vw, 16px);
+            line-height: 1.7;
+            text-align: left;
+            white-space: pre;
+            overflow-x: auto;
+        }
+        .term .prompt { color: #50fa7b; }
+        .term .out { color: #f8f8f2; opacity: 0.85; }
+        .term .err { color: #ff5555; }
+
+        /* Topic grid */
+        .topic-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            max-width: 880px;
+            margin-top: 28px;
+        }
+        .topic-cell {
+            padding: 16px 20px;
+            background: rgba(0,0,0,0.025);
+            border: 1px solid rgba(0,0,0,0.06);
+            border-radius: 12px;
+            font-family: 'SF Mono', 'Menlo', monospace;
+            font-size: clamp(14px, 1.7vw, 18px);
+            font-weight: 600;
+            color: #007aff;
+            text-align: center;
+        }
+
+        /* Type table */
+        .type-table {
+            width: 100%;
+            max-width: 820px;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-top: 20px;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid rgba(0,0,0,0.06);
+        }
+        .type-table th, .type-table td {
+            padding: 14px 20px;
+            text-align: left;
+            font-size: clamp(13px, 1.6vw, 17px);
+            border-bottom: 1px solid rgba(0,0,0,0.06);
+        }
+        .type-table tr:last-child td { border-bottom: none; }
+        .type-table th {
+            background: rgba(0,0,0,0.025);
+            font-size: clamp(11px, 1.1vw, 13px);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.14em;
+            color: #86868b;
+        }
+        .type-table .ttype {
+            font-family: 'SF Mono', 'Menlo', monospace;
+            color: #007aff;
+            font-weight: 600;
+        }
+        .type-table .tex {
+            font-family: 'SF Mono', 'Menlo', monospace;
+            color: #515154;
+            font-size: clamp(12px, 1.5vw, 16px);
+        }
+
+        /* Checklist */
+        .checklist {
+            list-style: none;
+            padding: 0;
+            margin-top: 20px;
+            max-width: 800px;
+            text-align: left;
+        }
+        .checklist li {
+            font-size: clamp(15px, 1.9vw, 20px);
+            color: #1d1d1f;
+            line-height: 1.5;
+            padding: 12px 0 12px 40px;
+            position: relative;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+        .checklist li:last-child { border-bottom: none; }
+        .checklist li::before {
+            content: "✓";
+            position: absolute;
+            left: 0; top: 50%;
+            transform: translateY(-50%);
+            width: 28px; height: 28px;
+            border-radius: 50%;
+            background: rgba(0, 122, 255, 0.1);
+            color: #007aff;
+            font-size: 14px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Timer */
+        .timer-display {
+            font-family: 'SF Mono', 'Menlo', monospace;
+            font-size: clamp(56px, 9vw, 120px);
+            font-weight: 700;
+            color: #007aff;
+            line-height: 1;
+            letter-spacing: -0.04em;
+            margin: 12px 0 24px 0;
+        }
+
+        /* Flow */
+        .flow-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+            flex-wrap: wrap;
+            margin-top: 24px;
+            font-family: 'SF Mono', 'Menlo', monospace;
+            font-size: clamp(13px, 1.5vw, 17px);
+        }
+        .flow-row .step-pill {
+            padding: 10px 18px;
+            border-radius: 50px;
+            background: rgba(0,122,255,0.08);
+            color: #007aff;
+            font-weight: 600;
+            border: 1px solid rgba(0,122,255,0.18);
+        }
+        .flow-row .arrow {
+            color: #86868b;
+            font-size: 18px;
+        }
+
+        /* Quiz options */
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            max-width: 820px;
+            width: 100%;
+            margin-top: 24px;
+        }
+        .option-card {
+            background: rgba(0, 0, 0, 0.025);
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            border-radius: 12px;
+            padding: 16px 22px;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            font-size: clamp(14px, 1.7vw, 18px);
+            font-weight: 500;
+            color: #1d1d1f;
+            line-height: 1.35;
+            opacity: 0; transform: translateY(20px);
+            animation: cardSlideUp 0.5s ease-out forwards;
+        }
+        .option-card:nth-child(1) { animation-delay: 0.4s; }
+        .option-card:nth-child(2) { animation-delay: 0.5s; }
+        .option-card:nth-child(3) { animation-delay: 0.6s; }
+        .option-card:nth-child(4) { animation-delay: 0.7s; }
+        .option-card .option-letter {
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            background: rgba(0, 122, 255, 0.1);
+            color: #007aff;
+            font-size: 14px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .option-card code {
+            font-family: 'SF Mono', 'Menlo', 'Monaco', 'Consolas', monospace;
+            color: #007aff;
+            font-weight: 600;
+        }
+        .think-hint {
+            margin-top: clamp(20px, 3vh, 32px);
+            font-size: clamp(14px, 1.7vw, 19px);
+            color: #86868b;
+            font-style: italic;
+        }
+
+        /* Function machine visualization */
+        .func-machine {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 18px;
+            margin: 22px auto 28px;
+            flex-wrap: wrap;
+        }
+        .func-machine .input-pill, .func-machine .output-pill {
+            padding: 14px 22px;
+            background: rgba(0,122,255,0.08);
+            border: 1.5px solid rgba(0,122,255,0.3);
+            border-radius: 12px;
+            font-family: 'SF Mono', monospace;
+            font-size: clamp(14px, 1.7vw, 18px);
+            font-weight: 600;
+            color: #007aff;
+        }
+        .func-machine .output-pill {
+            background: rgba(52, 199, 89, 0.08);
+            border-color: rgba(52, 199, 89, 0.4);
+            color: #34c759;
+        }
+        .func-machine .machine-box {
+            padding: 22px 32px;
+            background: linear-gradient(135deg, #1d1d1f 0%, #2c2c2e 100%);
+            border-radius: 14px;
+            color: #fff;
+            font-family: 'SF Mono', monospace;
+            font-weight: 700;
+            font-size: clamp(15px, 1.9vw, 20px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+            position: relative;
+        }
+        .func-machine .machine-box::before {
+            content: '⚙';
+            position: absolute;
+            top: -16px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #fff;
+            color: #007aff;
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            border: 1.5px solid rgba(0,122,255,0.3);
+        }
+        .func-machine .arrow {
+            color: #86868b;
+            font-size: 22px;
+            font-weight: 300;
+        }
+
+        /* Dict visualization */
+        .dict-vis {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin: 18px auto 22px;
+            max-width: 520px;
+            width: 100%;
+        }
+        .dict-row {
+            display: grid;
+            grid-template-columns: 1fr auto 1.2fr;
+            gap: 12px;
+            align-items: center;
+        }
+        .dict-row .key-cell {
+            padding: 12px 16px;
+            background: #fff;
+            border: 1.5px solid rgba(175, 82, 222, 0.4);
+            border-radius: 10px;
+            font-family: 'SF Mono', monospace;
+            font-size: clamp(13px, 1.5vw, 16px);
+            font-weight: 600;
+            color: #af52de;
+            text-align: center;
+        }
+        .dict-row .val-cell {
+            padding: 12px 16px;
+            background: #fff;
+            border: 1.5px solid rgba(0,122,255,0.4);
+            border-radius: 10px;
+            font-family: 'SF Mono', monospace;
+            font-size: clamp(13px, 1.5vw, 16px);
+            font-weight: 600;
+            color: #007aff;
+            text-align: center;
+        }
+        .dict-row .arrow-cell {
+            color: #86868b;
+            font-size: 22px;
+            font-weight: 300;
+        }
+        .dict-vis-header {
+            display: grid;
+            grid-template-columns: 1fr auto 1.2fr;
+            gap: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            color: #86868b;
+            text-transform: uppercase;
+            letter-spacing: 0.16em;
+            margin-bottom: 4px;
+        }
+        .dict-vis-header span { text-align: center; }
+
+        /* Set visualization */
+        .set-vis {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 22px auto;
+            gap: 24px;
+            flex-wrap: wrap;
+        }
+        .set-circle {
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            border: 2.5px solid rgba(0, 122, 255, 0.4);
+            background: rgba(0, 122, 255, 0.04);
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 36px;
+            position: relative;
+        }
+        .set-circle::before {
+            content: attr(data-name);
+            position: absolute;
+            top: -14px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #fff;
+            color: #007aff;
+            padding: 2px 14px;
+            font-size: 13px;
+            font-weight: 700;
+            font-family: 'SF Mono', monospace;
+            letter-spacing: 0.04em;
+        }
+        .set-circle .item {
+            padding: 6px 12px;
+            background: #fff;
+            border: 1.5px solid rgba(0,122,255,0.35);
+            border-radius: 50px;
+            font-family: 'SF Mono', monospace;
+            font-size: 14px;
+            font-weight: 600;
+            color: #007aff;
+        }
+
+        /* Scope visualization */
+        .scope-vis {
+            position: relative;
+            max-width: 720px;
+            width: 100%;
+            margin: 22px auto;
+            padding: 32px 28px 28px;
+            background: rgba(255, 59, 48, 0.04);
+            border: 2px dashed rgba(255, 59, 48, 0.35);
+            border-radius: 14px;
+            text-align: left;
+        }
+        .scope-vis::before {
+            content: 'GLOBAL';
+            position: absolute;
+            top: -12px;
+            left: 24px;
+            background: #fff;
+            color: #ff3b30;
+            padding: 2px 12px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.16em;
+            font-family: 'SF Mono', monospace;
+        }
+        .scope-vis .global-line {
+            font-family: 'SF Mono', monospace;
+            font-size: clamp(12px, 1.4vw, 15px);
+            color: #ff3b30;
+            margin-bottom: 14px;
+        }
+        .scope-vis .local-box {
+            position: relative;
+            padding: 28px 22px 18px;
+            background: rgba(0, 122, 255, 0.04);
+            border: 2px dashed rgba(0, 122, 255, 0.35);
+            border-radius: 12px;
+            margin-top: 12px;
+        }
+        .scope-vis .local-box::before {
+            content: 'LOCAL (def)';
+            position: absolute;
+            top: -10px;
+            left: 18px;
+            background: #fff;
+            color: #007aff;
+            padding: 2px 10px;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.16em;
+            font-family: 'SF Mono', monospace;
+        }
+        .scope-vis .local-line {
+            font-family: 'SF Mono', monospace;
+            font-size: clamp(12px, 1.4vw, 15px);
+            color: #007aff;
+            line-height: 1.7;
+        }
+
+        /* Args visualization */
+        .args-vis {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 18px;
+            align-items: center;
+            max-width: 760px;
+            margin: 18px auto 24px;
+            text-align: left;
+        }
+        .args-vis .label-pill {
+            padding: 10px 18px;
+            background: rgba(175, 82, 222, 0.1);
+            color: #af52de;
+            border-radius: 50px;
+            font-family: 'SF Mono', monospace;
+            font-weight: 600;
+            font-size: clamp(13px, 1.5vw, 16px);
+            text-align: center;
+        }
+        .args-vis .pack-row {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .args-vis .pack-row .item {
+            padding: 8px 14px;
+            background: #fff;
+            border: 1.5px solid rgba(0, 122, 255, 0.35);
+            border-radius: 8px;
+            font-family: 'SF Mono', monospace;
+            font-size: clamp(12px, 1.4vw, 15px);
+            font-weight: 600;
+            color: #007aff;
+            max-width: 100%;
+            overflow-wrap: break-word;
+            word-break: break-word;
+            text-align: center;
+        }
+
+        /* List visualization */
+        .list-vis {
+            display: flex;
+            justify-content: center;
+            gap: 4px;
+            margin: 18px auto 24px;
+        }
+        .list-vis .cell {
+            min-width: 64px;
+            padding: 14px 12px;
+            background: #fff;
+            border: 1.5px solid rgba(0,122,255,0.4);
+            border-radius: 10px;
+            font-family: 'SF Mono', monospace;
+            font-size: clamp(13px, 1.5vw, 16px);
+            font-weight: 600;
+            color: #1d1d1f;
+            text-align: center;
+            position: relative;
+        }
+        .list-vis .cell.tuple {
+            border-color: rgba(175, 82, 222, 0.4);
+            border-style: solid;
+        }
+        .list-vis .cell .idx {
+            position: absolute;
+            top: -22px;
+            left: 0; right: 0;
+            font-size: 11px;
+            font-weight: 600;
+            color: #86868b;
+            font-family: 'SF Mono', monospace;
+        }
+        .list-vis-wrapper {
+            margin-top: 28px;
+            margin-bottom: 24px;
+        }
+
+        /* Footer / nav */
+        .slide-indicator {
+            position: fixed;
+            bottom: 28px; left: 50%;
+            transform: translateX(-50%);
+            font-size: 13px; color: #86868b;
+            font-weight: 400; z-index: 100;
+            letter-spacing: 0.04em;
+        }
+        .nav-hint {
+            position: fixed;
+            bottom: 28px; right: 28px;
+            font-size: 12px; color: #c7c7cc;
+            font-weight: 400; text-align: right;
+            z-index: 100;
+        }
+        .lesson-tag {
+            position: fixed;
+            top: 28px; left: 28px;
+            font-size: 11px; font-weight: 600;
+            color: #86868b; text-transform: uppercase;
+            letter-spacing: 0.18em;
+            z-index: 100;
+        }
+        .lang-switcher {
+            position: fixed;
+            top: 22px; right: 28px;
+            z-index: 100;
+            display: flex;
+            gap: 2px;
+            background: rgba(255,255,255,0.95);
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0,0,0,0.06);
+            border-radius: 50px;
+            padding: 3px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        .lang-switcher a {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: #86868b;
+            text-decoration: none;
+            padding: 5px 12px;
+            border-radius: 50px;
+            transition: all 0.2s ease;
+        }
+        .lang-switcher a.active {
+            color: #fff;
+            background: #007aff;
+        }
+        .lang-switcher a:not(.active):hover {
+            color: #1d1d1f;
+        }
+
+        /* Trace table */
+        .trace-wrap {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 28px;
+            max-width: 1050px;
+            width: 100%;
+            margin-top: 8px;
+            align-items: start;
+        }
+        .trace-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid rgba(0,0,0,0.06);
+            font-size: clamp(13px, 1.5vw, 15px);
+            background: #fff;
+        }
+        .trace-table th {
+            background: rgba(0,0,0,0.025);
+            padding: 12px 16px;
+            text-align: left;
+            font-size: clamp(10px, 1vw, 12px);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.14em;
+            color: #86868b;
+            border-bottom: 1px solid rgba(0,0,0,0.06);
+        }
+        .trace-table td {
+            padding: 10px 16px;
+            border-bottom: 1px solid rgba(0,0,0,0.04);
+            font-family: 'SF Mono', 'Menlo', monospace;
+            color: #1d1d1f;
+        }
+        .trace-table tbody tr:last-child td { border-bottom: none; }
+        .trace-row {
+            opacity: 0;
+            transform: translateX(-12px);
+        }
+        .slide.active .trace-row {
+            animation: traceRowIn 0.4s ease-out forwards;
+        }
+        .slide.active .trace-row.r1 { animation-delay: 0.5s; }
+        .slide.active .trace-row.r2 { animation-delay: 0.95s; }
+        .slide.active .trace-row.r3 { animation-delay: 1.4s; }
+        .slide.active .trace-row.r4 { animation-delay: 1.85s; }
+        .slide.active .trace-row.r5 { animation-delay: 2.3s; }
+        @keyframes traceRowIn {
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        /* === Interactive widgets === */
+        .interactive-btn {
+            padding: 10px 22px;
+            background: #007aff;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: clamp(13px, 1.5vw, 16px);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .interactive-btn:hover { background: #0066d6; transform: translateY(-1px); }
+        .interactive-btn:active { transform: translateY(0); }
+        .interactive-btn.secondary {
+            background: rgba(0,122,255,0.1);
+            color: #007aff;
+        }
+        .interactive-btn.secondary:hover { background: rgba(0,122,255,0.18); }
+        .interactive-btn[disabled] { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+        .range-slider-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            max-width: 580px;
+            margin: 14px auto 22px;
+            padding: 12px 22px;
+            background: rgba(0,122,255,0.04);
+            border-radius: 50px;
+            border: 1px solid rgba(0,122,255,0.18);
+        }
+        .range-slider-wrapper .lbl {
+            font-family: 'SF Mono', monospace;
+            font-size: 13px;
+            color: #007aff;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        .range-slider {
+            flex: 1;
+            -webkit-appearance: none;
+            appearance: none;
+            height: 4px;
+            background: rgba(0,122,255,0.2);
+            border-radius: 4px;
+            outline: none;
+        }
+        .range-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 22px;
+            height: 22px;
+            background: #007aff;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0,122,255,0.4);
+        }
+        .range-slider::-moz-range-thumb {
+            width: 22px;
+            height: 22px;
+            background: #007aff;
+            border-radius: 50%;
+            cursor: pointer;
+            border: none;
+        }
+        .range-value {
+            min-width: 28px;
+            text-align: center;
+            font-family: 'SF Mono', monospace;
+            font-size: 17px;
+            font-weight: 700;
+            color: #007aff;
+        }
+
+        /* Live args/kwargs viz */
+        .live-args .pack-row .item {
+            animation: popIn 0.28s ease-out;
+        }
+        @keyframes popIn {
+            from { opacity: 0; transform: scale(0.55); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .live-args .result-line {
+            font-family: 'SF Mono', monospace;
+            font-size: clamp(13px, 1.5vw, 16px);
+            color: #34c759;
+            font-weight: 600;
+            margin-top: 12px;
+            text-align: center;
+        }
+
+        /* Trace controls */
+        .trace-controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 18px;
+        }
+        .trace-table .trace-row.manual {
+            opacity: 0;
+            transform: translateX(-12px);
+            animation: none;
+        }
+        .trace-table .trace-row.manual.shown {
+            animation: traceRowIn 0.35s ease-out forwards;
+        }
+
+        /* Scope clickable */
+        .scope-vis .clickable {
+            cursor: pointer;
+            border-radius: 4px;
+            padding: 0 4px;
+            transition: background 0.2s;
+            border-bottom: 1px dashed currentColor;
+        }
+        .scope-vis .clickable:hover {
+            background: rgba(0,122,255,0.18);
+        }
+        .scope-vis .global-line.found-here {
+            background: rgba(52,199,89,0.18);
+            border-radius: 6px;
+            outline: 2px solid #34c759;
+            outline-offset: 2px;
+        }
+        .scope-vis .local-box.scanning {
+            outline: 2px dashed #007aff;
+            outline-offset: 4px;
+            transition: all 0.3s;
+        }
+        .scope-vis .local-box.found-here {
+            outline: 2px solid #34c759;
+            outline-offset: 4px;
+            background: rgba(52,199,89,0.06);
+        }
+        .scope-vis .local-box.error-here {
+            outline: 2px solid #ff3b30;
+            outline-offset: 4px;
+            background: rgba(255,59,48,0.06);
+        }
+        .scope-status {
+            margin-top: 16px;
+            padding: 10px 18px;
+            border-radius: 10px;
+            font-family: 'SF Mono', monospace;
+            font-size: 14px;
+            font-weight: 600;
+            text-align: center;
+            min-height: 22px;
+            transition: all 0.3s;
+            background: rgba(0,0,0,0.04);
+            color: #86868b;
+        }
+        .scope-status.success {
+            background: rgba(52,199,89,0.1);
+            color: #34c759;
+        }
+        .scope-status.error {
+            background: rgba(255,59,48,0.1);
+            color: #ff3b30;
+        }
+
+        /* Sort demo */
+        .sort-demo {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-width: 480px;
+            margin: 14px auto 14px;
+            width: 100%;
+            position: relative;
+        }
+        .sort-demo .person-card {
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            align-items: center;
+            gap: 14px;
+            padding: 12px 18px;
+            background: #fff;
+            border: 1.5px solid rgba(0,122,255,0.3);
+            border-radius: 10px;
+            font-family: 'SF Mono', monospace;
+            font-size: clamp(13px, 1.5vw, 15px);
+            font-weight: 600;
+            color: #1d1d1f;
+            transition: transform 0.55s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.3s, border-color 0.3s;
+            will-change: transform;
+        }
+        .sort-demo .person-card .name { text-align: left; }
+        .sort-demo .person-card .age {
+            color: #007aff;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+        }
+        .sort-demo .person-card .num {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: rgba(0,122,255,0.1);
+            color: #007aff;
+            font-size: 11px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-variant-numeric: tabular-nums;
+        }
+        .sort-buttons {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin-top: 8px;
+            flex-wrap: wrap;
+        }
+        .sort-buttons .interactive-btn {
+            padding: 8px 18px;
+            font-size: clamp(12px, 1.4vw, 14px);
+        }
+
+        /* Playground */
+        .playground {
+            width: 100%;
+            max-width: 920px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 6px;
+        }
+        .playground textarea {
+            width: 100%;
+            min-height: 170px;
+            background: #1d1d1f;
+            color: #f5f5f7;
+            border: 1px solid rgba(0,0,0,0.1);
+            border-radius: 12px;
+            padding: 16px 20px;
+            font-family: 'SF Mono', 'Menlo', monospace;
+            font-size: clamp(12px, 1.4vw, 15px);
+            line-height: 1.6;
+            resize: vertical;
+            outline: none;
+            -webkit-font-smoothing: antialiased;
+            tab-size: 4;
+        }
+        .playground textarea:focus {
+            border-color: rgba(0,122,255,0.5);
+            box-shadow: 0 0 0 3px rgba(0,122,255,0.15);
+        }
+        .playground-controls {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+        .playground-output {
+            background: #1d1d1f;
+            color: #f5f5f7;
+            border-radius: 12px;
+            padding: 16px 20px;
+            font-family: 'SF Mono', 'Menlo', monospace;
+            font-size: clamp(12px, 1.4vw, 15px);
+            line-height: 1.6;
+            min-height: 56px;
+            white-space: pre-wrap;
+            text-align: left;
+            overflow-x: auto;
+            max-height: 180px;
+            overflow-y: auto;
+        }
+        .playground-output.empty { color: #6e6e73; font-style: italic; }
+        .playground-output .err { color: #ff5555; }
+        .playground-output .ok { color: #50fa7b; }
+        .playground-status {
+            font-size: 12px;
+            color: #86868b;
+            font-family: 'SF Mono', monospace;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .playground-status .dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: #c7c7cc;
+        }
+        .playground-status.loading .dot {
+            background: #007aff;
+            animation: pulse 1s infinite;
+        }
+        .playground-status.ready .dot { background: #34c759; }
+        .playground-status.error .dot { background: #ff3b30; }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.4); }
+        }
+
+        /* Try-it chips & inputs */
+        .tryout-hint {
+            font-size: clamp(13px, 1.5vw, 15px);
+            color: #86868b;
+            margin: 14px 0 12px;
+            text-align: center;
+        }
+        .tryout-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            margin-bottom: 14px;
+            max-width: 880px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .expr-chip {
+            padding: 9px 16px;
+            background: rgba(0,122,255,0.08);
+            color: #007aff;
+            border: 1px solid rgba(0,122,255,0.18);
+            border-radius: 50px;
+            font-family: 'SF Mono', monospace;
+            font-size: clamp(12px, 1.4vw, 14px);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .expr-chip:hover {
+            background: rgba(0,122,255,0.16);
+            transform: translateY(-1px);
+        }
+        .expr-chip:active { transform: translateY(0); }
+        .expr-chip.danger {
+            background: rgba(255,59,48,0.06);
+            color: #ff3b30;
+            border-color: rgba(255,59,48,0.2);
+        }
+        .expr-chip.danger:hover {
+            background: rgba(255,59,48,0.12);
+        }
+        .expr-chip.active {
+            background: #007aff;
+            color: #fff;
+            border-color: #007aff;
+        }
+        .expr-chip.danger.active {
+            background: #ff3b30;
+            color: #fff;
+            border-color: #ff3b30;
+        }
+        .tryout-output {
+            background: #1d1d1f;
+            color: #50fa7b;
+            border-radius: 12px;
+            padding: 16px 22px;
+            font-family: 'SF Mono', monospace;
+            font-size: clamp(14px, 1.6vw, 17px);
+            font-weight: 600;
+            text-align: center;
+            min-height: 28px;
+            transition: color 0.25s;
+            max-width: 620px;
+            margin: 0 auto;
+            white-space: pre-wrap;
+        }
+        .tryout-output.error { color: #ff5555; }
+        .tryout-output.empty {
+            color: #6e6e73;
+            font-weight: 400;
+            font-style: italic;
+        }
+
+        .kw-inputs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            max-width: 640px;
+            width: 100%;
+            margin: 16px auto 14px;
+        }
+        .kw-inputs label {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            text-align: left;
+        }
+        .kw-inputs label .lbl {
+            font-family: 'SF Mono', monospace;
+            font-size: 12px;
+            font-weight: 600;
+            color: #86868b;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            justify-content: space-between;
+        }
+        .kw-inputs label .lbl small {
+            font-weight: 400;
+            color: #c7c7cc;
+            font-size: 11px;
+            font-style: italic;
+        }
+        .kw-inputs input {
+            padding: 10px 14px;
+            border: 1.5px solid rgba(0,0,0,0.1);
+            border-radius: 10px;
+            background: #fff;
+            font-family: 'SF Mono', monospace;
+            font-size: clamp(13px, 1.5vw, 16px);
+            color: #1d1d1f;
+            outline: none;
+            transition: all 0.2s;
+        }
+        .kw-inputs input:focus {
+            border-color: rgba(0,122,255,0.5);
+            box-shadow: 0 0 0 3px rgba(0,122,255,0.15);
+        }
+        .kw-inputs input::placeholder {
+            color: #c7c7cc;
+            font-style: italic;
+        }
+
+        @media (max-width: 600px) {
+            .kw-inputs { grid-template-columns: 1fr; }
+        }
+
+        /* === Reveal-on-next mechanic === */
+        .reveal-output:not(.term) {
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+        .reveal-output:not(.term).revealed {
+            opacity: 1;
+        }
+        .term.reveal-output {
+            position: relative;
+            min-height: 60px;
+        }
+        .term.reveal-output > * {
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+        .term.reveal-output.revealed > * {
+            opacity: 1;
+        }
+        .term.reveal-output::before {
+            content: attr(data-prompt);
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #86868b;
+            font-style: italic;
+            font-weight: 400;
+            font-size: clamp(11px, 1.3vw, 14px);
+            white-space: nowrap;
+            pointer-events: none;
+            transition: opacity 0.3s;
+            font-family: 'SF Mono', 'Menlo', monospace;
+        }
+        .term.reveal-output.revealed::before {
+            opacity: 0;
+        }
+
+        @media (max-width: 768px) {
+            .comparison-grid, .topic-grid, .code-output,
+            .cards-container, .options-grid, .trace-wrap {
+                grid-template-columns: 1fr; gap: 20px;
+            }
+            .list-vis, .func-machine, .set-vis { flex-wrap: wrap; }
+        }
+    </style>
+</head>
+<body>
+    <div class="presentation">
+
+        <!-- 1: Title -->
+        <div class="slide active">
+            <div class="slide-content">
+                <p class="eyebrow">Лекция 4</p>
+                <h1>Python: функции и коллекции</h1>
+                <p class="subtitle">def, scope, *args/**kwargs, lambda</p>
+            </div>
+        </div>
+
+        <!-- 2: Recap -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Что прошли</p>
+                <h2>Урок 3 - циклы (loops) и списки (lists)</h2>
+                <ul class="checklist" style="max-width: 760px; columns: 2; column-gap: 40px;">
+                    <li>while и for + range()</li>
+                    <li>break и continue</li>
+                    <li>Списки и индексация</li>
+                    <li>Срезы и шаги</li>
+                    <li>Методы списка</li>
+                    <li>Перебор коллекций</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 2a: Recap - variables and types -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Урок 2, напоминание</p>
+                <h2>Переменные и типы</h2>
+                <p class="subtitle">Каждое значение имеет тип. Python определяет его автоматически.</p>
+                <div class="code-output" style="max-width: 880px;">
+                    <div class="code-block" style="margin-top: 0; font-size: clamp(13px, 1.5vw, 16px); padding: 18px;"><span class="cn">name</span>     = <span class="cs">"Алиса"</span>
+<span class="cn">age</span>      = <span class="cm">30</span>
+<span class="cn">price</span>    = <span class="cm">19.99</span>
+<span class="cn">is_admin</span> = <span class="cm">True</span>
+
+<span class="cf">print</span>(<span class="cf">type</span>(<span class="cn">age</span>))
+<span class="cf">print</span>(<span class="cf">type</span>(<span class="cn">is_admin</span>))</div>
+                    <div class="term reveal-output" data-prompt="▶ нажмите →" style="font-size: clamp(14px, 1.6vw, 18px); padding: 18px;"><span class="out">&lt;class 'int'&gt;
+&lt;class 'bool'&gt;</span></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2b: Recap - input + type conversion -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Урок 2, напоминание</p>
+                <h2>Ввод и преобразование</h2>
+                <p class="subtitle"><code style="font-family:'SF Mono',monospace;">input()</code> всегда возвращает строку. Для чисел нужно <code style="font-family:'SF Mono',monospace;">int()</code> или <code style="font-family:'SF Mono',monospace;">float()</code>.</p>
+                <div class="code-output" style="max-width: 880px;">
+                    <div class="code-block" style="margin-top: 0; font-size: clamp(13px, 1.5vw, 16px); padding: 18px;"><span class="co"># пользователь вводит: 5</span>
+<span class="cn">n</span> = <span class="cf">int</span>(<span class="cf">input</span>(<span class="cs">"Число: "</span>))
+<span class="cf">print</span>(<span class="cn">n</span> * <span class="cm">2</span>)</div>
+                    <div class="term reveal-output" data-prompt="▶ нажмите →" style="font-size: clamp(14px, 1.6vw, 18px); padding: 18px;"><span class="out">Число: 5
+10</span></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2c: Recap - if/elif/else -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Урок 2, напоминание</p>
+                <h2>Условия if / elif / else</h2>
+                <p class="subtitle">Разные ветви для разных случаев. <code style="font-family:'SF Mono',monospace;">f-строка</code> вставляет значения в текст.</p>
+                <div class="code-output" style="max-width: 880px;">
+                    <div class="code-block" style="margin-top: 0; font-size: clamp(13px, 1.5vw, 16px); padding: 18px;"><span class="cn">n</span> = <span class="cm">5</span>
+
+<span class="ck">if</span> <span class="cn">n</span> &gt; <span class="cm">0</span>:
+    <span class="cf">print</span>(<span class="cs">f"<span style="color:#ff79c6;">{n}</span>: положительное"</span>)
+<span class="ck">elif</span> <span class="cn">n</span> &lt; <span class="cm">0</span>:
+    <span class="cf">print</span>(<span class="cs">f"<span style="color:#ff79c6;">{n}</span>: отрицательное"</span>)
+<span class="ck">else</span>:
+    <span class="cf">print</span>(<span class="cs">"ноль"</span>)</div>
+                    <div class="term reveal-output" data-prompt="▶ нажмите →" style="font-size: clamp(14px, 1.6vw, 18px); padding: 18px;"><span class="out">5: положительное</span></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2d: Recap - for + range -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Урок 3, напоминание</p>
+                <h2>Цикл for и range</h2>
+                <p class="subtitle">Повторение известное число раз. <code style="font-family:'SF Mono',monospace;">range(1, 6)</code> даёт числа 1..5 (без 6).</p>
+                <div class="code-output" style="max-width: 880px;">
+                    <div class="code-block" style="margin-top: 0; font-size: clamp(13px, 1.5vw, 16px); padding: 18px;"><span class="ck">for</span> <span class="cn">i</span> <span class="ck">in</span> <span class="cf">range</span>(<span class="cm">1</span>, <span class="cm">6</span>):
+    <span class="cf">print</span>(<span class="cn">i</span>, <span class="cn">end</span>=<span class="cs">" "</span>)</div>
+                    <div class="term reveal-output" data-prompt="▶ нажмите →" style="font-size: clamp(14px, 1.6vw, 18px); padding: 18px;"><span class="out">1 2 3 4 5</span></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2d-real: Loop in real-world -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">В реальном мире</p>
+                <h2>Цикл for на практике</h2>
+                <p class="subtitle">Не учебный пример: автоматизация в цикле проверяет, что сервис ожил после деплоя.</p>
+                <img src="photos/loop_claude_code.jpg" alt="for-loop polling health endpoint" style="max-width: 940px; width: 100%; border-radius: 12px; box-shadow: 0 4px 24px rgba(0,0,0,0.18); margin-top: 8px;">
+                <p class="body-text" style="margin-top: 18px; font-size: clamp(13px, 1.5vw, 16px); color: #86868b;">
+                    <code style="font-family:'SF Mono',monospace;">for i in 1 2 3 4 5; do ... done</code> - на этом держится мониторинг, retry-логика, тесты миграций и сотни других вещей.
+                </p>
+            </div>
+        </div>
+
+        <!-- 2e: Recap - list indexing + slicing -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Урок 3, напоминание</p>
+                <h2>Списки и срезы</h2>
+                <p class="subtitle">Упорядоченная коллекция. Индексация с нуля. Срезы через двоеточие.</p>
+                <div class="code-output" style="max-width: 880px;">
+                    <div class="code-block" style="margin-top: 0; font-size: clamp(13px, 1.5vw, 16px); padding: 18px;"><span class="cn">fruits</span> = [<span class="cs">"яблоко"</span>, <span class="cs">"груша"</span>, <span class="cs">"слива"</span>, <span class="cs">"вишня"</span>]
+
+<span class="cf">print</span>(<span class="cn">fruits</span>[<span class="cm">0</span>])
+<span class="cf">print</span>(<span class="cn">fruits</span>[-<span class="cm">1</span>])
+<span class="cf">print</span>(<span class="cn">fruits</span>[<span class="cm">1</span>:<span class="cm">3</span>])</div>
+                    <div class="term reveal-output" data-prompt="▶ нажмите →" style="font-size: clamp(14px, 1.6vw, 18px); padding: 18px;"><span class="out">яблоко
+вишня
+['груша', 'слива']</span></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2f: Recap - break and continue -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Урок 3, напоминание</p>
+                <h2>break и continue</h2>
+                <p class="subtitle"><code style="font-family:'SF Mono',monospace;">continue</code>: пропустить итерацию. <code style="font-family:'SF Mono',monospace;">break</code>: выйти из цикла.</p>
+                <div class="code-output" style="max-width: 880px;">
+                    <div class="code-block" style="margin-top: 0; font-size: clamp(13px, 1.5vw, 16px); padding: 18px;"><span class="ck">for</span> <span class="cn">x</span> <span class="ck">in</span> <span class="cf">range</span>(<span class="cm">10</span>):
+    <span class="ck">if</span> <span class="cn">x</span> == <span class="cm">3</span>: <span class="ck">continue</span>
+    <span class="ck">if</span> <span class="cn">x</span> == <span class="cm">7</span>: <span class="ck">break</span>
+    <span class="cf">print</span>(<span class="cn">x</span>, <span class="cn">end</span>=<span class="cs">" "</span>)</div>
+                    <div class="term reveal-output" data-prompt="▶ нажмите →" style="font-size: clamp(14px, 1.6vw, 18px); padding: 18px;"><span class="out">0 1 2 4 5 6</span></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3: Today's topics -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Сегодня</p>
+                <h1>Функции (functions) и коллекции (collections)</h1>
+                <div class="topic-grid">
+                    <div class="topic-cell">кортежи (tuple)</div>
+                    <div class="topic-cell">множества (set)</div>
+                    <div class="topic-cell">словари (dict)</div>
+                    <div class="topic-cell">def · return</div>
+                    <div class="topic-cell">*args · **kwargs</div>
+                    <div class="topic-cell">scope · lambda</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4: Tuples intro (concept) -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Что это?</p>
+                <h2>Кортежи (tuple)</h2>
+                <p class="subtitle">Упорядоченная коллекция, которая <span class="highlight">не меняется</span> после создания. Используется для фиксированных наборов: координаты <code style="font-family:'SF Mono',monospace;">(x, y)</code>, цвет RGB, дата <code style="font-family:'SF Mono',monospace;">(год, месяц, день)</code>. Python возвращает кортеж, когда функция отдаёт несколько значений сразу.</p>
+                <div class="list-vis-wrapper">
+                    <div class="list-vis">
+                        <div class="cell tuple"><span class="idx">0</span>"Москва"</div>
+                        <div class="cell tuple"><span class="idx">1</span>"Ташкент"</div>
+                        <div class="cell tuple"><span class="idx">2</span>"Бишкек"</div>
+                    </div>
+                </div>
+                <div class="code-block" style="max-width: 760px; font-size: clamp(12px, 1.4vw, 15px); padding: 16px;"><span class="cn">capitals</span> = (<span class="cs">"Москва"</span>, <span class="cs">"Ташкент"</span>, <span class="cs">"Бишкек"</span>)
+<span class="cn">point</span>    = (<span class="cm">10</span>, <span class="cm">20</span>)
+<span class="cn">single</span>   = (<span class="cm">42</span>,)        <span class="co"># запятая обязательна!</span></div>
+            </div>
+        </div>
+
+        <!-- 4b: Why tuples (vs List) -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Зачем нужны?</p>
+                <h2>Кортеж vs список</h2>
+                <p class="subtitle">Зачем брать кортеж, если есть список? <span class="highlight">Неизменяемость</span> - это не недостаток, а защита.</p>
+                <div class="comparison-grid">
+                    <div class="comparison-item old">
+                        <div class="label">List · []</div>
+                        <h3>Изменяемый</h3>
+                        <ul style="list-style: none; padding-left: 0;">
+                            <li>• можно добавлять и удалять</li>
+                            <li>• подходит для растущих данных</li>
+                            <li>• чуть медленнее</li>
+                        </ul>
+                    </div>
+                    <div class="comparison-item new">
+                        <div class="label">Tuple · ()</div>
+                        <h3>Неизменяемый</h3>
+                        <ul style="list-style: none; padding-left: 0;">
+                            <li>• защита от случайных правок</li>
+                            <li>• ключ словаря, элемент set</li>
+                            <li>• чуть быстрее и легче</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="quote-card" style="margin-top: 22px;">
+                    <div class="label">Правило выбора</div>
+                    <p>Набор фиксирован (координаты, RGB, дата) → <span class="highlight">кортеж</span>. Коллекция меняется → <span class="highlight">список</span>.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4c: Example - access by index -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Пример 1</p>
+                <h2>Доступ по индексу</h2>
+                <p class="subtitle">Предскажите результат. <span class="highlight">Нажмите →</span> для ответа.</p>
+                <div class="code-output" style="max-width: 880px;">
+                    <div class="code-block" style="margin-top: 0; font-size: clamp(13px, 1.5vw, 16px); padding: 18px;"><span class="cn">capitals</span> = (<span class="cs">"Москва"</span>, <span class="cs">"Ташкент"</span>, <span class="cs">"Бишкек"</span>)
+
+<span class="cf">print</span>(<span class="cn">capitals</span>[<span class="cm">0</span>])</div>
+                    <div class="term reveal-output" data-prompt="▶ нажмите → чтобы увидеть вывод" style="font-size: clamp(14px, 1.6vw, 18px); padding: 18px;"><span class="out">Москва</span></div>
+                </div>
+                <p class="body-text reveal-output" style="margin-top: 22px; font-size: clamp(13px, 1.5vw, 16px); color: #86868b;">
+                    Индексация начинается с <span class="highlight">нуля</span>, как у списка. <code style="font-family:'SF Mono',monospace;">capitals[-1]</code> - последний элемент.
+                </p>
+            </div>
+        </div>
+
+        <!-- 4d: Example - length -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Пример 2</p>
+                <h2>Длина кортежа</h2>
+                <p class="subtitle">Предскажите результат. <span class="highlight">Нажмите →</span> для ответа.</p>
+                <div class="code-output" style="max-width: 880px;">
+                    <div class="code-block" style="margin-top: 0; font-size: clamp(13px, 1.5vw, 16px); padding: 18px;"><span class="cn">capitals</span> = (<span class="cs">"Москва"</span>, <span class="cs">"Ташкент"</span>, <span class="cs">"Бишкек"</span>)
+
+<span class="cf">print</span>(<span class="cf">len</span>(<span class="cn">capitals</span>))</div>
+                    <div class="term reveal-output" data-prompt="▶ нажмите → чтобы увидеть вывод" style="font-size: clamp(14px, 1.6vw, 18px); padding: 18px;"><span class="out">3</span></div>
+                </div>
+                <p class="body-text reveal-output" style="margin-top: 22px; font-size: clamp(13px, 1.5vw, 16px); color: #86868b;">
+                    <code style="font-family:'SF Mono',monospace;">len()</code> работает с любой коллекцией: tuple, list, set, dict, str.
+                </p>
+            </div>
+        </div>
+
+        <!-- 4e: Example - immutability -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Пример 3</p>
+                <h2>Попытка изменить</h2>
+                <p class="subtitle">Что произойдёт, если попробовать переписать элемент? <span class="highlight">Нажмите →</span> для ответа.</p>
+                <div class="code-output" style="max-width: 880px;">
+                    <div class="code-block" style="margin-top: 0; font-size: clamp(13px, 1.5vw, 16px); padding: 18px;"><span class="cn">capitals</span> = (<span class="cs">"Москва"</span>, <span class="cs">"Ташкент"</span>, <span class="cs">"Бишкек"</span>)
+
+<span class="cn">capitals</span>[<span class="cm">0</span>] = <span class="cs">"X"</span></div>
+                    <div class="term reveal-output" data-prompt="▶ нажмите → чтобы увидеть ошибку" style="font-size: clamp(13px, 1.5vw, 16px); padding: 18px;"><span style="color:#ff5555;">TypeError: 'tuple' object
+does not support item
+assignment</span></div>
+                </div>
+                <p class="body-text reveal-output" style="margin-top: 22px; font-size: clamp(13px, 1.5vw, 16px); color: #86868b;">
+                    Это <span class="highlight">фича, не баг</span>: кортеж нельзя случайно сломать. Чтобы получить новый - создайте новый кортеж.
+                </p>
+            </div>
+        </div>
+
+        <!-- 6: Sets intro (concept) -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Что это?</p>
+                <h2>Множества (set)</h2>
+                <p class="subtitle">Структура из математики: коллекция <span class="highlight">уникальных</span> элементов без определённого порядка. Дубликаты Python убирает автоматически. Главная суперспособность - проверка <code style="font-family:'SF Mono',monospace;">x in set</code> за O(1), то есть мгновенно даже на миллионах элементов.</p>
+                <img src="photos/set.png" alt="Set visualization" style="max-width: 320px; width: 100%; margin: 18px auto; display: block;">
+                <div class="code-block" style="max-width: 760px; font-size: clamp(12px, 1.4vw, 15px); padding: 16px;"><span class="cn">tags</span> = {<span class="cs">"python"</span>, <span class="cs">"sql"</span>, <span class="cs">"python"</span>, <span class="cs">"git"</span>}
+<span class="cn">empty</span> = <span class="cf">set</span>()          <span class="co"># внимание: {} - это dict!</span></div>
+            </div>
+        </div>
+
+        <!-- 6b: Why sets -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Мотивация</p>
+                <h2>Зачем нужны множества</h2>
+                <p class="subtitle"><span class="highlight">Скорость поиска</span> · дедупликация · алгебра множеств</p>
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; max-width: 1050px; width: 100%; margin: 18px auto 14px;">
+                    <div style="background: rgba(0,122,255,0.05); border: 1.5px solid rgba(0,122,255,0.2); border-radius: 14px; padding: 20px; text-align: left;">
+                        <div style="font-size: clamp(22px, 2.6vw, 30px); font-weight: 700; color: #007aff; line-height: 1; margin-bottom: 10px;">01</div>
+                        <h3 style="font-size: clamp(15px, 1.8vw, 20px); font-weight: 600; margin-bottom: 8px; color: #1d1d1f;">Дедупликация</h3>
+                        <p style="font-size: clamp(12px, 1.4vw, 15px); color: #515154; line-height: 1.45; margin: 0;">Убрать повторы одной строкой: <code style="font-family:'SF Mono',monospace;color:#007aff;">list(set(items))</code>.</p>
+                    </div>
+                    <div style="background: rgba(0,122,255,0.05); border: 1.5px solid rgba(0,122,255,0.2); border-radius: 14px; padding: 20px; text-align: left;">
+                        <div style="font-size: clamp(22px, 2.6vw, 30px); font-weight: 700; color: #007aff; line-height: 1; margin-bottom: 10px;">02</div>
+                        <h3 style="font-size: clamp(15px, 1.8vw, 20px); font-weight: 600; margin-bottom: 8px; color: #1d1d1f;">Быстрый поиск</h3>
+                        <p style="font-size: clamp(12px, 1.4vw, 15px); color: #515154; line-height: 1.45; margin: 0;"><code style="font-family:'SF Mono',monospace;color:#007aff;">x in set</code> - <span class="highlight">O(1)</span>, а не O(n) как у списка.</p>
+                    </div>
+                    <div style="background: rgba(0,122,255,0.05); border: 1.5px solid rgba(0,122,255,0.2); border-radius: 14px; padding: 20px; text-align: left;">
+                        <div style="font-size: clamp(22px, 2.6vw, 30px); font-weight: 700; color: #007aff; line-height: 1; margin-bottom: 10px;">03</div>
+                        <h3 style="font-size: clamp(15px, 1.8vw, 20px); font-weight: 600; margin-bottom: 8px; color: #1d1d1f;">Алгебра множеств</h3>
+                        <p style="font-size: clamp(12px, 1.4vw, 15px); color: #515154; line-height: 1.45; margin: 0;">Пересечение, объединение, разность - одна строка вместо циклов.</p>
+                    </div>
+                </div>
+                <div class="code-output" style="max-width: 940px; margin-top: 10px;">
+                    <div class="code-block" style="margin-top: 0; font-size: clamp(11px, 1.3vw, 14px); padding: 14px;"><span class="co"># реально: A/B-тест - кто видел и старую, и новую версию?</span>
+<span class="cn">test_a</span> = <span class="cf">set</span>(<span class="cn">users_in_old_flow</span>)    <span class="co"># 50 000 ID</span>
+<span class="cn">test_b</span> = <span class="cf">set</span>(<span class="cn">users_in_new_flow</span>)    <span class="co"># 50 000 ID</span>
+
+<span class="cn">overlap</span>     = <span class="cn">test_a</span> &amp; <span class="cn">test_b</span>           <span class="co"># пересечение</span>
+<span class="cn">only_in_b</span>   = <span class="cn">test_b</span> - <span class="cn">test_a</span>           <span class="co"># чистая разница</span>
+
+<span class="cf">print</span>(<span class="cs">f"Видели обе версии: <span style="color:#ff79c6;">{len(overlap)}</span>"</span>)
+<span class="cf">print</span>(<span class="cs">f"Только новая: <span style="color:#ff79c6;">{len(only_in_b)}</span>"</span>)</div>
+                    <div class="term" style="font-size: clamp(11px, 1.3vw, 14px); padding: 14px;"><span class="out">Видели обе версии: 1247
+Только новая: 48753</span></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 6c: Example - dedup -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Пример 1</p>
+                <h2>Автоматическая дедупликация</h2>
+                <p class="subtitle">Что Python сделает с дубликатом <code style="font-family:'SF Mono',monospace;">"python"</code>? <span class="highlight">Нажмите →</span> для ответа.</p>
+                <div class="code-output" style="max-width: 880px;">
+                    <div class="code-block" style="margin-top: 0; font-size: clamp(13px, 1.5vw, 16px); padding: 18px;"><span class="cn">tags</span> = {<span class="cs">"python"</span>, <span class="cs">"sql"</span>, <span class="cs">"python"</span>, <span class="cs">"git"</span>}
+
+<span class="cf">print</span>(<span class="cn">tags</span>)</div>
+                    <div class="term reveal-output" data-prompt="▶ нажмите → чтобы увидеть вывод" style="font-size: clamp(14px, 1.6vw, 18px); padding: 18px;"><span class="out">{'python', 'sql', 'git'}</span></div>
+                </div>
+                <p class="body-text reveal-output" style="margin-top: 22px; font-size: clamp(13px, 1.5vw, 16px); color: #86868b;">
+                    Второй <code style="font-family:'SF Mono',monospace;">"python"</code> исчез - set <span class="highlight">молча</span> убрал дубликат. Порядок не гарантирован.
+                </p>
+            </div>
+        </div>
+
+        <!-- 6d: Example - length -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Пример 2</p>
+                <h2>Длина после дедупликации</h2>
+                <p class="subtitle">Мы написали 4 элемента - сколько окажется? <span class="highlight">Нажмите →</span> для ответа.</p>
+                <div class="code-output" style="max-width: 880px;">
+                    <div class="code-block" style="margin-top: 0; font-size: clamp(13px, 1.5vw, 16px); padding: 18px;"><span class="cn">tags</span> = {<span class="cs">"python"</span>, <span class="cs">"sql"</span>, <span class="cs">"python"</span>, <span class="cs">"git"</span>}
+
+<span class="cf">print</span>(<span class="cf">len</span>(<span class="cn">tags</span>))</div>
+                    <div class="term reveal-output" data-prompt="▶ нажмите → чтобы увидеть вывод" style="font-size: clamp(14px, 1.6vw, 18px); padding: 18px;"><span class="out">3</span></div>
+                </div>
+                <p class="body-text reveal-output" style="margin-top: 22px; font-size: clamp(13px, 1.5vw, 16px); color: #86868b;">
+                    Не 4, а <span class="highlight">3</span> - set считает только уникальные. Удобный способ узнать «сколько разных значений в списке».
+                </p>
+            </div>
+        </div>
+
+        <!-- 6e: Example - membership -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Пример 3</p>
+                <h2>Проверка принадлежности</h2>
+                <p class="subtitle">Что вернёт <code style="font-family:'SF Mono',monospace;">x in set</code>? <span class="highlight">Нажмите →</span> для ответа.</p>
+                <div class="code-output" style="max-width: 880px;">
+                    <div class="code-block" style="margin-top: 0; font-size: clamp(13px, 1.5vw, 16px); padding: 18px;"><span class="cn">tags</span> = {<span class="cs">"python"</span>, <span class="cs">"sql"</span>, <span class="cs">"git"</span>}
+
+<span class="cf">print</span>(<span class="cs">"python"</span> <span class="ck">in</span> <span class="cn">tags</span>)
+<span class="cf">print</span>(<span class="cs">"java"</span> <span class="ck">in</span> <span class="cn">tags</span>)</div>
+                    <div class="term reveal-output" data-prompt="▶ нажмите → чтобы увидеть вывод" style="font-size: clamp(14px, 1.6vw, 18px); padding: 18px;"><span class="out">True
+False</span></div>
+                </div>
+                <p class="body-text reveal-output" style="margin-top: 22px; font-size: clamp(13px, 1.5vw, 16px); color: #86868b;">
+                    Поиск в set - это <span class="highlight">O(1)</span>. В списке тот же <code style="font-family:'SF Mono',monospace;">in</code> был бы O(n) - для миллиона элементов разница огромная.
+                </p>
+            </div>
+        </div>
+
+        <!-- 7: Set operations -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Операции</p>
+                <h2>Операции над множествами</h2>
+                <table class="type-table">
+                    <tr>
+                        <th>Операция</th>
+                        <th>Действие</th>
+                        <th>Пример</th>
+                    </tr>
+                    <tr>
+                        <td class="ttype">a | b</td>
+                        <td>Объединение</td>
+                        <td class="tex">{1,2,3} | {3,4} → {1,2,3,4}</td>
+                    </tr>
+                    <tr>
+                        <td class="ttype">a &amp; b</td>
+                        <td>Пересечение</td>
+                        <td class="tex">{1,2,3} &amp; {2,3,4} → {2,3}</td>
+                    </tr>
+                    <tr>
+                        <td class="ttype">a - b</td>
+                        <td>Разность</td>
+                        <td class="tex">{1,2,3} - {2,3} → {1}</td>
+                    </tr>
+                    <tr>
+                        <td class="ttype">a ^ b</td>
+                        <td>Симметричная разность</td>
+                        <td class="tex">{1,2,3} ^ {2,3,4} → {1,4}</td>
+                    </tr>
+                </table>
+                <div class="quote-card success" style="margin-top: 22px;">
+                    <div class="label">Лайфхак</div>
+                    <p>Удаление дубликатов из списка: <span style="font-family: 'SF Mono', monospace; color: #007aff;">list(set(items))</span> - но порядок теряется.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 8: Dictionaries intro (concept) -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Что это?</p>
+                <h2>Словари (dict)</h2>
+                <p class="subtitle">Связь между <span class="highlight">ключом</span> (имя, ID, дата) и <span class="highlight">значением</span> (любой объект). Доступ по ключу - за O(1). Это главная коллекция Python: JSON-ответы, конфиги, кеши, параметры функций - всё словари под капотом.</p>
+                <div class="dict-vis">
+                    <div class="dict-vis-header">
+                        <span>ключ</span><span></span><span>значение</span>
+                    </div>
+                    <div class="dict-row">
+                        <div class="key-cell">"name"</div>
+                        <div class="arrow-cell">→</div>
+                        <div class="val-cell">"Алиса"</div>
+                    </div>
+                    <div class="dict-row">
+                        <div class="key-cell">"age"</div>
+                        <div class="arrow-cell">→</div>
+                        <div class="val-cell">30</div>
+                    </div>
+                    <div class="dict-row">
+                        <div class="key-cell">"city"</div>
+                        <div class="arrow-cell">→</div>
+                        <div class="val-cell">"Ташкент"</div>
+                    </div>
+                </div>
+                <div class="code-block" style="max-width: 760px; margin-top: 8px; font-size: clamp(12px, 1.4vw, 15px); padding: 16px;"><span class="cn">user</span> = {<span class="cs">"name"</span>: <span class="cs">"Алиса"</span>, <span class="cs">"age"</span>: <span class="cm">30</span>, <span class="cs">"city"</span>: <span class="cs">"Ташкент"</span>}</div>
+            </div>
+        </div>
+
+        <!-- 8b: Why dicts -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Мотивация</p>
+                <h2>Зачем нужны словари</h2>
+                <p class="subtitle">Словарь - <span class="highlight">главная коллекция Python</span>. JSON, конфиги, API, кэши - всё под капотом словари.</p>
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; max-width: 1050px; width: 100%; margin: 18px auto 14px;">
+                    <div style="background: rgba(0,122,255,0.05); border: 1.5px solid rgba(0,122,255,0.2); border-radius: 14px; padding: 20px; text-align: left;">
+                        <div style="font-size: clamp(22px, 2.6vw, 30px); font-weight: 700; color: #007aff; line-height: 1; margin-bottom: 10px;">01</div>
+                        <h3 style="font-size: clamp(15px, 1.8vw, 20px); font-weight: 600; margin-bottom: 8px; color: #1d1d1f;">Поиск по имени</h3>
+                        <p style="font-size: clamp(12px, 1.4vw, 15px); color: #515154; line-height: 1.45; margin: 0;">Записная книжка: имя → телефон. Доступ <span class="highlight">O(1)</span> вместо перебора.</p>
+                    </div>
+                    <div style="background: rgba(0,122,255,0.05); border: 1.5px solid rgba(0,122,255,0.2); border-radius: 14px; padding: 20px; text-align: left;">
+                        <div style="font-size: clamp(22px, 2.6vw, 30px); font-weight: 700; color: #007aff; line-height: 1; margin-bottom: 10px;">02</div>
+                        <h3 style="font-size: clamp(15px, 1.8vw, 20px); font-weight: 600; margin-bottom: 8px; color: #1d1d1f;">JSON ↔ dict</h3>
+                        <p style="font-size: clamp(12px, 1.4vw, 15px); color: #515154; line-height: 1.45; margin: 0;">Все API-ответы, конфиги, сохранения - это словари в обёртке JSON.</p>
+                    </div>
+                    <div style="background: rgba(0,122,255,0.05); border: 1.5px solid rgba(0,122,255,0.2); border-radius: 14px; padding: 20px; text-align: left;">
+                        <div style="font-size: clamp(22px, 2.6vw, 30px); font-weight: 700; color: #007aff; line-height: 1; margin-bottom: 10px;">03</div>
+                        <h3 style="font-size: clamp(15px, 1.8vw, 20px); font-weight: 600; margin-bottom: 8px; color: #1d1d1f;">Замена if-elif</h3>
+                        <p style="font-size: clamp(12px, 1.4vw, 15px); color: #515154; line-height: 1.45; margin: 0;">10 веток if-elif заменяются на одну строку <code style="font-family:'SF Mono',monospace;color:#007aff;">d[key]</code>.</p>
+                    </div>
+                </div>
+                <div class="code-output" style="max-width: 940px; margin-top: 10px;">
+                    <div class="code-block" style="margin-top: 0; font-size: clamp(11px, 1.3vw, 14px); padding: 14px;"><span class="co"># реально: парсинг ответа от API</span>
+<span class="cn">response</span> = <span class="cn">requests</span>.get(<span class="cs">"https://api.bank.uz/user/42"</span>).json()
+<span class="co"># response - это уже dict</span>
+
+<span class="cn">name</span>    = <span class="cn">response</span>[<span class="cs">"full_name"</span>]            <span class="co"># обязательное поле</span>
+<span class="cn">email</span>   = <span class="cn">response</span>.get(<span class="cs">"email"</span>, <span class="cs">"-"</span>)        <span class="co"># может не быть</span>
+<span class="cn">balance</span> = <span class="cn">response</span>.get(<span class="cs">"balance"</span>, <span class="cm">0</span>)         <span class="co"># default 0</span>
+
+<span class="cf">print</span>(<span class="cs">f"<span style="color:#ff79c6;">{name}</span>: <span style="color:#ff79c6;">{balance}</span> сум"</span>)</div>
+                    <div class="term" style="font-size: clamp(11px, 1.3vw, 14px); padding: 14px;"><span class="out">Алиша Каримова: 1250000 сум</span></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 8c: Example - access by key -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Пример 1</p>
+                <h2>Доступ по ключу</h2>
+                <p class="subtitle">Предскажите результат. <span class="highlight">Нажмите →</span> для ответа.</p>
+                <div class="code-output" style="max-width: 880px;">
+                    <div class="code-block" style="margin-top: 0; font-size: clamp(13px, 1.5vw, 16px); padding: 18px;"><span class="cn">user</span> = {<span class="cs">"name"</span>: <span class="cs">"Алиса"</span>, <span class="cs">"age"</span>: <span class="cm">30</span>}
+
+<span class="cf">print</span>(<span class="cn">user</span>[<span class="cs">"name"</span>])</div>
+                    <div class="term reveal-output" data-prompt="▶ нажмите → чтобы увидеть вывод" style="font-size: clamp(14px, 1.6vw, 18px); padding: 18px;"><span class="out">Алиса</span></div>
+                </div>
+                <p class="body-text reveal-output" style="margin-top: 22px; font-size: clamp(13px, 1.5vw, 16px); color: #86868b;">
+                    Квадратные скобки с <span class="highlight">ключом</span>, как у списка, но имя вместо номера: <code style="font-family:'SF Mono',monospace;">d["name"]</code>.
+                </p>
+            </div>
+        </div>
+
+        <!-- 8d: Example - length -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Пример 2</p>
+                <h2>Сколько пар в словаре</h2>
+                <p class="subtitle">Предскажите результат. <span class="highlight">Нажмите →</span> для ответа.</p>
+                <div class="code-output" style="max-width: 880px;">
+                    <div class="code-block" style="margin-top: 0; font-size: clamp(13px, 1.5vw, 16px); padding: 18px;"><span class="cn">user</span> = {<span class="cs">"name"</span>: <span class="cs">"Алиса"</span>, <span class="cs">"age"</span>: <span class="cm">30</span>, <span class="cs">"city"</span>: <span class="cs">"Ташкент"</span>}
+
+<span class="cf">print</span>(<span class="cf">len</span>(<span class="cn">user</span>))</div>
+                    <div class="term reveal-output" data-prompt="▶ нажмите → чтобы увидеть вывод" style="font-size: clamp(14px, 1.6vw, 18px); padding: 18px;"><span class="out">3</span></div>
+                </div>
+                <p class="body-text reveal-output" style="margin-top: 22px; font-size: clamp(13px, 1.5vw, 16px); color: #86868b;">
+                    <code style="font-family:'SF Mono',monospace;">len(d)</code> - число <span class="highlight">пар</span> (ключ, значение). Не число ключей или значений - это одно и то же.
+                </p>
+            </div>
+        </div>
+
+        <!-- 8e: Example - key membership -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Пример 3</p>
+                <h2>Проверка наличия ключа</h2>
+                <p class="subtitle">Что проверяет <code style="font-family:'SF Mono',monospace;">in</code> - ключ или значение? <span class="highlight">Нажмите →</span> для ответа.</p>
+                <div class="code-output" style="max-width: 880px;">
+                    <div class="code-block" style="margin-top: 0; font-size: clamp(13px, 1.5vw, 16px); padding: 18px;"><span class="cn">user</span> = {<span class="cs">"name"</span>: <span class="cs">"Алиса"</span>, <span class="cs">"age"</span>: <span class="cm">30</span>}
+
+<span class="cf">print</span>(<span class="cs">"age"</span> <span class="ck">in</span> <span class="cn">user</span>)
+<span class="cf">print</span>(<span class="cs">"Алиса"</span> <span class="ck">in</span> <span class="cn">user</span>)</div>
+                    <div class="term reveal-output" data-prompt="▶ нажмите → чтобы увидеть вывод" style="font-size: clamp(14px, 1.6vw, 18px); padding: 18px;"><span class="out">True
+False</span></div>
+                </div>
+                <p class="body-text reveal-output" style="margin-top: 22px; font-size: clamp(13px, 1.5vw, 16px); color: #86868b;">
+                    Только <span class="highlight">ключи</span>! <code style="font-family:'SF Mono',monospace;">"Алиса"</code> - значение, его поиск через <code style="font-family:'SF Mono',monospace;">in user.values()</code>.
+                </p>
+            </div>
+        </div>
+
+        <!-- 9: Dict access -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Доступ</p>
+                <h2>Чтение по ключу</h2>
+                <div class="code-block" style="max-width: 720px; font-size: clamp(12px, 1.4vw, 16px); padding: 16px;"><span class="cn">user</span> = {<span class="cs">"name"</span>: <span class="cs">"Алиса"</span>, <span class="cs">"age"</span>: <span class="cm">30</span>}</div>
+                <p class="tryout-hint">Кликните на выражение - увидите результат:</p>
+                <div class="tryout-chips">
+                    <button class="expr-chip" data-expr="bracket" data-key="name" onclick="tryDict(this)">user["name"]</button>
+                    <button class="expr-chip" data-expr="bracket" data-key="age" onclick="tryDict(this)">user["age"]</button>
+                    <button class="expr-chip danger" data-expr="bracket" data-key="city" onclick="tryDict(this)">user["city"]</button>
+                    <button class="expr-chip" data-expr="get" data-key="city" onclick="tryDict(this)">user.get("city")</button>
+                    <button class="expr-chip" data-expr="getDefault" data-key="city" data-default="NA" onclick="tryDict(this)">user.get("city", "NA")</button>
+                </div>
+                <div class="tryout-output empty" id="dict-output">// клик по любому выражению</div>
+                <div class="quote-card warning" style="margin-top: 18px;">
+                    <div class="label">Внимание</div>
+                    <p><span style="font-family: 'SF Mono', monospace;">d[k]</span> на отсутствующем ключе вызовет <span class="accent-red">KeyError</span>. <span style="font-family: 'SF Mono', monospace; color: #007aff;">.get()</span> вернёт <span class="highlight">None</span> или значение по умолчанию.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 10: Dict methods + iteration -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Перебор</p>
+                <h2>Итерация по словарю</h2>
+                <div class="code-output">
+                    <div class="code-block" style="margin-top: 0;"><span class="cn">scores</span> = {<span class="cs">"Аня"</span>: <span class="cm">85</span>, <span class="cs">"Боря"</span>: <span class="cm">72</span>, <span class="cs">"Вика"</span>: <span class="cm">91</span>}
+
+<span class="ck">for</span> <span class="cn">k</span> <span class="ck">in</span> <span class="cn">scores</span>:
+    <span class="cf">print</span>(<span class="cn">k</span>)              <span class="co"># только ключи</span>
+
+<span class="ck">for</span> <span class="cn">v</span> <span class="ck">in</span> <span class="cn">scores</span>.values():
+    <span class="cf">print</span>(<span class="cn">v</span>)              <span class="co"># только значения</span>
+
+<span class="ck">for</span> <span class="cn">k</span>, <span class="cn">v</span> <span class="ck">in</span> <span class="cn">scores</span>.items():
+    <span class="cf">print</span>(<span class="cs">f"<span style="color:#ff79c6;">{k}</span>: <span style="color:#ff79c6;">{v}</span>"</span>)</div>
+                    <div class="term"><span class="out">Аня: 85
+Боря: 72
+Вика: 91</span></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 11: Question - which collection -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Вопрос</p>
+                <h2>Какая коллекция подойдёт?</h2>
+                <p class="subtitle">Хранить пары «город → население» с быстрым поиском по городу</p>
+                <div class="options-grid">
+                    <div class="option-card"><span class="option-letter">A</span><code>list</code> - упорядоченный список</div>
+                    <div class="option-card"><span class="option-letter">B</span><code>tuple</code> - неизменяемый</div>
+                    <div class="option-card"><span class="option-letter">C</span><code>set</code> - уникальные элементы</div>
+                    <div class="option-card"><span class="option-letter">D</span><code>dict</code> - пары ключ-значение</div>
+                </div>
+                <p class="think-hint">Подумайте минуту →</p>
+            </div>
+        </div>
+
+        <!-- 11c: Answer to MCQ -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Ответ</p>
+                <h2>D - словарь (dict)</h2>
+                <p class="subtitle">«Город → население» - это ровно тот сценарий, для которого создан <span class="highlight">словарь</span>.</p>
+                <div class="code-output" style="max-width: 900px;">
+                    <div class="code-block" style="margin-top: 0; font-size: clamp(12px, 1.4vw, 15px); padding: 16px;"><span class="cn">cities</span> = {
+    <span class="cs">"Ташкент"</span>:    <span class="cm">2_900_000</span>,
+    <span class="cs">"Самарканд"</span>: <span class="cm">530_000</span>,
+    <span class="cs">"Бухара"</span>:    <span class="cm">280_000</span>,
+}
+
+<span class="cf">print</span>(<span class="cn">cities</span>[<span class="cs">"Ташкент"</span>])  <span class="co"># O(1) - мгновенно</span></div>
+                    <div class="term reveal-output" data-prompt="▶ нажмите → для ответа" style="font-size: clamp(13px, 1.5vw, 16px); padding: 16px;"><span class="out">2900000</span></div>
+                </div>
+                <p class="body-text reveal-output" style="margin-top: 18px; font-size: clamp(13px, 1.5vw, 16px); color: #86868b;">
+                    <span class="highlight">list</span> искал бы запись за O(n). <span class="highlight">set</span> хранит только сами значения, без связи. <span class="highlight">tuple</span> - неизменяемый. <span class="highlight">dict</span> - единственный, кто реально создан для key → value.
+                </p>
+            </div>
+        </div>
+
+        <!-- 11d: Collection comparison table -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Шпаргалка</p>
+                <h2>Коллекции - когда что</h2>
+                <table class="type-table">
+                    <thead>
+                        <tr>
+                            <th>Тип</th>
+                            <th>Изменяемый</th>
+                            <th>Упорядоченный</th>
+                            <th>Дубликаты</th>
+                            <th>Главный сценарий</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="ttype">list []</td>
+                            <td class="tex">да</td>
+                            <td class="tex">да</td>
+                            <td class="tex">да</td>
+                            <td class="tex">растущая последовательность</td>
+                        </tr>
+                        <tr>
+                            <td class="ttype">tuple ()</td>
+                            <td class="tex">нет</td>
+                            <td class="tex">да</td>
+                            <td class="tex">да</td>
+                            <td class="tex">фиксированный набор</td>
+                        </tr>
+                        <tr>
+                            <td class="ttype">set {}</td>
+                            <td class="tex">да</td>
+                            <td class="tex">нет</td>
+                            <td class="tex">нет</td>
+                            <td class="tex">уникальные + быстрый поиск</td>
+                        </tr>
+                        <tr>
+                            <td class="ttype">dict {k:v}</td>
+                            <td class="tex">да</td>
+                            <td class="tex">да (с 3.7)</td>
+                            <td class="tex">ключи уникальны</td>
+                            <td class="tex">поиск по имени/ключу</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="quote-card" style="margin-top: 22px;">
+                    <div class="label">Шорткат для выбора</div>
+                    <p>«Поиск по имени?» → <span class="highlight">dict</span>. «Уникальные значения, быстрый <code style="font-family:'SF Mono',monospace;">in</code>?» → <span class="highlight">set</span>. «Меняется?» → <span class="highlight">list</span>. «Не меняется?» → <span class="highlight">tuple</span>.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 11b: Break -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Половина пути</p>
+                <h1 style="font-size: clamp(80px, 14vw, 200px);">Перерыв</h1>
+                <p class="subtitle" style="margin-top: 18px; font-size: clamp(28px, 4vw, 56px); color: #1d1d1f; font-weight: 500;">5–10 минут</p>
+                <p class="body-text" style="margin-top: 32px; font-size: clamp(15px, 1.8vw, 22px);">☕ Кофе, разминка, вопросы - встретимся снова с функциями</p>
+            </div>
+        </div>
+
+        <!-- 12: Why functions -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Мотивация</p>
+                <h2>Зачем нужны функции</h2>
+                <p class="subtitle">Без функций код на 10 000 строк превращается в ад. Функция - <span class="highlight">именованный блок кода с собственным миром</span>.</p>
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; max-width: 1050px; width: 100%; margin: 18px auto 14px;">
+                    <div style="background: rgba(0,122,255,0.05); border: 1.5px solid rgba(0,122,255,0.2); border-radius: 14px; padding: 20px; text-align: left;">
+                        <div style="font-size: clamp(22px, 2.6vw, 30px); font-weight: 700; color: #007aff; line-height: 1; margin-bottom: 10px;">01</div>
+                        <h3 style="font-size: clamp(15px, 1.8vw, 20px); font-weight: 600; margin-bottom: 8px; color: #1d1d1f;">Повтор (DRY)</h3>
+                        <p style="font-size: clamp(12px, 1.4vw, 15px); color: #515154; line-height: 1.45; margin: 0;">Описали логику один раз - используем тысячу. Поправили в одном месте - везде.</p>
+                    </div>
+                    <div style="background: rgba(0,122,255,0.05); border: 1.5px solid rgba(0,122,255,0.2); border-radius: 14px; padding: 20px; text-align: left;">
+                        <div style="font-size: clamp(22px, 2.6vw, 30px); font-weight: 700; color: #007aff; line-height: 1; margin-bottom: 10px;">02</div>
+                        <h3 style="font-size: clamp(15px, 1.8vw, 20px); font-weight: 600; margin-bottom: 8px; color: #1d1d1f;">Имя</h3>
+                        <p style="font-size: clamp(12px, 1.4vw, 15px); color: #515154; line-height: 1.45; margin: 0;">Самодокументируемый код: <code style="font-family:'SF Mono',monospace;color:#007aff;">calc_tax(...)</code> понятнее 5 строк формулы.</p>
+                    </div>
+                    <div style="background: rgba(0,122,255,0.05); border: 1.5px solid rgba(0,122,255,0.2); border-radius: 14px; padding: 20px; text-align: left;">
+                        <div style="font-size: clamp(22px, 2.6vw, 30px); font-weight: 700; color: #007aff; line-height: 1; margin-bottom: 10px;">03</div>
+                        <h3 style="font-size: clamp(15px, 1.8vw, 20px); font-weight: 600; margin-bottom: 8px; color: #1d1d1f;">Изоляция</h3>
+                        <p style="font-size: clamp(12px, 1.4vw, 15px); color: #515154; line-height: 1.45; margin: 0;">Свой scope. Локальные переменные не «протекают» наружу. Снаружи нельзя сломать.</p>
+                    </div>
+                </div>
+                <div class="code-output" style="max-width: 940px; margin-top: 10px;">
+                    <div class="code-block" style="margin-top: 0; font-size: clamp(11px, 1.3vw, 14px); padding: 14px;"><span class="co"># реальный пример: расчёт цены со скидкой,</span>
+<span class="co"># используется в корзине, инвойсе, отчёте, чекауте...</span>
+<span class="ck">def</span> <span class="cf">final_price</span>(<span class="cn">price</span>, <span class="cn">discount</span>=<span class="cm">0</span>, <span class="cn">tax</span>=<span class="cm">0.12</span>):
+    <span class="ck">return</span> (<span class="cn">price</span> * (<span class="cm">1</span> - <span class="cn">discount</span>)) * (<span class="cm">1</span> + <span class="cn">tax</span>)
+
+<span class="cn">cart_total</span>   = <span class="cf">final_price</span>(<span class="cm">100</span>, <span class="cn">discount</span>=<span class="cm">0.10</span>)
+<span class="cn">invoice_sum</span> = <span class="cf">final_price</span>(<span class="cm">250</span>)
+<span class="cn">vip_offer</span>   = <span class="cf">final_price</span>(<span class="cm">500</span>, <span class="cn">discount</span>=<span class="cm">0.25</span>)</div>
+                    <div class="term" style="font-size: clamp(11px, 1.3vw, 14px); padding: 14px;"><span class="out">cart    = 100.80
+invoice = 280.00
+vip     = 420.00</span></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 12b: Before / after function -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Без функции vs с функцией</p>
+                <h2>Одно правило вместо 50 копий</h2>
+                <p class="subtitle">Слева - <span class="accent-red">ад дублирования</span>. Справа - <span class="accent-green">переиспользуемый код</span>.</p>
+                <div class="comparison-grid">
+                    <div class="comparison-item old">
+                        <div class="label">без функции</div>
+                        <h3>Каждый заказ - копипаст</h3>
+                        <div class="code-block" style="margin-top: 8px; font-size: clamp(10px, 1.15vw, 13px); padding: 14px;"><span class="co"># Заказ 1</span>
+<span class="cn">p1</span> = <span class="cm">100</span> * <span class="cm">1.1</span> + <span class="cm">50</span>
+<span class="cf">print</span>(<span class="cs">f"Заказ 1: <span style="color:#ff79c6;">{p1}</span>"</span>)
+
+<span class="co"># Заказ 2</span>
+<span class="cn">p2</span> = <span class="cm">250</span> * <span class="cm">1.1</span> + <span class="cm">50</span>
+<span class="cf">print</span>(<span class="cs">f"Заказ 2: <span style="color:#ff79c6;">{p2}</span>"</span>)
+
+<span class="co"># Заказ 3</span>
+<span class="cn">p3</span> = <span class="cm">80</span> * <span class="cm">1.1</span> + <span class="cm">50</span>
+<span class="cf">print</span>(<span class="cs">f"Заказ 3: <span style="color:#ff79c6;">{p3}</span>"</span>)
+
+<span class="co"># ... ещё 47 заказов</span></div>
+                    </div>
+                    <div class="comparison-item new">
+                        <div class="label">с функцией</div>
+                        <h3>Описали раз, вызвали 50</h3>
+                        <div class="code-block" style="margin-top: 8px; font-size: clamp(10px, 1.15vw, 13px); padding: 14px;"><span class="ck">def</span> <span class="cf">order_total</span>(<span class="cn">price</span>):
+    <span class="ck">return</span> <span class="cn">price</span> * <span class="cm">1.1</span> + <span class="cm">50</span>
+
+
+<span class="cn">orders</span> = [<span class="cm">100</span>, <span class="cm">250</span>, <span class="cm">80</span>, <span class="cm">500</span>, <span class="cm">30</span>]
+
+<span class="ck">for</span> <span class="cn">i</span>, <span class="cn">p</span> <span class="ck">in</span> <span class="cf">enumerate</span>(<span class="cn">orders</span>, <span class="cm">1</span>):
+    <span class="cf">print</span>(<span class="cs">f"Заказ <span style="color:#ff79c6;">{i}</span>: <span style="color:#ff79c6;">{order_total(p)}</span>"</span>)</div>
+                    </div>
+                </div>
+                <div class="quote-card warning" style="margin-top: 22px;">
+                    <div class="label">Что меняется при новом правиле</div>
+                    <p>Изменился налог? В левом коде - <span class="accent-red">50 правок</span>, легко пропустить. В правом - <span class="accent-green">одна строка</span>.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 13: def syntax -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Синтаксис</p>
+                <h2>Синтаксис: def</h2>
+                <p class="subtitle">Объявление функции - описание, как её вызвать</p>
+                <div class="code-block" style="max-width: 760px;"><span class="ck">def</span> <span class="cf">greet</span>(<span class="cn">name</span>):
+    <span class="cs">"""Приветствует пользователя."""</span>
+    <span class="cn">message</span> = <span class="cs">f"Привет, <span style="color:#ff79c6;">{name}</span>!"</span>
+    <span class="ck">return</span> <span class="cn">message</span>
+
+<span class="co"># Вызов</span>
+<span class="cf">print</span>(<span class="cf">greet</span>(<span class="cs">"Алиса"</span>))   <span class="co"># Привет, Алиса!</span></div>
+                <div class="func-machine" style="margin-top: 28px;">
+                    <div class="input-pill">"Алиса"</div>
+                    <span class="arrow">→</span>
+                    <div class="machine-box">greet()</div>
+                    <span class="arrow">→</span>
+                    <div class="output-pill">"Привет, Алиса!"</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 14: How function call works -->
+        <div class="slide" data-trace="square">
+            <div class="slide-content">
+                <p class="eyebrow">Шаг за шагом</p>
+                <h2>Как работает вызов</h2>
+                <p class="subtitle">Нажмите «Запустить» - каждый шаг проявится по очереди</p>
+                <div class="trace-wrap">
+                    <div class="code-block" style="margin-top: 0;"><span class="ck">def</span> <span class="cf">square</span>(<span class="cn">n</span>):
+    <span class="cn">result</span> = <span class="cn">n</span> * <span class="cn">n</span>
+    <span class="ck">return</span> <span class="cn">result</span>
+
+<span class="cn">x</span> = <span class="cf">square</span>(<span class="cm">4</span>)</div>
+                    <table class="trace-table" id="trace-square">
+                        <thead>
+                            <tr>
+                                <th>Шаг</th>
+                                <th>Действие</th>
+                                <th>Значение</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="trace-row manual"><td>1</td><td>вызов square(4)</td><td>n = 4</td></tr>
+                            <tr class="trace-row manual"><td>2</td><td>n * n</td><td>16</td></tr>
+                            <tr class="trace-row manual"><td>3</td><td>result = 16</td><td>result = 16</td></tr>
+                            <tr class="trace-row manual"><td>4</td><td>return result</td><td>→ 16</td></tr>
+                            <tr class="trace-row manual"><td>5</td><td>x = 16</td><td>x = 16</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="trace-controls">
+                    <button class="interactive-btn" onclick="runTrace('trace-square')">▶ Запустить</button>
+                    <button class="interactive-btn secondary" onclick="resetTrace('trace-square')">Сбросить</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 15: return -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">return</p>
+                <h2>Возврат значения</h2>
+                <div class="code-output">
+                    <div class="code-block" style="margin-top: 0;"><span class="ck">def</span> <span class="cf">divmod_safe</span>(<span class="cn">a</span>, <span class="cn">b</span>):
+    <span class="ck">if</span> <span class="cn">b</span> == <span class="cm">0</span>:
+        <span class="ck">return</span> <span class="cm">None</span>
+    <span class="ck">return</span> <span class="cn">a</span> // <span class="cn">b</span>, <span class="cn">a</span> % <span class="cn">b</span>
+
+<span class="cn">q</span>, <span class="cn">r</span> = <span class="cf">divmod_safe</span>(<span class="cm">17</span>, <span class="cm">5</span>)
+<span class="cf">print</span>(<span class="cn">q</span>, <span class="cn">r</span>)</div>
+                    <div class="term reveal-output" data-prompt="▶ нажмите → чтобы увидеть вывод"><span class="out">3 2</span></div>
+                </div>
+                <div class="quote-card" style="margin-top: 24px;">
+                    <div class="label">Запомнить</div>
+                    <p>return завершает функцию. Несколько значений возвращаются как кортеж и могут быть распакованы в переменные.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 16: Default arguments -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Опционально</p>
+                <h2>Параметры по умолчанию</h2>
+                <p class="subtitle">Введите имя и приветствие - оставьте поле пустым, сработает значение по умолчанию</p>
+                <div class="code-block" style="max-width: 720px; font-size: clamp(12px, 1.4vw, 15px); padding: 16px;"><span class="ck">def</span> <span class="cf">greet</span>(<span class="cn">name</span>, <span class="cn">greeting</span>=<span class="cs">"Привет"</span>):
+    <span class="ck">return</span> <span class="cs">f"<span style="color:#ff79c6;">{greeting}</span>, <span style="color:#ff79c6;">{name}</span>!"</span></div>
+                <div class="kw-inputs">
+                    <label>
+                        <span class="lbl">name <small>обязательный</small></span>
+                        <input type="text" id="kw-name" value="Аня" oninput="tryDefaults()">
+                    </label>
+                    <label>
+                        <span class="lbl">greeting <small>пусто → "Привет"</small></span>
+                        <input type="text" id="kw-greeting" placeholder="пусто = по умолчанию" oninput="tryDefaults()">
+                    </label>
+                </div>
+                <div class="tryout-output" id="kw-output">Привет, Аня!</div>
+                <p class="body-text" style="margin-top: 16px; font-size: clamp(12px, 1.3vw, 15px); color: #86868b;">
+                    Параметры со значением по умолчанию идут <span class="highlight">после</span> обычных в сигнатуре функции.
+                </p>
+            </div>
+        </div>
+
+        <!-- 16b: Mutable defaults trap -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Ловушка #1</p>
+                <h2>Изменяемые значения по умолчанию</h2>
+                <p class="subtitle">Default вычисляется <span class="accent-red">один раз</span> - при объявлении функции, а не при каждом вызове</p>
+                <div class="comparison-grid">
+                    <div class="comparison-item old">
+                        <div class="label">опасно</div>
+                        <h3>Один список на всех вызовов</h3>
+                        <div class="code-block" style="margin-top: 8px; font-size: clamp(10px, 1.2vw, 13px); padding: 14px;"><span class="ck">def</span> <span class="cf">add</span>(<span class="cn">item</span>, <span class="cn">cart</span>=[]):
+    <span class="cn">cart</span>.append(<span class="cn">item</span>)
+    <span class="ck">return</span> <span class="cn">cart</span>
+
+<span class="cf">print</span>(<span class="cf">add</span>(<span class="cs">"яблоко"</span>))
+<span class="co"># ["яблоко"]</span>
+<span class="cf">print</span>(<span class="cf">add</span>(<span class="cs">"груша"</span>))
+<span class="co"># ["яблоко", "груша"] ⚠</span></div>
+                    </div>
+                    <div class="comparison-item new">
+                        <div class="label">правильно</div>
+                        <h3>Новый список каждый раз</h3>
+                        <div class="code-block" style="margin-top: 8px; font-size: clamp(10px, 1.2vw, 13px); padding: 14px;"><span class="ck">def</span> <span class="cf">add</span>(<span class="cn">item</span>, <span class="cn">cart</span>=<span class="cm">None</span>):
+    <span class="ck">if</span> <span class="cn">cart</span> <span class="ck">is</span> <span class="cm">None</span>:
+        <span class="cn">cart</span> = []
+    <span class="cn">cart</span>.append(<span class="cn">item</span>)
+    <span class="ck">return</span> <span class="cn">cart</span></div>
+                    </div>
+                </div>
+                <div class="quote-card warning" style="margin-top: 22px;">
+                    <div class="label">Аналогия</div>
+                    <p>«Один блокнот на столе учителя» vs «новый чистый лист каждому ученику». Никогда не используйте <code style="font-family: 'SF Mono', monospace;">[]</code>, <code style="font-family: 'SF Mono', monospace;">{}</code>, <code style="font-family: 'SF Mono', monospace;">set()</code> как значение по умолчанию.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 17: *args -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Позиционные</p>
+                <h2>*args - переменное число позиционных</h2>
+                <p class="subtitle">Подвиньте ползунок - посмотрите, как аргументы упаковываются в кортеж</p>
+                <div class="range-slider-wrapper">
+                    <span class="lbl">аргументов:</span>
+                    <input type="range" class="range-slider" id="args-slider" min="0" max="8" value="3" oninput="updateArgs(this.value)">
+                    <span class="range-value" id="args-value">3</span>
+                </div>
+                <div class="args-vis live-args">
+                    <div class="label-pill">вызов</div>
+                    <div class="pack-row" id="args-call">
+                        <span class="item">1</span><span class="item">2</span><span class="item">3</span>
+                    </div>
+                    <div class="label-pill">↓ args</div>
+                    <div class="pack-row">
+                        <span class="item" id="args-packed" style="color: #af52de; border-color: rgba(175, 82, 222, 0.4);">(1, 2, 3)</span>
+                    </div>
+                </div>
+                <div class="code-output" style="max-width: 900px; margin-top: 12px;">
+                    <div class="code-block" style="margin-top: 0; font-size: clamp(11px, 1.35vw, 14px); padding: 16px;"><span class="ck">def</span> <span class="cf">total</span>(*<span class="cn">args</span>):
+    <span class="ck">return</span> <span class="cf">sum</span>(<span class="cn">args</span>)
+
+<span class="cf">print</span>(<span class="cf">total</span>(<span id="args-call-code">1, 2, 3</span>))</div>
+                    <div class="term" style="font-size: clamp(13px, 1.5vw, 16px); padding: 16px;"><span class="out" id="args-output">6</span></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 18: **kwargs -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Именованные</p>
+                <h2>**kwargs - переменное число именованных</h2>
+                <p class="subtitle">Добавляйте/убирайте поля - kwargs пакует их в словарь</p>
+                <div class="range-slider-wrapper">
+                    <span class="lbl">полей:</span>
+                    <input type="range" class="range-slider" id="kwargs-slider" min="0" max="5" value="3" oninput="updateKwargs(this.value)">
+                    <span class="range-value" id="kwargs-value">3</span>
+                </div>
+                <div class="args-vis live-args">
+                    <div class="label-pill">вызов</div>
+                    <div class="pack-row" id="kwargs-call">
+                        <span class="item">name="Аня"</span>
+                        <span class="item">age=30</span>
+                        <span class="item">city="Ташкент"</span>
+                    </div>
+                    <div class="label-pill">↓ kwargs</div>
+                    <div class="pack-row">
+                        <span class="item" id="kwargs-packed" style="color: #af52de; border-color: rgba(175, 82, 222, 0.4);">{"name": "Аня", "age": 30, "city": "Ташкент"}</span>
+                    </div>
+                </div>
+                <div class="code-output" style="max-width: 900px; margin-top: 12px;">
+                    <div class="code-block" style="margin-top: 0; font-size: clamp(11px, 1.3vw, 14px); padding: 16px;"><span class="ck">def</span> <span class="cf">profile</span>(**<span class="cn">kwargs</span>):
+    <span class="ck">for</span> <span class="cn">k</span>, <span class="cn">v</span> <span class="ck">in</span> <span class="cn">kwargs</span>.items():
+        <span class="cf">print</span>(<span class="cs">f"<span style="color:#ff79c6;">{k}</span>: <span style="color:#ff79c6;">{v}</span>"</span>)
+
+<span class="cf">profile</span>(<span id="kwargs-call-code">name="Аня", age=30, city="Ташкент"</span>)</div>
+                    <div class="term" style="font-size: clamp(13px, 1.5vw, 16px); padding: 16px;"><span class="out" id="kwargs-output">name: Аня
+age: 30
+city: Ташкент</span></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 19: Args order quiz -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Порядок параметров</p>
+                <h2>Куда попадёт каждое значение?</h2>
+                <p class="subtitle">Строгий порядок: <span class="highlight">обычные → defaults → *args → keyword-only → **kwargs</span></p>
+                <div class="code-output" style="max-width: 980px;">
+                    <div class="code-block" style="margin-top: 0; font-size: clamp(11px, 1.3vw, 14px); padding: 16px;"><span class="ck">def</span> <span class="cf">f</span>(<span class="cn">a</span>, <span class="cn">b</span>=<span class="cm">10</span>, *<span class="cn">args</span>, <span class="cn">status</span>=<span class="cs">"active"</span>, **<span class="cn">kwargs</span>):
+    <span class="cf">print</span>(<span class="cn">a</span>, <span class="cn">b</span>, <span class="cn">args</span>, <span class="cn">status</span>, <span class="cn">kwargs</span>)
+
+<span class="cf">f</span>(<span class="cm">1</span>, <span class="cm">2</span>, <span class="cm">3</span>, <span class="cm">4</span>, <span class="cn">status</span>=<span class="cs">"pending"</span>, <span class="cn">user</span>=<span class="cs">"John"</span>)</div>
+                    <div class="term reveal-output" data-prompt="▶ нажмите → чтобы увидеть распределение" style="font-size: clamp(12px, 1.4vw, 15px); padding: 16px;"><span class="out">a       = 1
+b       = 2  <span style="color:#6272a4;"># перезаписал default</span>
+args    = (3, 4)
+status  = "pending"
+kwargs  = {"user": "John"}</span></div>
+                </div>
+                <div class="quote-card warning" style="margin-top: 16px;">
+                    <div class="label">Тонкий момент</div>
+                    <p>После <code style="font-family:'SF Mono',monospace;">*args</code> все аргументы - <span class="highlight">keyword-only</span>. <code style="font-family:'SF Mono',monospace;">status</code> можно передать только по имени - иначе значение попало бы в <code style="font-family:'SF Mono',monospace;">args</code>.</p>
+                </div>
+                <div class="quote-card success" style="margin-top: 14px;">
+                    <div class="label">Распаковка при вызове</div>
+                    <p><code style="font-family:'SF Mono',monospace;color:#007aff;">f(*lst, **dct)</code> - те же <code>*</code> и <code>**</code> работают наоборот: разложить список и словарь как аргументы.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 19b: Why scope -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Прежде чем погружаться</p>
+                <h2>Зачем вообще нужен scope?</h2>
+                <p class="subtitle">Представьте проект на <span class="highlight">10 000 строк</span>. Если бы все переменные были глобальными, ад начался бы на 10-й строке.</p>
+                <div class="comparison-grid">
+                    <div class="comparison-item old">
+                        <div class="label">без scope</div>
+                        <h3>Хаос имён</h3>
+                        <ul style="list-style: none; padding-left: 0;">
+                            <li>• Каждая функция знает обо всём</li>
+                            <li>• Нельзя <code style="font-family:'SF Mono',monospace;">i</code>, <code style="font-family:'SF Mono',monospace;">temp</code>, <code style="font-family:'SF Mono',monospace;">result</code> использовать дважды</li>
+                            <li>• Изменил в одной - сломал в другой</li>
+                            <li>• Никто не знает, кто меняет переменную</li>
+                        </ul>
+                    </div>
+                    <div class="comparison-item new">
+                        <div class="label">со scope</div>
+                        <h3>Изолированные миры</h3>
+                        <ul style="list-style: none; padding-left: 0;">
+                            <li>• У каждой функции свой namespace</li>
+                            <li>• <code style="font-family:'SF Mono',monospace;">i</code> в <code style="font-family:'SF Mono',monospace;">f()</code> ≠ <code style="font-family:'SF Mono',monospace;">i</code> в <code style="font-family:'SF Mono',monospace;">g()</code></li>
+                            <li>• Локальные изменения остаются локальными</li>
+                            <li>• Легко переиспользовать и тестировать</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="quote-card" style="margin-top: 20px;">
+                    <div class="label">Аналогия</div>
+                    <p>Scope - окно с <span class="highlight">односторонним стеклом</span>. Изнутри функции видно внешний мир (глобальные). Снаружи к локальным переменным <span class="accent-red">доступа нет</span>.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 20: Scope -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Видимость</p>
+                <h2>Область видимости (scope)</h2>
+                <p class="subtitle">Кликните на имя - Python ищет его по правилу LEGB</p>
+                <div class="scope-vis" id="scope-vis">
+                    <div class="global-line" id="g-line"><span class="clickable" onclick="lookupName('x', 'inside')">x</span> = 100        <span style="color: #86868b;"># global</span></div>
+                    <div class="local-box" id="l-box">
+                        <div class="local-line"><span style="color: #ff79c6;">def</span> <span style="color: #8be9fd;">demo</span>():</div>
+                        <div class="local-line">&nbsp;&nbsp;&nbsp;&nbsp;<span class="clickable" onclick="lookupName('y', 'inside')">y</span> = 5         <span style="color: #86868b;"># local</span></div>
+                        <div class="local-line">&nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #8be9fd;">print</span>(<span class="clickable" onclick="lookupName('x', 'inside')">x</span>, <span class="clickable" onclick="lookupName('y', 'inside')">y</span>)  <span style="color: #86868b;"># видит global x</span></div>
+                    </div>
+                    <div class="global-line" style="margin-top: 14px;"><span style="color: #8be9fd;">demo</span>()             <span style="color: #86868b;"># 100 5</span></div>
+                    <div class="global-line"><span style="color: #8be9fd;">print</span>(<span class="clickable" onclick="lookupName('y', 'outside')">y</span>)             <span style="color: #ff5555;"># попробуйте: NameError</span></div>
+                </div>
+                <div class="scope-status" id="scope-status">Кликните на любую переменную - увидите путь поиска</div>
+            </div>
+        </div>
+
+        <!-- 21: Scope rules -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Правила</p>
+                <h2>LEGB - порядок поиска</h2>
+                <p class="subtitle">Python ищет имя в этой последовательности</p>
+                <table class="type-table">
+                    <tr>
+                        <th>Уровень</th>
+                        <th>Где</th>
+                    </tr>
+                    <tr>
+                        <td class="ttype">L · Local</td>
+                        <td>Внутри текущей функции</td>
+                    </tr>
+                    <tr>
+                        <td class="ttype">E · Enclosing</td>
+                        <td>Во внешней функции (если есть вложенность)</td>
+                    </tr>
+                    <tr>
+                        <td class="ttype">G · Global</td>
+                        <td>На уровне модуля</td>
+                    </tr>
+                    <tr>
+                        <td class="ttype">B · Built-in</td>
+                        <td>Встроенные имена: print, len, range...</td>
+                    </tr>
+                </table>
+                <div class="quote-card warning" style="margin-top: 24px;">
+                    <div class="label">Важно</div>
+                    <p>Присваивание <span style="font-family: 'SF Mono', monospace;">x = 5</span> внутри функции создаёт локальную переменную, даже если есть глобальная с тем же именем.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 21b: global / nonlocal -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Запись во внешний scope</p>
+                <h2>global и nonlocal</h2>
+                <p class="subtitle">Чтение видит внешний scope. <span class="accent-red">Запись</span> - только локальный. Чтобы переписать внешнюю переменную, нужны ключевые слова.</p>
+                <div class="comparison-grid">
+                    <div class="comparison-item old">
+                        <div class="label">global</div>
+                        <h3>писать в глобальную</h3>
+                        <div class="code-block" style="margin-top: 8px; font-size: clamp(10px, 1.2vw, 13px); padding: 14px;"><span class="cn">counter</span> = <span class="cm">0</span>
+
+<span class="ck">def</span> <span class="cf">inc</span>():
+    <span class="ck">global</span> <span class="cn">counter</span>
+    <span class="cn">counter</span> += <span class="cm">1</span>
+
+<span class="cf">inc</span>(); <span class="cf">inc</span>()
+<span class="cf">print</span>(<span class="cn">counter</span>)  <span class="co"># 2</span></div>
+                    </div>
+                    <div class="comparison-item new">
+                        <div class="label">nonlocal</div>
+                        <h3>писать во внешнюю функцию</h3>
+                        <div class="code-block" style="margin-top: 8px; font-size: clamp(10px, 1.2vw, 13px); padding: 14px;"><span class="ck">def</span> <span class="cf">outer</span>():
+    <span class="cn">x</span> = <span class="cm">0</span>
+    <span class="ck">def</span> <span class="cf">inner</span>():
+        <span class="ck">nonlocal</span> <span class="cn">x</span>
+        <span class="cn">x</span> += <span class="cm">1</span>
+    <span class="cf">inner</span>(); <span class="cf">inner</span>()
+    <span class="ck">return</span> <span class="cn">x</span>
+
+<span class="cf">print</span>(<span class="cf">outer</span>())  <span class="co"># 2</span></div>
+                    </div>
+                </div>
+                <div class="quote-card warning" style="margin-top: 22px;">
+                    <div class="label">Без global</div>
+                    <p>Получите <span class="accent-red">UnboundLocalError</span> - Python считает переменную локальной, как только видит присваивание в теле функции. <code style="font-family: 'SF Mono', monospace;">global</code> явно говорит «не создавай локальную, пиши в глобальную».</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 22: lambda -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Кратко</p>
+                <h2>Лямбда-функции</h2>
+                <p class="subtitle">Короткая безымянная функция в одну строку</p>
+                <div class="comparison-grid">
+                    <div class="comparison-item old">
+                        <div class="label">через def</div>
+                        <h3>Многострочно</h3>
+                        <div class="code-block" style="margin-top: 8px; font-size: clamp(11px, 1.3vw, 14px); padding: 14px;"><span class="ck">def</span> <span class="cf">double</span>(<span class="cn">x</span>):
+    <span class="ck">return</span> <span class="cn">x</span> * <span class="cm">2</span></div>
+                    </div>
+                    <div class="comparison-item new">
+                        <div class="label">через lambda</div>
+                        <h3>Одна строка</h3>
+                        <div class="code-block" style="margin-top: 8px; font-size: clamp(11px, 1.3vw, 14px); padding: 14px;"><span class="cn">double</span> = <span class="ck">lambda</span> <span class="cn">x</span>: <span class="cn">x</span> * <span class="cm">2</span>
+
+<span class="cf">double</span>(<span class="cm">5</span>)   <span class="co"># 10</span></div>
+                    </div>
+                </div>
+                <p class="body-text" style="margin-top: 22px; font-size: clamp(13px, 1.5vw, 16px); color: #86868b;">
+                    Синтаксис: <span style="font-family: 'SF Mono', monospace; color: #007aff;">lambda аргументы: выражение</span>. Только одно выражение, return не пишется.
+                </p>
+            </div>
+        </div>
+
+        <!-- 22b: When NOT to use lambda -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Граница хорошего вкуса</p>
+                <h2>Когда lambda - это уже плохо</h2>
+                <p class="subtitle">Lambda идеальна для коротких выражений. Если логика разветвлена - пишите <code style="font-family:'SF Mono',monospace;">def</code>. <span class="highlight">Код пишется для людей</span>.</p>
+                <div class="comparison-grid">
+                    <div class="comparison-item old">
+                        <div class="label">ужасно</div>
+                        <h3>Тройные тернарные операторы</h3>
+                        <div class="code-block" style="margin-top: 8px; font-size: clamp(10px, 1.15vw, 13px); padding: 14px;"><span class="cn">group</span> = <span class="ck">lambda</span> <span class="cn">x</span>: <span class="cs">"Взрослый"</span> <span class="ck">if</span> <span class="cn">x</span> &gt;= <span class="cm">18</span> <span class="ck">else</span> (<span class="cs">"Подросток"</span> <span class="ck">if</span> <span class="cn">x</span> &gt;= <span class="cm">13</span> <span class="ck">else</span> <span class="cs">"Ребёнок"</span>)</div>
+                    </div>
+                    <div class="comparison-item new">
+                        <div class="label">читаемо</div>
+                        <h3>Обычная функция</h3>
+                        <div class="code-block" style="margin-top: 8px; font-size: clamp(10px, 1.2vw, 13px); padding: 14px;"><span class="ck">def</span> <span class="cf">age_group</span>(<span class="cn">age</span>):
+    <span class="ck">if</span> <span class="cn">age</span> &gt;= <span class="cm">18</span>: <span class="ck">return</span> <span class="cs">"Взрослый"</span>
+    <span class="ck">if</span> <span class="cn">age</span> &gt;= <span class="cm">13</span>: <span class="ck">return</span> <span class="cs">"Подросток"</span>
+    <span class="ck">return</span> <span class="cs">"Ребёнок"</span></div>
+                    </div>
+                </div>
+                <div class="quote-card" style="margin-top: 22px;">
+                    <div class="label">Правило большого пальца</div>
+                    <p>Lambda больше 50–60 символов или с условиями - переписывайте в <code style="font-family:'SF Mono',monospace;">def</code>. Имя функции = бесплатная документация.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 23: lambda with sorted/filter/map -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Применение</p>
+                <h2>lambda + sorted</h2>
+                <p class="subtitle">Нажмите кнопку - карточки физически перестроятся</p>
+                <div class="sort-demo" id="sort-demo">
+                    <div class="person-card" data-name="Аня" data-age="30"><span class="num">1</span><span class="name">Аня</span><span class="age">30</span></div>
+                    <div class="person-card" data-name="Боря" data-age="25"><span class="num">2</span><span class="name">Боря</span><span class="age">25</span></div>
+                    <div class="person-card" data-name="Вика" data-age="28"><span class="num">3</span><span class="name">Вика</span><span class="age">28</span></div>
+                    <div class="person-card" data-name="Глеб" data-age="22"><span class="num">4</span><span class="name">Глеб</span><span class="age">22</span></div>
+                    <div class="person-card" data-name="Дима" data-age="35"><span class="num">5</span><span class="name">Дима</span><span class="age">35</span></div>
+                </div>
+                <div class="sort-buttons">
+                    <button class="interactive-btn" onclick="sortPeople('age', false)">по возрасту ↑</button>
+                    <button class="interactive-btn" onclick="sortPeople('age', true)">по возрасту ↓</button>
+                    <button class="interactive-btn secondary" onclick="sortPeople('name', false)">по имени A→Я</button>
+                    <button class="interactive-btn secondary" onclick="sortPeople('original', false)">сброс</button>
+                </div>
+                <div class="code-output" style="max-width: 900px; margin-top: 14px;">
+                    <div class="code-block" id="sort-code" style="margin-top: 0; font-size: clamp(11px, 1.3vw, 14px); padding: 16px;"><span class="cn">people</span>  <span class="co"># исходный</span></div>
+                    <div class="term" style="font-size: clamp(11px, 1.3vw, 14px); padding: 16px;"><span class="out" id="sort-output">[
+    ('Аня', 30),
+    ('Боря', 25),
+    ('Вика', 28),
+    ('Глеб', 22),
+    ('Дима', 35),
+]</span></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 23b: Late binding gotcha -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Ловушка #2</p>
+                <h2>Late binding в lambda</h2>
+                <p class="subtitle">Лямбда запоминает <span class="accent-red">имя</span> переменной, а не её значение в момент создания</p>
+                <div class="code-output" style="max-width: 900px;">
+                    <div class="code-block" style="margin-top: 0; font-size: clamp(11px, 1.3vw, 14px); padding: 16px;"><span class="cn">funcs</span> = [<span class="ck">lambda</span>: <span class="cn">i</span> <span class="ck">for</span> <span class="cn">i</span> <span class="ck">in</span> <span class="cf">range</span>(<span class="cm">3</span>)]
+
+<span class="ck">for</span> <span class="cn">f</span> <span class="ck">in</span> <span class="cn">funcs</span>:
+    <span class="cf">print</span>(<span class="cf">f</span>())</div>
+                    <div class="term reveal-output" data-prompt="▶ нажмите → предскажите вывод" style="font-size: clamp(13px, 1.5vw, 16px); padding: 16px;"><span class="out">2
+2
+2</span> <span class="err" style="color: #ff5555;">⚠ не 0, 1, 2 !</span></div>
+                </div>
+                <div class="quote-card warning" style="margin-top: 18px;">
+                    <p>К моменту вызова всех трёх лямбд цикл уже закончился и <code style="font-family: 'SF Mono', monospace;">i = 2</code>. Каждая лямбда смотрит на одно и то же имя.</p>
+                </div>
+                <div class="code-output" style="max-width: 900px; margin-top: 14px;">
+                    <div class="code-block" style="margin-top: 0; font-size: clamp(11px, 1.3vw, 14px); padding: 16px;"><span class="co"># фикс: «защёлкнуть» текущее i через default-аргумент</span>
+<span class="cn">funcs</span> = [<span class="ck">lambda</span> <span class="cn">i</span>=<span class="cn">i</span>: <span class="cn">i</span> <span class="ck">for</span> <span class="cn">i</span> <span class="ck">in</span> <span class="cf">range</span>(<span class="cm">3</span>)]
+
+<span class="ck">for</span> <span class="cn">f</span> <span class="ck">in</span> <span class="cn">funcs</span>:
+    <span class="cf">print</span>(<span class="cf">f</span>())</div>
+                    <div class="term reveal-output" data-prompt="▶ нажмите → проверьте фикс" style="font-size: clamp(13px, 1.5vw, 16px); padding: 16px;"><span class="out" style="color: #50fa7b;">0
+1
+2</span> ✓</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 24: Question - function output -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Вопрос</p>
+                <h2>Что выведет код?</h2>
+                <div class="code-block" style="max-width: 520px;"><span class="ck">def</span> <span class="cf">f</span>(<span class="cn">x</span>, <span class="cn">y</span>=<span class="cm">10</span>):
+    <span class="ck">return</span> <span class="cn">x</span> + <span class="cn">y</span>
+
+<span class="cf">print</span>(<span class="cf">f</span>(<span class="cm">5</span>))
+<span class="cf">print</span>(<span class="cf">f</span>(<span class="cm">5</span>, <span class="cm">20</span>))
+<span class="cf">print</span>(<span class="cf">f</span>(<span class="cn">y</span>=<span class="cm">3</span>, <span class="cn">x</span>=<span class="cm">7</span>))</div>
+                <div class="options-grid">
+                    <div class="option-card"><span class="option-letter">A</span><code>15 / 25 / 10</code></div>
+                    <div class="option-card"><span class="option-letter">B</span><code>15 / 25 / 21</code></div>
+                    <div class="option-card"><span class="option-letter">C</span><code>5 / 25 / Error</code></div>
+                    <div class="option-card"><span class="option-letter">D</span><code>15 / 20 / 10</code></div>
+                </div>
+                <p class="think-hint">Подумайте минуту →</p>
+            </div>
+        </div>
+
+        <!-- 25: Practice 1 -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Практика 1</p>
+                <h2>Калькулятор статистики</h2>
+                <div class="timer-display">15:00</div>
+                <ol style="list-style: none; padding: 0; max-width: 760px; counter-reset: q; text-align: left;">
+                    <li style="padding: 12px 0 12px 48px; position: relative; font-size: clamp(15px, 1.8vw, 19px); color: #1d1d1f; border-bottom: 1px solid rgba(0,0,0,0.06);">
+                        <span style="position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 30px; height: 30px; border-radius: 50%; background: rgba(0,122,255,0.1); color: #007aff; font-size: 14px; font-weight: 700; display: flex; align-items: center; justify-content: center;">1</span>
+                        Написать функцию <span style="font-family: 'SF Mono', monospace; color: #007aff;">stats(*nums)</span>
+                    </li>
+                    <li style="padding: 12px 0 12px 48px; position: relative; font-size: clamp(15px, 1.8vw, 19px); color: #1d1d1f; border-bottom: 1px solid rgba(0,0,0,0.06);">
+                        <span style="position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 30px; height: 30px; border-radius: 50%; background: rgba(0,122,255,0.1); color: #007aff; font-size: 14px; font-weight: 700; display: flex; align-items: center; justify-content: center;">2</span>
+                        Возвращать словарь: min, max, avg, count
+                    </li>
+                    <li style="padding: 12px 0 12px 48px; position: relative; font-size: clamp(15px, 1.8vw, 19px); color: #1d1d1f; border-bottom: 1px solid rgba(0,0,0,0.06);">
+                        <span style="position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 30px; height: 30px; border-radius: 50%; background: rgba(0,122,255,0.1); color: #007aff; font-size: 14px; font-weight: 700; display: flex; align-items: center; justify-content: center;">3</span>
+                        Если аргументов нет - вернуть <span style="font-family: 'SF Mono', monospace; color: #007aff;">None</span>
+                    </li>
+                    <li style="padding: 12px 0 12px 48px; position: relative; font-size: clamp(15px, 1.8vw, 19px); color: #1d1d1f;">
+                        <span style="position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 30px; height: 30px; border-radius: 50%; background: rgba(0,122,255,0.1); color: #007aff; font-size: 14px; font-weight: 700; display: flex; align-items: center; justify-content: center;">4</span>
+                        Проверить: <span style="font-family: 'SF Mono', monospace; color: #007aff;">stats(1, 2, 3, 4, 5)</span>
+                    </li>
+                </ol>
+            </div>
+        </div>
+
+        <!-- 26: Solution 1 -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Решение</p>
+                <h2>Разбор решения 1</h2>
+                <div class="code-block" style="max-width: 800px;"><span class="ck">def</span> <span class="cf">stats</span>(*<span class="cn">nums</span>):
+    <span class="ck">if</span> <span class="ck">not</span> <span class="cn">nums</span>:
+        <span class="ck">return</span> <span class="cm">None</span>
+    <span class="ck">return</span> {
+        <span class="cs">"min"</span>: <span class="cf">min</span>(<span class="cn">nums</span>),
+        <span class="cs">"max"</span>: <span class="cf">max</span>(<span class="cn">nums</span>),
+        <span class="cs">"avg"</span>: <span class="cf">sum</span>(<span class="cn">nums</span>) / <span class="cf">len</span>(<span class="cn">nums</span>),
+        <span class="cs">"count"</span>: <span class="cf">len</span>(<span class="cn">nums</span>),
+    }
+
+<span class="cf">print</span>(<span class="cf">stats</span>(<span class="cm">1</span>, <span class="cm">2</span>, <span class="cm">3</span>, <span class="cm">4</span>, <span class="cm">5</span>))
+<span class="co"># {"min": 1, "max": 5, "avg": 3.0, "count": 5}</span></div>
+                <div class="flow-row">
+                    <span class="step-pill">*args</span>
+                    <span class="arrow">→</span>
+                    <span class="step-pill">проверка</span>
+                    <span class="arrow">→</span>
+                    <span class="step-pill">dict-return</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 27: Practice 2 -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Практика 2</p>
+                <h2>Топ-3 студента</h2>
+                <div class="timer-display">15:00</div>
+                <div class="code-block" style="max-width: 720px; margin-bottom: 12px;"><span class="cn">scores</span> = {<span class="cs">"Аня"</span>: <span class="cm">85</span>, <span class="cs">"Боря"</span>: <span class="cm">72</span>, <span class="cs">"Вика"</span>: <span class="cm">91</span>,
+          <span class="cs">"Глеб"</span>: <span class="cm">68</span>, <span class="cs">"Дима"</span>: <span class="cm">88</span>}</div>
+                <ol style="list-style: none; padding: 0; max-width: 760px; text-align: left;">
+                    <li style="padding: 10px 0 10px 48px; position: relative; font-size: clamp(15px, 1.8vw, 19px); color: #1d1d1f; border-bottom: 1px solid rgba(0,0,0,0.06);">
+                        <span style="position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 30px; height: 30px; border-radius: 50%; background: rgba(0,122,255,0.1); color: #007aff; font-size: 14px; font-weight: 700; display: flex; align-items: center; justify-content: center;">1</span>
+                        Написать функцию <span style="font-family: 'SF Mono', monospace; color: #007aff;">top_n(scores, n=3)</span>
+                    </li>
+                    <li style="padding: 10px 0 10px 48px; position: relative; font-size: clamp(15px, 1.8vw, 19px); color: #1d1d1f; border-bottom: 1px solid rgba(0,0,0,0.06);">
+                        <span style="position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 30px; height: 30px; border-radius: 50%; background: rgba(0,122,255,0.1); color: #007aff; font-size: 14px; font-weight: 700; display: flex; align-items: center; justify-content: center;">2</span>
+                        Использовать <span style="font-family: 'SF Mono', monospace; color: #007aff;">sorted</span> с lambda по значению
+                    </li>
+                    <li style="padding: 10px 0 10px 48px; position: relative; font-size: clamp(15px, 1.8vw, 19px); color: #1d1d1f;">
+                        <span style="position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 30px; height: 30px; border-radius: 50%; background: rgba(0,122,255,0.1); color: #007aff; font-size: 14px; font-weight: 700; display: flex; align-items: center; justify-content: center;">3</span>
+                        Вернуть список из n лучших пар (имя, балл)
+                    </li>
+                </ol>
+                <p class="body-text" style="margin-top: 22px; font-size: clamp(13px, 1.5vw, 16px); color: #86868b;">
+                    Подсказка: <span style="font-family: 'SF Mono', monospace; color: #007aff;">scores.items()</span> → список пар, обратная сортировка через <span style="font-family: 'SF Mono', monospace; color: #007aff;">reverse=True</span>.
+                </p>
+            </div>
+        </div>
+
+        <!-- 28: Solution 2 -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Решение</p>
+                <h2>Разбор решения 2</h2>
+                <div class="code-block" style="max-width: 820px;"><span class="ck">def</span> <span class="cf">top_n</span>(<span class="cn">scores</span>, <span class="cn">n</span>=<span class="cm">3</span>):
+    <span class="cn">pairs</span> = <span class="cf">sorted</span>(
+        <span class="cn">scores</span>.items(),
+        <span class="cn">key</span>=<span class="ck">lambda</span> <span class="cn">p</span>: <span class="cn">p</span>[<span class="cm">1</span>],
+        <span class="cn">reverse</span>=<span class="cm">True</span>,
+    )
+    <span class="ck">return</span> <span class="cn">pairs</span>[:<span class="cn">n</span>]
+
+<span class="cn">scores</span> = {<span class="cs">"Аня"</span>: <span class="cm">85</span>, <span class="cs">"Боря"</span>: <span class="cm">72</span>, <span class="cs">"Вика"</span>: <span class="cm">91</span>,
+          <span class="cs">"Глеб"</span>: <span class="cm">68</span>, <span class="cs">"Дима"</span>: <span class="cm">88</span>}
+
+<span class="cf">print</span>(<span class="cf">top_n</span>(<span class="cn">scores</span>))
+<span class="co"># [("Вика", 91), ("Дима", 88), ("Аня", 85)]</span></div>
+                <div class="flow-row">
+                    <span class="step-pill">items()</span>
+                    <span class="arrow">→</span>
+                    <span class="step-pill">sorted + lambda</span>
+                    <span class="arrow">→</span>
+                    <span class="step-pill">срез [:n]</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 29: Pyodide Playground -->
+        <div class="slide" data-pyodide-slide>
+            <div class="slide-content">
+                <p class="eyebrow">Поиграйте сами</p>
+                <h2>Python прямо в браузере</h2>
+                <p class="subtitle">Измените код и нажмите «Запустить» - это настоящий Python через Pyodide</p>
+                <div class="playground">
+                    <textarea id="py-code" spellcheck="false">def stats(*nums):
+    if not nums:
+        return None
+    return {
+        "min": min(nums),
+        "max": max(nums),
+        "avg": sum(nums) / len(nums),
+        "count": len(nums),
+    }
+
+print(stats(1, 2, 3, 4, 5))
+print(stats(10, 20))
+print(stats())</textarea>
+                    <div class="playground-controls">
+                        <button class="interactive-btn" id="py-run" onclick="runPyCode()">▶ Запустить</button>
+                        <button class="interactive-btn secondary" onclick="resetPyCode()">Сбросить</button>
+                        <div class="playground-status" id="py-status"><span class="dot"></span><span id="py-status-text">Pyodide ещё не загружен - нажмите «Запустить»</span></div>
+                    </div>
+                    <div class="playground-output empty" id="py-output">// Вывод появится здесь</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 30: Jupyter Notebook -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Практические задания</p>
+                <h2>Jupyter Notebook</h2>
+                <p class="subtitle">10 задач по темам урока. Откройте в Jupyter или VS Code и выполните самостоятельно.</p>
+                <div style="display: flex; align-items: center; gap: 18px; padding: 24px 32px; background: rgba(0,0,0,0.025); border: 1px solid rgba(0,0,0,0.06); border-radius: 14px; margin-top: 12px;">
+                    <div style="width: 64px; height: 64px; border-radius: 12px; background: rgba(243, 118, 38, 0.12); color: #f37626; display: flex; align-items: center; justify-content: center; font-family: 'SF Mono', monospace; font-size: 14px; font-weight: 700; flex-shrink: 0;">.ipynb</div>
+                    <div style="text-align: left;">
+                        <div style="font-size: clamp(15px, 1.7vw, 19px); font-weight: 600; color: #1d1d1f;">lesson3_tasks.ipynb</div>
+                        <div style="font-size: clamp(12px, 1.4vw, 15px); color: #86868b; margin-top: 2px;">10 практических заданий</div>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 10px; margin-top: 24px; flex-wrap: wrap; justify-content: center;">
+                    <a href="lesson3_tasks_ru.ipynb" download style="display: inline-flex; align-items: center; gap: 8px; padding: 12px 22px; background: #007aff; color: #fff; border-radius: 50px; font-size: clamp(13px, 1.5vw, 16px); font-weight: 600; text-decoration: none; box-shadow: 0 6px 20px rgba(0,122,255,0.25);">
+                        <span style="font-size: 1.2em;">↓</span> Скачать RU
+                    </a>
+                    <a href="lesson3_tasks_uz.ipynb" download style="display: inline-flex; align-items: center; gap: 8px; padding: 12px 22px; background: #fff; color: #007aff; border: 1.5px solid #007aff; border-radius: 50px; font-size: clamp(13px, 1.5vw, 16px); font-weight: 600; text-decoration: none;">
+                        <span style="font-size: 1.2em;">↓</span> Yuklab olish UZ
+                    </a>
+                    <a href="lesson3_tasks_en.ipynb" download style="display: inline-flex; align-items: center; gap: 8px; padding: 12px 22px; background: #fff; color: #007aff; border: 1.5px solid #007aff; border-radius: 50px; font-size: clamp(13px, 1.5vw, 16px); font-weight: 600; text-decoration: none;">
+                        <span style="font-size: 1.2em;">↓</span> Download EN
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 31: Summary -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Итоги</p>
+                <h2>Итоги урока</h2>
+                <ul class="checklist" style="max-width: 820px; columns: 2; column-gap: 40px;">
+                    <li>Кортежи (tuple), множества (set), словари (dict)</li>
+                    <li>def, return, параметры</li>
+                    <li>Mutable defaults trap</li>
+                    <li>*args и **kwargs</li>
+                    <li>LEGB · global · nonlocal</li>
+                    <li>lambda и sorted/map/filter</li>
+                    <li>Late binding в lambda</li>
+                    <li>Распаковка f(*lst, **dct)</li>
+                </ul>
+                <div class="quote-card" style="margin-top: 28px;">
+                    <div class="label">Следующий урок</div>
+                    <p>Модули, файлы и обработка ошибок <span style="color: #86868b; font-weight: 400;">- чтение/запись данных и try/except</span></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 32: Q&A -->
+        <div class="slide">
+            <div class="slide-content">
+                <h1 style="font-size: clamp(80px, 16vw, 220px);">Вопросы?</h1>
+                <p class="subtitle" style="margin-top: 32px;">Telegram: <span class="highlight">@gokalqurt</span></p>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="lesson-tag">Python · Урок 4</div>
+    <div class="lang-switcher">
+        <a href="index.html" class="active">RU</a>
+        <a href="index-uz.html">UZ</a>
+        <a href="index-en.html">EN</a>
+    </div>
+    <div class="slide-indicator">
+        <span id="current-slide">1</span> / <span id="total-slides">59</span>
+    </div>
+    <div class="nav-hint">→ или Space - далее<br/>← - назад</div>
+
+    <script>
+        // === Interactive widgets ===
+
+        // Trace runner
+        function runTrace(id) {
+            const rows = document.querySelectorAll('#' + id + ' .trace-row.manual');
+            rows.forEach((row, i) => {
+                row.classList.remove('shown');
+                void row.offsetHeight;
+                setTimeout(() => row.classList.add('shown'), 100 + i * 450);
+            });
+        }
+        function resetTrace(id) {
+            document.querySelectorAll('#' + id + ' .trace-row.manual').forEach(r => r.classList.remove('shown'));
+        }
+
+        // *args slider
+        function updateArgs(n) {
+            n = parseInt(n);
+            document.getElementById('args-value').textContent = n;
+            const call = document.getElementById('args-call');
+            const packed = document.getElementById('args-packed');
+            const callCode = document.getElementById('args-call-code');
+            const output = document.getElementById('args-output');
+            call.innerHTML = '';
+            const nums = [];
+            for (let i = 1; i <= n; i++) {
+                const span = document.createElement('span');
+                span.className = 'item';
+                span.textContent = i;
+                call.appendChild(span);
+                nums.push(i);
+            }
+            if (n === 0) call.innerHTML = '<span class="item" style="opacity: 0.4;">-</span>';
+            packed.textContent = '(' + nums.join(', ') + (n === 1 ? ',' : '') + ')';
+            const sum = nums.reduce((a, b) => a + b, 0);
+            if (callCode) callCode.textContent = nums.join(', ');
+            if (output) output.textContent = sum;
+        }
+
+        // **kwargs slider
+        const kwargsPool = [
+            ['name', '"Аня"'],
+            ['age', '30'],
+            ['city', '"Ташкент"'],
+            ['role', '"admin"'],
+            ['active', 'True'],
+        ];
+        function updateKwargs(n) {
+            n = parseInt(n);
+            document.getElementById('kwargs-value').textContent = n;
+            const call = document.getElementById('kwargs-call');
+            const packed = document.getElementById('kwargs-packed');
+            const callCode = document.getElementById('kwargs-call-code');
+            const output = document.getElementById('kwargs-output');
+            call.innerHTML = '';
+            const pairs = [];
+            const callParts = [];
+            const outLines = [];
+            for (let i = 0; i < n; i++) {
+                const [k, v] = kwargsPool[i];
+                const span = document.createElement('span');
+                span.className = 'item';
+                span.textContent = k + '=' + v;
+                call.appendChild(span);
+                pairs.push('"' + k + '": ' + v);
+                callParts.push(k + '=' + v);
+                // Strip surrounding quotes for print output
+                const valStripped = v.replace(/^"|"$/g, '');
+                outLines.push(k + ': ' + valStripped);
+            }
+            if (n === 0) call.innerHTML = '<span class="item" style="opacity: 0.4;">-</span>';
+            packed.textContent = '{' + pairs.join(', ') + '}';
+            if (callCode) callCode.textContent = callParts.join(', ');
+            if (output) output.textContent = n === 0 ? '(нет вывода)' : outLines.join('\n');
+        }
+
+        // Scope LEGB
+        async function lookupName(name, where) {
+            const status = document.getElementById('scope-status');
+            const gLine = document.getElementById('g-line');
+            const lBox = document.getElementById('l-box');
+            // reset
+            gLine.classList.remove('found-here');
+            lBox.classList.remove('scanning', 'found-here', 'error-here');
+            status.className = 'scope-status';
+            status.textContent = 'Ищу имя "' + name + '"...';
+
+            await sleep(400);
+
+            if (where === 'inside') {
+                // start with Local
+                lBox.classList.add('scanning');
+                status.textContent = 'L: смотрю в local-scope функции demo()';
+                await sleep(800);
+
+                if (name === 'y') {
+                    lBox.classList.remove('scanning');
+                    lBox.classList.add('found-here');
+                    status.className = 'scope-status success';
+                    status.textContent = '✓ Найдено в Local: y = 5';
+                } else if (name === 'x') {
+                    lBox.classList.remove('scanning');
+                    status.textContent = 'L: не нашёл - поднимаюсь в Global';
+                    await sleep(700);
+                    gLine.classList.add('found-here');
+                    status.className = 'scope-status success';
+                    status.textContent = '✓ Найдено в Global: x = 100';
+                }
+            } else {
+                // outside: search Global only
+                status.textContent = 'G: смотрю в global-scope';
+                await sleep(700);
+                if (name === 'y') {
+                    lBox.classList.add('error-here');
+                    status.className = 'scope-status error';
+                    status.textContent = '✗ NameError: name "y" is not defined - y живёт только в demo()';
+                }
+            }
+        }
+        function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+        // Sort demo with FLIP technique
+        function sortPeople(key, reverse) {
+            const container = document.getElementById('sort-demo');
+            const cards = Array.from(container.children);
+            const oldRects = new Map();
+            cards.forEach(c => oldRects.set(c, c.getBoundingClientRect()));
+
+            cards.sort((a, b) => {
+                if (key === 'original') return parseInt(a.querySelector('.num').textContent) - parseInt(b.querySelector('.num').textContent);
+                if (key === 'age') return parseInt(a.dataset.age) - parseInt(b.dataset.age);
+                if (key === 'name') return a.dataset.name.localeCompare(b.dataset.name);
+                return 0;
+            });
+            if (reverse) cards.reverse();
+            cards.forEach(c => container.appendChild(c));
+
+            cards.forEach(c => {
+                const newRect = c.getBoundingClientRect();
+                const oldRect = oldRects.get(c);
+                const dy = oldRect.top - newRect.top;
+                if (dy !== 0) {
+                    c.style.transition = 'none';
+                    c.style.transform = 'translateY(' + dy + 'px)';
+                    requestAnimationFrame(() => {
+                        c.style.transition = '';
+                        c.style.transform = '';
+                    });
+                }
+            });
+
+            // Update code+output
+            const codeEl = document.getElementById('sort-code');
+            const outEl = document.getElementById('sort-output');
+            if (codeEl && outEl) {
+                let codeHTML = '';
+                if (key === 'original') {
+                    codeHTML = '<span class="cn">people</span>  <span class="co"># исходный</span>';
+                } else if (key === 'age' && !reverse) {
+                    codeHTML = '<span class="cf">sorted</span>(<span class="cn">people</span>, <span class="cn">key</span>=<span class="ck">lambda</span> <span class="cn">p</span>: <span class="cn">p</span>[<span class="cm">1</span>])';
+                } else if (key === 'age' && reverse) {
+                    codeHTML = '<span class="cf">sorted</span>(<span class="cn">people</span>, <span class="cn">key</span>=<span class="ck">lambda</span> <span class="cn">p</span>: <span class="cn">p</span>[<span class="cm">1</span>], <span class="cn">reverse</span>=<span class="cm">True</span>)';
+                } else if (key === 'name') {
+                    codeHTML = '<span class="cf">sorted</span>(<span class="cn">people</span>, <span class="cn">key</span>=<span class="ck">lambda</span> <span class="cn">p</span>: <span class="cn">p</span>[<span class="cm">0</span>])';
+                }
+                codeEl.innerHTML = codeHTML;
+
+                const lines = ['['];
+                cards.forEach(c => {
+                    lines.push("    ('" + c.dataset.name + "', " + c.dataset.age + "),");
+                });
+                lines.push(']');
+                outEl.textContent = lines.join('\n');
+            }
+        }
+
+        // Pyodide playground
+        let pyodideInstance = null;
+        let pyodideLoading = false;
+        const initialPyCode = document.getElementById('py-code') ? document.getElementById('py-code').value : '';
+
+        function setPyStatus(state, msg) {
+            const s = document.getElementById('py-status');
+            const t = document.getElementById('py-status-text');
+            if (!s) return;
+            s.className = 'playground-status' + (state ? ' ' + state : '');
+            t.textContent = msg;
+        }
+
+        async function loadPyodideOnDemand() {
+            if (pyodideInstance) return pyodideInstance;
+            if (pyodideLoading) {
+                while (!pyodideInstance) await sleep(100);
+                return pyodideInstance;
+            }
+            pyodideLoading = true;
+            setPyStatus('loading', 'Загружаю Pyodide (~10 МБ, один раз)...');
+            // load script
+            await new Promise((resolve, reject) => {
+                if (window.loadPyodide) return resolve();
+                const s = document.createElement('script');
+                s.src = 'https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js';
+                s.onload = resolve;
+                s.onerror = reject;
+                document.head.appendChild(s);
+            });
+            pyodideInstance = await window.loadPyodide({
+                indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.26.4/full/'
+            });
+            setPyStatus('ready', 'Pyodide готов');
+            pyodideLoading = false;
+            return pyodideInstance;
+        }
+
+        async function runPyCode() {
+            const out = document.getElementById('py-output');
+            const code = document.getElementById('py-code').value;
+            const btn = document.getElementById('py-run');
+            btn.disabled = true;
+            out.classList.remove('empty');
+            try {
+                const py = await loadPyodideOnDemand();
+                // capture stdout
+                py.runPython(`
+import sys, io
+sys.stdout = io.StringIO()
+sys.stderr = io.StringIO()
+                `);
+                let ret;
+                try {
+                    ret = await py.runPythonAsync(code);
+                } catch (err) {
+                    out.innerHTML = '<span class="err">' + escapeHtml(err.message) + '</span>';
+                    btn.disabled = false;
+                    return;
+                }
+                const stdout = py.runPython('sys.stdout.getvalue()');
+                const stderr = py.runPython('sys.stderr.getvalue()');
+                let html = '';
+                if (stdout) html += escapeHtml(stdout);
+                if (stderr) html += '<span class="err">' + escapeHtml(stderr) + '</span>';
+                if (ret !== undefined && ret !== null) html += '<span class="ok">' + escapeHtml(String(ret)) + '</span>';
+                if (!html) html = '<span style="opacity: 0.6;">// (no output)</span>';
+                out.innerHTML = html;
+            } catch (e) {
+                out.innerHTML = '<span class="err">Ошибка: ' + escapeHtml(e.message) + '</span>';
+                setPyStatus('error', 'Ошибка загрузки');
+            }
+            btn.disabled = false;
+        }
+        function resetPyCode() {
+            const ta = document.getElementById('py-code');
+            if (ta) ta.value = initialPyCode;
+            const out = document.getElementById('py-output');
+            if (out) {
+                out.classList.add('empty');
+                out.innerHTML = '// Вывод появится здесь';
+            }
+        }
+        function escapeHtml(s) {
+            return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+        }
+
+        // Dict access try-it
+        const userDict = { name: '"Алиса"', age: '30' };
+        function tryDict(btn) {
+            document.querySelectorAll('.expr-chip').forEach(c => c.classList.remove('active'));
+            btn.classList.add('active');
+            const out = document.getElementById('dict-output');
+            const expr = btn.dataset.expr;
+            const key = btn.dataset.key;
+            out.classList.remove('error', 'empty');
+            if (expr === 'bracket') {
+                if (key in userDict) {
+                    out.textContent = userDict[key];
+                } else {
+                    out.classList.add('error');
+                    out.textContent = "KeyError: '" + key + "'";
+                }
+            } else if (expr === 'get') {
+                out.textContent = key in userDict ? userDict[key] : 'None';
+            } else if (expr === 'getDefault') {
+                out.textContent = key in userDict ? userDict[key] : '"' + btn.dataset.default + '"';
+            }
+        }
+
+        // Default args try-it
+        function tryDefaults() {
+            const name = document.getElementById('kw-name').value;
+            const greeting = document.getElementById('kw-greeting').value || 'Привет';
+            const out = document.getElementById('kw-output');
+            if (!name) {
+                out.classList.add('empty');
+                out.textContent = '(введите имя)';
+            } else {
+                out.classList.remove('empty');
+                out.textContent = greeting + ', ' + name + '!';
+            }
+        }
+
+        // Init defaults
+        document.addEventListener('DOMContentLoaded', () => {
+            if (document.getElementById('args-slider')) updateArgs(3);
+            if (document.getElementById('kwargs-slider')) updateKwargs(3);
+        });
+
+        // === Slide nav ===
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+        document.getElementById('total-slides').textContent = totalSlides;
+
+        function showSlide(n) {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (n + totalSlides) % totalSlides;
+            slides[currentSlide].classList.add('active');
+            document.getElementById('current-slide').textContent = currentSlide + 1;
+
+            const slideContent = slides[currentSlide].querySelector('.slide-content');
+            slideContent.style.animation = 'none';
+            void slideContent.offsetHeight;
+            slideContent.style.animation = null;
+
+            const animated = slides[currentSlide].querySelectorAll('.card, .comparison-item, .option-card, .trace-row');
+            animated.forEach(el => {
+                el.style.animation = 'none';
+                void el.offsetHeight;
+                el.style.animation = null;
+            });
+
+            // Reset interactive widgets when entering their slide
+            const slide = slides[currentSlide];
+            if (slide.querySelector('#args-slider')) updateArgs(document.getElementById('args-slider').value);
+            if (slide.querySelector('#kwargs-slider')) updateKwargs(document.getElementById('kwargs-slider').value);
+            if (slide.querySelector('#scope-status')) {
+                const st = document.getElementById('scope-status');
+                st.className = 'scope-status';
+                st.textContent = 'Кликните на любую переменную - увидите путь поиска';
+                document.getElementById('g-line').classList.remove('found-here');
+                document.getElementById('l-box').classList.remove('scanning', 'found-here', 'error-here');
+            }
+            if (slide.querySelector('#dict-output')) {
+                const d = document.getElementById('dict-output');
+                d.className = 'tryout-output empty';
+                d.textContent = '// клик по любому выражению';
+                slide.querySelectorAll('.expr-chip').forEach(c => c.classList.remove('active'));
+            }
+            if (slide.querySelector('#kw-output')) tryDefaults();
+            if (slide.querySelector('#sort-demo')) sortPeople('original', false);
+            slide.querySelectorAll('.reveal-output.revealed').forEach(el => el.classList.remove('revealed'));
+        }
+
+        function nextSlide() {
+            const slide = slides[currentSlide];
+            const nextReveal = slide.querySelector('.reveal-output:not(.revealed)');
+            if (nextReveal) {
+                nextReveal.classList.add('revealed');
+                return;
+            }
+            showSlide(currentSlide + 1);
+        }
+        function prevSlide() {
+            const slide = slides[currentSlide];
+            const revealedEls = slide.querySelectorAll('.reveal-output.revealed');
+            if (revealedEls.length > 0) {
+                revealedEls[revealedEls.length - 1].classList.remove('revealed');
+                return;
+            }
+            showSlide(currentSlide - 1);
+        }
+
+        document.addEventListener('keydown', (e) => {
+            // ignore when typing in inputs/textarea
+            const tag = (e.target.tagName || '').toLowerCase();
+            if (tag === 'textarea' || tag === 'input') return;
+            if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); nextSlide(); }
+            else if (e.key === 'ArrowLeft') { e.preventDefault(); prevSlide(); }
+        });
+
+        let touchStartX = 0;
+        document.addEventListener('touchstart', (e) => { touchStartX = e.changedTouches[0].screenX; });
+        document.addEventListener('touchend', (e) => {
+            const dx = e.changedTouches[0].screenX - touchStartX;
+            if (dx < -50) nextSlide();
+            else if (dx > 50) prevSlide();
+        });
+    </script>
+</body>
+</html>

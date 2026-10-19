@@ -1,0 +1,12 @@
+{
+  "include": [
+    "projects/credit_scoring",
+    "projects/customer_churn",
+    "projects/customer_segments"
+  ],
+  "extraPaths": [
+    "projects/credit_scoring",
+    "projects/customer_churn",
+    "projects/customer_segments"
+  ]
+}

@@ -1,0 +1,1318 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SQL в DBeaver · Полный курс</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Inter',-apple-system,sans-serif;background:#fcfcfd;color:#16171a;overflow:hidden;-webkit-font-smoothing:antialiased;}
+.deck{width:100vw;height:100vh;position:relative;}
+.slide{width:100%;height:100%;display:none;flex-direction:column;align-items:center;justify-content:center;position:absolute;inset:0;padding:clamp(12px,2vh,28px) clamp(32px,5vw,72px);}
+.slide.active{display:flex;}
+.sc{max-width:1200px;width:100%;margin:0 auto;opacity:0;transform:translateY(16px);animation:up .4s ease-out forwards;display:flex;flex-direction:column;align-items:center;}
+@keyframes up{to{opacity:1;transform:translateY(0);}}
+
+/* typography */
+h1{font-size:clamp(40px,6vw,90px);font-weight:900;letter-spacing:-.04em;line-height:.9;margin-bottom:clamp(10px,1.8vh,22px);}
+h2{font-size:clamp(18px,2.4vw,36px);font-weight:800;letter-spacing:-.025em;line-height:1.08;margin-bottom:clamp(4px,.7vh,10px);}
+.eyebrow{font-size:clamp(10px,.95vw,12px);font-weight:700;text-transform:uppercase;letter-spacing:.2em;color:#1a9d4a;margin-bottom:clamp(5px,.9vh,12px);}
+.sub{font-size:clamp(13px,1.7vw,21px);color:#6b6f76;line-height:1.45;max-width:680px;margin-top:clamp(5px,.9vh,12px);}
+
+/* colors */
+.c-blue{color:#0064d6;}.c-green{color:#1a9d4a;}.c-orange{color:#e0820a;}.c-teal{color:#0e9aa7;}.c-red{color:#e02d20;}.c-purple{color:#7c3aed;}
+
+/* ── main layout: command left, result right ── */
+.cr{display:grid;grid-template-columns:1fr 1fr;gap:clamp(12px,1.6vw,22px);width:100%;max-width:1200px;margin-top:clamp(8px,1.2vh,16px);align-items:start;}
+
+/* ── code block ── */
+.lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.16em;color:#888;margin-bottom:5px;}
+.code{
+  font-family:'SF Mono','Menlo','Consolas',monospace;
+  font-size:clamp(12px,1.2vw,15.5px);
+  background:#141618;
+  color:#e8eaf0;
+  padding:clamp(14px,1.6vw,20px) clamp(16px,1.8vw,22px);
+  border-radius:12px;
+  width:100%;
+  text-align:left;
+  line-height:1.8;
+  border:1px solid #252830;
+  white-space:pre;          /* ← fixes wrapping */
+  overflow-x:auto;
+}
+.code .kw{color:#5ab0ff;}   /* keywords   */
+.code .fn{color:#e2c08d;}   /* functions  */
+.code .st{color:#ffa657;}   /* strings / numbers */
+.code .cm{color:#5a9a5a;font-style:italic;}  /* comments */
+.code .nm{color:#f0a0d0;}   /* identifiers */
+
+/* ── result table ── */
+.result{width:100%;border-radius:12px;overflow:hidden;border:1.5px solid #e2e4ea;background:#fff;}
+.result table{width:100%;border-collapse:collapse;font-size:clamp(11px,1.1vw,14px);}
+.result thead tr{background:#f4f5f8;}
+.result th{padding:clamp(7px,.9vw,11px) clamp(9px,1.1vw,14px);font-weight:700;color:#4a4d53;border-bottom:1.5px solid #e2e4ea;white-space:nowrap;text-align:left;}
+.result td{padding:clamp(6px,.8vw,10px) clamp(9px,1.1vw,14px);border-bottom:1px solid #f0f1f4;color:#2a2c30;text-align:left;}
+.result tr:last-child td{border-bottom:none;}
+.result tr:hover td{background:#fafbfd;}
+.result .foot{text-align:center;font-size:11px;color:#b0b3bb;padding:6px 0;border-top:1px solid #f0f1f4;}
+/* cell colors */
+.hi{color:#0064d6;font-weight:600;}
+.ok{color:#1a9d4a;font-weight:600;}
+.ng{color:#e02d20;font-weight:600;}
+.or{color:#e0820a;font-weight:600;}
+.pu{color:#7c3aed;font-weight:600;}
+.nil{color:#b8bbc2;font-style:italic;}
+
+/* ── note ── */
+.note{padding:clamp(8px,1vw,12px) clamp(12px,1.4vw,17px);border-radius:10px;text-align:left;width:100%;margin-top:clamp(7px,1vh,12px);}
+.note p{font-size:clamp(11px,1.1vw,14px);color:#2a2c30;line-height:1.5;font-weight:500;}
+.note b{font-weight:700;color:#0b0c0e;}
+.note.blue{background:#eef4fc;}.note.green{background:#e8f5eb;}
+.note.orange{background:#fff3e6;}.note.teal{background:#e6f7f7;}
+.note.purple{background:#f3efff;}
+
+/* ── slide types ── */
+.tslide .eyebrow{color:#0064d6;}
+.mslide h2{font-size:clamp(30px,4.4vw,62px);font-weight:900;color:#1a9d4a;}
+.mslide .eyebrow{opacity:.6;}
+.divider{width:44px;height:4px;border-radius:99px;margin:clamp(8px,1.4vh,16px) auto;}
+
+/* ── misc ── */
+.pills{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:clamp(12px,1.8vh,24px);}
+.pill{font-size:clamp(11px,1.1vw,13px);font-weight:600;padding:4px 13px;border-radius:99px;border:1.5px solid transparent;}
+
+/* ── chrome ── */
+.prog{position:fixed;top:0;left:0;height:3px;background:#0064d6;z-index:200;transition:width .28s ease;}
+.ind{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);font-size:12px;color:#b8bbc2;z-index:100;letter-spacing:.04em;}
+.hint{position:fixed;bottom:16px;right:20px;font-size:11px;color:#d0d3da;z-index:100;}
+.tag{position:fixed;top:16px;left:20px;font-size:10px;font-weight:700;color:#c8cace;text-transform:uppercase;letter-spacing:.16em;z-index:100;}
+
+.cards{display:grid;gap:clamp(8px,1vw,12px);width:100%;margin-top:clamp(8px,1.2vh,14px);}
+.cards.c3{grid-template-columns:1fr 1fr 1fr;max-width:960px;}
+.card{background:#fff;border:1px solid #edeef2;border-radius:12px;padding:clamp(12px,1.4vw,17px);text-align:left;box-shadow:0 1px 2px rgba(18,20,28,.04),0 8px 20px -12px rgba(18,20,28,.12);}
+.card h4{font-size:clamp(12px,1.2vw,15px);font-weight:700;margin-bottom:4px;}
+.card p{font-size:clamp(11px,1.05vw,13px);color:#4a4d53;line-height:1.55;}
+.card.acc-green h4{color:#1a9d4a;}.card.acc-orange h4{color:#b3660a;}.card.acc-purple h4{color:#7c3aed;}
+.badge{display:inline-block;font-size:10px;font-weight:700;padding:2px 9px;border-radius:99px;margin-bottom:6px;}
+
+@media(max-width:860px){.cr,.cards.c3{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<div class="tag" id="ltag">SQL · DBeaver</div>
+<div class="prog" id="prog"></div>
+<div class="deck" id="deck">
+
+
+<!-- 01 TITLE -->
+<div class="slide tslide" style="text-align:center;">
+<div class="sc">
+  <p class="eyebrow">Полный курс · PostgreSQL · Instacart Dataset</p>
+  <h1>SQL в DBeaver</h1>
+  <p class="sub">Каждый слайд - одна команда и результат который получится</p>
+  <div class="pills" style="margin-top:18px;">
+    <span class="pill" style="background:#eef4fc;border-color:#cfe0f7;color:#0c447c">SELECT</span>
+    <span class="pill" style="background:#e8f5eb;border-color:#b8dfc1;color:#0d5a1e">WHERE</span>
+    <span class="pill" style="background:#fff3e6;border-color:#f0ccaa;color:#7a3c00">GROUP BY</span>
+    <span class="pill" style="background:#e6f7f7;border-color:#b4e4e6;color:#075d64">JOIN</span>
+    <span class="pill" style="background:#f3efff;border-color:#d0c4f8;color:#4a1a8e">CTE</span>
+    <span class="pill" style="background:#fef2f2;border-color:#f0c8c8;color:#8a1a0e">Window Functions</span>
+    <span class="pill" style="background:#f3f5f8;border-color:#d8dae0;color:#4a4d53">CASE WHEN</span>
+  </div>
+</div>
+</div>
+
+
+<!-- MODULE SELECT -->
+<div class="slide mslide">
+<div class="sc">
+  <p class="eyebrow">Модуль 1</p>
+  <div class="divider" style="background:#1a9d4a"></div>
+  <h2>SELECT</h2>
+  <p class="sub">Выбираем данные из таблицы</p>
+</div>
+</div>
+
+
+<!-- SELECT * -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow c-green">SELECT</p>
+  <h2>SELECT * - выбрать все колонки</h2>
+  <div class="cr">
+    <div>
+      <div class="lbl">Команда</div>
+      <div class="code"><span class="kw">SELECT</span> *
+<span class="kw">FROM</span> public.orders
+<span class="kw">LIMIT</span> <span class="st">5</span>;</div>
+      <div class="note blue" style="margin-top:10px"><p><b>*</b> - все колонки. <b>LIMIT 5</b> - только 5 строк. Всегда ставь LIMIT при изучении таблицы - иначе PostgreSQL вернёт 3.4 миллиона строк.</p></div>
+    </div>
+    <div>
+      <div class="lbl">Результат</div>
+      <div class="result">
+        <table>
+          <thead><tr><th>order_id</th><th>user_id</th><th>order_dow</th><th>order_hour_of_day</th><th>days_since_prior</th></tr></thead>
+          <tbody>
+            <tr><td class="hi">2539329</td><td>1</td><td>2</td><td>8</td><td class="nil">NULL</td></tr>
+            <tr><td class="hi">2398795</td><td>1</td><td>3</td><td>7</td><td>15</td></tr>
+            <tr><td class="hi">473747</td><td>1</td><td>3</td><td>12</td><td>21</td></tr>
+            <tr><td class="hi">2254736</td><td>1</td><td>4</td><td>7</td><td>29</td></tr>
+            <tr><td class="hi">431534</td><td>1</td><td>4</td><td>15</td><td>28</td></tr>
+          </tbody>
+        </table>
+        <div class="foot">5 строк · все 6 колонок таблицы</div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+
+<!-- SELECT columns + AS -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow c-green">SELECT</p>
+  <h2>Выбрать нужные колонки · AS - псевдоним</h2>
+  <div class="cr">
+    <div>
+      <div class="lbl">Команда</div>
+      <div class="code"><span class="kw">SELECT</span>
+    <span class="nm">order_id</span>          <span class="kw">AS</span> id,
+    <span class="nm">user_id</span>           <span class="kw">AS</span> polzovatel,
+    <span class="nm">order_dow</span>         <span class="kw">AS</span> den_nedeli,
+    <span class="nm">order_hour_of_day</span>  <span class="kw">AS</span> chas
+<span class="kw">FROM</span> public.orders
+<span class="kw">LIMIT</span> <span class="st">5</span>;</div>
+      <div class="note green" style="margin-top:10px"><p><b>AS</b> переименовывает колонку только в этом запросе. В самой таблице ничего не меняется.</p></div>
+    </div>
+    <div>
+      <div class="lbl">Результат</div>
+      <div class="result">
+        <table>
+          <thead><tr><th>id</th><th>polzovatel</th><th>den_nedeli</th><th>chas</th></tr></thead>
+          <tbody>
+            <tr><td class="hi">2539329</td><td>1</td><td>2</td><td>8</td></tr>
+            <tr><td class="hi">2398795</td><td>1</td><td>3</td><td>7</td></tr>
+            <tr><td class="hi">473747</td><td>1</td><td>3</td><td>12</td></tr>
+            <tr><td class="hi">2254736</td><td>1</td><td>4</td><td>7</td></tr>
+            <tr><td class="hi">431534</td><td>1</td><td>4</td><td>15</td></tr>
+          </tbody>
+        </table>
+        <div class="foot">колонки переименованы через AS</div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+
+<!-- DISTINCT -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow c-green">SELECT</p>
+  <h2>DISTINCT - только уникальные значения</h2>
+  <div class="cr">
+    <div>
+      <div class="lbl">Команда</div>
+      <div class="code"><span class="kw">SELECT DISTINCT</span> <span class="nm">order_dow</span>
+<span class="kw">FROM</span> public.orders
+<span class="kw">ORDER BY</span> <span class="nm">order_dow</span>;</div>
+      <div class="note teal" style="margin-top:10px"><p>Без DISTINCT - 3.4M строк с повторами. С DISTINCT - только уникальные значения. 0 = воскресенье, 6 = суббота.</p></div>
+    </div>
+    <div>
+      <div class="lbl">Результат</div>
+      <div class="result">
+        <table>
+          <thead><tr><th>order_dow</th></tr></thead>
+          <tbody>
+            <tr><td class="ok">0</td></tr>
+            <tr><td class="ok">1</td></tr>
+            <tr><td class="ok">2</td></tr>
+            <tr><td class="ok">3</td></tr>
+            <tr><td class="ok">4</td></tr>
+            <tr><td class="ok">5</td></tr>
+            <tr><td class="ok">6</td></tr>
+          </tbody>
+        </table>
+        <div class="foot">7 уникальных значений вместо 3.4M строк</div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+
+<!-- MODULE WHERE -->
+<div class="slide mslide">
+<div class="sc">
+  <p class="eyebrow">Модуль 2</p>
+  <div class="divider" style="background:#1a9d4a"></div>
+  <h2>WHERE</h2>
+  <p class="sub">Фильтрация строк</p>
+</div>
+</div>
+
+
+<!-- WHERE = -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow c-teal">WHERE</p>
+  <h2>WHERE - равно, больше, меньше</h2>
+  <div class="cr">
+    <div>
+      <div class="lbl">Команда</div>
+      <div class="code"><span class="kw">SELECT</span> <span class="nm">order_id</span>, <span class="nm">user_id</span>, <span class="nm">order_hour_of_day</span>
+<span class="kw">FROM</span> public.orders
+<span class="kw">WHERE</span> <span class="nm">order_hour_of_day</span> = <span class="st">9</span>
+<span class="kw">LIMIT</span> <span class="st">5</span>;</div>
+      <div class="note teal" style="margin-top:10px"><p>
+        <b>=</b> равно &nbsp;·&nbsp; <b>!=</b> не равно<br>
+        <b>&gt;</b> больше &nbsp;·&nbsp; <b>&lt;</b> меньше<br>
+        <b>&gt;=</b> больше или равно &nbsp;·&nbsp; <b>&lt;=</b> меньше или равно
+      </p></div>
+    </div>
+    <div>
+      <div class="lbl">Результат - только заказы в 9 утра</div>
+      <div class="result">
+        <table>
+          <thead><tr><th>order_id</th><th>user_id</th><th>order_hour_of_day</th></tr></thead>
+          <tbody>
+            <tr><td class="hi">1187899</td><td>3</td><td class="ok">9</td></tr>
+            <tr><td class="hi">1492625</td><td>7</td><td class="ok">9</td></tr>
+            <tr><td class="hi">2196797</td><td>11</td><td class="ok">9</td></tr>
+            <tr><td class="hi">525192</td><td>14</td><td class="ok">9</td></tr>
+            <tr><td class="hi">880375</td><td>18</td><td class="ok">9</td></tr>
+          </tbody>
+        </table>
+        <div class="foot">только строки где hour_of_day = 9</div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+
+<!-- WHERE BETWEEN -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow c-teal">WHERE</p>
+  <h2>BETWEEN - диапазон значений</h2>
+  <div class="cr">
+    <div>
+      <div class="lbl">Команда</div>
+      <div class="code"><span class="kw">SELECT</span> <span class="nm">order_id</span>, <span class="nm">order_dow</span>, <span class="nm">order_hour_of_day</span>
+<span class="kw">FROM</span> public.orders
+<span class="kw">WHERE</span> <span class="nm">order_hour_of_day</span> <span class="kw">BETWEEN</span> <span class="st">9</span> <span class="kw">AND</span> <span class="st">11</span>
+<span class="kw">LIMIT</span> <span class="st">5</span>;</div>
+      <div class="note teal" style="margin-top:10px"><p>BETWEEN включает обе границы: 9, 10 и 11 попадут. Это то же самое что <b>WHERE x &gt;= 9 AND x &lt;= 11</b>.</p></div>
+    </div>
+    <div>
+      <div class="lbl">Результат - заказы с 9 до 11 утра</div>
+      <div class="result">
+        <table>
+          <thead><tr><th>order_id</th><th>order_dow</th><th>order_hour_of_day</th></tr></thead>
+          <tbody>
+            <tr><td class="hi">1187899</td><td>1</td><td class="ok">9</td></tr>
+            <tr><td class="hi">2196797</td><td>4</td><td class="ok">10</td></tr>
+            <tr><td class="hi">525192</td><td>2</td><td class="ok">11</td></tr>
+            <tr><td class="hi">880375</td><td>5</td><td class="ok">9</td></tr>
+            <tr><td class="hi">3388695</td><td>0</td><td class="ok">10</td></tr>
+          </tbody>
+        </table>
+        <div class="foot">только строки где час от 9 до 11 включительно</div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+
+<!-- WHERE IN -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow c-teal">WHERE</p>
+  <h2>IN - список значений</h2>
+  <div class="cr">
+    <div>
+      <div class="lbl">Команда</div>
+      <div class="code"><span class="kw">SELECT</span> <span class="nm">order_id</span>, <span class="nm">order_dow</span>, <span class="nm">order_hour_of_day</span>
+<span class="kw">FROM</span> public.orders
+<span class="kw">WHERE</span> <span class="nm">order_dow</span> <span class="kw">IN</span> (<span class="st">0</span>, <span class="st">6</span>)
+<span class="kw">LIMIT</span> <span class="st">5</span>;</div>
+      <div class="note teal" style="margin-top:10px"><p>IN - короткая замена длинному OR: <b>WHERE dow = 0 OR dow = 6</b>. NOT IN - исключить список. 0 = воскресенье, 6 = суббота.</p></div>
+    </div>
+    <div>
+      <div class="lbl">Результат - только выходные</div>
+      <div class="result">
+        <table>
+          <thead><tr><th>order_id</th><th>order_dow</th><th>order_hour_of_day</th></tr></thead>
+          <tbody>
+            <tr><td class="hi">2539329</td><td class="or">6</td><td>8</td></tr>
+            <tr><td class="hi">473747</td><td class="or">0</td><td>12</td></tr>
+            <tr><td class="hi">2254736</td><td class="or">6</td><td>7</td></tr>
+            <tr><td class="hi">431534</td><td class="or">0</td><td>15</td></tr>
+            <tr><td class="hi">3388695</td><td class="or">6</td><td>9</td></tr>
+          </tbody>
+        </table>
+        <div class="foot">только строки где dow = 0 или dow = 6</div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+
+<!-- WHERE ILIKE -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow c-teal">WHERE</p>
+  <h2>ILIKE - поиск по тексту</h2>
+  <div class="cr">
+    <div>
+      <div class="lbl">Команда</div>
+      <div class="code"><span class="kw">SELECT</span> <span class="nm">product_id</span>, <span class="nm">product_name</span>
+<span class="kw">FROM</span> public.products
+<span class="kw">WHERE</span> <span class="nm">product_name</span> <span class="kw">ILIKE</span> <span class="st">'%banana%'</span>
+<span class="kw">LIMIT</span> <span class="st">5</span>;</div>
+      <div class="note orange" style="margin-top:10px"><p>
+        <b>%</b> - любое кол-во символов (в т.ч. ноль)<br>
+        <b>_</b> - ровно один символ<br>
+        <b>ILIKE</b> - без учёта регистра (в отличие от LIKE)
+      </p></div>
+    </div>
+    <div>
+      <div class="lbl">Результат - всё что содержит "banana"</div>
+      <div class="result">
+        <table>
+          <thead><tr><th>product_id</th><th>product_name</th></tr></thead>
+          <tbody>
+            <tr><td>24852</td><td>Banana</td></tr>
+            <tr><td>13176</td><td>Bag of Organic Bananas</td></tr>
+            <tr><td>21709</td><td>Organic Banana</td></tr>
+            <tr><td>47766</td><td>Banana Pudding</td></tr>
+            <tr><td>25133</td><td>Banana Strawberry Yogurt</td></tr>
+          </tbody>
+        </table>
+        <div class="foot">нашлось 18 товаров · ILIKE не чувствителен к регистру</div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+
+<!-- WHERE LIKE -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow c-teal">WHERE</p>
+  <h2>LIKE - поиск с учётом регистра</h2>
+  <div class="cr">
+    <div>
+      <div class="lbl">Команда</div>
+      <div class="code"><span class="kw">SELECT</span> <span class="nm">product_name</span>
+<span class="kw">FROM</span> public.products
+<span class="kw">WHERE</span> <span class="nm">product_name</span> <span class="kw">LIKE</span> <span class="st">'Organic%'</span>
+<span class="kw">LIMIT</span> <span class="st">5</span>;</div>
+      <div class="note orange" style="margin-top:10px"><p>
+        <b>%</b> - любое кол-во символов<br>
+        <b>_</b> - ровно один символ<br>
+        LIKE учитывает регистр: <b>'organic%'</b> вернёт 0 строк
+      </p></div>
+    </div>
+    <div>
+      <div class="lbl">Результат + паттерны</div>
+      <div class="result" style="margin-bottom:10px">
+        <table>
+          <thead><tr><th>product_name</th></tr></thead>
+          <tbody>
+            <tr><td class="ok">Organic Celery Hearts</td></tr>
+            <tr><td class="ok">Organic Fuji Apple</td></tr>
+            <tr><td class="ok">Organic Garlic</td></tr>
+            <tr><td class="ok">Organic Lemon</td></tr>
+            <tr><td class="ok">Organic Low Fat Milk</td></tr>
+          </tbody>
+        </table>
+        <div class="foot">'organic%' (строчная) - 0 строк</div>
+      </div>
+      <div class="result">
+        <table>
+          <thead><tr><th>Паттерн</th><th>Что найдёт</th><th>Что не найдёт</th></tr></thead>
+          <tbody>
+            <tr><td class="hi">'Organic%'</td><td class="ok">Organic Milk, Organic Banana</td><td class="ng">organic milk</td></tr>
+            <tr><td class="hi">'%Milk'</td><td class="ok">Whole Milk, Oat Milk</td><td class="ng">Milk Chocolate</td></tr>
+            <tr><td class="hi">'%milk%'</td><td class="ok">milkshake, 2% milk, oat milk</td><td class="ng">Milk (заглавная)</td></tr>
+            <tr><td class="hi">'B_nana'</td><td class="ok">Banana (6 букв)</td><td class="ng">Bananas, Ba-nana</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+
+<!-- WHERE ILIKE + _ -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow c-teal">WHERE</p>
+  <h2>ILIKE - без учёта регистра + символ _</h2>
+  <div class="cr">
+    <div>
+      <div class="lbl">Команда</div>
+      <div class="code"><span class="kw">SELECT</span> <span class="nm">product_name</span>
+<span class="kw">FROM</span> public.products
+<span class="kw">WHERE</span> <span class="nm">product_name</span> <span class="kw">ILIKE</span> <span class="st">'b_nana%'</span>
+<span class="kw">LIMIT</span> <span class="st">5</span>;</div>
+      <div class="note teal" style="margin-top:10px"><p>
+        <b>_</b> заменяет ровно один символ.<br>
+        <b>'b_nana%'</b> - b + один любой + nana + что угодно.<br>
+        Подходит: Banana, Banana Chips, Banana Pudding.<br>
+        Не подходит: Ban, Bananana (лишние буквы до 'nana').
+      </p></div>
+    </div>
+    <div>
+      <div class="lbl">Результат + паттерны с _</div>
+      <div class="result" style="margin-bottom:10px">
+        <table>
+          <thead><tr><th>product_name</th></tr></thead>
+          <tbody>
+            <tr><td class="ok">Banana</td></tr>
+            <tr><td class="ok">Banana Chips</td></tr>
+            <tr><td class="ok">Banana Pudding</td></tr>
+            <tr><td class="ok">Banana Strawberry Yogurt</td></tr>
+          </tbody>
+        </table>
+        <div class="foot">регистр не важен: 'B_nana' и 'b_nana' дадут одно</div>
+      </div>
+      <div class="result">
+        <table>
+          <thead><tr><th>Паттерн</th><th>Что найдёт</th><th>Что не найдёт</th></tr></thead>
+          <tbody>
+            <tr><td class="hi">'_ milk%'</td><td class="ok">2milk, Xmilk</td><td class="ng">milk, Oat Milk</td></tr>
+            <tr><td class="hi">'__milk%'</td><td class="ok">2% milk</td><td class="ng">milk, Xmilk</td></tr>
+            <tr><td class="hi">'organ_c%'</td><td class="ok">Organic Banana</td><td class="ng">Organc, Organiic</td></tr>
+            <tr><td class="hi">'%___milk'</td><td class="ok">Oat Milk (7 букв)</td><td class="ng">Milk, Oatmilk</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+
+<!-- WHERE IS NULL -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow c-teal">WHERE</p>
+  <h2>IS NULL - пустые значения</h2>
+  <div class="cr">
+    <div>
+      <div class="lbl">Команда</div>
+      <div class="code"><span class="kw">SELECT</span> <span class="nm">order_id</span>, <span class="nm">user_id</span>, <span class="nm">days_since_prior_order</span>
+<span class="kw">FROM</span> public.orders
+<span class="kw">WHERE</span> <span class="nm">days_since_prior_order</span> <span class="kw">IS NULL</span>
+<span class="kw">LIMIT</span> <span class="st">5</span>;</div>
+      <div class="note orange" style="margin-top:10px"><p>NULL - это первый заказ пользователя: нет предыдущего. <b>WHERE x = NULL не работает</b> - только IS NULL / IS NOT NULL.</p></div>
+    </div>
+    <div>
+      <div class="lbl">Результат - первые заказы пользователей</div>
+      <div class="result">
+        <table>
+          <thead><tr><th>order_id</th><th>user_id</th><th>days_since_prior</th></tr></thead>
+          <tbody>
+            <tr><td class="hi">2539329</td><td>1</td><td class="nil">NULL</td></tr>
+            <tr><td class="hi">2398795</td><td>2</td><td class="nil">NULL</td></tr>
+            <tr><td class="hi">473747</td><td>5</td><td class="nil">NULL</td></tr>
+            <tr><td class="hi">2254736</td><td>7</td><td class="nil">NULL</td></tr>
+            <tr><td class="hi">431534</td><td>9</td><td class="nil">NULL</td></tr>
+          </tbody>
+        </table>
+        <div class="foot">NULL = первый заказ - нет предыдущего</div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+
+<!-- WHERE AND -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow c-teal">WHERE</p>
+  <h2>AND / OR - несколько условий</h2>
+  <div class="cr">
+    <div>
+      <div class="lbl">Команда</div>
+      <div class="code"><span class="kw">SELECT</span> <span class="nm">order_id</span>, <span class="nm">order_dow</span>, <span class="nm">order_hour_of_day</span>
+<span class="kw">FROM</span> public.orders
+<span class="kw">WHERE</span> <span class="nm">order_dow</span> <span class="kw">IN</span> (<span class="st">0</span>, <span class="st">6</span>)
+  <span class="kw">AND</span> <span class="nm">order_hour_of_day</span> <span class="kw">BETWEEN</span> <span class="st">9</span> <span class="kw">AND</span> <span class="st">11</span>
+<span class="kw">LIMIT</span> <span class="st">5</span>;</div>
+      <div class="note teal" style="margin-top:10px"><p><b>AND</b> - оба условия должны выполняться. <b>OR</b> - хотя бы одно. <b>NOT</b> - отрицание. Скобки помогают задать порядок: <b>WHERE (a OR b) AND c</b>.</p></div>
+    </div>
+    <div>
+      <div class="lbl">Результат - выходные И утро</div>
+      <div class="result">
+        <table>
+          <thead><tr><th>order_id</th><th>order_dow</th><th>order_hour_of_day</th></tr></thead>
+          <tbody>
+            <tr><td class="hi">1187899</td><td class="or">0</td><td class="ok">9</td></tr>
+            <tr><td class="hi">2196797</td><td class="or">6</td><td class="ok">10</td></tr>
+            <tr><td class="hi">525192</td><td class="or">0</td><td class="ok">11</td></tr>
+            <tr><td class="hi">3388695</td><td class="or">6</td><td class="ok">9</td></tr>
+            <tr><td class="hi">1029453</td><td class="or">0</td><td class="ok">10</td></tr>
+          </tbody>
+        </table>
+        <div class="foot">оба условия работают одновременно</div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+
+<!-- MODULE GROUP BY -->
+<div class="slide mslide">
+<div class="sc">
+  <p class="eyebrow">Модуль 3</p>
+  <div class="divider" style="background:#1a9d4a"></div>
+  <h2>GROUP BY · Агрегации</h2>
+  <p class="sub">COUNT · SUM · AVG · MIN · MAX · HAVING</p>
+</div>
+</div>
+
+
+<!-- COUNT AVG MIN MAX -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow c-orange">Агрегации</p>
+  <h2>COUNT · AVG · MIN · MAX - по всей таблице</h2>
+  <div class="cr">
+    <div>
+      <div class="lbl">Команда</div>
+      <div class="code"><span class="kw">SELECT</span>
+    <span class="fn">COUNT</span>(*)                                 <span class="kw">AS</span> vsego,
+    <span class="fn">COUNT</span>(<span class="kw">DISTINCT</span> <span class="nm">user_id</span>)             <span class="kw">AS</span> unikal_users,
+    <span class="fn">ROUND</span>(<span class="fn">AVG</span>(<span class="nm">days_since_prior_order</span>), <span class="st">1</span>) <span class="kw">AS</span> srednee_dney,
+    <span class="fn">MIN</span>(<span class="nm">days_since_prior_order</span>)            <span class="kw">AS</span> min_dney,
+    <span class="fn">MAX</span>(<span class="nm">days_since_prior_order</span>)            <span class="kw">AS</span> max_dney
+<span class="kw">FROM</span> public.orders
+<span class="kw">WHERE</span> <span class="nm">days_since_prior_order</span> <span class="kw">IS NOT NULL</span>;</div>
+      <div class="note orange" style="margin-top:10px"><p>Без GROUP BY - одна строка по всей таблице. IS NOT NULL нужен - иначе AVG считается с пропуском NULL строк, а COUNT(*) будет расходиться.</p></div>
+    </div>
+    <div>
+      <div class="lbl">Результат - 1 строка</div>
+      <div class="result">
+        <table>
+          <thead><tr><th>vsego</th><th>unikal_users</th><th>srednee_dney</th><th>min</th><th>max</th></tr></thead>
+          <tbody>
+            <tr><td class="hi">3,214,874</td><td class="ok">206,209</td><td class="or">11.1</td><td>1</td><td>30</td></tr>
+          </tbody>
+        </table>
+        <div class="foot">агрегация без GROUP BY → всегда 1 строка</div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+
+<!-- GROUP BY -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow c-orange">Агрегации</p>
+  <h2>GROUP BY - одна строка на группу</h2>
+  <div class="cr">
+    <div>
+      <div class="lbl">Команда</div>
+      <div class="code"><span class="kw">SELECT</span>
+    <span class="nm">order_dow</span>                              <span class="kw">AS</span> den,
+    <span class="fn">COUNT</span>(*)                              <span class="kw">AS</span> zakazov,
+    <span class="fn">COUNT</span>(<span class="kw">DISTINCT</span> <span class="nm">user_id</span>)          <span class="kw">AS</span> users,
+    <span class="fn">ROUND</span>(<span class="fn">AVG</span>(<span class="nm">order_hour_of_day</span>), <span class="st">1</span>) <span class="kw">AS</span> sredniy_chas
+<span class="kw">FROM</span> public.orders
+<span class="kw">GROUP BY</span> <span class="nm">order_dow</span>
+<span class="kw">ORDER BY</span> zakazov <span class="kw">DESC</span>;</div>
+      <div class="note orange" style="margin-top:10px"><p>В SELECT можно писать только то что в GROUP BY или обёрнуто в функцию (COUNT/AVG...). Иначе - ошибка.</p></div>
+    </div>
+    <div>
+      <div class="lbl">Результат - 7 строк по дням</div>
+      <div class="result">
+        <table>
+          <thead><tr><th>den</th><th>zakazov</th><th>users</th><th>sredniy_chas</th></tr></thead>
+          <tbody>
+            <tr><td class="or">0 (Вс)</td><td class="hi">600,905</td><td>146,020</td><td>13.4</td></tr>
+            <tr><td class="or">1 (Пн)</td><td class="hi">587,796</td><td>143,498</td><td>13.1</td></tr>
+            <tr><td class="or">6 (Сб)</td><td class="hi">560,280</td><td>138,047</td><td>13.2</td></tr>
+            <tr><td>5 (Пт)</td><td>453,258</td><td>115,204</td><td>13.6</td></tr>
+            <tr><td>2 (Вт)</td><td>467,260</td><td>117,802</td><td>13.3</td></tr>
+            <tr><td>3 (Ср)</td><td>436,972</td><td>110,921</td><td>13.8</td></tr>
+            <tr><td>4 (Чт)</td><td>426,339</td><td>108,501</td><td>14.0</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+
+<!-- HAVING -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow c-orange">Агрегации</p>
+  <h2>HAVING - фильтр после GROUP BY</h2>
+  <div class="cr">
+    <div>
+      <div class="lbl">Команда</div>
+      <div class="code"><span class="kw">SELECT</span>
+    <span class="nm">user_id</span>,
+    <span class="fn">COUNT</span>(*) <span class="kw">AS</span> orders_count,
+    <span class="fn">ROUND</span>(<span class="fn">AVG</span>(<span class="nm">days_since_prior_order</span>), <span class="st">1</span>) <span class="kw">AS</span> avg_days
+<span class="kw">FROM</span> public.orders
+<span class="kw">WHERE</span> <span class="nm">days_since_prior_order</span> <span class="kw">IS NOT NULL</span>
+<span class="kw">GROUP BY</span> <span class="nm">user_id</span>
+<span class="kw">HAVING</span> <span class="fn">COUNT</span>(*) >= <span class="st">50</span>
+<span class="kw">ORDER BY</span> orders_count <span class="kw">DESC</span>
+<span class="kw">LIMIT</span> <span class="st">5</span>;</div>
+      <div class="note orange" style="margin-top:10px"><p><b>WHERE</b> фильтрует строки ДО группировки. <b>HAVING</b> фильтрует группы ПОСЛЕ - поэтому в HAVING можно писать COUNT(*) и другие агрегации.</p></div>
+    </div>
+    <div>
+      <div class="lbl">Результат - только суперактивные</div>
+      <div class="result">
+        <table>
+          <thead><tr><th>user_id</th><th>orders_count</th><th>avg_days</th></tr></thead>
+          <tbody>
+            <tr><td>149753</td><td class="hi">99</td><td>8.2</td></tr>
+            <tr><td>197065</td><td class="hi">97</td><td>7.5</td></tr>
+            <tr><td>42948</td><td class="hi">96</td><td>9.1</td></tr>
+            <tr><td>173095</td><td class="hi">95</td><td>6.8</td></tr>
+            <tr><td>58605</td><td class="hi">94</td><td>10.2</td></tr>
+          </tbody>
+        </table>
+        <div class="foot">только пользователи у кого >= 50 заказов</div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+
+<!-- MODULE JOIN -->
+<div class="slide mslide">
+<div class="sc">
+  <p class="eyebrow">Модуль 4</p>
+  <div class="divider" style="background:#1a9d4a"></div>
+  <h2>JOIN</h2>
+  <p class="sub">Объединяем таблицы по общему ключу</p>
+</div>
+</div>
+
+
+<!-- INNER JOIN -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow c-blue">JOIN</p>
+  <h2>INNER JOIN - только совпадающие строки</h2>
+  <div class="cr">
+    <div>
+      <div class="lbl">Команда</div>
+      <div class="code"><span class="kw">SELECT</span>
+    p.product_name,
+    a.aisle,
+    d.department
+<span class="kw">FROM</span> public.products p
+<span class="kw">INNER JOIN</span> public.aisles a
+    <span class="kw">ON</span> p.aisle_id = a.aisle_id
+<span class="kw">INNER JOIN</span> public.departments d
+    <span class="kw">ON</span> p.department_id = d.department_id
+<span class="kw">LIMIT</span> <span class="st">5</span>;</div>
+      <div class="note blue" style="margin-top:10px"><p><b>p, a, d</b> - псевдонимы таблиц. Потом пишем <b>p.product_name</b> вместо длинного <b>products.product_name</b>. Обязательно когда в двух таблицах одинаковые имена колонок.</p></div>
+    </div>
+    <div>
+      <div class="lbl">Результат - товар + полка + отдел</div>
+      <div class="result">
+        <table>
+          <thead><tr><th>product_name</th><th>aisle</th><th>department</th></tr></thead>
+          <tbody>
+            <tr><td>Chocolate Cookies</td><td>cookies cakes</td><td class="or">snacks</td></tr>
+            <tr><td>All-Seasons Salt</td><td>spices seasonings</td><td class="hi">pantry</td></tr>
+            <tr><td>Golden Unsweetened Tea</td><td>tea</td><td class="hi">beverages</td></tr>
+            <tr><td>Frozen Meals</td><td>frozen meals</td><td class="pu">frozen</td></tr>
+            <tr><td>Green Chile Sauce</td><td>marinades meat</td><td class="hi">pantry</td></tr>
+          </tbody>
+        </table>
+        <div class="foot">3 таблицы соединены в один запрос</div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+
+<!-- LEFT JOIN -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow c-blue">JOIN</p>
+  <h2>LEFT JOIN - все строки левой, NULL если нет совпадения</h2>
+  <div class="cr">
+    <div>
+      <div class="lbl">Команда</div>
+      <div class="code"><span class="kw">SELECT</span>
+    p.product_name,
+    p.department_id,
+    d.department
+<span class="kw">FROM</span> public.products p
+<span class="kw">LEFT JOIN</span> public.departments d
+    <span class="kw">ON</span> p.department_id = d.department_id
+<span class="kw">LIMIT</span> <span class="st">6</span>;</div>
+      <div class="note blue" style="margin-top:10px"><p>INNER JOIN - только совпадения. LEFT JOIN - все строки левой таблицы, а справа NULL если совпадения нет. Используй чтобы найти "осиротевшие" записи.</p></div>
+    </div>
+    <div>
+      <div class="lbl">Результат - NULL когда нет совпадения</div>
+      <div class="result">
+        <table>
+          <thead><tr><th>product_name</th><th>department_id</th><th>department</th></tr></thead>
+          <tbody>
+            <tr><td>Chocolate Cookies</td><td>19</td><td class="ok">snacks</td></tr>
+            <tr><td>All-Seasons Salt</td><td>13</td><td class="ok">pantry</td></tr>
+            <tr><td>Golden Tea</td><td>7</td><td class="ok">beverages</td></tr>
+            <tr><td>Frozen Meals</td><td>1</td><td class="ok">frozen</td></tr>
+            <tr><td>Mystery Item A</td><td>99</td><td class="nil">NULL</td></tr>
+            <tr><td>Mystery Item B</td><td>99</td><td class="nil">NULL</td></tr>
+          </tbody>
+        </table>
+        <div class="foot">отдела 99 нет в departments → NULL</div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+
+<!-- JOIN + aggregation -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow c-blue">JOIN</p>
+  <h2>JOIN + GROUP BY - 4 таблицы и статистика</h2>
+  <div class="cr">
+    <div>
+      <div class="lbl">Команда</div>
+      <div class="code"><span class="kw">SELECT</span>
+    p.product_name,
+    d.department,
+    <span class="fn">COUNT</span>(*)                                       <span class="kw">AS</span> zakazov,
+    <span class="fn">ROUND</span>(<span class="fn">AVG</span>(op.reordered::float) * <span class="st">100</span>, <span class="st">1</span>)    <span class="kw">AS</span> reorder_pct
+<span class="kw">FROM</span> public.order_products_prior op
+<span class="kw">JOIN</span> public.products p    <span class="kw">ON</span> op.product_id   = p.product_id
+<span class="kw">JOIN</span> public.aisles a      <span class="kw">ON</span> p.aisle_id      = a.aisle_id
+<span class="kw">JOIN</span> public.departments d <span class="kw">ON</span> p.department_id = d.department_id
+<span class="kw">GROUP BY</span> p.product_name, d.department
+<span class="kw">ORDER BY</span> zakazov <span class="kw">DESC</span>
+<span class="kw">LIMIT</span> <span class="st">5</span>;</div>
+    </div>
+    <div>
+      <div class="lbl">Результат - топ товаров</div>
+      <div class="result">
+        <table>
+          <thead><tr><th>product_name</th><th>department</th><th>zakazov</th><th>reorder%</th></tr></thead>
+          <tbody>
+            <tr><td>Banana</td><td class="ok">produce</td><td class="hi">491,291</td><td class="ok">72.3</td></tr>
+            <tr><td>Bag of Organic Bananas</td><td class="ok">produce</td><td class="hi">379,450</td><td class="ok">80.1</td></tr>
+            <tr><td>Organic Strawberries</td><td class="ok">produce</td><td class="hi">264,683</td><td class="ok">67.4</td></tr>
+            <tr><td>Organic Baby Spinach</td><td class="ok">produce</td><td class="hi">241,921</td><td class="ok">77.8</td></tr>
+            <tr><td>Large Lemon</td><td class="ok">produce</td><td class="hi">215,543</td><td class="ok">62.9</td></tr>
+          </tbody>
+        </table>
+        <div class="foot">32M строк × 4 таблицы - работает быстро</div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+
+<!-- MODULE CTE -->
+<div class="slide mslide">
+<div class="sc">
+  <p class="eyebrow">Модуль 5</p>
+  <div class="divider" style="background:#1a9d4a"></div>
+  <h2>CTE (WITH)</h2>
+  <p class="sub">Именованный подзапрос - сложное делаем читаемым</p>
+</div>
+</div>
+
+
+<!-- CTE -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow c-purple">CTE</p>
+  <h2>WITH - даём подзапросу имя</h2>
+  <div class="cr">
+    <div>
+      <div class="lbl">Команда</div>
+      <div class="code"><span class="kw">WITH</span> user_stats <span class="kw">AS</span> (
+    <span class="kw">SELECT</span>
+        <span class="nm">user_id</span>,
+        <span class="fn">COUNT</span>(*) <span class="kw">AS</span> orders_count,
+        <span class="fn">ROUND</span>(<span class="fn">AVG</span>(<span class="nm">days_since_prior_order</span>), <span class="st">1</span>) <span class="kw">AS</span> avg_days
+    <span class="kw">FROM</span> public.orders
+    <span class="kw">WHERE</span> <span class="nm">days_since_prior_order</span> <span class="kw">IS NOT NULL</span>
+    <span class="kw">GROUP BY</span> <span class="nm">user_id</span>
+)
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> user_stats
+<span class="kw">WHERE</span> orders_count >= <span class="st">30</span>
+<span class="kw">ORDER BY</span> orders_count <span class="kw">DESC</span>
+<span class="kw">LIMIT</span> <span class="st">5</span>;</div>
+      <div class="note purple" style="margin-top:10px"><p>CTE = подзапрос с именем. Используется как обычная таблица после AS. Можно ссылаться несколько раз. Несколько CTE разделяются запятой.</p></div>
+    </div>
+    <div>
+      <div class="lbl">Результат</div>
+      <div class="result">
+        <table>
+          <thead><tr><th>user_id</th><th>orders_count</th><th>avg_days</th></tr></thead>
+          <tbody>
+            <tr><td>149753</td><td class="hi">99</td><td class="or">8.2</td></tr>
+            <tr><td>197065</td><td class="hi">97</td><td class="or">7.5</td></tr>
+            <tr><td>42948</td><td class="hi">96</td><td class="or">9.1</td></tr>
+            <tr><td>173095</td><td class="hi">95</td><td class="or">6.8</td></tr>
+            <tr><td>58605</td><td class="hi">94</td><td class="or">10.2</td></tr>
+          </tbody>
+        </table>
+        <div class="foot">CTE считается один раз, дальше используешь как таблицу</div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+
+<!-- MODULE WINDOW -->
+<div class="slide mslide">
+<div class="sc">
+  <p class="eyebrow">Модуль 6</p>
+  <div class="divider" style="background:#1a9d4a"></div>
+  <h2>Оконные функции</h2>
+  <p class="sub">Считаем по группам - без потери строк</p>
+</div>
+</div>
+
+
+<!-- ROW_NUMBER -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow c-teal">Window Functions</p>
+  <h2>ROW_NUMBER - топ-N внутри группы</h2>
+  <div class="cr">
+    <div>
+      <div class="lbl">Команда</div>
+      <div class="code"><span class="kw">WITH</span> ranked <span class="kw">AS</span> (
+    <span class="kw">SELECT</span>
+        p.product_name, d.department,
+        <span class="fn">COUNT</span>(*) <span class="kw">AS</span> cnt,
+        <span class="fn">ROW_NUMBER</span>() <span class="kw">OVER</span> (
+            <span class="kw">PARTITION BY</span> d.department
+            <span class="kw">ORDER BY</span> <span class="fn">COUNT</span>(*) <span class="kw">DESC</span>
+        ) <span class="kw">AS</span> rn
+    <span class="kw">FROM</span> public.order_products_prior op
+    <span class="kw">JOIN</span> public.products p    <span class="kw">ON</span> op.product_id   = p.product_id
+    <span class="kw">JOIN</span> public.departments d <span class="kw">ON</span> p.department_id = d.department_id
+    <span class="kw">GROUP BY</span> p.product_name, d.department
+)
+<span class="kw">SELECT</span> department, product_name, cnt, rn
+<span class="kw">FROM</span> ranked <span class="kw">WHERE</span> rn <= <span class="st">2</span>
+<span class="kw">ORDER BY</span> department, rn;</div>
+    </div>
+    <div>
+      <div class="lbl">Результат - топ-2 в каждом отделе</div>
+      <div class="result">
+        <table>
+          <thead><tr><th>department</th><th>product_name</th><th>cnt</th><th>rn</th></tr></thead>
+          <tbody>
+            <tr><td>beverages</td><td>Sparkling Water</td><td>157,423</td><td class="ok">1</td></tr>
+            <tr><td>beverages</td><td>Soda</td><td>143,019</td><td class="ok">2</td></tr>
+            <tr><td>dairy eggs</td><td>Whole Milk</td><td>194,174</td><td class="ok">1</td></tr>
+            <tr><td>dairy eggs</td><td>Organic Whole Milk</td><td>187,291</td><td class="ok">2</td></tr>
+            <tr><td>produce</td><td>Banana</td><td>491,291</td><td class="ok">1</td></tr>
+            <tr><td>produce</td><td>Bag of Organic Bananas</td><td>379,450</td><td class="ok">2</td></tr>
+          </tbody>
+        </table>
+        <div class="foot">PARTITION BY = разбивка на группы по отделу</div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+
+<!-- LAG -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow c-teal">Window Functions</p>
+  <h2>LAG - значение из предыдущей строки</h2>
+  <div class="cr">
+    <div>
+      <div class="lbl">Команда</div>
+      <div class="code"><span class="kw">WITH</span> hourly <span class="kw">AS</span> (
+    <span class="kw">SELECT</span>
+        <span class="nm">order_hour_of_day</span> <span class="kw">AS</span> hour,
+        <span class="fn">COUNT</span>(*)           <span class="kw">AS</span> orders
+    <span class="kw">FROM</span> public.orders
+    <span class="kw">GROUP BY</span> <span class="nm">order_hour_of_day</span>
+)
+<span class="kw">SELECT</span>
+    hour,
+    orders,
+    <span class="fn">LAG</span>(orders) <span class="kw">OVER</span> (<span class="kw">ORDER BY</span> hour) <span class="kw">AS</span> prev_hour,
+    orders - <span class="fn">LAG</span>(orders) <span class="kw">OVER</span> (<span class="kw">ORDER BY</span> hour) <span class="kw">AS</span> delta
+<span class="kw">FROM</span> hourly
+<span class="kw">ORDER BY</span> hour;</div>
+      <div class="note teal" style="margin-top:10px"><p><b>LAG(x)</b> - значение x из предыдущей строки. <b>LEAD(x)</b> - из следующей. Первая строка не имеет предыдущей → NULL.</p></div>
+    </div>
+    <div>
+      <div class="lbl">Результат - рост заказов по часам</div>
+      <div class="result">
+        <table>
+          <thead><tr><th>hour</th><th>orders</th><th>prev_hour</th><th>delta</th></tr></thead>
+          <tbody>
+            <tr><td>6</td><td>28,119</td><td class="nil">NULL</td><td class="nil">NULL</td></tr>
+            <tr><td>7</td><td>63,200</td><td>28,119</td><td class="ok">+35,081</td></tr>
+            <tr><td>8</td><td>121,004</td><td>63,200</td><td class="ok">+57,804</td></tr>
+            <tr><td>9</td><td>163,813</td><td>121,004</td><td class="ok">+42,809</td></tr>
+            <tr><td>10</td><td>194,211</td><td>163,813</td><td class="ok">+30,398</td></tr>
+            <tr><td>11</td><td>188,456</td><td>194,211</td><td class="ng">-5,755</td></tr>
+          </tbody>
+        </table>
+        <div class="foot">LAG сравнивает каждый час с предыдущим</div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+
+<!-- SUM OVER -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow c-teal">Window Functions</p>
+  <h2>SUM OVER - нарастающий итог</h2>
+  <div class="cr">
+    <div>
+      <div class="lbl">Команда</div>
+      <div class="code"><span class="kw">WITH</span> daily <span class="kw">AS</span> (
+    <span class="kw">SELECT</span>
+        <span class="nm">order_dow</span> <span class="kw">AS</span> day,
+        <span class="fn">COUNT</span>(*) <span class="kw">AS</span> orders
+    <span class="kw">FROM</span> public.orders
+    <span class="kw">GROUP BY</span> <span class="nm">order_dow</span>
+)
+<span class="kw">SELECT</span>
+    day,
+    orders,
+    <span class="fn">SUM</span>(orders) <span class="kw">OVER</span> (<span class="kw">ORDER BY</span> day) <span class="kw">AS</span> running_total,
+    <span class="fn">ROUND</span>(
+        <span class="fn">SUM</span>(orders) <span class="kw">OVER</span> (<span class="kw">ORDER BY</span> day) * <span class="st">100.0</span>
+        / <span class="fn">SUM</span>(orders) <span class="kw">OVER</span>()
+    , <span class="st">1</span>) <span class="kw">AS</span> cum_pct
+<span class="kw">FROM</span> daily <span class="kw">ORDER BY</span> day;</div>
+    </div>
+    <div>
+      <div class="lbl">Результат - накопительная сумма</div>
+      <div class="result">
+        <table>
+          <thead><tr><th>day</th><th>orders</th><th>running_total</th><th>cum_%</th></tr></thead>
+          <tbody>
+            <tr><td>0</td><td>600,905</td><td class="hi">600,905</td><td class="ok">18.7%</td></tr>
+            <tr><td>1</td><td>587,796</td><td class="hi">1,188,701</td><td class="ok">37.0%</td></tr>
+            <tr><td>2</td><td>467,260</td><td class="hi">1,655,961</td><td class="ok">51.5%</td></tr>
+            <tr><td>3</td><td>436,972</td><td class="hi">2,092,933</td><td class="ok">65.1%</td></tr>
+            <tr><td>4</td><td>426,339</td><td class="hi">2,519,272</td><td class="ok">78.4%</td></tr>
+            <tr><td>5</td><td>453,258</td><td class="hi">2,972,530</td><td class="ok">92.5%</td></tr>
+            <tr><td>6</td><td>560,280</td><td class="hi">3,532,810</td><td class="ok">100%</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+
+<!-- MODULE CASE WHEN -->
+<div class="slide mslide">
+<div class="sc">
+  <p class="eyebrow">Модуль 7</p>
+  <div class="divider" style="background:#1a9d4a"></div>
+  <h2>CASE WHEN</h2>
+  <p class="sub">Условная логика прямо в запросе</p>
+</div>
+</div>
+
+
+<!-- CASE WHEN -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow c-red">CASE WHEN</p>
+  <h2>Создаём категорию из числа</h2>
+  <div class="cr">
+    <div>
+      <div class="lbl">Команда</div>
+      <div class="code"><span class="kw">SELECT</span>
+    <span class="nm">order_id</span>,
+    <span class="nm">order_hour_of_day</span>,
+    <span class="kw">CASE</span>
+        <span class="kw">WHEN</span> <span class="nm">order_hour_of_day</span> < <span class="st">6</span>  <span class="kw">THEN</span> <span class="st">'Ночь'</span>
+        <span class="kw">WHEN</span> <span class="nm">order_hour_of_day</span> < <span class="st">12</span> <span class="kw">THEN</span> <span class="st">'Утро'</span>
+        <span class="kw">WHEN</span> <span class="nm">order_hour_of_day</span> < <span class="st">18</span> <span class="kw">THEN</span> <span class="st">'День'</span>
+        <span class="kw">ELSE</span> <span class="st">'Вечер'</span>
+    <span class="kw">END</span> <span class="kw">AS</span> period
+<span class="kw">FROM</span> public.orders
+<span class="kw">LIMIT</span> <span class="st">5</span>;</div>
+      <div class="note orange" style="margin-top:10px"><p>CASE проверяет условия сверху вниз и берёт первое совпадение. ELSE - если ни одно не сработало. Работает в SELECT, GROUP BY, ORDER BY, HAVING.</p></div>
+    </div>
+    <div>
+      <div class="lbl">Результат - новая колонка из условий</div>
+      <div class="result">
+        <table>
+          <thead><tr><th>order_id</th><th>order_hour_of_day</th><th>period</th></tr></thead>
+          <tbody>
+            <tr><td class="hi">2539329</td><td>8</td><td class="ok">Утро</td></tr>
+            <tr><td class="hi">2398795</td><td>7</td><td class="ok">Утро</td></tr>
+            <tr><td class="hi">473747</td><td>12</td><td class="or">День</td></tr>
+            <tr><td class="hi">2254736</td><td>7</td><td class="ok">Утро</td></tr>
+            <tr><td class="hi">431534</td><td>15</td><td class="or">День</td></tr>
+          </tbody>
+        </table>
+        <div class="foot">новая колонка без изменений в таблице</div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+
+<!-- CASE + GROUP BY -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow c-red">CASE WHEN</p>
+  <h2>CASE + GROUP BY - RFM сегментация</h2>
+  <div class="cr">
+    <div>
+      <div class="lbl">Команда</div>
+      <div class="code"><span class="kw">WITH</span> stats <span class="kw">AS</span> (
+    <span class="kw">SELECT</span> <span class="nm">user_id</span>,
+        <span class="fn">COUNT</span>(*)                                   <span class="kw">AS</span> freq,
+        <span class="fn">ROUND</span>(<span class="fn">AVG</span>(<span class="nm">days_since_prior_order</span>), <span class="st">1</span>)  <span class="kw">AS</span> recency
+    <span class="kw">FROM</span> public.orders
+    <span class="kw">WHERE</span> <span class="nm">days_since_prior_order</span> <span class="kw">IS NOT NULL</span>
+    <span class="kw">GROUP BY</span> <span class="nm">user_id</span>
+)
+<span class="kw">SELECT</span>
+    <span class="kw">CASE</span>
+        <span class="kw">WHEN</span> freq >= <span class="st">20</span> <span class="kw">AND</span> recency <= <span class="st">10</span> <span class="kw">THEN</span> <span class="st">'Champions'</span>
+        <span class="kw">WHEN</span> freq >= <span class="st">10</span> <span class="kw">AND</span> recency <= <span class="st">20</span> <span class="kw">THEN</span> <span class="st">'Loyal'</span>
+        <span class="kw">WHEN</span> recency > <span class="st">25</span>                  <span class="kw">THEN</span> <span class="st">'At Risk'</span>
+        <span class="kw">ELSE</span> <span class="st">'New'</span>
+    <span class="kw">END</span>         <span class="kw">AS</span> segment,
+    <span class="fn">COUNT</span>(*)    <span class="kw">AS</span> users
+<span class="kw">FROM</span> stats
+<span class="kw">GROUP BY</span> <span class="st">1</span>
+<span class="kw">ORDER BY</span> users <span class="kw">DESC</span>;</div>
+    </div>
+    <div>
+      <div class="lbl">Результат - сегменты пользователей</div>
+      <div class="result">
+        <table>
+          <thead><tr><th>segment</th><th>users</th></tr></thead>
+          <tbody>
+            <tr><td>New</td><td>112,580</td></tr>
+            <tr><td class="ok">Loyal</td><td class="ok">41,293</td></tr>
+            <tr><td class="ng">At Risk</td><td class="ng">33,914</td></tr>
+            <tr><td class="hi">Champions</td><td class="hi">18,422</td></tr>
+          </tbody>
+        </table>
+        <div class="foot">GROUP BY 1 = группировать по первой колонке</div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+
+<!-- MODULE SCHEMA -->
+<div class="slide mslide">
+<div class="sc">
+  <p class="eyebrow">Модуль 8</p>
+  <div class="divider" style="background:#1a9d4a"></div>
+  <h2>Своя схема</h2>
+  <p class="sub">CREATE TABLE · DROP · INDEX · EXPLAIN</p>
+</div>
+</div>
+
+
+<!-- CREATE TABLE AS SELECT -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow c-green">Своя схема</p>
+  <h2>CREATE TABLE AS SELECT - сохрани результат</h2>
+  <div class="cr">
+    <div>
+      <div class="lbl">Команда</div>
+      <div class="code"><span class="kw">CREATE TABLE</span> my_rfm <span class="kw">AS</span>
+<span class="kw">SELECT</span>
+    <span class="nm">user_id</span>,
+    <span class="fn">COUNT</span>(*) <span class="kw">AS</span> total_orders,
+    <span class="fn">ROUND</span>(<span class="fn">AVG</span>(<span class="nm">days_since_prior_order</span>), <span class="st">1</span>) <span class="kw">AS</span> avg_days,
+    <span class="kw">CASE</span>
+        <span class="kw">WHEN</span> <span class="fn">COUNT</span>(*) >= <span class="st">20</span> <span class="kw">THEN</span> <span class="st">'VIP'</span>
+        <span class="kw">WHEN</span> <span class="fn">COUNT</span>(*) >= <span class="st">10</span> <span class="kw">THEN</span> <span class="st">'Regular'</span>
+        <span class="kw">ELSE</span> <span class="st">'New'</span>
+    <span class="kw">END</span> <span class="kw">AS</span> segment
+<span class="kw">FROM</span> public.orders
+<span class="kw">WHERE</span> <span class="nm">days_since_prior_order</span> <span class="kw">IS NOT NULL</span>
+<span class="kw">GROUP BY</span> <span class="nm">user_id</span>;
+
+<span class="cm">-- Смотрим что получилось</span>
+<span class="kw">SELECT</span> segment, <span class="fn">COUNT</span>(*) <span class="kw">AS</span> users
+<span class="kw">FROM</span> my_rfm <span class="kw">GROUP BY</span> segment;</div>
+    </div>
+    <div>
+      <div class="lbl">Результат - таблица создана в твоей схеме</div>
+      <div class="result">
+        <table>
+          <thead><tr><th>segment</th><th>users</th></tr></thead>
+          <tbody>
+            <tr><td class="hi">VIP</td><td class="hi">31,890</td></tr>
+            <tr><td class="or">Regular</td><td class="or">58,442</td></tr>
+            <tr><td>New</td><td>115,877</td></tr>
+          </tbody>
+        </table>
+        <div class="foot">таблица только в твоей схеме · другие не видят</div>
+      </div>
+      <div class="note green" style="margin-top:10px"><p><b>public</b> - только SELECT. <b>Твоя схема</b> - CREATE / INSERT / UPDATE / DELETE / DROP. Удалить: <b>DROP TABLE IF EXISTS my_rfm;</b></p></div>
+    </div>
+  </div>
+</div>
+</div>
+
+
+<!-- EXPLAIN + INDEX -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow c-blue">Производительность</p>
+  <h2>EXPLAIN ANALYZE + CREATE INDEX</h2>
+  <div class="cr">
+    <div>
+      <div class="lbl">Команда</div>
+      <div class="code"><span class="cm">-- 1. Смотрим план запроса</span>
+<span class="kw">EXPLAIN ANALYZE</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> my_rfm
+<span class="kw">WHERE</span> segment = <span class="st">'VIP'</span>;
+
+<span class="cm">-- 2. Создаём индекс</span>
+<span class="kw">CREATE INDEX</span> idx_rfm_seg <span class="kw">ON</span> my_rfm(segment);
+
+<span class="cm">-- 3. Снова смотрим план</span>
+<span class="kw">EXPLAIN ANALYZE</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> my_rfm
+<span class="kw">WHERE</span> segment = <span class="st">'VIP'</span>;</div>
+      <div class="note blue" style="margin-top:10px"><p><b>Seq Scan</b> - читает каждую строку подряд (медленно). <b>Index Scan</b> - прыгает сразу к нужным строкам (быстро). На больших таблицах разница в 10–100x.</p></div>
+    </div>
+    <div>
+      <div class="lbl">До индекса - Seq Scan</div>
+      <div class="result" style="margin-bottom:10px">
+        <table>
+          <thead><tr><th>Query Plan</th></tr></thead>
+          <tbody>
+            <tr><td class="ng">Seq Scan on my_rfm</td></tr>
+            <tr><td style="font-size:12px;color:#6b6f76;">Filter: (segment = 'VIP')</td></tr>
+            <tr><td style="font-size:12px;color:#e0820a;">actual time = 38.4 ms</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="lbl">После индекса - Index Scan</div>
+      <div class="result">
+        <table>
+          <thead><tr><th>Query Plan</th></tr></thead>
+          <tbody>
+            <tr><td class="ok">Index Scan using idx_rfm_seg</td></tr>
+            <tr><td style="font-size:12px;color:#6b6f76;">Index Cond: (segment = 'VIP')</td></tr>
+            <tr><td style="font-size:12px;color:#1a9d4a;">actual time = 4.2 ms</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+
+<!-- TASKS -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Практика</p>
+  <h2>Задания</h2>
+  <div class="cards c3" style="max-width:1060px">
+    <div class="card acc-green">
+      <span class="badge" style="background:#e8f5eb;color:#0d5a1e">Базовый</span>
+      <h4>SELECT · WHERE · GROUP BY</h4>
+      <p>1. Найди товары с 'Yogurt'<br>2. Заказы по дням недели - какой топ?<br>3. % заказов в выходные<br>4. Среднее время между заказами</p>
+    </div>
+    <div class="card acc-orange">
+      <span class="badge" style="background:#fff3e6;color:#7a3c00">Средний</span>
+      <h4>JOIN · HAVING · CTE</h4>
+      <p>5. Топ-5 отделов по кол-ву товаров<br>6. Товары с reorder_rate > 80%<br>7. Пользователи только с утренними заказами<br>8. Среднее товаров в заказе по часам</p>
+    </div>
+    <div class="card acc-purple">
+      <span class="badge" style="background:#f3efff;color:#5b21b6">Продвинутый</span>
+      <h4>Window · Схема</h4>
+      <p>9. Первый и последний заказ каждого юзера<br>10. RFM → сохрани в my_rfm<br>11. Топ-3 товара в каждом отделе<br>12. Что покупают вместе?</p>
+    </div>
+  </div>
+</div>
+</div>
+
+
+<!-- FINAL -->
+<div class="slide tslide" style="text-align:center;">
+<div class="sc">
+  <p class="eyebrow">Готово</p>
+  <h1 style="font-size:clamp(32px,4.8vw,72px);">Ты знаешь SQL.</h1>
+  <p class="sub" style="margin-top:14px;">От SELECT до оконных функций.<br>База данных - это не страшно.</p>
+</div>
+</div>
+
+
+</div>
+<div class="ind"><span id="cur">1</span> / <span id="tot"></span></div>
+<div class="hint">← → space</div>
+<script>
+const slides=document.querySelectorAll('.slide');
+let cur=0;
+document.getElementById('tot').textContent=slides.length;
+function go(n){
+  slides[cur].classList.remove('active');
+  cur=(n+slides.length)%slides.length;
+  slides[cur].classList.add('active');
+  const sc=slides[cur].querySelector('.sc');
+  if(sc){sc.style.animation='none';void sc.offsetWidth;sc.style.animation='';}
+  document.getElementById('cur').textContent=cur+1;
+  document.getElementById('prog').style.width=((cur+1)/slides.length*100)+'%';
+  const m=slides[cur].classList;
+  document.getElementById('ltag').textContent=m.contains('mslide')?'Модуль':'SQL · DBeaver';
+}
+document.addEventListener('keydown',e=>{
+  if(e.key==='ArrowRight'||e.key===' '){e.preventDefault();go(cur+1);}
+  if(e.key==='ArrowLeft'){e.preventDefault();go(cur-1);}
+});
+let tx=0;
+document.addEventListener('touchstart',e=>{tx=e.touches[0].clientX;},{passive:true});
+document.addEventListener('touchend',e=>{const dx=e.changedTouches[0].clientX-tx;if(Math.abs(dx)>40)go(cur+(dx<0?1:-1));},{passive:true});
+const h=parseInt((location.hash||'').slice(1));
+go(h>=1&&h<=slides.length?h-1:0);
+</script>
+</body>
+</html>

@@ -1,0 +1,1762 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Defensive Programming · Leksiya 9</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700;800&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+            background: #FFFFFF;
+            color: #1d1d1f;
+            line-height: 1.1;
+            overflow: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .presentation { width: 100vw; height: 100vh; position: relative; }
+
+        .slide {
+            width: 100%; height: 100%;
+            display: none;
+            align-items: center; justify-content: center;
+            position: absolute; top: 0; left: 0;
+            padding: clamp(40px, 6vh, 80px) clamp(40px, 6vw, 80px);
+            text-align: center;
+        }
+        .slide.active { display: flex; flex-direction: column; }
+
+        .slide-content {
+            max-width: 1200px; width: 100%; margin: 0 auto;
+            opacity: 0; transform: translateY(20px);
+            animation: fadeInUp 0.8s ease-out 0.2s forwards;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+        }
+
+        @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
+
+        h1 {
+            font-size: clamp(40px, 6.5vw, 96px);
+            font-weight: 700;
+            letter-spacing: -0.025em;
+            line-height: 0.95;
+            margin-bottom: clamp(16px, 2.5vh, 32px);
+            color: #1d1d1f;
+        }
+
+        h2 {
+            font-size: clamp(28px, 4vw, 56px);
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            line-height: 1.05;
+            margin-bottom: clamp(16px, 2vh, 28px);
+            color: #1d1d1f;
+        }
+
+        .subtitle {
+            font-size: clamp(18px, 2.2vw, 28px);
+            font-weight: 400;
+            color: #86868b;
+            margin-bottom: clamp(24px, 4vh, 48px);
+            line-height: 1.3;
+            max-width: 900px;
+        }
+
+        .eyebrow {
+            font-size: clamp(13px, 1.2vw, 16px);
+            font-weight: 600;
+            color: #007aff;
+            text-transform: uppercase;
+            letter-spacing: 0.18em;
+            margin-bottom: 18px;
+        }
+
+        .body-text {
+            font-size: clamp(15px, 1.8vw, 22px);
+            font-weight: 400;
+            color: #515154;
+            line-height: 1.45;
+            max-width: 820px;
+            margin: 0 auto;
+        }
+
+        code { font-family: 'SF Mono','Menlo','Monaco','Consolas',monospace; font-size: 0.9em; }
+
+        .highlight { color: #007aff; font-weight: 500; }
+        .accent-green { color: #34c759; font-weight: 500; }
+        .accent-red { color: #ff3b30; font-weight: 500; }
+        .accent-purple { color: #af52de; font-weight: 500; }
+
+        .cards-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: clamp(16px, 2.5vw, 28px);
+            margin-top: clamp(24px, 4vh, 40px);
+            max-width: 1100px; width: 100%;
+        }
+
+        .card {
+            background: rgba(0, 0, 0, 0.025);
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            border-radius: 14px;
+            padding: clamp(20px, 2.5vw, 32px);
+            text-align: left;
+            opacity: 0; transform: translateY(24px);
+            animation: cardSlideUp 0.55s ease-out forwards;
+            transition: all 0.3s ease;
+        }
+        .card:nth-child(1) { animation-delay: 0.4s; }
+        .card:nth-child(2) { animation-delay: 0.5s; }
+        .card:nth-child(3) { animation-delay: 0.6s; }
+        .card:nth-child(4) { animation-delay: 0.7s; }
+        @keyframes cardSlideUp { to { opacity: 1; transform: translateY(0); } }
+        .card .num {
+            font-size: clamp(28px, 3vw, 36px);
+            font-weight: 700;
+            color: #007aff;
+            line-height: 1;
+            margin-bottom: 12px;
+        }
+        .card h3 {
+            font-size: clamp(17px, 2vw, 22px);
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #1d1d1f;
+        }
+        .card p {
+            font-size: clamp(13px, 1.55vw, 16px);
+            color: #6e6e73;
+            line-height: 1.45;
+        }
+
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: clamp(24px, 4vw, 56px);
+            max-width: 1100px;
+            width: 100%;
+            margin-top: clamp(24px, 4vh, 40px);
+            align-items: stretch;
+        }
+        .comparison-item {
+            text-align: left;
+            opacity: 0; transform: scale(0.96);
+            animation: scaleIn 0.6s ease-out forwards;
+            padding: clamp(20px, 2.5vw, 32px);
+            border-radius: 16px;
+            background: rgba(0,0,0,0.02);
+            border: 1px solid rgba(0,0,0,0.06);
+        }
+        .comparison-item:nth-child(1) { animation-delay: 0.4s; }
+        .comparison-item:nth-child(2) { animation-delay: 0.55s; }
+        @keyframes scaleIn { to { opacity: 1; transform: scale(1); } }
+        .comparison-item .label {
+            font-size: clamp(12px, 1.1vw, 14px);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.16em;
+            margin-bottom: 12px;
+        }
+        .comparison-item.old .label { color: #ff3b30; }
+        .comparison-item.new .label { color: #34c759; }
+        .comparison-item h3 {
+            font-size: clamp(20px, 2.4vw, 28px);
+            font-weight: 600;
+            margin-bottom: 14px;
+            color: #1d1d1f;
+            line-height: 1.15;
+        }
+        .comparison-item p, .comparison-item li {
+            font-size: clamp(13px, 1.6vw, 17px);
+            color: #515154;
+            line-height: 1.45;
+        }
+
+        .quote-card {
+            margin-top: clamp(20px, 3vh, 32px);
+            padding: clamp(18px, 2.2vw, 26px) clamp(22px, 2.8vw, 32px);
+            border-left: 3px solid #007aff;
+            background: rgba(0, 122, 255, 0.04);
+            border-radius: 8px;
+            text-align: left;
+            max-width: 820px;
+        }
+        .quote-card.warning {
+            border-left-color: #ff3b30;
+            background: rgba(255, 59, 48, 0.04);
+        }
+        .quote-card.success {
+            border-left-color: #34c759;
+            background: rgba(52, 199, 89, 0.05);
+        }
+        .quote-card .label {
+            font-size: 12px; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 0.16em;
+            color: #007aff; margin-bottom: 8px;
+        }
+        .quote-card.warning .label { color: #ff3b30; }
+        .quote-card.success .label { color: #34c759; }
+        .quote-card p {
+            font-size: clamp(14px, 1.7vw, 19px);
+            color: #1d1d1f; line-height: 1.4; font-weight: 500;
+        }
+
+        .code-block {
+            background: #1d1d1f;
+            color: #f5f5f7;
+            border-radius: 12px;
+            padding: clamp(16px, 1.8vw, 24px);
+            font-family: 'SF Mono', 'Menlo', 'Monaco', 'Consolas', monospace;
+            font-size: clamp(12px, 1.4vw, 16px);
+            line-height: 1.6;
+            text-align: left;
+            margin-top: 18px;
+            max-width: 920px;
+            width: 100%;
+            white-space: pre;
+            overflow-x: auto;
+        }
+        .code-block.tight { padding: clamp(14px, 1.6vw, 20px); font-size: clamp(11px, 1.3vw, 14px); line-height: 1.5; }
+        .code-block .ck { color: #ff79c6; }
+        .code-block .cs { color: #f1fa8c; }
+        .code-block .cn { color: #f8f8f2; }
+        .code-block .co { color: #6272a4; font-style: italic; }
+        .code-block .cf { color: #8be9fd; }
+        .code-block .cm { color: #bd93f9; }
+        .code-block .ce { color: #ff5555; }
+        .code-block .cc { color: #50fa7b; }
+
+        .term {
+            background: #1d1d1f; color: #f5f5f7;
+            border-radius: 12px;
+            padding: clamp(13px,1.7vw,20px);
+            font-family: 'SF Mono','Menlo','Monaco','Consolas',monospace;
+            font-size: clamp(10px,1.3vw,15px);
+            line-height: 1.55; text-align: left;
+            white-space: pre; overflow-x: auto;
+            margin-top: 14px; max-width: 920px; width: 100%;
+        }
+        .term .out { color: #50fa7b; }
+        .term .err { color: #ff5555; }
+
+        .checklist {
+            list-style: none;
+            padding: 0;
+            margin-top: 18px;
+            max-width: 860px;
+            text-align: left;
+        }
+        .checklist li {
+            font-size: clamp(15px, 1.8vw, 19px);
+            color: #1d1d1f;
+            line-height: 1.5;
+            padding: 11px 0 11px 40px;
+            position: relative;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+        .checklist li:last-child { border-bottom: none; }
+        .checklist li::before {
+            content: "✓";
+            position: absolute;
+            left: 0; top: 50%;
+            transform: translateY(-50%);
+            width: 26px; height: 26px;
+            border-radius: 50%;
+            background: rgba(0, 122, 255, 0.1);
+            color: #007aff;
+            font-size: 13px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .options-list {
+            list-style: none; padding: 0; margin-top: 18px;
+            max-width: 820px; text-align: left;
+        }
+        .options-list li {
+            font-size: clamp(15px, 1.7vw, 19px);
+            color: #1d1d1f;
+            line-height: 1.5;
+            padding: 14px 18px;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            background: rgba(0,0,0,0.03);
+            border: 1px solid rgba(0,0,0,0.06);
+        }
+        .options-list li b { color: #007aff; margin-right: 8px; }
+
+        .slide-indicator {
+            position: fixed;
+            bottom: 28px; left: 50%;
+            transform: translateX(-50%);
+            font-size: 13px; color: #86868b;
+            font-weight: 400; z-index: 100;
+            letter-spacing: 0.04em;
+        }
+        .nav-hint {
+            position: fixed;
+            bottom: 28px; right: 28px;
+            font-size: 12px; color: #c7c7cc;
+            font-weight: 400; text-align: right;
+            z-index: 100;
+        }
+        .lesson-tag {
+            position: fixed;
+            top: 28px; left: 28px;
+            font-size: 11px; font-weight: 600;
+            color: #86868b; text-transform: uppercase;
+            letter-spacing: 0.18em;
+            z-index: 100;
+        }
+
+        @media (max-width: 768px) {
+            .comparison-grid, .cards-container {
+                grid-template-columns: 1fr; gap: 18px;
+            }
+        }
+
+        .data-table {
+            width: 100%; max-width: 1050px;
+            margin-top: clamp(16px, 3vh, 30px);
+            border-collapse: collapse;
+            font-size: clamp(11px, 1.5vw, 17px);
+        }
+        .data-table th, .data-table td {
+            text-align: left;
+            padding: clamp(7px,1.3vw,13px) clamp(9px,1.5vw,16px);
+            border-bottom: 1px solid rgba(0,0,0,0.08);
+            vertical-align: top;
+        }
+        .data-table th {
+            font-weight: 600; color: #1d1d1f;
+            border-bottom: 2px solid rgba(0,0,0,0.14);
+        }
+        .data-table td { color: #515154; line-height: 1.4; }
+        .data-table tr:last-child td { border-bottom: none; }
+
+            .lang-switcher {
+            position: fixed;
+            top: 22px; right: 28px;
+            z-index: 100;
+            display: flex;
+            gap: 2px;
+            background: rgba(255,255,255,0.95);
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0,0,0,0.06);
+            border-radius: 50px;
+            padding: 3px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        .lang-switcher a {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: #86868b;
+            text-decoration: none;
+            padding: 5px 12px;
+            border-radius: 50px;
+            transition: all 0.2s ease;
+        }
+        .lang-switcher a.active {
+            color: #fff;
+            background: #007aff;
+        }
+        .lang-switcher a:not(.active):hover {
+            color: #1d1d1f;
+        }
+
+</style>
+</head>
+<body>
+    <div class="lang-switcher">
+        <a href="index.html">RU</a>
+        <a href="index-uz.html" class="active">UZ</a>
+        <a href="index-en.html">EN</a>
+    </div>
+
+    <div class="presentation">
+
+        <!-- 1: Title -->
+        <div class="slide active">
+            <div class="slide-content">
+                <p class="eyebrow">Leksiya 9</p>
+                <h1>Defensive Programming</h1>
+                <p class="subtitle">Xatolarni qayta ishlash, try/except, logging, debugging</p>
+            </div>
+        </div>
+
+        <!-- 2: Lecture plan -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Leksiya rejasi</p>
+                <h2>Yetti bo'lim</h2>
+                <table class="data-table">
+                    <tr><th>Bo'lim</th><th>Mavzu</th><th>Nimani o'rganamiz</th></tr>
+                    <tr><td>A</td><td>Kontekst va motivatsiya</td><td>Bu nima uchun kerakligini tushunish</td></tr>
+                    <tr><td>B</td><td>Exception asoslari</td><td>Xatolarni o'qish, <code>try/except</code> orqali ushlash</td></tr>
+                    <tr><td>C</td><td><code>try/except</code> chuqurroq</td><td><code>else</code>, <code>finally</code>, odatdagi tuzoqlar</td></tr>
+                    <tr><td>D</td><td><code>raise</code></td><td>Biznes qoidalari bo'yicha o'z exception'larini chiqarish</td></tr>
+                    <tr><td>E</td><td>Kontekst menejerlari (<code>with</code>)</td><td>Resurslar bilan xavfsiz ishlash</td></tr>
+                    <tr><td>F</td><td><code>logging</code> moduli</td><td><code>print()</code> o'rniga normal loglar yozish</td></tr>
+                    <tr><td>G</td><td>Yakuniy amaliyot</td><td>Hammasini real masalada birlashtirish</td></tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- 3: Defensive programming map -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Konsepsiya</p>
+                <h2>Defensive Programming darajalari xaritasi</h2>
+                <table class="data-table" style="max-width: 980px;">
+                    <tr><th>Daraja</th><th>Vosita</th><th>Nimani himoya qiladi</th></tr>
+                    <tr><td>1</td><td><code>if / raise</code></td><td>Kiruvchi argumentlar. Axlatni darhol bloklaymiz</td></tr>
+                    <tr><td>2</td><td><code>try / except</code></td><td>Tashqi resurslar, tarmoq, I/O, parsing</td></tr>
+                    <tr><td>3</td><td><code>with / contextmanager</code></td><td>Resurslar: fayllar, MB, loklar</td></tr>
+                    <tr><td>4</td><td><code>logging</code></td><td>Productionda monitoring va audit</td></tr>
+                </table>
+                <div class="quote-card" style="margin-top: 22px;">
+                    <p>Tamoyil: xato qanchalik erta ushlansa, uni tuzatish shunchalik arzon bo'ladi. Real tizimda barcha darajalar birgalikda ishlaydi.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4: Story - one renamed key -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Kontekst</p>
+                <h2>Bitta o'zgartirilgan kalit</h2>
+                <p class="body-text" style="margin-bottom: 4px;">Juma, 18:32, oylik kuni. Servis Humo orqali pul o'tkazmalarini qayta ishlaydi. Hamkor API'ni yangiladi: JSON javobidagi bitta atributni qayta nomladi.</p>
+                <div class="comparison-grid">
+                    <div class="comparison-item old">
+                        <div class="label">Yangilanishdan oldin</div>
+                        <div class="term" style="margin-top: 0;"><span class="out">{
+  "transaction_id": "HM-88912",
+  "status": "SUCCESS",
+  "currency": "UZS",
+  "amount": 350000.00
+}</span></div>
+                    </div>
+                    <div class="comparison-item new">
+                        <div class="label">Yangilanishdan keyin</div>
+                        <div class="term" style="margin-top: 0;"><span class="out">{
+  "transaction_id": "HM-88912",
+  "status": "SUCCESS",
+  "currency_code": "UZS",
+  "amount": 350000.00
+}</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5: What happened, SLA impact -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Kontekst</p>
+                <h2><code>KeyError</code>'dan outage'gacha kaskad</h2>
+                <ul class="checklist" style="max-width: 880px;">
+                    <li>Kod <code>response["currency"]</code>'ni o'qiydi. Kalit endi yo'q: <code>KeyError</code>.</li>
+                    <li>Worker yiqiladi. Celery yangisini ko'taradi, u ham yiqiladi.</li>
+                    <li>Navbat o'sadi. 4 daqiqadan keyin servis butunlay ishlamaydi.</li>
+                </ul>
+                <div class="quote-card warning" style="margin-top: 22px;">
+                    <p>Bank SLA 99.99% uptime = yiliga maksimum 52 daqiqa to'xtab qolish. Bitta qayta ishlanmagan <code>KeyError</code> yillik limitning yarmini bir kechada yondiradi.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 6: What is defensive programming -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Konsepsiya</p>
+                <h2>Defensive Programming nima</h2>
+                <p class="body-text">Bu yondashuv: kod "hammasi noto'g'ri ketishi mumkin" degan taxmin bilan yoziladi: tarmoq tushadi, MB lag qiladi, hamkor API axlat qaytaradi, kimdir xato yozadi.</p>
+                <div class="cards-container" style="grid-template-columns: repeat(3, 1fr);">
+                    <div class="card"><div class="num">1</div><h3>Kirishda validatsiya</h3><p>Kiruvchi ma'lumotlarga ishonmaymiz.</p></div>
+                    <div class="card"><div class="num">2</div><h3>Xatolarni qayta ishlash</h3><p>Yiqilgan resurs jarayonni o'ldirishiga yo'l qo'ymaymiz.</p></div>
+                    <div class="card"><div class="num">3</div><h3>Logging</h3><p>Nima va qachon yiqilganini bilamiz.</p></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 7: Link to previous lecture - Duck Typing -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">7-leksiya bilan bog'liqlik</p>
+                <h2>Duck Typing yordam bermaydigan joy</h2>
+                <p class="body-text" style="margin-bottom: 4px;">O'tgan leksiyada biz polimorf shlyuzlar yozgan edik: <code>UzCardGateway</code>, <code>HumoGateway</code>. Duck Typing orqali <code>gateway.process_settlement()</code>'ni chaqiramiz. Bitta xato terish prodni sindiradi.</p>
+                <div class="code-block tight"><span class="ck">class</span> <span class="cf">UzCardGateway</span>:
+    <span class="ck">def</span> <span class="cf">process_settlement</span>(<span class="cn">self</span>, amount: <span class="cf">float</span>) -&gt; <span class="cf">bool</span>:
+        <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"[UzCard] Proviting {amount} UZS"</span>)
+        <span class="ck">return</span> <span class="ck">True</span>
+
+<span class="co"># Ish kuni oxiridagi integratsiya:</span>
+<span class="ck">class</span> <span class="cf">HumoGateway</span>:
+    <span class="ck">def</span> <span class="cf">process_settlemant</span>(<span class="cn">self</span>, amount: <span class="cf">float</span>) -&gt; <span class="cf">bool</span>:   <span class="co"># xato terish</span>
+        <span class="ck">return</span> <span class="ck">True</span>
+
+gateways = [<span class="cf">UzCardGateway</span>(), <span class="cf">HumoGateway</span>()]
+<span class="ck">for</span> gw <span class="ck">in</span> gateways:
+    gw.<span class="cf">process_settlement</span>(<span class="cm">350_000.0</span>)</div>
+                <div class="term"><span class="out">[UzCard] Proviting 350000.0 UZS
+</span><span class="err">AttributeError: 'HumoGateway' object has no attribute 'process_settlement'</span></div>
+                <p class="body-text" style="margin-top: 10px; color: #86868b;">UzCard o'tdi, Humo yiqildi. Mijozlarning bir qismi oyligini oldi, bir qismi olmadi.</p>
+            </div>
+        </div>
+
+        <!-- 8: What is an exception -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Exception asoslari</p>
+                <h2>Exception nima</h2>
+                <p class="body-text" style="margin-bottom: 4px;">Exception: Python amalni bajara olmaganida yuboradigan "nimadir noto'g'ri ketdi" signali. Qayta ishlanmasdan dastur yiqiladi.</p>
+                <div class="code-block">data = {<span class="cs">"name"</span>: <span class="cs">"Aziz"</span>, <span class="cs">"balance"</span>: <span class="cm">350_000</span>}
+
+<span class="co"># Mavjud bo'lmagan kalitni olishga urinish</span>
+value = data[<span class="cs">"account_id"</span>]   <span class="co"># bu yerda Python exception tashlaydi</span>
+<span class="cf">print</span>(<span class="cs">"Bu qator hech qachon bajarilmaydi"</span>)</div>
+                <div class="term"><span class="err">Traceback (most recent call last):
+  File "demo.py", line 5, in &lt;module&gt;
+    value = data["account_id"]
+KeyError: 'account_id'</span></div>
+                <p class="body-text" style="margin-top: 10px; color: #86868b;">Python <code>KeyError</code> obyektini yaratdi, hech kim uni qayta ishlamadi, dastur Traceback bilan yiqildi.</p>
+            </div>
+        </div>
+
+        <!-- 9: How to read a traceback -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Exception asoslari</p>
+                <h2>Traceback'ni qanday o'qish kerak</h2>
+                <p class="body-text" style="margin-bottom: 4px;">Traceback pastdan yuqoriga o'qiladi. Pastki qator: muammoning mohiyati. Yuqoridagi qatorlar: qanday yo'l bilan kelinganligi.</p>
+                <div class="code-block tight"><span class="ck">def</span> <span class="cf">extract_rate</span>(api_response: <span class="cf">dict</span>) -&gt; <span class="cf">float</span>:
+    <span class="ck">return</span> <span class="cf">float</span>(api_response[<span class="cs">"data"</span>][<span class="cs">"rate"</span>])
+
+<span class="ck">def</span> <span class="cf">calculate_amount</span>(amount_uzs: <span class="cf">float</span>, api_response: <span class="cf">dict</span>) -&gt; <span class="cf">float</span>:
+    rate = <span class="cf">extract_rate</span>(api_response)
+    <span class="ck">return</span> amount_uzs / rate
+
+<span class="ck">def</span> <span class="cf">process_order</span>(order: <span class="cf">dict</span>) -&gt; <span class="cf">float</span>:
+    cbu_response = {
+        <span class="cs">"status"</span>: <span class="cs">"OK"</span>,
+        <span class="cs">"data"</span>: {<span class="cs">"exchange_rate"</span>: <span class="cm">12550.0</span>}          <span class="co"># kalit qayta nomlangan</span>
+    }
+    <span class="ck">return</span> <span class="cf">calculate_amount</span>(order[<span class="cs">"amount"</span>], cbu_response)
+
+<span class="cf">process_order</span>({<span class="cs">"amount"</span>: <span class="cm">5_000_000.0</span>})</div>
+            </div>
+        </div>
+
+        <!-- 10: Traceback broken down line by line -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Exception asoslari</p>
+                <h2>Traceback'ni qator-qator tahlil qilish</h2>
+                <div class="term" style="margin-top: 0;"><span class="err">KeyError: 'rate'                                         &lt;-- NIMA yiqildi
+  File "demo.py", line 2, in extract_rate                &lt;-- QAYERDA yiqildi
+    return float(api_response["data"]["rate"])
+
+  File "demo.py", line 6, in calculate_amount            &lt;-- KIM chaqirdi
+    rate = extract_rate(api_response)
+
+  File "demo.py", line 12, in process_order              &lt;-- stek bo'ylab yuqoriroq
+    return calculate_amount(order["amount"], cbu_response)
+
+  File "demo.py", line 13, in &lt;module&gt;                  &lt;-- kirish nuqtasi
+    process_order({"amount": 5_000_000.0})</span></div>
+                <table class="data-table" style="margin-top: 18px; max-width: 880px;">
+                    <tr><th>Qadam</th><th>Nima qilamiz</th></tr>
+                    <tr><td>1</td><td>Oxirgi qatorni o'qiymiz: <code>KeyError: 'rate'</code>, <code>rate</code> kaliti yo'q</td></tr>
+                    <tr><td>2</td><td>Yuqoridagi qatorga qaraymiz: <code>extract_rate</code>, 2-qator, yiqilish o'sha yerda</td></tr>
+                    <tr><td>3</td><td>Kodga boramiz, 2-qatorni tekshiramiz: <code>api_response["data"]["rate"]</code></td></tr>
+                    <tr><td>4</td><td><code>api_response</code> ichidagini tekshiramiz: u yerda <code>exchange_rate</code>, biz esa <code>rate</code>'ni qidiramiz</td></tr>
+                    <tr><td>5</td><td>Tayyor: hamkor kalitni qayta nomlagan</td></tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- 11: try/except basic syntax -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Exception asoslari</p>
+                <h2><code>try/except</code> bazaviy sintaksisi</h2>
+                <p class="body-text" style="margin-bottom: 4px;">Exception'ni ushlash va dastur yiqilishiga yo'l qo'ymaslik uchun.</p>
+                <div class="code-block">data = {<span class="cs">"currency"</span>: <span class="cs">"UZS"</span>, <span class="cs">"amount"</span>: <span class="cm">350_000</span>}
+
+<span class="ck">try</span>:
+    value = data[<span class="cs">"currency_code"</span>]      <span class="co"># KeyError: bunday kalit yo'q</span>
+    <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Olindi: {value}"</span>)             <span class="co"># bajarilmaydi</span>
+<span class="ck">except</span> <span class="cf">KeyError</span> <span class="ck">as</span> e:
+    <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Kalit topilmadi: {e}"</span>)     <span class="co"># shunisi bajariladi</span>
+
+<span class="cf">print</span>(<span class="cs">"Dastur ishlashda davom etmoqda"</span>)</div>
+                <div class="term"><span class="out">Kalit topilmadi: 'currency_code'
+Dastur ishlashda davom etmoqda</span></div>
+                <p class="body-text" style="margin-top: 10px; color: #86868b;"><code>try</code> xavfli kodni o'rab oladi, <code>except</code> aniq xato turini ushlaydi. Dastur yiqilmaydi.</p>
+            </div>
+        </div>
+
+        <!-- 12: KeyError and ValueError -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Exception asoslari · Odatdagi xatolar</p>
+                <h2><code>KeyError</code> va <code>ValueError</code></h2>
+                <div class="code-block tight">fee_config = {<span class="cs">"P2P_TRANSFER"</span>: <span class="cm">1000.0</span>, <span class="cs">"UTILITY_PAYMENT"</span>: <span class="cm">500.0</span>}
+
+<span class="ck">def</span> <span class="cf">get_fee</span>(tx_type: <span class="cf">str</span>) -&gt; <span class="cf">float</span>:
+    <span class="ck">return</span> fee_config[tx_type]   <span class="co"># Kalit bo'lmasa KeyError</span>
+
+<span class="ck">try</span>:
+    fee = <span class="cf">get_fee</span>(<span class="cs">"CRYPTO_SWAP"</span>)
+<span class="ck">except</span> <span class="cf">KeyError</span> <span class="ck">as</span> e:
+    <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"[KeyError] {e} operatsiya turi sozlanmagan"</span>)
+    fee = <span class="cm">0.0</span>
+
+
+<span class="ck">def</span> <span class="cf">set_daily_limit</span>(limit: <span class="cf">float</span>) -&gt; <span class="ck">None</span>:
+    <span class="ck">if</span> limit &lt;= <span class="cm">0</span>:
+        <span class="ck">raise</span> <span class="cf">ValueError</span>(<span class="cf">f</span><span class="cs">"Limit musbat bo'lishi kerak: {limit}"</span>)
+    <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Limit o'rnatildi: {limit:,.0f} UZS"</span>)
+
+<span class="ck">try</span>:
+    <span class="cf">set_daily_limit</span>(-<span class="cm">5_000_000.0</span>)   <span class="co"># tur float, lekin qiymat yaroqsiz</span>
+<span class="ck">except</span> <span class="cf">ValueError</span> <span class="ck">as</span> e:
+    <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"[ValueError] {e}"</span>)</div>
+                <div class="term"><span class="out">[KeyError] 'CRYPTO_SWAP' operatsiya turi sozlanmagan
+[ValueError] Limit musbat bo'lishi kerak: -5000000.0</span></div>
+            </div>
+        </div>
+
+        <!-- 13: TypeError and AttributeError -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Exception asoslari · Odatdagi xatolar</p>
+                <h2><code>TypeError</code> va <code>AttributeError</code></h2>
+                <div class="code-block tight"><span class="ck">def</span> <span class="cf">calculate_interest</span>(principal: <span class="cf">float</span>, rate: <span class="cf">float</span>) -&gt; <span class="cf">float</span>:
+    <span class="ck">return</span> principal * rate
+
+<span class="ck">try</span>:
+    result = <span class="cf">calculate_interest</span>(<span class="cs">"1000000"</span>, <span class="cm">0.18</span>)   <span class="co"># float o'rniga string</span>
+<span class="ck">except</span> <span class="cf">TypeError</span> <span class="ck">as</span> e:
+    <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"[TypeError] {e}"</span>)
+
+
+<span class="ck">class</span> <span class="cf">LegacyConnector</span>:
+    <span class="ck">def</span> <span class="cf">send</span>(<span class="cn">self</span>, data: <span class="cf">str</span>) -&gt; <span class="ck">None</span>:
+        <span class="ck">pass</span>
+
+connector = <span class="cf">LegacyConnector</span>()
+<span class="ck">try</span>:
+    connector.<span class="cf">process_payment</span>(<span class="cm">50_000.0</span>)   <span class="co"># bunday metod yo'q</span>
+<span class="ck">except</span> <span class="cf">AttributeError</span> <span class="ck">as</span> e:
+    <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"[AttributeError] {e}"</span>)</div>
+                <div class="term"><span class="out">[TypeError] can't multiply sequence by non-int of type 'float'
+[AttributeError] 'LegacyConnector' object has no attribute 'process_payment'</span></div>
+                <p class="body-text" style="margin-top: 10px; color: #86868b;"><code>TypeError</code>: <code>"1000000"</code> bu string (sequence), uni <code>float</code>'ga ko'paytirib bo'lmaydi. <code>AttributeError</code>: metod nomida xato terish yoki metod amalga oshirilmagan.</p>
+            </div>
+        </div>
+
+        <!-- 14: Exception hierarchy - it's OOP -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Exception asoslari</p>
+                <h2>Exception ierarxiyasi: bu ham OOP</h2>
+                <p class="body-text" style="margin-bottom: 4px;">Python'da exception'lar oddiy classlar. <code>KeyError</code> <code>LookupError</code>'dan, u esa <code>Exception</code>'dan meros oladi. Har bir <code>except SomeError</code> <code>isinstance()</code> kabi ishlaydi: classning o'zini va uning har qanday avlodini ushlaydi.</p>
+                <div class="code-block"><span class="co"># Bazaviy exception'lar shunday aniqlangan:</span>
+<span class="ck">class</span> <span class="cf">BaseException</span>: ...
+<span class="ck">class</span> <span class="cf">Exception</span>(<span class="cf">BaseException</span>): ...
+<span class="ck">class</span> <span class="cf">LookupError</span>(<span class="cf">Exception</span>): ...
+<span class="ck">class</span> <span class="cf">KeyError</span>(<span class="cf">LookupError</span>): ...      <span class="co"># KeyError IS-A LookupError</span>
+
+<span class="ck">try</span>:
+    <span class="ck">raise</span> <span class="cf">KeyError</span>(<span class="cs">"kalit yo'q"</span>)
+<span class="ck">except</span> <span class="cf">LookupError</span>:                   <span class="co"># ota orqali ushlaydi</span>
+    <span class="cf">print</span>(<span class="cs">"ota orqali ushladik"</span>)</div>
+                <div class="term"><span class="out">ota orqali ushladik</span></div>
+            </div>
+        </div>
+
+        <!-- 15: Standard exception tree -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Exception asoslari</p>
+                <h2>Standart exception'lar daraxti</h2>
+                <div class="code-block" style="font-size: clamp(9px, 1.1vw, 13px); max-width: 880px;">BaseException
+├── SystemExit              <span class="co">sys.exit() - ushlamang</span>
+├── KeyboardInterrupt       <span class="co">Ctrl+C - ushlamang</span>
+└── Exception               <span class="co">qayta ishlash mumkin bo'lgan hammasi</span>
+    ├── ArithmeticError
+    │   └── ZeroDivisionError    <span class="co">nolga bo'lish</span>
+    ├── AttributeError           <span class="co">obj.method() - metod yo'q</span>
+    ├── LookupError
+    │   ├── KeyError             <span class="co">dict["missing"]</span>
+    │   └── IndexError           <span class="co">list[999]</span>
+    ├── OSError
+    │   └── ConnectionError
+    │       └── ConnectionRefusedError
+    ├── TypeError                <span class="co">noto'g'ri tur</span>
+    └── ValueError               <span class="co">to'g'ri tur, noto'g'ri qiymat</span></div>
+                <div class="quote-card warning" style="margin-top: 16px;">
+                    <p><code>BaseException</code>'ni ushlamang: u ichida <code>SystemExit</code> va <code>KeyboardInterrupt</code> bor. Aks holda dasturni hatto to'g'ri to'xtatib bo'lmaydi.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 15b: Visual exception hierarchy map -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Exception asoslari</p>
+                <h2>Ierarxiyaning vizual xaritasi</h2>
+                <img src="python_exception_hierarchy.svg" alt="Python exception ierarxiyasi: BaseException, Exception va ularning avlodlari"
+                     style="max-width: 100%; max-height: 72vh; width: auto; height: auto; margin-top: 8px; display: block;">
+            </div>
+        </div>
+
+        <!-- 16: Exception object attributes -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Exception asoslari</p>
+                <h2>Exception obyekti: foydali atributlar</h2>
+                <p class="body-text" style="margin-bottom: 4px;">Exception bu oddiy obyekt. Ma'noli loglar yozish uchun uning ichida nima borligini bilish foydali.</p>
+                <div class="code-block"><span class="ck">def</span> <span class="cf">simulate_error</span>(account_id: <span class="cf">str</span>) -&gt; <span class="ck">None</span>:
+    <span class="ck">raise</span> <span class="cf">ConnectionRefusedError</span>(
+        <span class="cf">f</span><span class="cs">"PostgreSQL mavjud emas. account_id={account_id}"</span>
+    )
+
+<span class="ck">try</span>:
+    <span class="cf">simulate_error</span>(<span class="cs">"UZ_ACC_9912"</span>)
+
+<span class="ck">except</span> <span class="cf">ConnectionRefusedError</span> <span class="ck">as</span> exc:
+    <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Turi:       {type(exc).__name__}"</span>)
+    <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Xabar:      {exc}"</span>)
+    <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"args:       {exc.args}"</span>)</div>
+                <div class="term"><span class="out">Turi:       ConnectionRefusedError
+Xabar:      PostgreSQL mavjud emas. account_id=UZ_ACC_9912
+args:       ('PostgreSQL mavjud emas. account_id=UZ_ACC_9912',)</span></div>
+                <p class="body-text" style="margin-top: 10px; color: #86868b;"><code>type(exc).__name__</code> monitoring tizimiga ketadi: uning yordamida insidentlar filtrlanadi.</p>
+            </div>
+        </div>
+
+        <!-- 17: Open question - except order -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow" style="color:#ff9500;">Auditoriyaga savol</p>
+                <h2>Bu kod nimani chiqaradi?</h2>
+                <div class="code-block"><span class="ck">try</span>:
+    <span class="ck">raise</span> <span class="cf">KeyError</span>(<span class="cs">"kalit yo'q"</span>)
+<span class="ck">except</span> <span class="cf">Exception</span> <span class="ck">as</span> e:
+    <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"[Exception] ushladik: {e}"</span>)
+<span class="ck">except</span> <span class="cf">KeyError</span> <span class="ck">as</span> e:
+    <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"[KeyError] ushladik: {e}"</span>)</div>
+                <ul class="options-list">
+                    <li><b>A)</b> <code>[KeyError] ushladik: 'kalit yo'q'</code></li>
+                    <li><b>B)</b> <code>[Exception] ushladik: 'kalit yo'q'</code></li>
+                    <li><b>V)</b> Ikkala blok ham bajariladi</li>
+                </ul>
+                <p class="body-text" style="margin-top: 14px; color: #86868b;">30 soniya o'ylab ko'ring. Javob keyingi slaydda.</p>
+            </div>
+        </div>
+
+        <!-- 18: Answer - except order rule -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow" style="color:#34c759;">Javob</p>
+                <h2>B: <code>[Exception] ushladik</code></h2>
+                <p class="body-text" style="margin-bottom: 4px;">Python <code>except</code> bloklarini yuqoridan pastga tekshiradi va birinchi mos kelganida to'xtaydi. <code>KeyError</code> bu <code>Exception</code>'ning avlodi, shuning uchun birinchi blok xatoni ushlaydi, ikkinchisi esa endi bajarilmaydi.</p>
+                <p class="body-text" style="margin-top: 12px;"><span class="highlight">Qoida</span>: aniqdan umumiyga. Spetsifik <code>except</code>'lar yuqorida, umumiylari pastda.</p>
+                <div class="code-block tight"><span class="co"># To'g'ri</span>
+<span class="ck">try</span>:
+    <span class="cf">operation</span>()
+<span class="ck">except</span> <span class="cf">KeyError</span> <span class="ck">as</span> e:        <span class="co"># avval eng aniq</span>
+    <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Kalit yo'q: {e}"</span>)
+<span class="ck">except</span> <span class="cf">LookupError</span> <span class="ck">as</span> e:     <span class="co"># keyin ota</span>
+    <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Qidirish xatosi: {e}"</span>)
+<span class="ck">except</span> <span class="cf">Exception</span> <span class="ck">as</span> e:       <span class="co"># oxirida umumiy</span>
+    <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Kutilmagan xato: {e}"</span>)
+
+
+<span class="co"># Noto'g'ri: Exception hammasini yutib yuboradi</span>
+<span class="ck">try</span>:
+    <span class="cf">operation</span>()
+<span class="ck">except</span> <span class="cf">Exception</span> <span class="ck">as</span> e:       <span class="co"># hammasini ushlaydi</span>
+    <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Xato: {e}"</span>)
+<span class="ck">except</span> <span class="cf">KeyError</span>:             <span class="co"># hech qachon bajarilmaydi</span>
+    ...</div>
+            </div>
+        </div>
+
+        <!-- 19: Minimum code in try -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow"><code>try/except</code> chuqurroq</p>
+                <h2><code>try</code> ichida minimum kod</h2>
+                <p class="body-text" style="margin-bottom: 4px;"><code>try</code> ichida kod qancha kam bo'lsa, qayerda yiqilganini shunchalik aniq tushunasiz. Faqat xavfli amallarni o'rab oling.</p>
+                <div class="code-block tight"><span class="co"># Yomon: butun metod try ichida</span>
+<span class="ck">def</span> <span class="cf">bad_process</span>(payload: <span class="cf">dict</span>) -&gt; <span class="cf">float</span> | <span class="ck">None</span>:
+    <span class="ck">try</span>:
+        user_id = payload[<span class="cs">"user_id"</span>]
+        amount = <span class="cf">float</span>(payload[<span class="cs">"amount"</span>])
+        currency = payload[<span class="cs">"currency"</span>]
+        <span class="ck">return</span> amount * <span class="cm">1.02</span>
+    <span class="ck">except</span> <span class="cf">Exception</span>:
+        <span class="ck">return</span> <span class="ck">None</span>     <span class="co"># nima va qayerda yiqilgani - aniq emas</span>
+
+
+<span class="co"># Yaxshi: har bir xavfli zona alohida</span>
+<span class="ck">def</span> <span class="cf">good_process</span>(payload: <span class="cf">dict</span>) -&gt; <span class="cf">float</span> | <span class="ck">None</span>:
+    <span class="ck">try</span>:
+        user_id = payload[<span class="cs">"user_id"</span>]
+        raw_amount = payload[<span class="cs">"amount"</span>]
+        currency = payload[<span class="cs">"currency"</span>]
+    <span class="ck">except</span> <span class="cf">KeyError</span> <span class="ck">as</span> missing:
+        <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"[REJECT] Maydon yo'q: {missing}"</span>)
+        <span class="ck">return</span> <span class="ck">None</span>
+
+    <span class="ck">try</span>:
+        amount = <span class="cf">float</span>(raw_amount)
+    <span class="ck">except</span> <span class="cf">ValueError</span>:
+        <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"[REJECT] Summa raqam emas: '{raw_amount}'"</span>)
+        <span class="ck">return</span> <span class="ck">None</span>
+
+    <span class="ck">return</span> amount * <span class="cm">1.02</span></div>
+            </div>
+        </div>
+
+        <!-- 20: Multiple excepts - routing -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow"><code>try/except</code> chuqurroq</p>
+                <h2>Bir nechta <code>except</code>: turli xatolar, turli reaksiyalar</h2>
+                <p class="body-text" style="margin-bottom: 4px;">Hamma narsa uchun bitta <code>except Exception</code> bu barcha vaziyatlar uchun bitta tugma. Granulyar <code>except</code>'lar turlicha reaksiya bildirishga imkon beradi.</p>
+                <table class="data-table" style="max-width: 880px;">
+                    <tr><th>Xato turi</th><th>Reaksiya</th></tr>
+                    <tr><td>Tarmoq tushdi (<code>Timeout</code>)</td><td>Bir necha soniyadan keyin retry</td></tr>
+                    <tr><td>Yaroqsiz ma'lumotlar (<code>ValueError</code>)</td><td>422 kod bilan rad etish</td></tr>
+                    <tr><td>Limit oshirildi</td><td>Compliance'ga xabar berish</td></tr>
+                    <tr><td>Hamkordan buzilgan JSON</td><td>Loglash, <code>PARTNER_ERROR</code> qaytarish</td></tr>
+                </table>
+                <div class="quote-card" style="margin-top: 18px;">
+                    <p>Python'da Java'dagi kabi exception'larni qayta ishlashga majburlaydigan kompilyator himoya to'ri yo'q. Buni siz bajarasiz.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 21: Multiple excepts - Kapitalbank example -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow"><code>try/except</code> chuqurroq</p>
+                <h2>Misol: Kapitalbank shlyuzi</h2>
+                <div class="code-block tight"><span class="ck">import</span> json
+
+<span class="ck">class</span> <span class="cf">KapitalbankTimeout</span>(<span class="cf">ConnectionError</span>): <span class="ck">pass</span>
+<span class="ck">class</span> <span class="cf">KapitalbankSignatureError</span>(<span class="cf">ValueError</span>): <span class="ck">pass</span>
+
+
+<span class="ck">def</span> <span class="cf">call_api</span>(simulate: <span class="cf">str</span> | <span class="ck">None</span>) -&gt; <span class="cf">dict</span>:
+    <span class="ck">if</span> simulate == <span class="cs">"timeout"</span>:    <span class="ck">raise</span> <span class="cf">KapitalbankTimeout</span>(<span class="cs">"Taymaut"</span>)
+    <span class="ck">if</span> simulate == <span class="cs">"signature"</span>:  <span class="ck">raise</span> <span class="cf">KapitalbankSignatureError</span>(<span class="cs">"HMAC mos kelmadi"</span>)
+    <span class="ck">if</span> simulate == <span class="cs">"json"</span>:       <span class="ck">return</span> json.<span class="cf">loads</span>(<span class="cs">"{broken}"</span>)
+    <span class="ck">return</span> {<span class="cs">"status"</span>: <span class="cs">"OK"</span>}
+
+
+<span class="ck">def</span> <span class="cf">process</span>(simulate: <span class="cf">str</span> | <span class="ck">None</span>) -&gt; <span class="cf">dict</span>:
+    <span class="ck">try</span>:
+        <span class="ck">return</span> <span class="cf">call_api</span>(simulate)
+
+    <span class="ck">except</span> <span class="cf">KapitalbankTimeout</span> <span class="ck">as</span> err:
+        <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"[RETRY] Taymaut, retry navbatiga: {err}"</span>)
+        <span class="ck">return</span> {<span class="cs">"status"</span>: <span class="cs">"RETRY_SCHEDULED"</span>}
+
+    <span class="ck">except</span> <span class="cf">KapitalbankSignatureError</span> <span class="ck">as</span> err:
+        <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"[SECURITY] Imzo mos kelmadi: {err}"</span>)
+        <span class="ck">return</span> {<span class="cs">"status"</span>: <span class="cs">"BLOCKED"</span>}
+
+    <span class="ck">except</span> json.<span class="cf">JSONDecodeError</span> <span class="ck">as</span> err:
+        <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"[BAD_RESPONSE] Hamkor axlat yubordi: {err}"</span>)
+        <span class="ck">return</span> {<span class="cs">"status"</span>: <span class="cs">"PARTNER_ERROR"</span>}
+
+    <span class="ck">except</span> <span class="cf">Exception</span> <span class="ck">as</span> err:
+        <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"[UNKNOWN] Navbatchiga eskalatsiya: {err}"</span>)
+        <span class="ck">return</span> {<span class="cs">"status"</span>: <span class="cs">"ESCALATED"</span>}</div>
+            </div>
+        </div>
+
+        <!-- 22: Open question - missed antifraud -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow" style="color:#ff9500;">Auditoriyaga savol</p>
+                <h2>Firibgar tranzaksiya uchun <code>process()</code> nima qaytaradi?</h2>
+                <div class="code-block tight"><span class="ck">def</span> <span class="cf">check_fraud</span>(tx: <span class="cf">dict</span>) -&gt; <span class="cf">bool</span>:
+    score = <span class="cm">8500</span>
+    <span class="ck">if</span> scor &gt; <span class="cm">9000</span>:
+        <span class="ck">return</span> <span class="ck">True</span>
+    <span class="ck">return</span> <span class="ck">False</span>
+
+<span class="ck">def</span> <span class="cf">process</span>(tx: <span class="cf">dict</span>) -&gt; <span class="cf">dict</span>:
+    <span class="ck">try</span>:
+        is_fraud = <span class="cf">check_fraud</span>(tx)
+        <span class="ck">return</span> {<span class="cs">"status"</span>: <span class="cs">"BLOCKED"</span> <span class="ck">if</span> is_fraud <span class="ck">else</span> <span class="cs">"APPROVED"</span>}
+    <span class="ck">except</span> <span class="cf">Exception</span>:
+        <span class="ck">return</span> {<span class="cs">"status"</span>: <span class="cs">"APPROVED"</span>}</div>
+                <ul class="options-list">
+                    <li><b>A)</b> <code>BLOCKED</code>: antifrod to'g'ri ishladi</li>
+                    <li><b>B)</b> <code>APPROVED</code>: antifrod ishlamadi, dastur yiqilmadi</li>
+                    <li><b>V)</b> Dastur <code>NameError</code> bilan yiqiladi</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 23: Answer - blanket except, silent death -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow" style="color:#34c759;">Javob</p>
+                <h2>B: <code>APPROVED</code>, antifrod ishlamadi</h2>
+                <ul class="checklist" style="max-width: 860px;">
+                    <li><code>scor</code> bu xato terish. Python <code>NameError: name 'scor' is not defined</code> tashlaydi.</li>
+                    <li><code>except Exception</code> hammasini ushlaydi, shu jumladan <code>NameError</code>'ni ham.</li>
+                    <li>Funksiya <code>APPROVED</code> qaytaradi. Firibgar tranzaksiyani amalga oshirdi.</li>
+                </ul>
+                <div class="quote-card warning" style="margin-top: 16px;">
+                    <p>Bu kodda eng xavfli konstruksiya. Loglashsiz keng <code>except Exception</code> har qanday baglarni, jumladan koddagi xato terishlarni yashiradi.</p>
+                </div>
+                <div class="code-block tight" style="margin-top: 16px;"><span class="co"># To'g'ri yechim</span>
+<span class="ck">def</span> <span class="cf">process</span>(tx: <span class="cf">dict</span>) -&gt; <span class="cf">dict</span>:
+    <span class="ck">try</span>:
+        is_fraud = <span class="cf">check_fraud</span>(tx)
+        <span class="ck">return</span> {<span class="cs">"status"</span>: <span class="cs">"BLOCKED"</span> <span class="ck">if</span> is_fraud <span class="ck">else</span> <span class="cs">"APPROVED"</span>}
+
+    <span class="ck">except</span> <span class="cf">KeyError</span> <span class="ck">as</span> e:                       <span class="co"># kutilgan xato</span>
+        <span class="ck">return</span> {<span class="cs">"status"</span>: <span class="cs">"REJECTED"</span>, <span class="cs">"reason"</span>: <span class="cf">f</span><span class="cs">"Missing field: {e}"</span>}
+
+    <span class="co"># NameError bu yerda ushlanmaydi, tashqariga uchadi,</span>
+    <span class="co"># loglarga tushadi, navbatchi ko'radi va xato terishni tuzatadi.</span></div>
+                <p class="body-text" style="margin-top: 12px;"><span class="highlight">Qoida</span>: faqat kutgan va qayta ishlay oladigan narsangizni ushlang.</p>
+            </div>
+        </div>
+
+        <!-- 24: else block concept -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow"><code>try/except</code> chuqurroq</p>
+                <h2><code>else</code> bloki: faqat muvaffaqiyatda bajariladi</h2>
+                <p class="body-text" style="margin-bottom: 4px;">Aniq ajratish: "xavfli amal", "xatoni qayta ishlash" va "muvaffaqiyatda kod" turli bloklarda yotadi.</p>
+                <div class="code-block"><span class="ck">try</span>:
+    <span class="cf">xavfli_amal</span>()             <span class="co"># exception tashlashi mumkin</span>
+
+<span class="ck">except</span> <span class="cf">SomeError</span>:
+    <span class="cf">xatoni_qayta_ishlash</span>()    <span class="co"># faqat exception bo'lganda</span>
+
+<span class="ck">else</span>:
+    <span class="cf">muvaffaqiyatda</span>()          <span class="co"># faqat exception bo'lmaganda</span>
+
+<span class="ck">finally</span>:
+    <span class="cf">doim</span>()                    <span class="co"># har qanday holatda bajariladi</span></div>
+                <div class="quote-card warning" style="margin-top: 18px;">
+                    <p>Agar "muvaffaqiyatda kod"'ni <code>try</code> ichiga qo'ysangiz, uning xatolarini ham <code>except</code> ushlaydi va xavfli amal xatolari kabi qayta ishlaydi. Bu loglarda chalkashlik.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 25a: else in practice - the code -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow"><code>try/except</code> chuqurroq</p>
+                <h2><code>else</code> amaliyotda: COMMIT faqat muvaffaqiyatda</h2>
+                <div class="code-block tight"><span class="ck">class</span> <span class="cf">MockDB</span>:
+    <span class="ck">def</span> <span class="cf">execute</span>(<span class="cn">self</span>, query: <span class="cf">str</span>, params: <span class="cf">dict</span>) -&gt; <span class="ck">None</span>:
+        <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"  [SQL] {query[:40]}..."</span>)
+    <span class="ck">def</span> <span class="cf">commit</span>(<span class="cn">self</span>) -&gt; <span class="ck">None</span>: <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"  [SQL] COMMIT"</span>)
+    <span class="ck">def</span> <span class="cf">close</span>(<span class="cn">self</span>) -&gt; <span class="ck">None</span>:  <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"  [SQL] Ulanish yopildi"</span>)
+
+
+<span class="ck">def</span> <span class="cf">save_payment</span>(db: <span class="cf">MockDB</span>, tx_data: <span class="cf">dict</span>) -&gt; <span class="cf">str</span> | <span class="ck">None</span>:
+    <span class="ck">try</span>:
+        tx_id = tx_data[<span class="cs">"tx_id"</span>]
+        amount = <span class="cf">float</span>(tx_data[<span class="cs">"amount"</span>])
+        <span class="ck">if</span> amount &lt;= <span class="cm">0</span>:
+            <span class="ck">raise</span> <span class="cf">ValueError</span>(<span class="cf">f</span><span class="cs">"Summa &gt; 0 bo'lishi kerak: {amount}"</span>)
+        db.<span class="cf">execute</span>(<span class="cs">"INSERT INTO ledger ..."</span>, {<span class="cs">"tx_id"</span>: tx_id, <span class="cs">"amount"</span>: amount})
+
+    <span class="ck">except</span> <span class="cf">KeyError</span> <span class="ck">as</span> e:
+        <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"[EXCEPT] Maydon yo'q: {e}"</span>)
+        <span class="ck">return</span> <span class="ck">None</span>
+    <span class="ck">except</span> <span class="cf">ValueError</span> <span class="ck">as</span> e:
+        <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"[EXCEPT] {e}"</span>)
+        <span class="ck">return</span> <span class="ck">None</span>
+
+    <span class="ck">else</span>:
+        <span class="cf">print</span>(<span class="cs">"[ELSE] Yozuv o'tdi, COMMIT qilamiz"</span>)
+        db.<span class="cf">commit</span>()
+        <span class="ck">return</span> tx_id
+
+    <span class="ck">finally</span>:
+        <span class="cf">print</span>(<span class="cs">"[FINALLY] Ulanishni yopamiz"</span>)
+        db.<span class="cf">close</span>()</div>
+                <p class="body-text" style="margin-top: 10px; color: #86868b;"><code>try</code> yozuvni amalga oshiradi, <code>except</code> xatolarni ushlaydi, <code>else</code> tranzaksiyani tasdiqlaydi, <code>finally</code> har qanday holatda ulanishni yopadi.</p>
+            </div>
+        </div>
+
+        <!-- 25b: else in practice - run on success and error -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow"><code>try/except</code> chuqurroq</p>
+                <h2><code>else</code> amaliyotda: ishga tushirish va chiqish</h2>
+                <div class="code-block tight"><span class="cf">print</span>(<span class="cs">"=== Muvaffaqiyat ==="</span>)
+<span class="cf">save_payment</span>(<span class="cf">MockDB</span>(), {<span class="cs">"tx_id"</span>: <span class="cs">"TX_001"</span>, <span class="cs">"amount"</span>: <span class="cs">"450000"</span>})
+
+<span class="cf">print</span>(<span class="cs">"=== Xato ==="</span>)
+<span class="cf">save_payment</span>(<span class="cf">MockDB</span>(), {<span class="cs">"tx_id"</span>: <span class="cs">"TX_002"</span>, <span class="cs">"amount"</span>: <span class="cs">"-500"</span>})</div>
+                <div class="term"><span class="out">=== Muvaffaqiyat ===
+  [SQL] INSERT INTO ledger ...
+[ELSE] Yozuv o'tdi, COMMIT qilamiz
+  [SQL] COMMIT
+[FINALLY] Ulanishni yopamiz
+  [SQL] Ulanish yopildi
+=== Xato ===
+[EXCEPT] Summa &gt; 0 bo'lishi kerak: -500.0
+[FINALLY] Ulanishni yopamiz
+  [SQL] Ulanish yopildi</span></div>
+                <p class="body-text" style="margin-top: 10px; color: #86868b;">Muvaffaqiyatda <code>try → else → finally</code> ishlaydi. Xatoda: <code>try → except → finally</code>. <code>finally</code> bloki ikkala holatda ham ishlaydi.</p>
+            </div>
+        </div>
+
+        <!-- 26: finally block - always runs -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow"><code>try/except</code> chuqurroq</p>
+                <h2><code>finally</code> bloki: doim bajariladi</h2>
+                <p class="body-text" style="margin-bottom: 4px;">Resurslarni kafolatli ozod qilish uchun: faylni yopish, lokni olib tashlash, MB bilan ulanishni yopish. <code>finally</code> <code>try</code> ichida <code>return</code> bo'lganda ham ishlaydi.</p>
+                <div class="code-block tight"><span class="ck">def</span> <span class="cf">deduct_funds</span>(account_id: <span class="cf">str</span>, amount: <span class="cf">float</span>) -&gt; <span class="cf">str</span> | <span class="ck">None</span>:
+    <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"  [LOCK] {account_id} uchun lok olindi"</span>)
+
+    <span class="ck">try</span>:
+        <span class="ck">if</span> amount &gt; <span class="cm">5_000_000</span>:
+            <span class="ck">raise</span> <span class="cf">ValueError</span>(<span class="cs">"Limit oshib ketdi"</span>)
+        <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"  [OK] {amount} UZS yechildi"</span>)
+        <span class="ck">return</span> <span class="cf">f</span><span class="cs">"TX_{account_id}"</span>           <span class="co"># finally return'dan OLDIN ishlaydi</span>
+
+    <span class="ck">except</span> <span class="cf">ValueError</span> <span class="ck">as</span> e:
+        <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"  [ERROR] {e}"</span>)
+        <span class="ck">return</span> <span class="ck">None</span>
+
+    <span class="ck">finally</span>:
+        <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"  [LOCK] {account_id} uchun lok olib tashlandi"</span>)
+
+
+<span class="cf">deduct_funds</span>(<span class="cs">"UZ_5521"</span>, <span class="cm">500_000.0</span>)
+<span class="cf">deduct_funds</span>(<span class="cs">"UZ_5521"</span>, <span class="cm">8_000_000.0</span>)</div>
+                <div class="term"><span class="out">  [LOCK] UZ_5521 uchun lok olindi
+  [OK] 500000.0 UZS yechildi
+  [LOCK] UZ_5521 uchun lok olib tashlandi
+  [LOCK] UZ_5521 uchun lok olindi
+  [ERROR] Limit oshib ketdi
+  [LOCK] UZ_5521 uchun lok olib tashlandi</span></div>
+                <p class="body-text" style="margin-top: 10px; color: #86868b;">Lok doim olib tashlanadi. <code>finally</code>'siz bloklash abadiy qolib ketishi mumkin edi.</p>
+            </div>
+        </div>
+
+        <!-- 27: Open question - UnboundLocalError in finally -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow" style="color:#ff9500;">Auditoriyaga savol</p>
+                <h2>Bu kod nimani chiqaradi?</h2>
+                <div class="code-block tight"><span class="ck">def</span> <span class="cf">connect_to_db</span>() -&gt; <span class="ck">None</span>:
+    <span class="ck">try</span>:
+        <span class="ck">raise</span> <span class="cf">ConnectionRefusedError</span>(<span class="cs">"PostgreSQL yiqildi"</span>)
+        db_conn = {<span class="cs">"session"</span>: <span class="cs">"active"</span>}
+    <span class="ck">except</span> <span class="cf">ConnectionRefusedError</span> <span class="ck">as</span> e:
+        <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"[EXCEPT] {e}"</span>)
+    <span class="ck">finally</span>:
+        <span class="cf">print</span>(<span class="cs">"[FINALLY] Yopamiz..."</span>)
+        db_conn.<span class="cf">close</span>()
+
+<span class="cf">connect_to_db</span>()</div>
+                <ul class="options-list">
+                    <li><b>A)</b> <code>[EXCEPT]</code>, keyin <code>[FINALLY]</code> chiqaradi va sokin tugaydi</li>
+                    <li><b>B)</b> <code>[EXCEPT]</code>, <code>[FINALLY]</code> chiqaradi, keyin <code>UnboundLocalError</code> bilan yiqiladi</li>
+                    <li><b>V)</b> Faqat <code>[EXCEPT]</code> chiqaradi, <code>finally</code>'gacha yetmaydi</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 28: Answer - UnboundLocalError masks the real error -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow" style="color:#34c759;">Javob</p>
+                <h2>B: original xato ustiga <code>UnboundLocalError</code></h2>
+                <ul class="checklist" style="max-width: 880px;">
+                    <li><code>try</code> ichida <code>ConnectionRefusedError</code> tashlandi.</li>
+                    <li><code>db_conn = ...</code> qatori bajarilmadi, o'zgaruvchi mavjud emas.</li>
+                    <li><code>except</code> ishladi. <code>finally</code> <code>db_conn.close()</code>'ni chaqirdi.</li>
+                    <li>O'zgaruvchi aniqlanmagan. Python <code>UnboundLocalError</code> tashlaydi.</li>
+                    <li>Yangi xato loglardagi originalni o'chiradi. Navbatchi noto'g'ri narsani tuzatadi.</li>
+                </ul>
+                <p class="body-text" style="margin-top: 14px;"><span class="highlight">Tuzatish</span>: resursni <code>try</code>'dan OLDIN <code>None</code> bilan initsializatsiya qiling.</p>
+                <div class="code-block tight"><span class="ck">def</span> <span class="cf">connect_to_db</span>() -&gt; <span class="ck">None</span>:
+    db_conn = <span class="ck">None</span>                          <span class="co"># try'dan OLDIN initsializatsiya</span>
+
+    <span class="ck">try</span>:
+        <span class="ck">raise</span> <span class="cf">ConnectionRefusedError</span>(<span class="cs">"PostgreSQL yiqildi"</span>)
+        db_conn = {<span class="cs">"session"</span>: <span class="cs">"active"</span>}
+
+    <span class="ck">except</span> <span class="cf">ConnectionRefusedError</span> <span class="ck">as</span> e:
+        <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"[EXCEPT] {e}"</span>)
+        <span class="ck">return</span>
+
+    <span class="ck">finally</span>:
+        <span class="ck">if</span> db_conn <span class="ck">is</span> <span class="ck">not</span> <span class="ck">None</span>:             <span class="co"># xavfsiz tekshirish</span>
+            db_conn.<span class="cf">close</span>()</div>
+            </div>
+        </div>
+
+        <!-- 29: raise - throw your own exceptions -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow"><code>raise</code></p>
+                <h2>Exception'ni o'zimiz tashlaymiz</h2>
+                <p class="body-text" style="margin-bottom: 4px;"><code>raise</code> biznes qoidalarini exception tiliga o'tkazadi. Sintaktik to'g'ri narsa biznes xatosi bo'lishi mumkin: <code>amount = -50000</code>, o'z hisobiga o'tkazish, limit oshishi.</p>
+                <div class="code-block tight">MAX_TX = <span class="cm">10_000_000.0</span>   <span class="co"># MB limiti</span>
+
+<span class="ck">def</span> <span class="cf">validate_payment</span>(sender: <span class="cf">dict</span>, recipient: <span class="cf">dict</span>, amount: <span class="cf">float</span>) -&gt; <span class="ck">None</span>:
+    <span class="ck">if</span> amount &lt;= <span class="cm">0</span>:
+        <span class="ck">raise</span> <span class="cf">ValueError</span>(<span class="cf">f</span><span class="cs">"Summa musbat bo'lishi kerak: {amount}"</span>)
+
+    <span class="ck">if</span> sender[<span class="cs">"account_id"</span>] == recipient[<span class="cs">"account_id"</span>]:
+        <span class="ck">raise</span> <span class="cf">ValueError</span>(<span class="cf">f</span><span class="cs">"O'z hisobiga o'tkazish: {sender['account_id']}"</span>)
+
+    <span class="ck">if</span> amount &gt; MAX_TX:
+        <span class="ck">raise</span> <span class="cf">PermissionError</span>(<span class="cf">f</span><span class="cs">"Summa {amount:,.0f} &gt; limit {MAX_TX:,.0f}"</span>)
+
+    <span class="ck">if</span> sender[<span class="cs">"balance"</span>] &lt; amount:
+        <span class="ck">raise</span> <span class="cf">ArithmeticError</span>(
+            <span class="cf">f</span><span class="cs">"Yetarli emas: so'rov {amount:,.0f}, balans {sender['balance']:,.0f}"</span>
+        )
+
+
+sender = {<span class="cs">"account_id"</span>: <span class="cs">"UZ_A"</span>, <span class="cs">"balance"</span>: <span class="cm">100_000.0</span>}
+recipient = {<span class="cs">"account_id"</span>: <span class="cs">"UZ_B"</span>}
+
+<span class="ck">try</span>:
+    <span class="cf">validate_payment</span>(sender, recipient, <span class="cm">500_000.0</span>)
+<span class="ck">except</span> (<span class="cf">ValueError</span>, <span class="cf">PermissionError</span>, <span class="cf">ArithmeticError</span>) <span class="ck">as</span> e:
+    <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"[{type(e).__name__}] {e}"</span>)</div>
+                <div class="term"><span class="out">[ArithmeticError] Yetarli emas: so'rov 500,000, balans 100,000</span></div>
+            </div>
+        </div>
+
+        <!-- 30a: Problem - resource leak without with -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Kontekst menejerlari</p>
+                <h2>Muammo: resurs yopilmadi</h2>
+                <p class="body-text" style="margin-bottom: 4px;">Har bir resurs (fayl, ulanish, lok) ishdan keyin yopilishi kerak. Agar ochish va yopish o'rtasida exception sodir bo'lsa, <code>f.close()</code> qatori shunchaki bajarilmaydi.</p>
+                <div class="code-block">f = <span class="cf">open</span>(<span class="cs">"payments.txt"</span>, <span class="cs">"r"</span>)
+data = f.<span class="cf">read</span>()
+<span class="cf">int</span>(<span class="cs">"abc"</span>)   <span class="co"># bu yerda ValueError yiqildi</span>
+f.<span class="cf">close</span>()    <span class="co"># bu qator bajarilmaydi</span></div>
+                <div class="quote-card warning" style="margin-top: 14px;">
+                    <p>Bu resurs sizib chiqishi: fayl band, xotira ozod qilinmagan. Minglab so'rovlar bo'lgan serverda bunday sizib chiqishlar to'planib jarayonni yiqitadi.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 30: What is `with` -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Kontekst menejerlari</p>
+                <h2><code>with</code> nima</h2>
+                <p class="body-text" style="margin-bottom: 4px;"><code>with</code> Python'ga shunday deydi: "buni och, menga ishlashga ruxsat ber, xato bo'lsa ham buni o'zing yop". <code>try/finally</code>'dan qisqaroq va ishonchliroq.</p>
+                <div class="comparison-grid">
+                    <div class="comparison-item old">
+                        <div class="label">try/finally orqali</div>
+                        <div class="code-block tight" style="margin-top: 0;">f = <span class="cf">open</span>(<span class="cs">"payments.txt"</span>, <span class="cs">"r"</span>)
+<span class="ck">try</span>:
+    data = f.<span class="cf">read</span>()
+<span class="ck">finally</span>:
+    f.<span class="cf">close</span>()</div>
+                    </div>
+                    <div class="comparison-item new">
+                        <div class="label">with orqali</div>
+                        <div class="code-block tight" style="margin-top: 0;"><span class="ck">with</span> <span class="cf">open</span>(<span class="cs">"payments.txt"</span>, <span class="cs">"r"</span>) <span class="ck">as</span> f:
+    data = f.<span class="cf">read</span>()
+<span class="co"># close() avtomatik chaqiriladi</span></div>
+                    </div>
+                </div>
+                <div class="quote-card" style="margin-top: 16px;">
+                    <p><code>__enter__</code> va <code>__exit__</code> metodlariga ega class <code>with</code> bilan ishlaydi. <code>__exit__</code> doim, hatto blok ichida exception bo'lganda ham chaqiriladi. Resursni ozod qilish kafolati shundadir.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 30b: How with works internally -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Kontekst menejerlari</p>
+                <h2><code>with</code> ichida qanday ishlaydi</h2>
+                <p class="body-text" style="margin-bottom: 4px;"><code>with</code>'ga uzatilgan obyekt ikkita metodga ega bo'lishi shart: <code>__enter__</code> (blokka kirish) va <code>__exit__</code> (chiqish). Python ularni siz uchun chaqiradi.</p>
+                <div class="code-block" style="font-size: clamp(9px,1.15vw,14px); max-width: 880px;"><span class="ck">with</span> <span class="cf">open</span>(<span class="cs">"payments.txt"</span>) <span class="ck">as</span> f:
+   |
+   +-- 1. __enter__()     faylni ochadi, f'ni qaytaradi
+   |
+   +-- 2. with blokining tanasi bajariladi
+   |        |
+   |        +-- hammasi OK         __exit__() chaqiriladi, fayl yopiladi
+   |        +-- exception bo'ldi  __exit__() chaqiriladi, fayl yopiladi,
+   |                              keyin exception keyingisiga uchadi
+   |
+   +-- 3. resurs kafolatli ozod qilingan</div>
+                <div class="quote-card" style="margin-top: 16px;">
+                    <p><code>with</code>'ning asosiy qiymati: <code>__exit__()</code> doim chaqiriladi. Hatto blok ichida exception bo'lganda ham resurs ozod qilinadi.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 30c: Real-world examples (files, DB, lock) -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Kontekst menejerlari</p>
+                <h2>Real misollar</h2>
+                <p class="body-text" style="margin-bottom: 4px;">Bir xil <code>with</code> sintaksisi fayllar, MBlar, bloklashlar, soketlar, vaqtinchalik kataloglar uchun ishlaydi.</p>
+                <div class="code-block tight"><span class="co"># Fayllar</span>
+<span class="ck">with</span> <span class="cf">open</span>(<span class="cs">"payments.txt"</span>, <span class="cs">"r"</span>) <span class="ck">as</span> f:
+    data = f.<span class="cf">read</span>()
+
+<span class="ck">with</span> <span class="cf">open</span>(<span class="cs">"report.txt"</span>, <span class="cs">"w"</span>) <span class="ck">as</span> f:
+    f.<span class="cf">write</span>(<span class="cs">"Tranzaksiyalar hisoboti"</span>)
+
+
+<span class="co"># Ma'lumotlar bazasi</span>
+<span class="ck">import</span> psycopg2
+
+<span class="ck">with</span> psycopg2.<span class="cf">connect</span>(database=<span class="cs">"payments"</span>) <span class="ck">as</span> conn:
+    <span class="ck">with</span> conn.<span class="cf">cursor</span>() <span class="ck">as</span> cursor:
+        cursor.<span class="cf">execute</span>(<span class="cs">"SELECT * FROM transactions"</span>)
+        rows = cursor.<span class="cf">fetchall</span>()
+
+
+<span class="co"># Oqim bloklash</span>
+<span class="ck">import</span> threading
+lock = threading.<span class="cf">Lock</span>()
+
+<span class="ck">with</span> lock:
+    <span class="co"># bir vaqtning o'zida faqat bitta oqim</span>
+    balance += amount</div>
+            </div>
+        </div>
+
+        <!-- 30c+: DB transaction example with Celery note -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Kontekst menejerlari</p>
+                <h2>Real misol: MBdagi tranzaksiya</h2>
+                <p class="body-text" style="margin-bottom: 4px;">MB bilan ishlaganda <code>with</code> bir vaqtda ikkita ishni qiladi: tranzaksiyani boshqaradi (muvaffaqiyatda commit, xatoda rollback) va oxirida ulanishni yopadi.</p>
+                <div class="code-block tight"><span class="ck">import</span> psycopg2
+
+<span class="ck">def</span> <span class="cf">transfer</span>(from_id: <span class="cf">str</span>, to_id: <span class="cf">str</span>, amount: <span class="cf">float</span>) -&gt; <span class="ck">None</span>:
+    <span class="ck">with</span> psycopg2.<span class="cf">connect</span>(database=<span class="cs">"payments"</span>) <span class="ck">as</span> conn:
+        <span class="ck">with</span> conn.<span class="cf">cursor</span>() <span class="ck">as</span> cur:
+            cur.<span class="cf">execute</span>(
+                <span class="cs">"UPDATE accounts SET balance = balance - %s WHERE id = %s"</span>,
+                (amount, from_id),
+            )
+            cur.<span class="cf">execute</span>(
+                <span class="cs">"UPDATE accounts SET balance = balance + %s WHERE id = %s"</span>,
+                (amount, to_id),
+            )
+
+<span class="co"># with'dan chiqishda:</span>
+<span class="co">#   muvaffaqiyat -&gt; conn.commit(), cur.close(), conn.close()</span>
+<span class="co">#   xato         -&gt; conn.rollback(), cur.close(), conn.close()</span></div>
+                <div class="quote-card" style="margin-top: 14px;">
+                    <p>Celery fon vazifasida xuddi shunday konstruksiya MBda osilib qolgan tranzaksiyalar va worker vazifalari orasida yopilmagan ulanishlar qolmasligini kafolatlaydi.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 30d: with + try/except together -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Kontekst menejerlari</p>
+                <h2><code>with</code> va <code>try/except</code> birgalikda</h2>
+                <p class="body-text" style="margin-bottom: 4px;"><code>with</code> resurslar uchun, <code>try/except</code> xatolar uchun javobgar. Ko'pincha ular birga ishlatiladi.</p>
+                <div class="code-block tight"><span class="ck">try</span>:
+    <span class="ck">with</span> <span class="cf">open</span>(<span class="cs">"payments.txt"</span>, <span class="cs">"r"</span>) <span class="ck">as</span> f:
+        data = f.<span class="cf">read</span>()
+        <span class="cf">process</span>(data)
+
+<span class="ck">except</span> <span class="cf">FileNotFoundError</span> <span class="ck">as</span> e:
+    <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Fayl topilmadi: {e}"</span>)
+
+<span class="ck">except</span> <span class="cf">ValueError</span> <span class="ck">as</span> e:
+    <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Qayta ishlash xatosi: {e}"</span>)
+
+<span class="co"># Fayl har qanday holatda yopilgan.</span>
+<span class="co"># Exception ushlangan va qayta ishlangan.</span></div>
+                <div class="quote-card success" style="margin-top: 14px;">
+                    <p>Fayl avtomatik yopiladi, hatto exception tashqi <code>try/except</code> bloki tomonidan ushlanganda ham.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 31: DBTransaction class - auto COMMIT or ROLLBACK -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Kontekst menejerlari</p>
+                <h2><code>DBTransaction</code>: avtomatik COMMIT yoki ROLLBACK</h2>
+                <div class="code-block tight"><span class="ck">class</span> <span class="cf">DBTransaction</span>:
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, session_id: <span class="cf">str</span>):
+        <span class="cn">self</span>.session_id = session_id
+
+    <span class="ck">def</span> <span class="cf">__enter__</span>(<span class="cn">self</span>) -&gt; <span class="cs">"DBTransaction"</span>:
+        <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"[BEGIN] Sessiya {self.session_id}"</span>)
+        <span class="ck">return</span> <span class="cn">self</span>
+
+    <span class="ck">def</span> <span class="cf">__exit__</span>(<span class="cn">self</span>, exc_type, exc_val, exc_tb) -&gt; <span class="cf">bool</span>:
+        <span class="ck">if</span> exc_type <span class="ck">is</span> <span class="ck">None</span>:
+            <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"[COMMIT] Sessiya {self.session_id}, ma'lumotlar saqlandi"</span>)
+        <span class="ck">else</span>:
+            <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"[ROLLBACK] {exc_type.__name__}: {exc_val}"</span>)
+        <span class="ck">return</span> <span class="ck">False</span>    <span class="co"># exception'ni tashqariga uzatamiz</span>
+
+    <span class="ck">def</span> <span class="cf">execute</span>(<span class="cn">self</span>, query: <span class="cf">str</span>) -&gt; <span class="ck">None</span>:
+        <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"  [SQL] {query}"</span>)
+
+
+<span class="co"># Muvaffaqiyat: avtomatik COMMIT</span>
+<span class="ck">with</span> <span class="cf">DBTransaction</span>(<span class="cs">"SES_001"</span>) <span class="ck">as</span> tx:
+    tx.<span class="cf">execute</span>(<span class="cs">"UPDATE accounts SET balance = balance - 350000 WHERE id = 'A'"</span>)
+    tx.<span class="cf">execute</span>(<span class="cs">"UPDATE accounts SET balance = balance + 350000 WHERE id = 'B'"</span>)
+
+<span class="co"># Xato: avtomatik ROLLBACK</span>
+<span class="ck">try</span>:
+    <span class="ck">with</span> <span class="cf">DBTransaction</span>(<span class="cs">"SES_002"</span>) <span class="ck">as</span> tx:
+        tx.<span class="cf">execute</span>(<span class="cs">"UPDATE accounts SET balance = balance - 999999 WHERE id = 'A'"</span>)
+        <span class="ck">raise</span> <span class="cf">ValueError</span>(<span class="cs">"CHECK constraint: balance &lt; 0"</span>)
+<span class="ck">except</span> <span class="cf">ValueError</span> <span class="ck">as</span> e:
+    <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"[API] {e}"</span>)</div>
+            </div>
+        </div>
+
+        <!-- 32: @contextmanager via generator -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Kontekst menejerlari</p>
+                <h2><code>@contextmanager</code>: generator orqali menejer</h2>
+                <p class="body-text" style="margin-bottom: 4px;">Doim butun class kerak emas. Oddiy holatlar uchun <code>contextlib</code>'dan <code>@contextmanager</code> dekoratori bor: <code>yield</code>'gacha bo'lgan kod bu <code>__enter__</code>, <code>yield</code>'dan keyin bu <code>__exit__</code>.</p>
+                <div class="code-block tight"><span class="ck">from</span> contextlib <span class="ck">import</span> contextmanager
+<span class="ck">import</span> time
+
+<span class="cm">@contextmanager</span>
+<span class="ck">def</span> <span class="cf">measure_time</span>(operation: <span class="cf">str</span>):
+    <span class="cs">"""Bajarish vaqtini o'lchaydi"""</span>
+    start = time.<span class="cf">perf_counter</span>()
+    <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"[TIMER] Start: {operation}"</span>)
+    <span class="ck">try</span>:
+        <span class="ck">yield</span>               <span class="co"># bu yerda with ichidagi kod bajariladi</span>
+    <span class="ck">finally</span>:
+        ms = (time.<span class="cf">perf_counter</span>() - start) * <span class="cm">1000</span>
+        <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"[TIMER] {operation}: {ms:.1f}ms"</span>)
+
+
+<span class="cm">@contextmanager</span>
+<span class="ck">def</span> <span class="cf">redis_lock</span>(resource_id: <span class="cf">str</span>):
+    <span class="cs">"""Taqsimlangan lok imitatsiyasi"""</span>
+    key = <span class="cf">f</span><span class="cs">"lock:{resource_id}"</span>
+    <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"[REDIS] {key} olinmoqda"</span>)
+    <span class="ck">try</span>:
+        <span class="ck">yield</span> key
+    <span class="ck">finally</span>:
+        <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"[REDIS] {key} ozod qilinmoqda"</span>)
+
+
+<span class="ck">with</span> <span class="cf">measure_time</span>(<span class="cs">"payment"</span>):
+    <span class="ck">with</span> <span class="cf">redis_lock</span>(<span class="cs">"account:UZ_5521"</span>) <span class="ck">as</span> lock:
+        <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"  Ishlayapmiz (lock={lock})"</span>)
+        time.<span class="cf">sleep</span>(<span class="cm">0.03</span>)</div>
+                <p class="body-text" style="margin-top: 10px; color: #86868b;">Chiqish tartibi kirish tartibiga teskari. Ichki lok birinchi bo'lib olib tashlanadi.</p>
+            </div>
+        </div>
+
+        <!-- 32a: Summary - with vs without with -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Kontekst menejerlari</p>
+                <h2><code>with</code>'siz va <code>with</code> bilan</h2>
+                <table class="data-table" style="max-width: 980px;">
+                    <tr><th></th><th><code>with</code>'siz</th><th><code>with</code> bilan</th></tr>
+                    <tr><td>Resursni yopish</td><td>Qo'lda</td><td>Avtomatik</td></tr>
+                    <tr><td>Xato bo'lganda</td><td>Resurs ochiq qoladi</td><td>Baribir yopiladi</td></tr>
+                    <tr><td>O'qilishi</td><td>Ko'proq kod</td><td>Toza va qisqaroq</td></tr>
+                    <tr><td>Xotira sizib chiqishi</td><td>Mumkin</td><td>Istisno qilingan</td></tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- 32b: Section divider - logging -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Yangi bo'lim</p>
+                <h1><code>logging</code> moduli</h1>
+                <p class="subtitle">Loglar: sboydan keyin qoladigan narsa</p>
+            </div>
+        </div>
+
+        <!-- 32c: What is logging - definition and analogy -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow"><code>logging</code> moduli</p>
+                <h2>Logging nima</h2>
+                <p class="body-text" style="margin-bottom: 4px;">Logging: dastur ishlashi davomida hodisalarini yozish. Nima sodir bo'ldi, qachon, qaysi serverda, qaysi funksiyada.</p>
+                <div class="quote-card" style="margin-top: 14px;">
+                    <p>Analogiya: samolyotning qora qutisi. Har qanday insidentdan keyin muhandis yozuvni ochib, sbo'ydan oldin tizimda nima sodir bo'lganini ko'radi.</p>
+                </div>
+                <ul class="checklist" style="max-width: 880px; margin-top: 14px;">
+                    <li>Productionda debugger yo'q. Faqat loglarga tushgan narsa mavjud.</li>
+                    <li>Mikroservislarda tranzaksiya bir nechta servis orqali o'tadi: loglarsiz qayerda osilib qolganini topib bo'lmaydi.</li>
+                    <li>Audit. Bank kim va nima qilganini saqlashga majbur.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 33: Why print() is not enough -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow"><code>logging</code> moduli</p>
+                <h2>Nima uchun productionda <code>print()</code> yetarli emas</h2>
+                <table class="data-table" style="max-width: 880px;">
+                    <tr><th>Muammo</th><th>Nima uchun muhim</th></tr>
+                    <tr><td>Muhimlik darajasi yo'q</td><td>Bu DEBUG yoki CRITICAL ekanini tushunmaymiz</td></tr>
+                    <tr><td>Vaqt belgisi yo'q</td><td>Bu qachon sodir bo'ldi?</td></tr>
+                    <tr><td>Fayl va qator yo'q</td><td>Bu koddan qayerda?</td></tr>
+                    <tr><td>Filtrlab bo'lmaydi</td><td>ELK Stack'ga agregatsiya qilinmaydi</td></tr>
+                    <tr><td>Rotatsiya qilib bo'lmaydi</td><td>Fayl cheksiz o'sib boradi</td></tr>
+                </table>
+                <table class="data-table" style="max-width: 880px; margin-top: 22px;">
+                    <tr><th>Daraja</th><th>Qachon ishlatish</th></tr>
+                    <tr><td><code>DEBUG</code></td><td>Otladka uchun batafsil trase. Productionda o'chirilgan</td></tr>
+                    <tr><td><code>INFO</code></td><td>Standart hodisalar: tranzaksiya yaratildi, so'rov qabul qilindi</td></tr>
+                    <tr><td><code>WARNING</code></td><td>Norasmiy, lekin tizim ishlamoqda: retry #2, sekin so'rov</td></tr>
+                    <tr><td><code>ERROR</code></td><td>Bir amal yiqildi, tizim ishlashda davom etmoqda</td></tr>
+                    <tr><td><code>CRITICAL</code></td><td>Jiddiy: baza mavjud emas, butun servis xavf ostida</td></tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- 34: Logger setup (minimal) -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow"><code>logging</code> moduli</p>
+                <h2>Logger'ni sozlash</h2>
+                <p class="body-text" style="margin-bottom: 4px;">Uchta qadam: nomi bo'yicha logger olish, darajani belgilash, format bilan handler qo'shish.</p>
+                <div class="code-block"><span class="ck">import</span> logging
+<span class="ck">import</span> sys
+
+logger = logging.<span class="cf">getLogger</span>(<span class="cs">"PaymentService"</span>)
+logger.<span class="cf">setLevel</span>(logging.DEBUG)
+
+handler = logging.<span class="cf">StreamHandler</span>(sys.stdout)
+handler.<span class="cf">setFormatter</span>(logging.<span class="cf">Formatter</span>(
+    <span class="cs">'%(asctime)s [%(levelname)s] %(message)s'</span>
+))
+logger.<span class="cf">addHandler</span>(handler)</div>
+                <p class="body-text" style="margin-top: 10px; color: #86868b;">Productionda qo'shimcha <code>RotatingFileHandler</code> qo'shiladi: faylga yozadi va hajmi bo'yicha rotatsiya qiladi, log diskni yemasligi uchun.</p>
+            </div>
+        </div>
+
+        <!-- 35: Using the logger - five levels -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow"><code>logging</code> moduli</p>
+                <h2>Foydalanish: besh daraja</h2>
+                <div class="code-block">logger.<span class="cf">debug</span>(<span class="cs">"tx=TX_001 qayta ishlash boshlandi"</span>)
+logger.<span class="cf">info</span>(<span class="cs">"TX qayta ishlandi. Summa: 500_000 UZS"</span>)
+logger.<span class="cf">warning</span>(<span class="cs">"Sekin so'rov: 120ms"</span>)
+logger.<span class="cf">error</span>(<span class="cs">"TX rad etildi: limit oshib ketdi"</span>)
+logger.<span class="cf">critical</span>(<span class="cs">"Baza mavjud emas, retry navbati to'la"</span>)</div>
+                <div class="term"><span class="out">10:30:00 [DEBUG] tx=TX_001 qayta ishlash boshlandi
+10:30:00 [INFO] TX qayta ishlandi. Summa: 500_000 UZS
+10:30:00 [WARNING] Sekin so'rov: 120ms
+10:30:00 [ERROR] TX rad etildi: limit oshib ketdi
+10:30:00 [CRITICAL] Baza mavjud emas, retry navbati to'la</span></div>
+                <p class="body-text" style="margin-top: 10px; color: #86868b;">Daraja hodisaga qarab tanlanadi. Productionda odatda <code>INFO</code> va yuqorisidan filtrlanadi: <code>DEBUG</code> juda shovqinli.</p>
+            </div>
+        </div>
+
+        <!-- 36: exc_info=True -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow"><code>logging</code> moduli</p>
+                <h2><code>exc_info=True</code>: logga traceback qo'shadi</h2>
+                <p class="body-text" style="margin-bottom: 4px;"><code>exc_info=True</code>'siz log faqat xato xabarini ko'rsatadi. <code>exc_info=True</code> bilan to'liq traceback qo'shadi. Bu otladka uchun juda muhim.</p>
+                <div class="code-block tight"><span class="co"># exc_info'siz</span>
+logger.<span class="cf">error</span>(<span class="cf">f</span><span class="cs">"TX yiqildi: {e}"</span>)
+<span class="co"># Logda:</span>
+<span class="co">#   "TX yiqildi: Limit oshib ketdi"</span>
+<span class="co"># Fayl yo'q, qator yo'q, chaqirishlar steki yo'q.</span>
+
+
+<span class="co"># exc_info=True bilan</span>
+logger.<span class="cf">error</span>(<span class="cf">f</span><span class="cs">"TX yiqildi: {e}"</span>, exc_info=<span class="ck">True</span>)
+<span class="co"># Logda:</span>
+<span class="co">#   ERROR - TX yiqildi: Limit oshib ketdi</span>
+<span class="co">#   Traceback (most recent call last):</span>
+<span class="co">#     File "payment.py", line 30, in process</span>
+<span class="co">#       raise ValueError(...)</span>
+<span class="co">#   ValueError: Limit oshib ketdi: 100000000</span></div>
+                <table class="data-table" style="margin-top: 18px; max-width: 720px;">
+                    <tr><th>Daraja</th><th><code>exc_info=True</code>?</th></tr>
+                    <tr><td><code>logger.error()</code></td><td>Doim</td></tr>
+                    <tr><td><code>logger.critical()</code></td><td>Doim</td></tr>
+                    <tr><td><code>logger.warning()</code></td><td>Ogohlantirish exception bilan bog'liq bo'lsa</td></tr>
+                    <tr><td><code>logger.info()</code></td><td>Kerak emas</td></tr>
+                    <tr><td><code>logger.debug()</code></td><td>Kerak emas</td></tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- 37: Wide except with mandatory logging -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow"><code>logging</code> moduli</p>
+                <h2>Keng <code>except</code> + majburiy logging</h2>
+                <p class="body-text" style="margin-bottom: 4px;">Ba'zan barcha xatolarni oldindan aytib bo'lmaydi, shunda <code>except Exception</code> ishlatiladi. Lekin bu jim turish uchun bahona emas: hammasini ushlasangiz, hammasini yozishga majbursiz.</p>
+                <div class="code-block tight"><span class="ck">import</span> logging
+logger = logging.<span class="cf">getLogger</span>(<span class="cn">__name__</span>)   <span class="co"># standart: modulga bitta logger</span>
+
+<span class="ck">def</span> <span class="cf">safe_check_fraud</span>(tx: <span class="cf">dict</span>) -&gt; <span class="cf">dict</span>:
+    <span class="ck">try</span>:
+        is_fraud = <span class="cf">check_fraud</span>(tx)
+        <span class="ck">return</span> {<span class="cs">"status"</span>: <span class="cs">"BLOCKED"</span> <span class="ck">if</span> is_fraud <span class="ck">else</span> <span class="cs">"APPROVED"</span>}
+
+    <span class="ck">except</span> <span class="cf">Exception</span> <span class="ck">as</span> e:
+        logger.<span class="cf">error</span>(
+            <span class="cf">f</span><span class="cs">"Antifrodda kutilmagan xato: {type(e).__name__}: {e}"</span>,
+            exc_info=<span class="ck">True</span>
+        )
+        <span class="ck">return</span> {<span class="cs">"status"</span>: <span class="cs">"ERROR"</span>, <span class="cs">"reason"</span>: <span class="cs">"Fraud check failed"</span>}</div>
+                <table class="data-table" style="margin-top: 18px; max-width: 880px;">
+                    <tr><th>Xabar qismi</th><th>Nima beradi</th></tr>
+                    <tr><td><code>"Antifrodda kutilmagan xato"</code></td><td>Kontekst: aynan qayerda yiqildi</td></tr>
+                    <tr><td><code>{type(e).__name__}</code></td><td>Xato class nomi, Sentry'da filtrlash uchun</td></tr>
+                    <tr><td><code>{e}</code></td><td>Xato matni, nima bo'lganini tushunish uchun</td></tr>
+                    <tr><td><code>exc_info=True</code></td><td>To'liq traceback, kodda qayerda ekanini tushunish uchun</td></tr>
+                </table>
+                <p class="body-text" style="margin-top: 14px; color: #86868b;">Bu graceful degradation deyiladi: servis yiqilmaydi, lekin xato qayd etilgan.</p>
+            </div>
+        </div>
+
+        <!-- 38: Three catch levels comparison -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow"><code>logging</code> moduli</p>
+                <h2>Uch ushlash darajasi</h2>
+                <div class="code-block tight"><span class="co"># Ideal: aniq exception'lar, har biriga o'z reaksiya</span>
+<span class="ck">try</span>:
+    response = external_api.<span class="cf">call</span>()
+<span class="ck">except</span> <span class="cf">TimeoutError</span>:
+    <span class="cf">retry_later</span>()
+<span class="ck">except</span> <span class="cf">ValueError</span>:
+    <span class="ck">return</span> {<span class="cs">"status"</span>: <span class="cs">"INVALID_INPUT"</span>}
+
+
+<span class="co"># Joiz: majburiy logging bilan keng ushlash</span>
+<span class="ck">try</span>:
+    is_fraud = <span class="cf">check_fraud</span>(tx)
+<span class="ck">except</span> <span class="cf">Exception</span> <span class="ck">as</span> e:
+    logger.<span class="cf">error</span>(
+        <span class="cf">f</span><span class="cs">"Kutilmagan xato: {type(e).__name__}: {e}"</span>,
+        exc_info=<span class="ck">True</span>
+    )
+    <span class="ck">return</span> {<span class="cs">"status"</span>: <span class="cs">"ERROR"</span>}
+
+
+<span class="co"># Taqiqlangan: loglashsiz keng ushlash</span>
+<span class="ck">try</span>:
+    is_fraud = <span class="cf">check_fraud</span>(tx)
+<span class="ck">except</span> <span class="cf">Exception</span>:
+    <span class="ck">pass</span>   <span class="co"># xato yo'qoldi, hech kim bilmaydi</span></div>
+                <div class="quote-card warning" style="margin-top: 16px;">
+                    <p>Logsiz xato jim yutib yuborilgan. Servis "ishlashda" davom etadi, biznes mantiq noto'g'ri javob beradi, ma'lumotlar buziladi. Bu himoya emas, dalillarni yashirish.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 40: Summary - what we learned -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Yakunlar</p>
+                <h2>Leksiyada nimani o'zlashtirdik</h2>
+                <table class="data-table" style="max-width: 980px;">
+                    <tr><th>Konsepsiya</th><th>Asosiy xulosa</th></tr>
+                    <tr><td>Traceback'ni o'qish</td><td>Pastdan yuqoriga: tur, joy, yo'l</td></tr>
+                    <tr><td>Exception ierarxiyasi</td><td>Bu OOP: aniq <code>except</code>'lar yuqorida, umumiy pastda</td></tr>
+                    <tr><td><code>try / except / else / finally</code></td><td><code>try</code>'da minimum kod; <code>else</code> muvaffaqiyatda; <code>finally</code> doim</td></tr>
+                    <tr><td>Blanket <code>except</code></td><td>Loglashsiz <code>except Exception</code> = jim o'lim</td></tr>
+                    <tr><td><code>UnboundLocalError</code></td><td>Resurslarni <code>try</code>'dan oldin <code>None</code> qiling</td></tr>
+                    <tr><td><code>raise</code></td><td>Biznes qoidalarini exception tiliga o'tkazamiz</td></tr>
+                    <tr><td><code>with / contextmanager</code></td><td>Resurslarni kafolatli ozod qilish</td></tr>
+                    <tr><td><code>logging</code></td><td>5 daraja, <code>exc_info=True</code>, tushunarli xabar formati</td></tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- 50: Final task statement -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Yakuniy masala</p>
+                <h2>SWIFT-protsessor</h2>
+                <p class="body-text" style="margin-bottom: 4px;">Berilgan: to'lovlar ro'yxati. Bir qismida buzilgan maydonlar, bir qismi biznes qoidalarini buzadi, qabul qiluvchilar orasida sanksiyali bor. Masala: protsessor har qanday kirishda yiqilmaydi, xatolarni uchta toifa bo'yicha sanaydi.</p>
+                <div class="code-block tight">RAW_LEDGER = [
+    {<span class="cs">"id"</span>: <span class="cs">"SW_001"</span>, <span class="cs">"from"</span>: <span class="cs">"UZ_A"</span>, <span class="cs">"to"</span>: <span class="cs">"UZ_B"</span>, <span class="cs">"amount"</span>: <span class="cs">"350000"</span>},    <span class="co"># OK</span>
+    {<span class="cs">"id"</span>: <span class="cs">"SW_002"</span>, <span class="cs">"from"</span>: <span class="cs">"UZ_C"</span>, <span class="cs">"to"</span>: <span class="cs">"UZ_C"</span>, <span class="cs">"amount"</span>: <span class="cs">"90000"</span>},     <span class="co"># o'z-o'ziga</span>
+    {<span class="cs">"id"</span>: <span class="cs">"SW_003"</span>, <span class="cs">"from"</span>: <span class="cs">"UZ_D"</span>, <span class="cs">"amount"</span>: <span class="cs">"120000"</span>},                  <span class="co"># 'to' yo'q</span>
+    {<span class="cs">"id"</span>: <span class="cs">"SW_004"</span>, <span class="cs">"from"</span>: <span class="cs">"UZ_E"</span>, <span class="cs">"to"</span>: <span class="cs">"UZ_F"</span>, <span class="cs">"amount"</span>: <span class="cs">"BUZILGAN"</span>},  <span class="co"># raqam emas</span>
+    <span class="ck">None</span>,                                                                    <span class="co"># lug'at emas</span>
+    {<span class="cs">"id"</span>: <span class="cs">"SW_005"</span>, <span class="cs">"from"</span>: <span class="cs">"UZ_G"</span>, <span class="cs">"to"</span>: <span class="cs">"UZ_H"</span>, <span class="cs">"amount"</span>: <span class="cs">"75000000"</span>},  <span class="co"># limit oshib ketdi</span>
+    {<span class="cs">"id"</span>: <span class="cs">"SW_006"</span>, <span class="cs">"from"</span>: <span class="cs">"UZ_I"</span>, <span class="cs">"to"</span>: <span class="cs">"SANCTION"</span>, <span class="cs">"amount"</span>: <span class="cs">"10000"</span>}, <span class="co"># sanksiyalar</span>
+]</div>
+            </div>
+        </div>
+
+        <!-- 51: Solution part 1 - exception classes and validator -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Yakuniy masala</p>
+                <h2>Yechim: validator</h2>
+                <p class="body-text" style="margin-bottom: 4px;">Toifalar bo'yicha uchta xato class'i. Bitta validator: yo OK, yo kerakli turdagi <code>raise</code>.</p>
+                <div class="code-block tight"><span class="ck">import</span> logging
+logger = logging.<span class="cf">getLogger</span>(<span class="cs">"swift"</span>)
+
+MAX = <span class="cm">10_000_000</span>
+SANCTIONED = {<span class="cs">"SANCTION"</span>}
+
+
+<span class="ck">class</span> <span class="cf">StructureError</span>(<span class="cf">Exception</span>): <span class="ck">pass</span>    <span class="co"># buzilgan ma'lumotlar</span>
+<span class="ck">class</span> <span class="cf">BusinessError</span>(<span class="cf">Exception</span>): <span class="ck">pass</span>     <span class="co"># biznes qoidalari</span>
+<span class="ck">class</span> <span class="cf">ComplianceError</span>(<span class="cf">Exception</span>): <span class="ck">pass</span>   <span class="co"># sanksiyalar</span>
+
+
+<span class="ck">def</span> <span class="cf">process_payment</span>(p):
+    <span class="ck">if</span> <span class="ck">not</span> <span class="cf">isinstance</span>(p, <span class="cf">dict</span>):
+        <span class="ck">raise</span> <span class="cf">StructureError</span>(<span class="cf">f</span><span class="cs">"Lug'at emas: {type(p).__name__}"</span>)
+    <span class="ck">for</span> field <span class="ck">in</span> (<span class="cs">"from"</span>, <span class="cs">"to"</span>, <span class="cs">"amount"</span>):
+        <span class="ck">if</span> field <span class="ck">not</span> <span class="ck">in</span> p:
+            <span class="ck">raise</span> <span class="cf">StructureError</span>(<span class="cf">f</span><span class="cs">"Maydon yo'q: {field}"</span>)
+    <span class="ck">try</span>:
+        amount = <span class="cf">float</span>(p[<span class="cs">"amount"</span>])
+    <span class="ck">except</span> <span class="cf">ValueError</span>:
+        <span class="ck">raise</span> <span class="cf">StructureError</span>(<span class="cf">f</span><span class="cs">"Summa raqam emas: {p['amount']}"</span>)
+
+    <span class="ck">if</span> p[<span class="cs">"from"</span>] == p[<span class="cs">"to"</span>]:
+        <span class="ck">raise</span> <span class="cf">BusinessError</span>(<span class="cf">f</span><span class="cs">"Bir xil hisob: {p['from']}"</span>)
+    <span class="ck">if</span> amount &gt; MAX:
+        <span class="ck">raise</span> <span class="cf">BusinessError</span>(<span class="cf">f</span><span class="cs">"Limit: {amount}"</span>)
+
+    <span class="ck">if</span> p[<span class="cs">"to"</span>] <span class="ck">in</span> SANCTIONED:
+        <span class="ck">raise</span> <span class="cf">ComplianceError</span>(<span class="cf">f</span><span class="cs">"Sanksiyalar: {p['to']}"</span>)</div>
+            </div>
+        </div>
+
+        <!-- 52: Solution part 2 - batch processor with routing -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Yakuniy masala</p>
+                <h2>Yechim: paketli qayta ishlash</h2>
+                <p class="body-text" style="margin-bottom: 4px;">Bitta <code>try/except</code> uchta tarmoq bilan. Har bir xato turi o'z hisoblagichiga va o'z log darajasiga ketadi. Dastur hech qanday holatda yiqilmaydi.</p>
+                <div class="code-block tight"><span class="ck">def</span> <span class="cf">process_batch</span>(payments):
+    report = {<span class="cs">"ok"</span>: <span class="cm">0</span>, <span class="cs">"structure"</span>: <span class="cm">0</span>, <span class="cs">"business"</span>: <span class="cm">0</span>, <span class="cs">"compliance"</span>: <span class="cm">0</span>}
+    <span class="ck">for</span> p <span class="ck">in</span> payments:
+        <span class="ck">try</span>:
+            <span class="cf">process_payment</span>(p)
+            report[<span class="cs">"ok"</span>] += <span class="cm">1</span>
+        <span class="ck">except</span> <span class="cf">StructureError</span> <span class="ck">as</span> e:
+            report[<span class="cs">"structure"</span>] += <span class="cm">1</span>
+            logger.<span class="cf">warning</span>(<span class="cf">f</span><span class="cs">"[STRUCT] {e}"</span>)
+        <span class="ck">except</span> <span class="cf">BusinessError</span> <span class="ck">as</span> e:
+            report[<span class="cs">"business"</span>] += <span class="cm">1</span>
+            logger.<span class="cf">warning</span>(<span class="cf">f</span><span class="cs">"[BIZ] {e}"</span>)
+        <span class="ck">except</span> <span class="cf">ComplianceError</span> <span class="ck">as</span> e:
+            report[<span class="cs">"compliance"</span>] += <span class="cm">1</span>
+            logger.<span class="cf">error</span>(<span class="cf">f</span><span class="cs">"[COMP] {e}"</span>)
+    <span class="ck">return</span> report
+
+
+<span class="cf">print</span>(<span class="cf">process_batch</span>(RAW_LEDGER))</div>
+                <div class="term"><span class="out">{'ok': 1, 'structure': 3, 'business': 2, 'compliance': 1}</span></div>
+            </div>
+        </div>
+
+        <!-- 43: Tasks download -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Materiallar</p>
+                <h2>Masalalar</h2>
+                <a href="lecture09_tasks.ipynb" download style="display: inline-flex; align-items: center; gap: 8px; padding: 14px 26px; background: #007aff; color: #fff; border-radius: 50px; font-size: clamp(14px, 1.6vw, 18px); font-weight: 600; text-decoration: none; box-shadow: 0 6px 20px rgba(0,122,255,0.25); margin-top: 12px;">↓ Yuklab olish</a>
+                <p class="body-text" style="margin-top: 22px; color: #86868b;">15 ta topshiriq va "To'lov protsessori" yakuniy masalasi. Jupyter, VS Code yoki Google Colab'da ochiladi.</p>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="lesson-tag">Python · Leksiya 9 · Defensive Programming</div>
+    <div class="slide-indicator">
+        <span id="current-slide">1</span> / <span id="total-slides">53</span>
+    </div>
+    <div class="nav-hint">→ yoki Space - keyingisi<br/>← - orqaga</div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+        document.getElementById('total-slides').textContent = totalSlides;
+
+        function showSlide(n) {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (n + totalSlides) % totalSlides;
+            slides[currentSlide].classList.add('active');
+            document.getElementById('current-slide').textContent = currentSlide + 1;
+
+            const slideContent = slides[currentSlide].querySelector('.slide-content');
+            slideContent.style.animation = 'none';
+            void slideContent.offsetHeight;
+            slideContent.style.animation = null;
+
+            const animated = slides[currentSlide].querySelectorAll('.card, .comparison-item');
+            animated.forEach(el => {
+                el.style.animation = 'none';
+                void el.offsetHeight;
+                el.style.animation = null;
+            });
+        }
+
+        function nextSlide() { showSlide(currentSlide + 1); }
+        function prevSlide() { showSlide(currentSlide - 1); }
+
+        document.addEventListener('keydown', (e) => {
+            const tag = (e.target.tagName || '').toLowerCase();
+            if (tag === 'textarea' || tag === 'input') return;
+            if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); nextSlide(); }
+            else if (e.key === 'ArrowLeft') { e.preventDefault(); prevSlide(); }
+        });
+
+        let touchStartX = 0;
+        document.addEventListener('touchstart', (e) => { touchStartX = e.changedTouches[0].screenX; });
+        document.addEventListener('touchend', (e) => {
+            const dx = e.changedTouches[0].screenX - touchStartX;
+            if (dx < -50) nextSlide();
+            else if (dx > 50) prevSlide();
+        });
+    </script>
+</body>
+</html>

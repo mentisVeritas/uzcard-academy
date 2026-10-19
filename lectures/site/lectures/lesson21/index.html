@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SQL: подзапросы, CTE, оконные функции · Лекция 21</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Inter',-apple-system,sans-serif;background:#fcfcfd;color:#16171a;overflow:hidden;-webkit-font-smoothing:antialiased;}
+.deck{width:100vw;height:100vh;position:relative;}
+.slide{width:100%;height:100%;display:none;flex-direction:column;align-items:center;justify-content:center;position:absolute;inset:0;padding:clamp(12px,2vh,28px) clamp(32px,5vw,72px);}
+.slide.active{display:flex;}
+.sc{max-width:1200px;width:100%;margin:0 auto;opacity:0;transform:translateY(16px);animation:up .4s ease-out forwards;display:flex;flex-direction:column;align-items:center;}
+@keyframes up{to{opacity:1;transform:translateY(0);}}
+
+h1{font-size:clamp(36px,5.2vw,80px);font-weight:900;letter-spacing:-.04em;line-height:.95;margin-bottom:clamp(10px,1.8vh,22px);}
+h2{font-size:clamp(18px,2.4vw,36px);font-weight:800;letter-spacing:-.025em;line-height:1.08;margin-bottom:clamp(4px,.7vh,10px);}
+.eyebrow{font-size:clamp(10px,.95vw,12px);font-weight:700;text-transform:uppercase;letter-spacing:.2em;color:#1a9d4a;margin-bottom:clamp(5px,.9vh,12px);}
+.sub{font-size:clamp(13px,1.7vw,21px);color:#6b6f76;line-height:1.45;max-width:720px;margin-top:clamp(5px,.9vh,12px);}
+
+.c-blue{color:#0064d6;}.c-green{color:#1a9d4a;}.c-orange{color:#e0820a;}.c-teal{color:#0e9aa7;}.c-red{color:#e02d20;}.c-purple{color:#7c3aed;}
+
+.cr{display:grid;grid-template-columns:1fr 1fr;gap:clamp(12px,1.6vw,22px);width:100%;max-width:1200px;margin-top:clamp(8px,1.2vh,16px);align-items:start;}
+
+.lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.16em;color:#888;margin-bottom:5px;}
+.code{
+  font-family:'SF Mono','Menlo','Consolas',monospace;
+  font-size:clamp(11px,1.05vw,14px);
+  background:#141618;color:#e8eaf0;
+  padding:clamp(12px,1.5vw,18px) clamp(14px,1.7vw,20px);
+  border-radius:12px;width:100%;text-align:left;line-height:1.7;
+  border:1px solid #252830;white-space:pre;overflow-x:auto;
+}
+.code .kw{color:#5ab0ff;}
+.code .fn{color:#e2c08d;}
+.code .st{color:#ffa657;}
+.code .cm{color:#5a9a5a;font-style:italic;}
+.code .nm{color:#f0a0d0;}
+.code .seg{display:block;margin:2px -8px;padding:2px 8px;border-left:3px solid transparent;border-radius:4px;}
+.code .s1{border-color:#5ab0ff;background:rgba(90,176,255,.12);}
+.code .s2{border-color:#ffb072;background:rgba(255,168,87,.13);}
+.code .s3{border-color:#7ec77e;background:rgba(126,199,126,.15);}
+.code .ov{background:rgba(124,58,237,.13);box-shadow:inset 0 0 0 1.5px rgba(124,58,237,.6);border-radius:5px;padding:1px 5px;}
+.code .ovin{background:rgba(26,157,74,.3);border-radius:4px;padding:0 3px;}
+.code .ovpart{background:rgba(14,154,167,.24);border-radius:4px;padding:0 3px;}
+.code .ovord{background:rgba(224,130,10,.24);border-radius:4px;padding:0 3px;}
+.code .sq{background:rgba(26,157,74,.18);box-shadow:inset 0 0 0 1.5px rgba(26,157,74,.65);border-radius:5px;padding:1px 5px;}
+.code .cte{display:block;margin:3px -10px;padding:4px 10px;border-left:3px solid #1a9d4a;background:rgba(26,157,74,.2);border-radius:0 6px 6px 0;}
+
+.result{width:100%;border-radius:12px;overflow:hidden;border:1.5px solid #e2e4ea;background:#fff;}
+.result table{width:100%;border-collapse:collapse;font-size:clamp(11px,1.05vw,13.5px);}
+.result thead tr{background:#f4f5f8;}
+.result th{padding:clamp(7px,.9vw,11px) clamp(9px,1.1vw,14px);font-weight:700;color:#4a4d53;border-bottom:1.5px solid #e2e4ea;white-space:nowrap;text-align:left;}
+.result td{padding:clamp(6px,.8vw,10px) clamp(9px,1.1vw,14px);border-bottom:1px solid #f0f1f4;color:#2a2c30;text-align:left;white-space:nowrap;}
+.result tr:last-child td{border-bottom:none;}
+.result tr:hover td{background:#fafbfd;}
+.result .foot{text-align:center;font-size:11px;color:#b0b3bb;padding:6px 0;border-top:1px solid #f0f1f4;}
+.hi{color:#0064d6;font-weight:600;}.ok{color:#1a9d4a;font-weight:600;}.ng{color:#e02d20;font-weight:600;}
+.or{color:#e0820a;font-weight:600;}.pu{color:#7c3aed;font-weight:600;}.nil{color:#b8bbc2;font-style:italic;}
+.num{text-align:right;font-variant-numeric:tabular-nums;}
+.result tr.cur td{background:#fdf4e3;box-shadow:inset 3px 0 0 #e0820a;}
+.result tr.win td{background:#eef4fc;}
+.result tr.win td:first-child{box-shadow:inset 3px 0 0 #0064d6;}
+.result tr.cur.win td{background:#fdf4e3;}
+.result .rv{color:#0064d6;font-weight:700;}
+.result .re{color:#cbd0da;}
+.wbtns{display:flex;gap:8px;margin-top:10px;justify-content:center;flex-wrap:wrap;}
+.wbtn{font-family:inherit;font-size:clamp(11px,1.1vw,14px);font-weight:600;padding:7px 14px;border-radius:9px;border:1.5px solid #d8dbe2;background:#fff;color:#2a2c30;cursor:pointer;transition:.15s;}
+.wbtn:hover{border-color:#7c3aed;color:#7c3aed;}
+.wbtn:active{transform:translateY(1px);}
+
+.note{padding:clamp(8px,1vw,12px) clamp(12px,1.4vw,17px);border-radius:10px;text-align:left;width:100%;margin-top:clamp(7px,1vh,12px);}
+.note p{font-size:clamp(11px,1.1vw,14px);color:#2a2c30;line-height:1.5;font-weight:500;}
+.note b{font-weight:700;color:#0b0c0e;}
+.note.blue{background:#eef4fc;}.note.green{background:#e8f5eb;}
+.note.orange{background:#fff3e6;}.note.teal{background:#e6f7f7;}.note.purple{background:#f3efff;}
+
+.tslide .eyebrow{color:#1a9d4a;}
+.mslide h2{font-size:clamp(30px,4.4vw,62px);font-weight:900;color:#1a9d4a;}
+.mslide .eyebrow{opacity:.6;}
+.divider{width:44px;height:4px;border-radius:99px;margin:clamp(8px,1.4vh,16px) auto;}
+
+.pills{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:clamp(12px,1.8vh,24px);}
+.pill{font-size:clamp(11px,1.1vw,13px);font-weight:600;padding:4px 13px;border-radius:99px;border:1.5px solid transparent;}
+
+.prog{position:fixed;top:0;left:0;height:3px;background:#1a9d4a;z-index:200;transition:width .28s ease;}
+.ind{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);font-size:12px;color:#b8bbc2;z-index:100;letter-spacing:.04em;}
+.hint{position:fixed;bottom:16px;right:20px;font-size:11px;color:#d0d3da;z-index:100;}
+.tag{position:fixed;top:16px;left:20px;font-size:10px;font-weight:700;color:#c8cace;text-transform:uppercase;letter-spacing:.16em;z-index:100;}
+
+.cards{display:grid;gap:clamp(8px,1vw,12px);width:100%;margin-top:clamp(8px,1.2vh,14px);}
+.cards.c2{grid-template-columns:1fr 1fr;max-width:1000px;}
+.cards.c3{grid-template-columns:1fr 1fr 1fr;max-width:1040px;}
+.cards.c4{grid-template-columns:1fr 1fr 1fr 1fr;max-width:1100px;}
+.card{background:#fff;border:1px solid #edeef2;border-radius:12px;padding:clamp(11px,1.3vw,16px);text-align:left;box-shadow:0 1px 2px rgba(18,20,28,.04),0 8px 20px -12px rgba(18,20,28,.12);}
+.card h4{font-size:clamp(12px,1.2vw,15px);font-weight:700;margin-bottom:4px;}
+.card p{font-size:clamp(11px,1.02vw,13px);color:#4a4d53;line-height:1.55;}
+.card.acc-green h4{color:#1a9d4a;}.card.acc-orange h4{color:#b3660a;}.card.acc-purple h4{color:#7c3aed;}.card.acc-blue h4{color:#0064d6;}.card.acc-teal h4{color:#0e7c86;}
+.badge{display:inline-block;font-size:10px;font-weight:700;padding:2px 9px;border-radius:99px;margin-bottom:6px;}
+.mono{font-family:'SF Mono','Consolas',monospace;font-size:.92em;background:#f0f1f4;padding:1px 6px;border-radius:5px;color:#0b0c0e;}
+ul.facts{list-style:none;text-align:left;max-width:760px;margin-top:14px;}
+ul.facts li{font-size:clamp(13px,1.4vw,18px);color:#2a2c30;line-height:1.5;padding:7px 0 7px 22px;position:relative;border-bottom:1px solid #f0f1f4;}
+ul.facts li:before{content:'';position:absolute;left:0;top:15px;width:8px;height:8px;border-radius:2px;background:#1a9d4a;}
+ul.facts b{color:#0b0c0e;}
+
+@media(max-width:860px){.cr,.cards.c3,.cards.c4,.cards.c2{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<div class="tag" id="ltag">SQL · Лекция 21</div>
+<div class="prog" id="prog"></div>
+<div class="deck" id="deck">
+
+
+<!-- 01 TITLE -->
+<div class="slide tslide" style="text-align:center;">
+<div class="sc">
+  <p class="eyebrow">Лекция 21 · PostgreSQL</p>
+  <h1>Подзапросы, CTE,<br>оконные функции</h1>
+  <div class="pills" style="margin-top:18px;">
+    <span class="pill" style="background:#eef4fc;border-color:#cfe0f7;color:#0c447c">JOIN</span>
+    <span class="pill" style="background:#e8f5eb;border-color:#b8dfc1;color:#0d5a1e">Подзапросы</span>
+    <span class="pill" style="background:#f3efff;border-color:#d0c4f8;color:#4a1a8e">CTE</span>
+    <span class="pill" style="background:#fef2f2;border-color:#f0c8c8;color:#8a1a0e">Оконные функции</span>
+  </div>
+</div>
+</div>
+
+
+<!-- 02 DATASET -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Данные урока</p>
+  <h2>С какими данными работаем</h2>
+  <div class="cards c4" style="margin-top:18px">
+    <div class="card acc-blue"><h4>customers</h4><p>120 строк.<br>Клиент: имя, город, пол, даты.</p></div>
+    <div class="card acc-green"><h4>cards</h4><p>179 строк.<br>Карта: тип, статус, владелец.</p></div>
+    <div class="card acc-orange"><h4>merchants</h4><p>40 строк.<br>Мерчант: название, категория, город.</p></div>
+    <div class="card acc-purple"><h4>transactions</h4><p>4 671 строка.<br>Платёж: сумма, время, статус, канал.</p></div>
+  </div>
+  <div class="note blue"><p><b>Связи.</b> <span class="mono">transactions.card_id</span> ссылается на <span class="mono">cards</span>, <span class="mono">cards.customer_id</span> на <span class="mono">customers</span>, <span class="mono">transactions.merchant_id</span> на <span class="mono">merchants</span>. Сумма платежа лежит в <span class="mono">transactions</span>, категория у мерчанта.</p></div>
+</div>
+</div>
+
+
+<!-- 03 DATA PEEK -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Набор данных</p>
+  <h2>Таблица transactions</h2>
+  <div class="result" style="max-width:1000px;margin-top:14px">
+    <table>
+      <thead><tr><th>txn_id</th><th>card_id</th><th>merchant_id</th><th class="num">amount</th><th>txn_ts</th><th>status</th><th>channel</th></tr></thead>
+      <tbody>
+        <tr><td class="hi">1</td><td>123</td><td>31</td><td class="num">610 000</td><td>2025-02-01 01:31:33</td><td class="ok">success</td><td>POS</td></tr>
+        <tr><td class="hi">2</td><td>109</td><td>13</td><td class="num">78 500</td><td>2025-02-01 02:05:06</td><td class="ok">success</td><td>online</td></tr>
+        <tr><td class="hi">3</td><td>16</td><td>12</td><td class="num">12 500</td><td>2025-02-01 03:56:04</td><td class="ok">success</td><td>P2P</td></tr>
+        <tr><td class="hi">4</td><td>106</td><td>30</td><td class="num">31 500</td><td>2025-02-01 04:50:37</td><td class="ok">success</td><td>POS</td></tr>
+      </tbody>
+    </table>
+    <div class="foot">amount в сумах · status принимает значения success, declined, reversed</div>
+  </div>
+  <div class="note blue"><p>Оборот считается только по строкам со <span class="mono">status = 'success'</span>. Значения <span class="mono">declined</span> и <span class="mono">reversed</span> в оборот не входят.</p></div>
+</div>
+</div>
+
+
+<!-- 04 L20 RECAP -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Повторение</p>
+  <h2>Из Лекции 20</h2>
+  <div class="cards c3" style="margin-top:24px">
+    <div class="card acc-green"><h4>SELECT, WHERE</h4><p>Выбор колонок и фильтр строк.</p><div class="code" style="font-size:11px;margin-top:6px"><span class="kw">WHERE</span> status = <span class="st">'success'</span></div></div>
+    <div class="card acc-green"><h4>GROUP BY, агрегаты</h4><p>COUNT, SUM, AVG по группам.</p><div class="code" style="font-size:11px;margin-top:6px"><span class="kw">GROUP BY</span> category</div></div>
+    <div class="card acc-green"><h4>HAVING</h4><p>Фильтр после группировки.</p><div class="code" style="font-size:11px;margin-top:6px"><span class="kw">HAVING</span> <span class="fn">COUNT</span>(*) &gt; <span class="st">50</span></div></div>
+    <div class="card acc-teal"><h4>JOIN</h4><p>Объединение таблиц по ключу.</p><div class="code" style="font-size:11px;margin-top:6px"><span class="kw">JOIN</span> cards <span class="kw">ON</span> ...</div></div>
+    <div class="card acc-purple"><h4>CTE (WITH)</h4><p>Имя для подзапроса.</p><div class="code" style="font-size:11px;margin-top:6px"><span class="kw">WITH</span> x <span class="kw">AS</span> ( ... )</div></div>
+    <div class="card acc-orange"><h4>Оконные функции, CASE</h4><p>Расчёт по группе, категория из значения.</p><div class="code" style="font-size:11px;margin-top:6px"><span class="kw">OVER</span> ( ... ), <span class="kw">CASE</span></div></div>
+  </div>
+</div>
+</div>
+
+
+
+<!-- PART 1 DIVIDER -->
+<div class="slide mslide">
+<div class="sc">
+  <p class="eyebrow">Часть 1</p>
+  <div class="divider" style="background:#1a9d4a"></div>
+  <h2>Три инструмента</h2>
+  <p class="sub">Подзапрос, CTE и оконные функции. Сначала разбираем каждый, потом применяем на задачах.</p>
+</div>
+</div>
+
+
+<!-- OVERVIEW -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Обзор</p>
+  <h2>Что разберём сегодня</h2>
+  <div class="cards c3" style="margin-top:18px">
+    <div class="card acc-green"><span class="badge" style="background:#e8f5eb;color:#0d5a1e">1</span><h4>Подзапрос</h4><p>Запрос внутри запроса. Даёт значение или список для условия. Пример: оборот выше среднего.</p></div>
+    <div class="card acc-purple"><span class="badge" style="background:#f3efff;color:#5b21b6">2</span><h4>CTE (WITH)</h4><p>Именованный шаг. Сложный запрос разбивается на читаемые блоки сверху вниз.</p></div>
+    <div class="card acc-blue"><span class="badge" style="background:#eef4fc;color:#0c447c">3</span><h4>Оконные функции</h4><p>Расчёт по группе строк без их схлопывания: рейтинг, нарастающий итог, соседняя строка.</p></div>
+  </div>
+</div>
+</div>
+
+
+<!-- CONCEPT: subquery -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Инструмент 1</p>
+  <h2>Подзапрос: запрос внутри запроса</h2>
+  <div class="cr">
+    <div>
+      <div class="lbl">Как работает</div>
+      <div class="note" style="margin-top:0;background:#f6f7f9"><p>Внутренний запрос (в скобках) выполняется <b>первым</b>. Его результат подставляется во внешний запрос как готовое значение.</p></div>
+      <div class="cards" style="grid-template-columns:1fr;margin-top:10px;gap:8px">
+        <div class="card acc-green"><h4>Одно значение</h4><p>Скаляр в <span class="mono">WHERE</span> или <span class="mono">SELECT</span>. Пример: сравнение со средним.</p></div>
+        <div class="card acc-green"><h4>Список</h4><p>Колонка значений с <span class="mono">IN (...)</span>.</p></div>
+        <div class="card acc-green"><h4>Таблица</h4><p>Производная таблица в <span class="mono">FROM</span>.</p></div>
+      </div>
+    </div>
+    <div>
+      <div class="lbl">Пример: клиенты выше среднего</div>
+      <div class="code"><span class="kw">SELECT</span> full_name, total
+<span class="kw">FROM</span> cust_total
+<span class="kw">WHERE</span> total &gt; <span class="sq">(<span class="kw">SELECT</span> <span class="fn">AVG</span>(total) <span class="kw">FROM</span> cust_total)</span></div>
+      <div class="note green"><p><b style="background:rgba(26,157,74,.16);color:#0d5a1e;border-radius:4px;padding:0 6px">Зелёное</b> = подзапрос. Он возвращает одно число (среднее), считается один раз и сравнивается с каждой строкой.</p></div>
+    </div>
+  </div>
+</div>
+</div>
+
+
+<!-- CONCEPT: CTE -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Инструмент 2</p>
+  <h2>CTE: имя для шага запроса</h2>
+  <div class="cr">
+    <div>
+      <div class="lbl">Как работает</div>
+      <div class="note" style="margin-top:0;background:#f6f7f9"><p><span class="mono">WITH имя AS ( ... )</span> даёт подзапросу <b>имя</b>. Дальше к нему обращаются как к обычной таблице.</p></div>
+      <div class="cards" style="grid-template-columns:1fr;margin-top:10px;gap:8px">
+        <div class="card acc-purple"><h4>Читаемость</h4><p>Шаги идут сверху вниз, а не вложены друг в друга.</p></div>
+        <div class="card acc-purple"><h4>Несколько шагов</h4><p>Несколько CTE через запятую: посчитать, отранжировать, отфильтровать.</p></div>
+        <div class="card acc-purple"><h4>Повтор</h4><p>Один результат можно использовать дальше дважды по имени.</p></div>
+      </div>
+    </div>
+    <div>
+      <div class="lbl">Пример: тот же расчёт оборота, вынесенный в CTE</div>
+      <div class="code"><span class="cte"><span class="kw">WITH</span> cust_total <span class="kw">AS</span> (
+  <span class="kw">SELECT</span> customer_id,
+         <span class="fn">SUM</span>(amount) <span class="kw">AS</span> total
+  <span class="kw">FROM</span> ... <span class="kw">GROUP BY</span> customer_id
+)</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> cust_total
+<span class="kw">WHERE</span> total &gt; <span class="st">20000000</span></div>
+      <div class="note green"><p><b style="background:rgba(26,157,74,.16);color:#0d5a1e;border-radius:4px;padding:0 6px">Зелёное</b> = CTE. Шаг получил имя <span class="mono">cust_total</span> и используется ниже как таблица.</p></div>
+    </div>
+  </div>
+</div>
+</div>
+
+
+<!-- MODULE 2.5 WINDOW FUNCTIONS -->
+<div class="slide mslide">
+<div class="sc">
+  <p class="eyebrow">Инструмент 3</p>
+  <div class="divider" style="background:#1a9d4a"></div>
+  <h2>Оконные функции</h2>
+  <p class="sub">Что такое окно и почему строки не пропадают.</p>
+</div>
+</div>
+
+
+<!-- W-A: GROUP BY vs OVER -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Оконные функции · идея</p>
+  <h2>GROUP BY и OVER</h2>
+  <div class="cr">
+    <div>
+      <div class="lbl">GROUP BY: одна строка на группу</div>
+      <div class="code"><span class="kw">SELECT</span> category,
+       <span class="fn">SUM</span>(amount) <span class="kw">AS</span> total
+<span class="kw">FROM</span> purchases
+<span class="kw">GROUP BY</span> category</div>
+      <div class="result" style="margin-top:10px">
+        <table>
+          <thead><tr><th>category</th><th class="num">total</th></tr></thead>
+          <tbody>
+            <tr><td class="or">Еда</td><td class="num">600</td></tr>
+            <tr><td class="hi">Техника</td><td class="num">900</td></tr>
+          </tbody>
+        </table>
+        <div class="foot">5 строк → 2 строки. Детали пропали.</div>
+      </div>
+    </div>
+    <div>
+      <div class="lbl">OVER: все строки на месте</div>
+      <div class="code"><span class="kw">SELECT</span> txn, category, amount,
+       <span class="fn">SUM</span>(amount) <span class="ov"><span class="kw">OVER</span> (<span class="ovpart"><span class="kw">PARTITION BY</span> category</span>)</span> <span class="kw">AS</span> by_cat
+<span class="kw">FROM</span> purchases</div>
+      <div class="result" style="margin-top:10px">
+        <table>
+          <thead><tr><th>txn</th><th>category</th><th class="num">amount</th><th class="num">by_cat</th></tr></thead>
+          <tbody>
+            <tr><td class="hi">1</td><td class="or">Еда</td><td class="num">100</td><td class="num pu">600</td></tr>
+            <tr><td class="hi">2</td><td class="or">Еда</td><td class="num">300</td><td class="num pu">600</td></tr>
+            <tr><td class="hi">3</td><td class="or">Еда</td><td class="num">200</td><td class="num pu">600</td></tr>
+            <tr><td class="hi">4</td><td>Техника</td><td class="num">500</td><td class="num pu">900</td></tr>
+            <tr><td class="hi">5</td><td>Техника</td><td class="num">400</td><td class="num pu">900</td></tr>
+          </tbody>
+        </table>
+        <div class="foot">5 строк остались, итог группы рядом</div>
+      </div>
+    </div>
+  </div>
+  <div class="note purple"><p><b>GROUP BY</b> - строка на группу. <b><span class="mono">OVER (...)</span></b> приписывает итог группы к каждой строке, строки остаются.</p></div>
+</div>
+</div>
+
+
+<!-- W-B: anatomy of OVER -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Оконные функции · анатомия</p>
+  <h2>Из чего состоит OVER</h2>
+  <div class="code" style="max-width:880px;margin-top:14px;font-size:clamp(13px,1.5vw,20px);text-align:center"><span class="fn">SUM</span>(amount) <span class="ov"><span class="kw">OVER</span> ( <span class="ovpart"><span class="kw">PARTITION BY</span> category</span>   <span class="ovord"><span class="kw">ORDER BY</span> txn</span> )</span></div>
+  <div class="cards c3" style="margin-top:18px">
+    <div class="card acc-purple"><span class="badge" style="background:#f3efff;color:#5b21b6">обязателен</span><h4>OVER ( … )</h4><p>Само слово <span class="mono">OVER</span> делает функцию оконной. Без него это обычный агрегат.</p></div>
+    <div class="card acc-teal"><span class="badge" style="background:#e6f7f7;color:#075d64">необязателен</span><h4>PARTITION BY</h4><p>Делит строки на группы и считает внутри каждой. Без PARTITION BY окно - это вся таблица.</p></div>
+    <div class="card acc-blue"><span class="badge" style="background:#eef4fc;color:#0c447c">по ситуации</span><h4>ORDER BY</h4><p>Задаёт порядок в окне. Нужен для рангов, <span class="mono">LAG</span> и нарастающего итога.</p></div>
+  </div>
+  <div class="note" style="background:#f6f7f9"><p><b style="background:rgba(124,58,237,.16);color:#5b21b6;border-radius:4px;padding:1px 7px">OVER</b> делает функцию оконной, <b style="background:rgba(14,154,167,.22);color:#075d64;border-radius:4px;padding:1px 7px">PARTITION BY</b> задаёт группы, <b style="background:rgba(224,130,10,.22);color:#9a5a00;border-radius:4px;padding:1px 7px">ORDER BY</b> задаёт порядок.</p></div>
+</div>
+</div>
+
+
+<!-- W-C1: OVER () interactive -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Внутри OVER · вариант 1</p>
+  <h2>OVER (): окно - это вся таблица</h2>
+  <div class="cr">
+    <div>
+      <div class="lbl">Пример</div>
+      <div class="code"><span class="kw">SELECT</span> txn, amount,
+       <span class="fn">SUM</span>(amount) <span class="ov"><span class="kw">OVER</span> ()</span> <span class="kw">AS</span> total
+<span class="kw">FROM</span> purchases</div>
+      <div class="note purple"><p>Окно = все строки, поэтому <span class="mono">total</span> одинаков в каждой строке (1&nbsp;500). Деля <span class="mono">amount / total</span>, получаем долю строки от общего.</p></div>
+    </div>
+    <div>
+      <div class="lbl">Подвигай: указатель идёт по строкам</div>
+      <div class="result winwidget" data-mode="all">
+        <table><thead><tr><th>txn</th><th>category</th><th class="num">amount</th><th class="num" data-res>результат</th></tr></thead><tbody></tbody></table>
+        <div class="foot" data-note>Нажми «Шаг» или «Играть».</div>
+      </div>
+      <div class="wbtns">
+        <button class="wbtn" data-act="play">▶ Играть</button>
+        <button class="wbtn" data-act="step">Шаг ▸</button>
+        <button class="wbtn" data-act="reset">Сброс</button>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+
+<!-- W-C2: PARTITION BY interactive -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Внутри OVER · вариант 2</p>
+  <h2>PARTITION BY: окно - это своя группа</h2>
+  <div class="cr">
+    <div>
+      <div class="lbl">Пример</div>
+      <div class="code"><span class="kw">SELECT</span> txn, category, amount,
+       <span class="fn">SUM</span>(amount) <span class="ov"><span class="kw">OVER</span> (<span class="ovpart"><span class="kw">PARTITION BY</span> category</span>)</span> <span class="kw">AS</span> by_cat
+<span class="kw">FROM</span> purchases</div>
+      <div class="note teal"><p>Окно = строки той же категории, что и текущая. У «Еда» итог 600, у «Техника» 900. Строки остаются, итог группы рядом.</p></div>
+    </div>
+    <div>
+      <div class="lbl">Подвигай: окно сужается до категории</div>
+      <div class="result winwidget" data-mode="part">
+        <table><thead><tr><th>txn</th><th>category</th><th class="num">amount</th><th class="num" data-res>результат</th></tr></thead><tbody></tbody></table>
+        <div class="foot" data-note>Нажми «Шаг» или «Играть».</div>
+      </div>
+      <div class="wbtns">
+        <button class="wbtn" data-act="play">▶ Играть</button>
+        <button class="wbtn" data-act="step">Шаг ▸</button>
+        <button class="wbtn" data-act="reset">Сброс</button>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+
+<!-- W-C3: ORDER BY interactive -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Внутри OVER · вариант 3</p>
+  <h2>ORDER BY: окно растёт по порядку</h2>
+  <div class="cr">
+    <div>
+      <div class="lbl">Пример</div>
+      <div class="code"><span class="kw">SELECT</span> txn, amount,
+       <span class="fn">SUM</span>(amount) <span class="ov"><span class="kw">OVER</span> (<span class="ovord"><span class="kw">ORDER BY</span> txn</span>)</span> <span class="kw">AS</span> running
+<span class="kw">FROM</span> purchases</div>
+      <div class="note orange"><p>Окно = от первой строки до текущей. Поэтому <span class="mono">running</span> накапливается: 100, 400, 600, 1&nbsp;100, 1&nbsp;500.</p></div>
+    </div>
+    <div>
+      <div class="lbl">Подвигай: окно растёт до текущей строки</div>
+      <div class="result winwidget" data-mode="run">
+        <table><thead><tr><th>txn</th><th>category</th><th class="num">amount</th><th class="num" data-res>результат</th></tr></thead><tbody></tbody></table>
+        <div class="foot" data-note>Нажми «Шаг» или «Играть».</div>
+      </div>
+      <div class="wbtns">
+        <button class="wbtn" data-act="play">▶ Играть</button>
+        <button class="wbtn" data-act="step">Шаг ▸</button>
+        <button class="wbtn" data-act="reset">Сброс</button>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+
+<!-- W-D: popular window functions -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Оконные функции · приёмы</p>
+  <h2>Популярные приёмы</h2>
+  <div class="cards c2" style="margin-top:12px">
+    <div class="card acc-purple"><h4>Топ-N в группе · ROW_NUMBER</h4><p>Лучшие внутри каждой группы.</p><div class="code" style="font-size:11px;margin-top:6px"><span class="fn">ROW_NUMBER</span>() <span class="ov"><span class="kw">OVER</span> (<span class="ovpart"><span class="kw">PARTITION BY</span> cat</span> <span class="ovord"><span class="kw">ORDER BY</span> amount <span class="kw">DESC</span></span>)</span></div></div>
+    <div class="card acc-blue"><h4>Рейтинг · RANK / DENSE_RANK</h4><p>Место по значению, с учётом ничьих.</p><div class="code" style="font-size:11px;margin-top:6px"><span class="fn">RANK</span>() <span class="ov"><span class="kw">OVER</span> (<span class="ovord"><span class="kw">ORDER BY</span> turnover <span class="kw">DESC</span></span>)</span></div></div>
+    <div class="card acc-green"><h4>Нарастающий итог · SUM OVER</h4><p>Накопление по времени.</p><div class="code" style="font-size:11px;margin-top:6px"><span class="fn">SUM</span>(amount) <span class="ov"><span class="kw">OVER</span> (<span class="ovord"><span class="kw">ORDER BY</span> txn_ts</span>)</span></div></div>
+    <div class="card acc-teal"><h4>Прошлый / следующий · LAG / LEAD</h4><p>Сравнение с соседним периодом.</p><div class="code" style="font-size:11px;margin-top:6px"><span class="fn">LAG</span>(total) <span class="ov"><span class="kw">OVER</span> (<span class="ovord"><span class="kw">ORDER BY</span> mon</span>)</span></div></div>
+    <div class="card acc-orange"><h4>Доля от общего · SUM OVER ()</h4><p>Процент строки или группы.</p><div class="code" style="font-size:11px;margin-top:6px">amount / <span class="fn">SUM</span>(amount) <span class="ov"><span class="kw">OVER</span> ()</span></div></div>
+    <div class="card acc-purple"><h4>Корзины · NTILE(n)</h4><p>Разбить на n равных групп (RFM).</p><div class="code" style="font-size:11px;margin-top:6px"><span class="fn">NTILE</span>(<span class="st">4</span>) <span class="ov"><span class="kw">OVER</span> (<span class="ovord"><span class="kw">ORDER BY</span> spent <span class="kw">DESC</span></span>)</span></div></div>
+  </div>
+</div>
+</div>
+
+
+<!-- W-E: worked example top-3 -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Оконные функции · пример</p>
+  <h2>Топ-3 мерчанта в каждой категории</h2>
+  <div class="cr">
+    <div>
+      <div class="lbl">ROW_NUMBER внутри категории, затем rn &lt;= 3</div>
+      <div class="code" style="font-size:clamp(10px,.98vw,12.5px)"><span class="kw">SELECT</span> category, name, turnover <span class="kw">FROM</span> (
+  <span class="kw">SELECT</span> m.category, m.name,
+         <span class="fn">SUM</span>(t.amount) <span class="kw">AS</span> turnover,
+         <span class="fn">ROW_NUMBER</span>() <span class="ov"><span class="kw">OVER</span> (<span class="ovpart"><span class="kw">PARTITION BY</span> m.category</span>
+                       <span class="ovord"><span class="kw">ORDER BY</span> <span class="fn">SUM</span>(t.amount) <span class="kw">DESC</span></span>)</span> <span class="kw">AS</span> rn
+  <span class="kw">FROM</span> transactions t
+  <span class="kw">JOIN</span> merchants m <span class="kw">ON</span> m.merchant_id = t.merchant_id
+  <span class="kw">WHERE</span> t.status = <span class="st">'success'</span>
+  <span class="kw">GROUP BY</span> m.category, m.name
+) x
+<span class="kw">WHERE</span> rn &lt;= <span class="st">3</span>;</div>
+    </div>
+    <div>
+      <div class="lbl">Результат</div>
+      <div class="result">
+        <table>
+          <thead><tr><th>category</th><th>name</th><th class="num">turnover</th><th class="num">rn</th></tr></thead>
+          <tbody>
+            <tr><td class="pu">Electronics</td><td>Idea</td><td class="num">407 505 500</td><td class="num">1</td></tr>
+            <tr><td class="pu">Electronics</td><td>Texnomart</td><td class="num">405 321 500</td><td class="num">2</td></tr>
+            <tr><td class="pu">Electronics</td><td>Artel Store</td><td class="num">392 619 000</td><td class="num">3</td></tr>
+            <tr><td>Online</td><td>Sello</td><td class="num">59 525 000</td><td class="num">1</td></tr>
+            <tr><td>Online</td><td>Olcha</td><td class="num">57 795 500</td><td class="num">2</td></tr>
+            <tr><td>Online</td><td>Uzum Market</td><td class="num">55 349 000</td><td class="num">3</td></tr>
+          </tbody>
+        </table>
+        <div class="foot">по 3 лучших мерчанта в каждой категории</div>
+      </div>
+      <div class="note purple"><p><span class="mono">ROW_NUMBER</span> нумерует мерчантов внутри категории по обороту, внешний <span class="mono">WHERE rn &lt;= 3</span> оставляет по три строки. Частый приём «топ-N в группе».</p></div>
+    </div>
+  </div>
+</div>
+</div>
+
+
+<!-- MODULE 1 -->
+<div class="slide mslide">
+<div class="sc">
+  <p class="eyebrow">Часть 2</p>
+  <div class="divider" style="background:#1a9d4a"></div>
+  <h2>Как подойти к задаче</h2>
+  <p class="sub">Сначала выбрать инструмент, затем разбить задачу на шаги.</p>
+</div>
+</div>
+
+
+<!-- 05 DECISION GUIDE -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Выбор инструмента</p>
+  <h2>Какой инструмент для какого вопроса</h2>
+  <div class="cards c2" style="margin-top:16px">
+    <div class="card acc-teal"><span class="badge" style="background:#e6f7f7;color:#075d64">JOIN</span><h4>Нужны колонки из другой таблицы</h4><p>Таблицы соединяются по ключу. Пример: показать имя клиента рядом с платежом.</p></div>
+    <div class="card acc-green"><span class="badge" style="background:#e8f5eb;color:#0d5a1e">Подзапрос</span><h4>Нужно значение внутри условия</h4><p>Сначала считается одно значение, затем с ним идёт сравнение. Пример: оборот выше среднего.</p></div>
+    <div class="card acc-purple"><span class="badge" style="background:#f3efff;color:#5b21b6">CTE (WITH)</span><h4>Запрос из нескольких шагов</h4><p>Каждому шагу даётся имя. Шаги читаются сверху вниз. Пример: посчитать, отранжировать, отфильтровать.</p></div>
+    <div class="card acc-orange"><span class="badge" style="background:#fff3e6;color:#7a3c00">Окно</span><h4>Расчёт по группе без потери строк</h4><p>Примеры: номер внутри группы, нарастающий итог, значение из соседней строки.</p></div>
+  </div>
+  <div class="note green"><p><span class="mono">GROUP BY</span> оставляет одну строку на группу. Оконная функция считает по группе, но сохраняет все строки. Поэтому «топ-N внутри группы» делается оконной функцией.</p></div>
+</div>
+</div>
+
+
+<!-- 06a METHOD: TASK -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Метод</p>
+  <h2>Разбиение задачи на шаги</h2>
+  <div style="max-width:720px;width:100%;margin-top:22px">
+    <div class="lbl">Задача</div>
+    <div class="note purple" style="margin-top:0"><p style="font-size:clamp(15px,1.9vw,23px);line-height:1.35">Клиенты, у которых оборот в мае ниже апрельского более чем на 30%.</p></div>
+    <div class="note blue"><p>Нужны три шага: оборот по месяцам, сравнение с прошлым месяцем и фильтр. В один SELECT они не умещаются.</p></div>
+  </div>
+</div>
+</div>
+
+
+<!-- 06b METHOD: STEPS -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Метод</p>
+  <h2>Три шага и один запрос</h2>
+  <div class="cr">
+    <div>
+      <div class="lbl">Три шага</div>
+      <div class="note" style="margin-top:0;background:#f6f7f9">
+        <p><b style="color:#1366d6">Шаг 1.</b> оборот по клиенту за каждый месяц</p>
+        <p style="margin-top:7px"><b style="color:#b3660a">Шаг 2.</b> рядом оборот предыдущего месяца (<span class="mono">LAG</span>)</p>
+        <p style="margin-top:7px"><b style="color:#1a9d4a">Шаг 3.</b> оставить май, где май &lt; апрель × 0.7</p>
+      </div>
+    </div>
+    <div>
+      <div class="lbl">Один запрос из трёх частей</div>
+      <div class="code"><span class="seg s1"><span class="kw">WITH</span> monthly <span class="kw">AS</span> (   <span class="cm">-- шаг 1</span>
+  ...
+),</span><span class="seg s2">mom <span class="kw">AS</span> (             <span class="cm">-- шаг 2: LAG</span>
+  ...
+)</span><span class="seg s3"><span class="kw">SELECT</span> ...           <span class="cm">-- шаг 3: фильтр</span>
+<span class="kw">FROM</span> mom
+<span class="kw">WHERE</span> may &lt; apr * <span class="st">0.7</span>;</span></div>
+      <div class="note green" style="margin-top:10px"><p>Каждый шаг - это отдельный CTE, его пишут и проверяют по одному.</p></div>
+    </div>
+  </div>
+</div>
+</div>
+
+
+<!-- MODULE 2 -->
+<div class="slide mslide">
+<div class="sc">
+  <p class="eyebrow">Часть 3</p>
+  <div class="divider" style="background:#1a9d4a"></div>
+  <h2>Разбор задач</h2>
+</div>
+</div>
+
+
+<!-- 08 W1 JOIN+GROUP BY -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Разбор 1 · JOIN и GROUP BY</p>
+  <h2>Оборот по категориям</h2>
+  <div class="cr">
+    <div>
+      <div class="lbl">Запрос</div>
+      <div class="code"><span class="kw">SELECT</span> m.category,
+       <span class="fn">COUNT</span>(*)      <span class="kw">AS</span> txns,
+       <span class="fn">SUM</span>(t.amount) <span class="kw">AS</span> turnover
+<span class="kw">FROM</span> transactions t
+<span class="kw">JOIN</span> merchants m <span class="kw">ON</span> t.merchant_id = m.merchant_id
+<span class="kw">WHERE</span> t.status = <span class="st">'success'</span>
+<span class="kw">GROUP BY</span> m.category
+<span class="kw">ORDER BY</span> turnover <span class="kw">DESC</span>
+<span class="kw">LIMIT</span> <span class="st">5</span>;</div>
+      <div class="note teal"><p>Категория хранится в <span class="mono">merchants</span>, сумма в <span class="mono">transactions</span>. Нужны обе таблицы, поэтому <span class="mono">JOIN</span>.</p></div>
+    </div>
+    <div>
+      <div class="lbl">Результат</div>
+      <div class="result">
+        <table>
+          <thead><tr><th>category</th><th class="num">txns</th><th class="num">turnover, сум</th></tr></thead>
+          <tbody>
+            <tr><td class="pu">Electronics</td><td class="num">422</td><td class="num hi">1 594 644 500</td></tr>
+            <tr><td>Online</td><td class="num">484</td><td class="num">271 236 500</td></tr>
+            <tr><td>Clothing</td><td class="num">509</td><td class="num">264 019 500</td></tr>
+            <tr><td>Supermarket</td><td class="num">514</td><td class="num">135 130 000</td></tr>
+            <tr><td>Restaurant</td><td class="num">608</td><td class="num">99 340 500</td></tr>
+          </tbody>
+        </table>
+        <div class="foot">5 категорий по убыванию оборота</div>
+      </div>
+      <div class="note orange"><p>Electronics даёт наибольший оборот при наименьшем числе транзакций среди этих пяти.</p></div>
+    </div>
+  </div>
+</div>
+</div>
+
+
+<!-- 09 W2 step1 CTE -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Разбор 2 · CTE и подзапрос, шаг 1</p>
+  <h2>Клиенты выше среднего</h2>
+  <div class="cr">
+    <div>
+      <div class="lbl">Шаг 1. Оборот по каждому клиенту</div>
+      <div class="code"><span class="kw">WITH</span> cust_total <span class="kw">AS</span> (
+  <span class="kw">SELECT</span> c.customer_id, c.full_name,
+         <span class="fn">SUM</span>(t.amount) <span class="kw">AS</span> total
+  <span class="kw">FROM</span> transactions t
+  <span class="kw">JOIN</span> cards ca    <span class="kw">ON</span> t.card_id = ca.card_id
+  <span class="kw">JOIN</span> customers c <span class="kw">ON</span> ca.customer_id = c.customer_id
+  <span class="kw">WHERE</span> t.status = <span class="st">'success'</span>
+  <span class="kw">GROUP BY</span> c.customer_id, c.full_name
+)</div>
+      <div class="note blue"><p>В <span class="mono">transactions</span> есть только <span class="mono">card_id</span>. До клиента два соединения: транзакция, карта, клиент.</p></div>
+    </div>
+    <div>
+      <div class="lbl">cust_total: промежуточная таблица</div>
+      <div class="result">
+        <table>
+          <thead><tr><th>full_name</th><th class="num">total, сум</th></tr></thead>
+          <tbody>
+            <tr><td>Jasur Qodirov</td><td class="num">122 446 000</td></tr>
+            <tr><td>Bekzod Toshev</td><td class="num">121 685 000</td></tr>
+            <tr><td>Charos Abdullayeva</td><td class="num">111 145 000</td></tr>
+            <tr><td>...</td><td class="num">...</td></tr>
+            <tr><td class="nil">среднее по всем</td><td class="num or">21 314 904</td></tr>
+          </tbody>
+        </table>
+        <div class="foot">120 строк, по одной на клиента</div>
+      </div>
+      <div class="note green"><p>Дальше каждого клиента нужно сравнить со средним оборотом.</p></div>
+    </div>
+  </div>
+</div>
+</div>
+
+
+<!-- 10 W2 step2 subquery -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Разбор 2 · CTE и подзапрос, шаг 2</p>
+  <h2>Сравнение со средним</h2>
+  <div class="cr">
+    <div>
+      <div class="lbl">Шаг 2. Фильтр по среднему</div>
+      <div class="code"><span class="kw">SELECT</span> full_name, total
+<span class="kw">FROM</span> cust_total
+<span class="kw">WHERE</span> total &gt; (
+    <span class="kw">SELECT</span> <span class="fn">AVG</span>(total)   <span class="cm">-- подзапрос</span>
+    <span class="kw">FROM</span> cust_total
+)
+<span class="kw">ORDER BY</span> total <span class="kw">DESC</span>;</div>
+      <div class="note green"><p>Подзапрос <span class="mono">(SELECT AVG(total) ...)</span> возвращает одно число. Оно вычисляется один раз и сравнивается с каждой строкой.</p></div>
+    </div>
+    <div>
+      <div class="lbl">Результат</div>
+      <div class="result">
+        <table>
+          <thead><tr><th>full_name</th><th class="num">total, сум</th></tr></thead>
+          <tbody>
+            <tr><td>Jasur Qodirov</td><td class="num hi">122 446 000</td></tr>
+            <tr><td>Bekzod Toshev</td><td class="num">121 685 000</td></tr>
+            <tr><td>Charos Abdullayeva</td><td class="num">111 145 000</td></tr>
+            <tr><td>Islom Nazarov</td><td class="num">99 055 000</td></tr>
+            <tr><td>Kamol Tursunov</td><td class="num">91 212 500</td></tr>
+          </tbody>
+        </table>
+        <div class="foot">38 из 120 клиентов · порог 21 314 904 сум</div>
+      </div>
+      <div class="note orange"><p>Среднее выше медианы: несколько крупных клиентов смещают его вверх.</p></div>
+    </div>
+  </div>
+</div>
+</div>
+
+
+<!-- 11 PIPELINE -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Разбор 3 · Конвейер из CTE</p>
+  <h2>Снижение оборота в мае</h2>
+  <div class="cr">
+    <div>
+      <div class="lbl">Та же задача, три шага в одном запросе</div>
+      <div class="code" style="font-size:clamp(10px,.98vw,12.5px)"><span class="seg s1"><span class="kw">WITH</span> monthly <span class="kw">AS</span> (        <span class="cm">-- шаг 1: оборот по месяцам</span>
+  <span class="kw">SELECT</span> ca.customer_id,
+         <span class="fn">date_trunc</span>(<span class="st">'month'</span>, t.txn_ts) <span class="kw">AS</span> mon,
+         <span class="fn">SUM</span>(t.amount) <span class="kw">AS</span> total
+  <span class="kw">FROM</span> transactions t
+  <span class="kw">JOIN</span> cards ca <span class="kw">ON</span> t.card_id = ca.card_id
+  <span class="kw">WHERE</span> t.status = <span class="st">'success'</span>
+  <span class="kw">GROUP BY</span> ca.customer_id, mon
+),</span><span class="seg s2">mom <span class="kw">AS</span> (            <span class="cm">-- шаг 2: предыдущий месяц</span>
+  <span class="kw">SELECT</span> *, <span class="fn">LAG</span>(total) <span class="kw">OVER</span> (
+           <span class="kw">PARTITION BY</span> customer_id <span class="kw">ORDER BY</span> mon
+         ) <span class="kw">AS</span> prev
+  <span class="kw">FROM</span> monthly
+)</span><span class="seg s3"><span class="kw">SELECT</span> c.full_name, mom.prev <span class="kw">AS</span> apr,
+       mom.total <span class="kw">AS</span> may,
+       <span class="fn">ROUND</span>((mom.total - mom.prev) * <span class="st">100.0</span> / mom.prev) <span class="kw">AS</span> pct  <span class="cm">-- шаг 3: фильтр</span>
+<span class="kw">FROM</span> mom <span class="kw">JOIN</span> customers c <span class="kw">ON</span> c.customer_id = mom.customer_id
+<span class="kw">WHERE</span> mom.mon = <span class="fn">DATE</span> <span class="st">'2025-05-01'</span>
+  <span class="kw">AND</span> mom.prev &gt; <span class="st">0</span>
+  <span class="kw">AND</span> mom.total &lt; mom.prev * <span class="st">0.7</span>
+<span class="kw">ORDER BY</span> pct;</span></div>
+    </div>
+    <div>
+      <div class="lbl">Результат</div>
+      <div class="result">
+        <table>
+          <thead><tr><th>full_name</th><th class="num">apr</th><th class="num">may</th><th class="num">%</th></tr></thead>
+          <tbody>
+            <tr><td>Sevara Ergasheva</td><td class="num">7 991 000</td><td class="num">207 500</td><td class="num ng">-97</td></tr>
+            <tr><td>Nodira Saidova</td><td class="num">11 739 500</td><td class="num">302 500</td><td class="num ng">-97</td></tr>
+            <tr><td>Zarina Qodirova</td><td class="num">5 438 000</td><td class="num">166 000</td><td class="num ng">-97</td></tr>
+            <tr><td>Feruza Nazarova</td><td class="num">5 214 000</td><td class="num">359 000</td><td class="num ng">-93</td></tr>
+            <tr><td>Temur Ismoilov</td><td class="num">5 845 500</td><td class="num">474 500</td><td class="num ng">-92</td></tr>
+          </tbody>
+        </table>
+        <div class="foot">50 клиентов с падением оборота более 30%</div>
+      </div>
+      <div class="note purple"><p>Та же задача из части «Метод», собранная из трёх шагов. Цвета совпадают с планом: синий шаг 1, оранжевый шаг 2, зелёный шаг 3.</p></div>
+    </div>
+  </div>
+</div>
+</div>
+
+
+<!-- MODULE 3 TASKS -->
+<div class="slide mslide">
+<div class="sc">
+  <p class="eyebrow">Часть 4</p>
+  <div class="divider" style="background:#1a9d4a"></div>
+  <h2>Задания</h2>
+  <p class="sub">11 задач в файле <span class="mono">lecture21_classwork.ipynb</span>.</p>
+</div>
+</div>
+
+
+<!-- 14 TASKS 1-4 -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Задания · Базовый уровень</p>
+  <h2>JOIN, GROUP BY, HAVING</h2>
+  <div class="cards c2" style="margin-top:14px">
+    <div class="card acc-green"><span class="badge" style="background:#e8f5eb;color:#0d5a1e">1</span><h4>Топ-5 категорий по обороту</h4><p>Только успешные платежи. Вывести оборот и число транзакций.</p></div>
+    <div class="card acc-green"><span class="badge" style="background:#e8f5eb;color:#0d5a1e">2</span><h4>Оборот по городам клиентов</h4><p>По убыванию. Соединить транзакцию, карту, клиента.</p></div>
+    <div class="card acc-green"><span class="badge" style="background:#e8f5eb;color:#0d5a1e">3</span><h4>Доля отклонённых платежей</h4><p>Процент строк со <span class="mono">status = 'declined'</span> от всех. Одно число.</p></div>
+    <div class="card acc-green"><span class="badge" style="background:#e8f5eb;color:#0d5a1e">4</span><h4>Мерчанты Online с более чем 50 платежами</h4><p>Категория Online, успешные. Фильтр после группировки через <span class="mono">HAVING</span>.</p></div>
+  </div>
+</div>
+</div>
+
+
+<!-- 15 TASKS 5-8 -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Задания · Средний уровень</p>
+  <h2>Подзапросы и CTE</h2>
+  <div class="cards c2" style="margin-top:14px">
+    <div class="card acc-orange"><span class="badge" style="background:#fff3e6;color:#7a3c00">5</span><h4>Клиенты выше среднего</h4><p>Оборот по клиенту, затем сравнение со средним оборотом.</p></div>
+    <div class="card acc-orange"><span class="badge" style="background:#fff3e6;color:#7a3c00">6</span><h4>Клиенты с высоким средним чеком</h4><p>Средний чек и число транзакций. Оставить тех, у кого средний чек больше 300 000.</p></div>
+    <div class="card acc-orange"><span class="badge" style="background:#fff3e6;color:#7a3c00">7</span><h4>Карты без успешных платежей</h4><p>Карты, по которым нет ни одной успешной транзакции. <span class="mono">NOT EXISTS</span>.</p></div>
+    <div class="card acc-orange"><span class="badge" style="background:#fff3e6;color:#7a3c00">8</span><h4>Самый крупный платёж</h4><p>Самая большая успешная транзакция: клиент, мерчант, сумма, дата.</p></div>
+  </div>
+</div>
+</div>
+
+
+<!-- 16 TASKS 9-12 -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Задания · Продвинутый уровень</p>
+  <h2>Оконные функции</h2>
+  <div class="cards c2" style="margin-top:14px">
+    <div class="card acc-purple"><span class="badge" style="background:#f3efff;color:#5b21b6">9</span><h4>Главный мерчант клиента</h4><p>Самая большая трата каждого клиента и мерчант. <span class="mono">ROW_NUMBER</span> и <span class="mono">PARTITION BY</span>.</p></div>
+    <div class="card acc-purple"><span class="badge" style="background:#f3efff;color:#5b21b6">10</span><h4>Нарастающий итог по карте</h4><p>Для карты №9 сумма трат накопительно по времени. <span class="mono">SUM() OVER (ORDER BY ...)</span>.</p></div>
+    <div class="card acc-purple"><span class="badge" style="background:#f3efff;color:#5b21b6">11</span><h4>Снижение оборота в мае</h4><p>Клиенты с падением более 30% к апрелю. CTE и <span class="mono">LAG</span>.</p></div>
+  </div>
+</div>
+</div>
+
+
+<!-- 17 HOMEWORK -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Домашнее задание</p>
+  <h2>Три задачи</h2>
+  <div class="cards c3" style="margin-top:16px">
+    <div class="card acc-blue"><span class="badge" style="background:#eef4fc;color:#0c447c">Д1</span><h4>Топ-3 мерчанта в каждой категории</h4><p>По обороту, внутри каждой категории три лучших. <span class="mono">ROW_NUMBER</span> с <span class="mono">PARTITION BY category</span>.</p></div>
+    <div class="card acc-teal"><span class="badge" style="background:#e6f7f7;color:#075d64">Д2</span><h4>RFM по клиентам</h4><p>Recency (дней до 2025-06-01), Frequency, Monetary. Разбить каждую метрику на 4 группы через <span class="mono">NTILE(4)</span>.</p></div>
+    <div class="card acc-purple"><span class="badge" style="background:#f3efff;color:#5b21b6">Д3</span><h4>Оборот по месяцам</h4><p>Оборот всей системы по месяцам и процент прироста к предыдущему. <span class="mono">LAG</span>.</p></div>
+  </div>
+  <div class="note green"><p>Сдача в том же файле: запрос и короткий вывод в ячейке markdown под каждой задачей.</p></div>
+</div>
+</div>
+
+
+<!-- 19 SUMMARY -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Итоги</p>
+  <h2>Что отработали</h2>
+  <ul class="facts">
+    <li><b>Подзапрос.</b> Одно значение внутри условия (сравнение со средним).</li>
+    <li><b>CTE.</b> Запрос из нескольких именованных шагов, читается сверху вниз.</li>
+    <li><b>Оконные функции.</b> Расчёт по группе без потери строк: ROW_NUMBER, LAG, SUM OVER.</li>
+  </ul>
+</div>
+</div>
+
+
+</div>
+<div class="ind"><span id="cur">1</span> / <span id="tot"></span></div>
+<div class="hint">← → space</div>
+<script>
+const slides=document.querySelectorAll('.slide');
+let cur=0;
+document.getElementById('tot').textContent=slides.length;
+function go(n){
+  if(window._winTimers){window._winTimers.forEach(t=>clearInterval(t));window._winTimers=[];}
+  slides[cur].classList.remove('active');
+  cur=(n+slides.length)%slides.length;
+  slides[cur].classList.add('active');
+  const sc=slides[cur].querySelector('.sc');
+  if(sc){sc.style.animation='none';void sc.offsetWidth;sc.style.animation='';}
+  document.getElementById('cur').textContent=cur+1;
+  document.getElementById('prog').style.width=((cur+1)/slides.length*100)+'%';
+  const m=slides[cur].classList;
+  document.getElementById('ltag').textContent=m.contains('mslide')?'Часть':'SQL · Лекция 21';
+}
+document.addEventListener('keydown',e=>{
+  if(e.key==='ArrowRight'||e.key===' '){e.preventDefault();go(cur+1);}
+  if(e.key==='ArrowLeft'){e.preventDefault();go(cur-1);}
+});
+let tx=0;
+document.addEventListener('touchstart',e=>{tx=e.touches[0].clientX;},{passive:true});
+document.addEventListener('touchend',e=>{const dx=e.changedTouches[0].clientX-tx;if(Math.abs(dx)>40)go(cur+(dx<0?1:-1));},{passive:true});
+const h=parseInt((location.hash||'').slice(1));
+go(h>=1&&h<=slides.length?h-1:0);
+</script>
+<script>
+/* Interactive window-function widgets (OVER () / PARTITION BY / ORDER BY) */
+(function(){
+  const DATA=[
+    {txn:1,cat:'Еда',amount:100},{txn:2,cat:'Еда',amount:300},{txn:3,cat:'Еда',amount:200},
+    {txn:4,cat:'Техника',amount:500},{txn:5,cat:'Техника',amount:400}
+  ];
+  const total=DATA.reduce((s,r)=>s+r.amount,0);
+  const catSum={}; DATA.forEach(r=>catSum[r.cat]=(catSum[r.cat]||0)+r.amount);
+  const fmt=n=>n.toLocaleString('ru-RU');
+  const RESHEAD={all:'total',part:'by_cat',run:'running'};
+  window._winTimers=window._winTimers||[];
+  function inWin(mode,i,cur){ if(mode==='all')return true; if(mode==='part')return DATA[i].cat===DATA[cur].cat; return i<=cur; }
+  function resVal(mode,i){ if(mode==='all')return total; if(mode==='part')return catSum[DATA[i].cat]; return DATA.slice(0,i+1).reduce((s,r)=>s+r.amount,0); }
+  function noteText(mode,cur){
+    const r=DATA[cur];
+    if(mode==='all') return 'txn '+r.txn+': окно = все строки, результат = '+fmt(total)+' (одинаков везде).';
+    if(mode==='part')return 'txn '+r.txn+': окно = строки категории «'+r.cat+'», результат = '+fmt(catSum[r.cat])+'.';
+    return 'txn '+r.txn+': окно = строки txn ≤ '+r.txn+', нарастающий итог = '+fmt(resVal('run',cur))+'.';
+  }
+  document.querySelectorAll('.winwidget').forEach(root=>{
+    const mode=root.dataset.mode;
+    const tbody=root.querySelector('tbody');
+    const note=root.querySelector('[data-note]');
+    const resh=root.querySelector('[data-res]');
+    if(resh)resh.textContent=RESHEAD[mode]||'результат';
+    let step=-1, timer=null;
+    function render(){
+      tbody.innerHTML=DATA.map((r,i)=>{
+        const cur=i===step, win=step>=0&&inWin(mode,i,step);
+        const cls=[cur?'cur':'',win?'win':''].join(' ').trim();
+        const res = i<=step && step>=0
+          ? '<td class="num rv">'+fmt(resVal(mode,i))+'</td>'
+          : '<td class="num re">·</td>';
+        return '<tr class="'+cls+'"><td class="hi">'+r.txn+'</td><td>'+r.cat+'</td><td class="num">'+fmt(r.amount)+'</td>'+res+'</tr>';
+      }).join('');
+      if(note)note.textContent = step<0 ? 'Нажми «Шаг» или «Играть».' : noteText(mode,step);
+    }
+    function stop(){ if(timer){clearInterval(timer);timer=null;} }
+    function stepFn(){ if(step<DATA.length-1){step++;render();} else {stop();} }
+    function play(){ if(timer){stop();return;} if(step>=DATA.length-1)step=-1; timer=setInterval(stepFn,900); window._winTimers.push(timer); }
+    const col=root.parentNode;
+    col.querySelectorAll('[data-act]').forEach(b=>{
+      b.addEventListener('click',()=>{
+        const a=b.dataset.act;
+        if(a==='step'){stop();stepFn();}
+        else if(a==='play'){play();}
+        else {stop();step=-1;render();}
+      });
+    });
+    render();
+  });
+})();
+</script>
+</body>
+</html>

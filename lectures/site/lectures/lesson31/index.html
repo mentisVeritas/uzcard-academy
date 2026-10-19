@@ -1,0 +1,861 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Validation · Занятие 4 · часть 1</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Inter',-apple-system,sans-serif;background:#fcfcfd;color:#16171a;overflow:hidden;-webkit-font-smoothing:antialiased;}
+.deck{width:100vw;height:100vh;position:relative;}
+.slide{width:100%;height:100%;display:none;flex-direction:column;align-items:center;justify-content:center;position:absolute;inset:0;padding:clamp(12px,2vh,28px) clamp(32px,5vw,72px);}
+.slide.active{display:flex;}
+.sc{max-width:1200px;width:100%;margin:0 auto;opacity:0;transform:translateY(16px);animation:up .4s ease-out forwards;display:flex;flex-direction:column;align-items:center;}
+@keyframes up{to{opacity:1;transform:translateY(0);}}
+.rise{opacity:0;transform:translateY(12px);animation:up .45s ease-out forwards;}
+.morph3{display:flex;gap:clamp(10px,1.4vw,18px);width:100%;justify-content:center;flex-wrap:wrap;margin-top:clamp(8px,1.2vh,14px);}
+.mpanel{background:#fff;border:1.5px solid #e6e8ee;border-radius:14px;padding:10px;flex:1;min-width:230px;max-width:360px;}
+.mpanel .cap{font-size:clamp(11px,1.05vw,13px);font-weight:800;text-align:center;padding:2px 0 6px;}
+.mpanel .cap.u{color:#b3660a;}.mpanel .cap.g{color:#0d5a1e;}.mpanel .cap.o{color:#c22317;}
+.mpanel .sub2{font-size:clamp(10.5px,1vw,12px);color:#4a4d53;line-height:1.45;text-align:center;padding:4px 4px 0;}
+.result{width:100%;border-radius:12px;overflow:hidden;border:1.5px solid #e2e4ea;background:#fff;}
+.result table{width:100%;border-collapse:collapse;font-size:clamp(11px,1.05vw,13.5px);}
+.result thead tr{background:#f4f5f8;}
+.result th{padding:clamp(7px,.9vw,11px) clamp(9px,1.1vw,14px);font-weight:700;color:#4a4d53;border-bottom:1.5px solid #e2e4ea;white-space:nowrap;text-align:left;}
+.result td{padding:clamp(6px,.8vw,10px) clamp(9px,1.1vw,14px);border-bottom:1px solid #f0f1f4;color:#2a2c30;text-align:left;white-space:nowrap;}
+.result tr:last-child td{border-bottom:none;}
+.result td.wrap,.result th.wrap{white-space:normal;line-height:1.45;}
+.hi{color:#0064d6;font-weight:600;}.ok{color:#1a9d4a;font-weight:600;}.ng{color:#e02d20;font-weight:600;}
+.or{color:#e0820a;font-weight:600;}
+.num{text-align:right;font-variant-numeric:tabular-nums;}
+.result tbody tr{opacity:0;animation:up .4s ease-out forwards;}
+
+h1{font-size:clamp(36px,5.2vw,80px);font-weight:900;letter-spacing:-.04em;line-height:.95;margin-bottom:clamp(10px,1.8vh,22px);}
+h2{font-size:clamp(18px,2.4vw,36px);font-weight:800;letter-spacing:-.025em;line-height:1.08;margin-bottom:clamp(4px,.7vh,10px);}
+.eyebrow{font-size:clamp(10px,.95vw,12px);font-weight:700;text-transform:uppercase;letter-spacing:.2em;color:#1a9d4a;margin-bottom:clamp(5px,.9vh,12px);}
+.sub{font-size:clamp(13px,1.7vw,21px);color:#6b6f76;line-height:1.45;max-width:820px;margin-top:clamp(5px,.9vh,12px);}
+.c-blue{color:#0064d6;}.c-green{color:#1a9d4a;}.c-orange{color:#e0820a;}.c-red{color:#e02d20;}.c-purple{color:#7c3aed;}
+
+.cr{display:grid;grid-template-columns:1fr 1fr;gap:clamp(12px,1.6vw,22px);width:100%;max-width:1200px;margin-top:clamp(8px,1.2vh,16px);align-items:start;}
+.cr3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:clamp(10px,1.3vw,16px);width:100%;max-width:1200px;margin-top:clamp(8px,1.2vh,16px);align-items:start;}
+.lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.16em;color:#888;margin-bottom:5px;}
+
+.codebox{width:100%;max-width:940px;border-radius:14px;overflow:hidden;border:1px solid #252830;box-shadow:0 16px 40px -20px rgba(10,12,18,.5);}
+.codebar{display:flex;align-items:center;gap:6px;background:#1d2026;padding:9px 14px;}
+.codebar span{font-size:11px;color:#8a8f9a;font-family:'SF Mono','Consolas',monospace;}
+.code{font-family:'SF Mono','Menlo','Consolas',monospace;font-size:clamp(11px,1.1vw,14px);background:#141618;color:#e8eaf0;padding:clamp(12px,1.5vw,18px) clamp(14px,1.7vw,20px);width:100%;text-align:left;line-height:1.7;white-space:pre;overflow-x:auto;}
+.code .kw{color:#5ab0ff;}.code .fn{color:#e2c08d;}.code .st{color:#ffa657;}.code .cm{color:#5a9a5a;font-style:italic;}.code .nm{color:#f0a0d0;}
+.code .bad{background:rgba(224,45,32,.18);box-shadow:inset 0 0 0 1.5px rgba(224,45,32,.5);border-radius:5px;padding:0 4px;}
+.code .good{background:rgba(26,157,74,.2);box-shadow:inset 0 0 0 1.5px rgba(26,157,74,.55);border-radius:5px;padding:0 4px;}
+
+/* врезка: без заливки и без линеек, смысл несёт маркер на ярлыке */
+.note{padding:clamp(4px,.6vw,7px) 0;text-align:left;width:100%;margin-top:clamp(7px,1vh,12px);}
+.note p{font-size:clamp(11px,1.1vw,14px);color:#2a2c30;line-height:1.55;font-weight:500;}
+.note b{font-weight:700;color:#0b0c0e;}
+
+/* след маркера: прямоугольник под текстом искажается шумом из SVG-фильтра,
+   поэтому края получаются неровными. Текст лежит выше и не искажается. */
+.mk{position:relative;z-index:0;white-space:nowrap;}
+.mk::before{content:"";position:absolute;left:-.36em;right:-.36em;top:-.18em;bottom:-.20em;z-index:-1;filter:url(#mkrough);}
+.mk.alt::before{filter:url(#mkrough2);}
+.mk.r::before{background:rgba(224,45,32,.38);}
+.mk.g::before{background:rgba(26,157,74,.40);}
+
+.tslide .eyebrow{color:#1a9d4a;}
+.qslide .sc{position:relative;z-index:2;}
+.wm{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:clamp(160px,26vw,380px);font-weight:900;color:#f0f1f6;z-index:0;user-select:none;pointer-events:none;letter-spacing:-.05em;animation:wmin 1.2s ease-out forwards;}
+@keyframes wmin{0%{opacity:0;transform:scale(.85);}100%{opacity:1;transform:scale(1);}}
+.qbig{font-size:clamp(24px,3.4vw,50px);font-weight:850;letter-spacing:-.03em;line-height:1.16;max-width:1000px;text-align:center;}
+.qslide .eyebrow.q{color:#1a9d4a;}
+
+.prog{position:fixed;top:0;left:0;height:3px;background:#1a9d4a;z-index:200;transition:width .28s ease;}
+.ind{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);font-size:12px;color:#b8bbc2;z-index:100;letter-spacing:.04em;}
+.hint{position:fixed;bottom:16px;right:20px;font-size:11px;color:#d0d3da;z-index:100;}
+.tag{position:fixed;top:16px;left:20px;font-size:10px;font-weight:700;color:#c8cace;text-transform:uppercase;letter-spacing:.16em;z-index:100;}
+
+.cards{display:grid;gap:clamp(8px,1vw,12px);width:100%;margin-top:clamp(8px,1.2vh,14px);}
+.cards.c2{grid-template-columns:1fr 1fr;max-width:1000px;}
+.cards.c3{grid-template-columns:1fr 1fr 1fr;max-width:1120px;}
+.card{background:#fff;border:1px solid #edeef2;border-radius:14px;padding:clamp(11px,1.3vw,16px);text-align:left;box-shadow:0 1px 2px rgba(18,20,28,.04),0 8px 20px -12px rgba(18,20,28,.12);}
+.card h4{font-size:clamp(12px,1.25vw,16px);font-weight:700;margin-bottom:4px;}
+.card p{font-size:clamp(11px,1.05vw,13.5px);color:#4a4d53;line-height:1.55;}
+.card.acc-green h4{color:#1a9d4a;}.card.acc-orange h4{color:#b3660a;}.card.acc-purple h4{color:#7c3aed;}.card.acc-blue h4{color:#0064d6;}.card.acc-red h4{color:#c22317;}
+.badge{display:inline-block;font-size:10px;font-weight:700;padding:2px 9px;border-radius:99px;margin-bottom:6px;}
+.mono{font-family:'SF Mono','Consolas',monospace;font-size:.92em;background:#f0f1f4;padding:1px 6px;border-radius:5px;color:#0b0c0e;}
+ul.facts{list-style:none;text-align:left;max-width:900px;margin-top:14px;}
+ul.facts li{font-size:clamp(13px,1.35vw,17px);color:#2a2c30;line-height:1.5;padding:7px 0 7px 24px;position:relative;border-bottom:1px solid #f0f1f4;}
+ul.facts li:before{content:'';position:absolute;left:0;top:15px;width:8px;height:8px;border-radius:2px;background:#1a9d4a;}
+ul.facts b{color:#0b0c0e;}
+ul.facts.stag li{opacity:0;animation:up .45s ease-out forwards;}
+ul.facts.stag li:nth-child(1){animation-delay:.2s;}ul.facts.stag li:nth-child(2){animation-delay:.45s;}
+ul.facts.stag li:nth-child(3){animation-delay:.7s;}ul.facts.stag li:nth-child(4){animation-delay:.95s;}ul.facts.stag li:nth-child(5){animation-delay:1.2s;}
+ul.facts.checks li:before{content:'✓';background:none;color:#1a9d4a;font-weight:900;font-size:16px;top:6px;}
+.pills{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:clamp(12px,1.8vh,24px);}
+.pill{font-size:clamp(11px,1.1vw,13px);font-weight:600;padding:4px 13px;border-radius:99px;border:1.5px solid transparent;opacity:0;animation:pop .5s cubic-bezier(.2,1.6,.4,1) forwards;}
+.pill:nth-child(1){animation-delay:.5s;}.pill:nth-child(2){animation-delay:.65s;}.pill:nth-child(3){animation-delay:.8s;}.pill:nth-child(4){animation-delay:.95s;}
+@keyframes pop{0%{opacity:0;transform:scale(.4);}100%{opacity:1;transform:scale(1);}}
+
+.bgdots{position:absolute;inset:0;overflow:hidden;pointer-events:none;}
+.bgdots i{position:absolute;border-radius:50%;opacity:.16;animation:drift linear infinite;}
+@keyframes drift{0%{transform:translate(0,0);}50%{transform:translate(var(--dx),var(--dy));}100%{transform:translate(0,0);}}
+
+.bignum{display:flex;gap:clamp(12px,2vw,26px);margin-top:clamp(10px,1.6vh,20px);flex-wrap:wrap;justify-content:center;align-items:center;}
+.bn{background:#fff;border:1.5px solid #e6e8ee;border-radius:16px;padding:clamp(12px,1.6vw,20px) clamp(18px,2.4vw,30px);text-align:center;min-width:210px;}
+.bn .v{font-size:clamp(30px,4vw,52px);font-weight:900;letter-spacing:-.03em;font-variant-numeric:tabular-nums;}
+.bn .t{font-size:clamp(11px,1.1vw,13px);color:#6b6f76;font-weight:600;margin-top:2px;}
+.bn.good{border-color:#b8dfc1;background:#f4fbf6;}.bn.good .v{color:#1a9d4a;}
+.bn.bad{border-color:#f0c8c8;background:#fef7f6;}.bn.bad .v{color:#e02d20;}
+.arrow-big{font-size:clamp(24px,3vw,40px);color:#c3c7cf;font-weight:300;}
+.growx{transform:scaleX(0);transform-origin:left;animation:gx 1s ease-out forwards;}
+@keyframes gx{to{transform:scaleX(1);}}
+
+/* ===== chapter divider ===== */
+.chdiv .sc{align-items:flex-start;}
+.chnum{display:flex;align-items:baseline;gap:14px;}
+.chnum .cn{font-size:clamp(56px,9vw,140px);font-weight:900;letter-spacing:-.05em;line-height:.85;color:var(--ch,#0064d6);}
+.chnum .cl2{font-size:clamp(11px,1vw,13px);font-weight:800;text-transform:uppercase;letter-spacing:.2em;color:#a0a4ac;}
+.chdiv h1{font-size:clamp(30px,4.6vw,64px);margin:14px 0 0;}
+.chplan{list-style:none;margin-top:20px;max-width:820px;width:100%;}
+.chplan li{font-size:clamp(12.5px,1.4vw,17px);color:#4a4d53;padding:9px 0 9px 26px;position:relative;border-bottom:1px solid #f0f1f4;font-weight:500;opacity:0;animation:up .45s ease-out forwards;}
+.chplan li:before{content:'';position:absolute;left:0;top:16px;width:8px;height:8px;border-radius:2px;background:var(--ch,#0064d6);}
+.chplan li:nth-child(1){animation-delay:.25s;}.chplan li:nth-child(2){animation-delay:.45s;}.chplan li:nth-child(3){animation-delay:.65s;}.chplan li:nth-child(4){animation-delay:.85s;}
+
+/* ===== flow: данные -> модель -> лосс -> метрика ===== */
+.flow{display:flex;align-items:stretch;gap:6px;flex-wrap:wrap;justify-content:center;width:100%;max-width:1120px;margin-top:clamp(10px,1.6vh,18px);}
+.fnode{flex:1;min-width:150px;background:#fff;border:1.5px solid #e6e8ee;border-radius:14px;padding:13px 14px;text-align:center;}
+.fnode .ft{font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#a0a4ac;}
+.fnode .fh{font-size:clamp(14px,1.5vw,19px);font-weight:900;margin:5px 0 4px;letter-spacing:-.01em;}
+.fnode .fp{font-size:11.5px;color:#6b6f76;line-height:1.4;}
+.farrow{display:flex;align-items:center;font-size:22px;color:#c3c7cf;font-weight:300;}
+.fnode.loss{border-color:#f3d9ae;background:#fff8ee;}.fnode.loss .fh{color:#b3660a;}
+.fnode.metric{border-color:#cfe0f7;background:#f3f8ff;}.fnode.metric .fh{color:#0064d6;}
+
+/* ===== ML boxes ===== */
+.mlgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;width:100%;max-width:1180px;margin-top:clamp(10px,1.6vh,16px);}
+.mlbx{background:#fff;border:1px solid #edeef2;border-top:4px solid var(--bx,#0064d6);border-radius:14px;padding:14px 15px;text-align:left;box-shadow:0 1px 2px rgba(18,20,28,.04),0 8px 20px -12px rgba(18,20,28,.14);display:flex;flex-direction:column;gap:9px;}
+.mlbx h4{font-size:clamp(13px,1.35vw,17px);font-weight:900;color:var(--bx);letter-spacing:-.01em;}
+.mlbx .r .rl{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:#a0a4ac;}
+.mlbx .r .rv{font-size:11.5px;color:#2a2c30;line-height:1.4;font-weight:500;margin-top:1px;}
+.mlbx.dim{opacity:.5;}
+.mlbx .tagm{margin-top:auto;font-size:10px;font-weight:800;color:var(--bx);background:color-mix(in srgb,var(--bx) 10%,transparent);border-radius:99px;padding:3px 10px;align-self:flex-start;}
+
+/* ===== leak map two-tier ===== */
+.leakcol{display:grid;grid-template-columns:1fr 1fr;gap:clamp(12px,1.8vw,24px);width:100%;max-width:1160px;margin-top:12px;align-items:start;}
+.leaktier{border-radius:16px;padding:14px 16px;}
+.leaktier.basic{background:#f3f8ff;border:1.5px solid #cfe0f7;}
+.leaktier.adv{background:#f7f3ff;border:1.5px solid #ddd0f8;}
+.leaktier .th{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;}
+.leaktier.basic .th{color:#0c447c;}.leaktier.adv .th{color:#5b21b6;}
+.leaktier ul{list-style:none;}
+.leaktier li{font-size:clamp(11.5px,1.15vw,14px);color:#2a2c30;line-height:1.4;padding:7px 0 7px 22px;position:relative;border-bottom:1px solid rgba(0,0,0,.05);font-weight:500;}
+.leaktier li:last-child{border-bottom:none;}
+.leaktier li b{font-weight:800;color:#0b0c0e;}
+.leaktier.basic li:before{content:'';position:absolute;left:2px;top:13px;width:8px;height:8px;border-radius:2px;background:#0064d6;}
+.leaktier.adv li:before{content:'';position:absolute;left:2px;top:13px;width:8px;height:8px;border-radius:2px;background:#7c3aed;}
+
+/* ===== concept illustrations (from platform ML hub) + section dividers ===== */
+.mlbx__art{border-radius:9px;overflow:hidden;aspect-ratio:16/9;margin-bottom:3px;}
+.cardart{border-radius:10px;overflow:hidden;aspect-ratio:16/9;margin-bottom:10px;}
+.secart{width:100%;border-radius:16px;overflow:hidden;aspect-ratio:16/9;border:1px solid #e6e8ee;box-shadow:0 14px 34px -18px rgba(18,20,28,.35);}
+.mlbx__art svg,.cardart svg,.secart svg{width:100%;height:100%;display:block;}
+.secdiv .sc{align-items:center;text-align:center;}
+.secmark{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.18em;color:#a0a4ac;margin-bottom:14px;}
+.secbig{font-size:clamp(34px,5.4vw,74px);font-weight:900;letter-spacing:-.03em;line-height:1;margin-top:18px;}
+.secsub{font-size:clamp(13px,1.6vw,19px);color:#6b6f76;margin-top:12px;max-width:720px;line-height:1.45;}
+.spec{display:flex;flex-direction:column;}
+.spec .rl2{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:#a0a4ac;}
+.bigterm{font-size:clamp(26px,3.6vw,46px);font-weight:900;letter-spacing:-.02em;line-height:1;margin:5px 0 7px;}
+.spec p{font-size:clamp(11px,1.05vw,13.5px);color:#4a4d53;line-height:1.5;}
+.mchips{display:flex;flex-wrap:wrap;gap:7px;margin:5px 0 8px;}
+.mchip{font-size:clamp(15px,1.95vw,25px);font-weight:900;letter-spacing:-.01em;padding:3px 13px;border-radius:10px;line-height:1.15;}
+.mchip.blue{background:#eef4fc;color:#0064d6;}.mchip.orange{background:#fff3e6;color:#b3660a;}.mchip.purple{background:#f3efff;color:#7c3aed;}
+.stackcol{display:flex;flex-direction:column;gap:12px;}
+
+/* ===== nested CV walkthrough (100 rows, 5 folds) ===== */
+.foldbar{display:flex;gap:0;width:100%;max-width:940px;margin:clamp(8px,1.2vh,14px) auto 0;border:2px solid #d9dde5;border-radius:12px;overflow:hidden;box-shadow:0 1px 2px rgba(16,20,30,.05);}
+  .foldbar .fchunk{border:0;border-right:2px solid #d9dde5;border-radius:0;}
+  .foldbar .fchunk:last-child{border-right:0;}
+  .lvl{width:100%;max-width:940px;margin:clamp(6px,1vh,12px) auto 0;display:flex;flex-direction:column;gap:7px;}
+  .lvlrow{display:flex;flex-direction:column;gap:3px;}
+  .lvln{font-size:10.5px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:#8a8f9a;padding-left:2px;}
+  .fchunk.off{background:#f7f8fa;}
+  .fchunk.off .fn{color:#c3c7cf;}
+  .fchunk.off .ft2{color:#c3c7cf;}
+  .fbcap{display:flex;width:100%;max-width:940px;margin:5px auto 0;}
+  .fbcap span{flex:1;text-align:center;font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#8a8f9a;}
+.fchunk{flex:1;padding:12px 6px;text-align:center;background:#fff;}
+.fchunk .fn{font-size:clamp(16px,1.9vw,24px);font-weight:900;line-height:1;}
+.fchunk .fr{font-size:10px;color:#8a8f9a;font-weight:600;margin-top:3px;}
+.fchunk .ft2{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;margin-top:5px;}
+.fchunk.data{background:#f3f8ff;}.fchunk.data .fn{color:#0064d6;}
+.fchunk.train{background:#fff8ee;}.fchunk.train .fn{color:#b3660a;}.fchunk.train .ft2{color:#b3660a;}
+.fchunk.test{background:#2f333c;}.fchunk.test .fn{color:#fff;}.fchunk.test .fr{color:#b8bbc2;}.fchunk.test .ft2{color:#ffd27a;}
+.fchunk.val{background:#f3efff;}.fchunk.val .fn{color:#7c3aed;}.fchunk.val .ft2{color:#7c3aed;}
+.fchunk.hold{background:#e3e6ea;}.fchunk.hold .fn{color:#3a3f4a;}.fchunk.hold .ft2{color:#6b7280;}
+.nsteps{display:flex;gap:5px;width:100%;max-width:1140px;margin-top:clamp(8px,1.2vh,14px);align-items:stretch;}
+.nstep{flex:1;background:#fff;border:1.5px solid #e6e8ee;border-radius:13px;padding:11px 12px;text-align:left;display:flex;flex-direction:column;}
+.nstep .snum{width:22px;height:22px;border-radius:7px;background:#eef4fc;color:#0064d6;font-size:12px;font-weight:900;display:flex;align-items:center;justify-content:center;margin-bottom:6px;}
+.nstep h5{font-size:clamp(11.5px,1.15vw,14px);font-weight:800;margin-bottom:3px;letter-spacing:-.01em;color:#16171a;}
+.nstep p{font-size:11px;color:#4a4d53;line-height:1.4;}
+.nstep .kv2{margin-top:auto;padding-top:7px;font-size:clamp(13px,1.5vw,18px);font-weight:900;letter-spacing:-.01em;}
+.nstep.tune .kv2{color:#7c3aed;}.nstep.exam .kv2{color:#1a9d4a;}
+.nstep.reset{background:#fef2f2;border-color:#f3c4c0;}.nstep.reset .snum{background:#fde8e6;color:#c22317;}
+.narrow{display:flex;align-items:center;color:#c3c7cf;font-size:17px;font-weight:300;flex-shrink:0;}
+.nbook{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:clamp(8px,1.2vh,14px);}
+.nbook .nlbl{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:#8a8f9a;}
+.nscore{font-size:clamp(15px,1.7vw,20px);font-weight:900;font-variant-numeric:tabular-nums;padding:5px 14px;border-radius:10px;background:#e8f5eb;color:#0d5a1e;border:1.5px solid #b8dfc1;}
+.nscore.pending{background:#f4f5f8;color:#c8ccd4;border-color:#e6e8ee;font-weight:700;}
+
+@media(max-width:860px){.cr,.cr3,.cards.c3,.cards.c2,.leakcol{grid-template-columns:1fr;}.mlgrid{grid-template-columns:1fr 1fr;}.flow{flex-direction:column;}.farrow{transform:rotate(90deg);justify-content:center;}.nsteps{flex-wrap:wrap;}.narrow{transform:rotate(90deg);}}
+
+  /* blocks read top-down: comparison cards and tier lists stack in one column;
+     rows stay only where order or parts-of-a-whole are encoded (steps, foldbar) */
+  .cards.c2,.cards.c3{grid-template-columns:1fr;max-width:880px;margin-left:auto;margin-right:auto;}
+  .cards .card{text-align:left;}
+  .leakcol{grid-template-columns:1fr;max-width:880px;margin-left:auto;margin-right:auto;}
+  .cr.stack{grid-template-columns:1fr;max-width:880px;margin-left:auto;margin-right:auto;}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <filter id="mkrough" x="-10%" y="-30%" width="120%" height="160%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.04 0.09" numOctaves="3" seed="7" result="n"/>
+    <feDisplacementMap in="SourceGraphic" in2="n" scale="6" xChannelSelector="R" yChannelSelector="G"/>
+  </filter>
+  <filter id="mkrough2" x="-10%" y="-30%" width="120%" height="160%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.05 0.07" numOctaves="2" seed="19" result="n"/>
+    <feDisplacementMap in="SourceGraphic" in2="n" scale="7" xChannelSelector="R" yChannelSelector="G"/>
+  </filter>
+</defs></svg>
+<div class="tag" id="ltag">ML · Занятие 4 · 1/3</div>
+<div class="prog" id="prog"></div>
+<div class="deck" id="deck">
+
+
+<!-- 01 TITLE -->
+<div class="slide tslide" style="text-align:center;">
+<div class="bgdots" id="bgdots"></div>
+<div class="sc">
+  <p class="eyebrow">Блок 3 · Машинное обучение · Занятие 4 · часть 1</p>
+  <h1>Validation</h1>
+  <p class="sub" style="margin:14px auto 0;max-width:960px;">Валидация (Validation) это процесс проверки того, насколько хорошо обученная модель решает поставленную задачу, справляется с новыми данными и избегает переобучения. Она показывает, действительно ли модель нашла закономерности в данных или просто запомнила ответы.</p>
+  <div class="pills" style="margin-top:20px;">
+    <span class="pill" style="background:#f5f6f8;border-color:#e2e5ea;color:#3f4652">train / val / test</span>
+    <span class="pill" style="background:#f5f6f8;border-color:#e2e5ea;color:#3f4652">k-fold</span>
+    <span class="pill" style="background:#f5f6f8;border-color:#e2e5ea;color:#3f4652">смещение оценки</span>
+    <span class="pill" style="background:#f5f6f8;border-color:#e2e5ea;color:#3f4652">nested CV</span>
+  </div>
+</div>
+</div>
+
+
+<div class="slide qslide">
+<div class="sc">
+  <p class="eyebrow q">Вопрос</p>
+  <p class="qbig" style="max-width:1180px;">Модель показала accuracy <span class="c-green">0.98</span> на тесте.<br>В продакшене точность упала до <span class="c-red">0.71</span>.<br>Что произошло между тестом и продом?</p>
+  <p class="sub rise" style="margin:22px auto 0;animation-delay:1.2s;">Данные не менялись и код не менялся. Значит дело не в самой модели, а в том, как было получено число 0.98.</p>
+</div>
+</div>
+
+
+<!-- 04 RECAP: OVERFIT / UNDERFIT -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Повторение · 1 из 4</p>
+  <h2>Bias и variance: два способа ошибиться</h2>
+  <p class="sub" style="margin-top:0;">Синие точки это обучающие клиенты, серый пунктир это реальная закономерность, кружок это новый клиент, которого модель не видела. Вертикальная черта показывает ошибку на нём.</p>
+<div class="morph3">
+    <div class="mpanel rise" style="animation-delay:.15s">
+      <p class="cap u">слишком проста · underfitting</p>
+      <svg viewBox="0 0 250 175" style="width:100%"><line x1="22" y1="152" x2="232" y2="152" stroke="#e6e8ee"/><line x1="22" y1="152" x2="22" y2="18" stroke="#e6e8ee"/><path d="M28 140 C 85 94, 125 76, 226 60" fill="none" stroke="#c3c7cf" stroke-width="1.6" stroke-dasharray="5 4"/><path d="M26 122 L228 66" fill="none" stroke="#e0820a" stroke-width="3"/><circle cx="38" cy="136" r="3.6" fill="#0064d6"/><circle cx="64" cy="102" r="3.6" fill="#0064d6"/><circle cx="90" cy="96" r="3.6" fill="#0064d6"/><circle cx="116" cy="74" r="3.6" fill="#0064d6"/><circle cx="142" cy="77" r="3.6" fill="#0064d6"/><circle cx="168" cy="60" r="3.6" fill="#0064d6"/><circle cx="194" cy="64" r="3.6" fill="#0064d6"/><circle cx="215" cy="55" r="3.6" fill="#0064d6"/><line x1="129" y1="74" x2="129" y2="93" stroke="#e02d20" stroke-width="1.5" stroke-dasharray="3 3"/><circle cx="129" cy="93" r="3" fill="#e02d20"/><circle cx="129" cy="74" r="4.6" fill="#fff" stroke="#16171a" stroke-width="2"/></svg>
+      <p class="sub2">Прямая не гнётся под закономерность. Промах и по обучающим точкам, и по новому клиенту.</p>
+    </div>
+    <div class="mpanel rise" style="animation-delay:.5s">
+      <p class="cap g">подходящая сложность</p>
+      <svg viewBox="0 0 250 175" style="width:100%"><line x1="22" y1="152" x2="232" y2="152" stroke="#e6e8ee"/><line x1="22" y1="152" x2="22" y2="18" stroke="#e6e8ee"/><path d="M28 140 C 85 94, 125 76, 226 60" fill="none" stroke="#c3c7cf" stroke-width="1.6" stroke-dasharray="5 4"/><path d="M28 138 C 85 96, 125 78, 226 60" fill="none" stroke="#1a9d4a" stroke-width="3"/><circle cx="38" cy="136" r="3.6" fill="#0064d6"/><circle cx="64" cy="102" r="3.6" fill="#0064d6"/><circle cx="90" cy="96" r="3.6" fill="#0064d6"/><circle cx="116" cy="74" r="3.6" fill="#0064d6"/><circle cx="142" cy="77" r="3.6" fill="#0064d6"/><circle cx="168" cy="60" r="3.6" fill="#0064d6"/><circle cx="194" cy="64" r="3.6" fill="#0064d6"/><circle cx="215" cy="55" r="3.6" fill="#0064d6"/><line x1="129" y1="74" x2="129" y2="78" stroke="#1a9d4a" stroke-width="1.5"/><circle cx="129" cy="78" r="3" fill="#1a9d4a"/><circle cx="129" cy="74" r="4.6" fill="#fff" stroke="#16171a" stroke-width="2"/></svg>
+      <p class="sub2">Гладкая линия идёт по тренду, шум игнорирует. Новый клиент попадает почти точно.</p>
+    </div>
+    <div class="mpanel rise" style="animation-delay:.85s">
+      <p class="cap o">слишком сложна · overfitting</p>
+      <svg viewBox="0 0 250 175" style="width:100%"><line x1="22" y1="152" x2="232" y2="152" stroke="#e6e8ee"/><line x1="22" y1="152" x2="22" y2="18" stroke="#e6e8ee"/><path d="M28 140 C 85 94, 125 76, 226 60" fill="none" stroke="#c3c7cf" stroke-width="1.6" stroke-dasharray="5 4"/><polyline points="38,136 64,102 78,82 90,96 116,74 128,54 142,77 156,52 168,60 194,64 205,46 215,55" fill="none" stroke="#e02d20" stroke-width="2.5"/><circle cx="38" cy="136" r="3.6" fill="#0064d6"/><circle cx="64" cy="102" r="3.6" fill="#0064d6"/><circle cx="90" cy="96" r="3.6" fill="#0064d6"/><circle cx="116" cy="74" r="3.6" fill="#0064d6"/><circle cx="142" cy="77" r="3.6" fill="#0064d6"/><circle cx="168" cy="60" r="3.6" fill="#0064d6"/><circle cx="194" cy="64" r="3.6" fill="#0064d6"/><circle cx="215" cy="55" r="3.6" fill="#0064d6"/><line x1="129" y1="74" x2="129" y2="56" stroke="#e02d20" stroke-width="1.5" stroke-dasharray="3 3"/><circle cx="129" cy="56" r="3" fill="#e02d20"/><circle cx="129" cy="74" r="4.6" fill="#fff" stroke="#16171a" stroke-width="2"/></svg>
+      <p class="sub2">Линия петляет за каждым шумом. По обучающим точкам идеально, по новому клиенту - мимо.</p>
+    </div>
+  </div>
+  <div class="note"><p><b class="mk r">Чем плох bias.</b> Модель слишком проста и не улавливает закономерность, поэтому ошибается везде, включая те данные, на которых училась. Добавить ещё строк в обучающую выборку не поможет: прямая всё равно не согнётся.</p></div>
+  <div class="note"><p><b class="mk r alt">Чем плоха variance.</b> Модель подстроилась под шум обучающей выборки. На истории она выглядит почти безошибочной, а на новых клиентах промахивается, и именно этот разрыв всплывает в продакшене.</p></div>
+</div>
+</div>
+
+
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Повторение · 2 из 4</p>
+  <h2>Как отличить bias от variance</h2>
+  <p class="sub" style="margin-top:0;">Диагноз ставится по двум числам: ошибке на обучающей выборке и ошибке на проверочной.</p>
+  <svg viewBox="0 0 880 210" style="width:100%;max-width:820px;height:auto;margin:8px auto 0;display:block" role="img" aria-label="Разрыв ошибок при variance и при bias">
+    <g font-family="inherit">
+      <rect x="30" y="26" width="380" height="150" rx="12" fill="#fff" stroke="#dfe2e8" stroke-width="1.6"/>
+      <rect x="470" y="26" width="380" height="150" rx="12" fill="#fff" stroke="#dfe2e8" stroke-width="1.6"/>
+      <text x="220" y="16" font-size="13.5" font-weight="800" fill="#2b2f36" text-anchor="middle">variance: разрыв большой</text>
+      <text x="660" y="16" font-size="13.5" font-weight="800" fill="#2b2f36" text-anchor="middle">bias: обе ошибки высокие</text>
+      <text x="52" y="48" font-size="10.5" font-weight="700" fill="#8a8f9a">ошибка</text>
+      <text x="492" y="48" font-size="10.5" font-weight="700" fill="#8a8f9a">ошибка</text>
+      <line x1="60" y1="150" x2="390" y2="150" stroke="#c3c7cf" stroke-width="1.5"/>
+      <line x1="500" y1="150" x2="830" y2="150" stroke="#c3c7cf" stroke-width="1.5"/>
+      <rect x="110" y="128" width="90" height="22" rx="4" fill="#e7f5ec" stroke="#1a9d4a" stroke-width="1.6"/>
+      <rect x="250" y="62" width="90" height="88" rx="4" fill="#fee2e2" stroke="#e02d20" stroke-width="1.6"/>
+      <rect x="550" y="70" width="90" height="80" rx="4" fill="#fee2e2" stroke="#e02d20" stroke-width="1.6"/>
+      <rect x="690" y="62" width="90" height="88" rx="4" fill="#fee2e2" stroke="#e02d20" stroke-width="1.6"/>
+      <g font-size="12" font-weight="700" fill="#5a6069" text-anchor="middle">
+        <text x="155" y="168">train</text><text x="295" y="168">validation</text>
+        <text x="595" y="168">train</text><text x="735" y="168">validation</text>
+      </g>
+      <path d="M205 118 H245" stroke="#e02d20" stroke-width="1.6"/>
+      <path d="M205 118 v6 M245 118 v6" stroke="#e02d20" stroke-width="1.6"/>
+      <text x="225" y="110" font-size="11.5" font-weight="800" fill="#b91c1c" text-anchor="middle">разрыв</text>
+    </g>
+  </svg>
+  <div class="note"><p><b class="mk r">Ошибка на обучении низкая, на проверке высокая.</b> Это variance. Модель запомнила обучающие данные. Помогают более простая модель, регуляризация и дополнительные данные.</p></div>
+  <div class="note"><p><b class="mk r alt">Обе ошибки высокие.</b> Это bias. Модель не справляется даже с тем, что видела. Помогают более сложная модель и новые информативные признаки.</p></div>
+</div>
+</div>
+
+
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Повторение · 3 из 4</p>
+  <h2>Кросс-валидация: k прогонов вместо одного деления</h2>
+  <p class="sub" style="margin-top:0;">Кросс-валидация работает внутри обучающей части. Тест к ней не имеет отношения: он отложен заранее и здесь не участвует ни разу.</p>
+  <svg viewBox="0 0 880 296" style="width:100%;max-width:840px;height:auto;margin:8px auto 0;display:block" role="img" aria-label="k-fold идёт внутри обучающей части, тест отложен отдельно">
+    <g font-family="inherit">
+      <text x="20" y="18" font-size="12" font-weight="800" fill="#8a8f9a">весь датасет</text>
+      <rect x="96" y="26" width="600" height="30" rx="4" fill="#fff8ee" stroke="#d9dde5" stroke-width="1.4"/>
+      <text x="396" y="46" font-size="13" font-weight="800" fill="#b3660a" text-anchor="middle">обучающая часть</text>
+      <rect x="712" y="26" width="144" height="30" rx="4" fill="#2f333c"/>
+      <text x="784" y="46" font-size="13" font-weight="800" fill="#fff" text-anchor="middle">test</text>
+
+      <line x1="704" y1="14" x2="704" y2="272" stroke="#c3c7cf" stroke-width="1.6" stroke-dasharray="6 5"/>
+      <rect x="712" y="74" width="144" height="176" rx="8" fill="#f4f5f8" stroke="#c3c7cf" stroke-width="1.4" stroke-dasharray="6 5"/>
+      <g font-size="12" font-weight="800" fill="#5a6069" text-anchor="middle">
+        <text x="784" y="148">в сейфе</text><text x="784" y="168">до самого</text><text x="784" y="188">конца</text>
+      </g>
+
+      <text x="20" y="90" font-size="12" font-weight="800" fill="#8a8f9a">k-fold только здесь</text>
+      <g font-size="11.5" font-weight="700" fill="#8a8f9a">
+        <text x="20" y="118">прогон 1</text><text x="20" y="150">прогон 2</text><text x="20" y="182">прогон 3</text>
+        <text x="20" y="214">прогон 4</text><text x="20" y="246">прогон 5</text>
+      </g>
+      <g stroke="#d9dde5" stroke-width="1.4">
+        <rect x="96" y="100" width="118" height="24" fill="#fff8ee"/><rect x="216" y="100" width="118" height="24" fill="#fff8ee"/><rect x="336" y="100" width="118" height="24" fill="#fff8ee"/><rect x="456" y="100" width="118" height="24" fill="#fff8ee"/><rect x="576" y="100" width="120" height="24" fill="#f3efff"/>
+        <rect x="96" y="132" width="118" height="24" fill="#fff8ee"/><rect x="216" y="132" width="118" height="24" fill="#fff8ee"/><rect x="336" y="132" width="118" height="24" fill="#fff8ee"/><rect x="456" y="132" width="118" height="24" fill="#f3efff"/><rect x="576" y="132" width="120" height="24" fill="#fff8ee"/>
+        <rect x="96" y="164" width="118" height="24" fill="#fff8ee"/><rect x="216" y="164" width="118" height="24" fill="#fff8ee"/><rect x="336" y="164" width="118" height="24" fill="#f3efff"/><rect x="456" y="164" width="118" height="24" fill="#fff8ee"/><rect x="576" y="164" width="120" height="24" fill="#fff8ee"/>
+        <rect x="96" y="196" width="118" height="24" fill="#fff8ee"/><rect x="216" y="196" width="118" height="24" fill="#f3efff"/><rect x="336" y="196" width="118" height="24" fill="#fff8ee"/><rect x="456" y="196" width="118" height="24" fill="#fff8ee"/><rect x="576" y="196" width="120" height="24" fill="#fff8ee"/>
+        <rect x="96" y="228" width="118" height="24" fill="#f3efff"/><rect x="216" y="228" width="118" height="24" fill="#fff8ee"/><rect x="336" y="228" width="118" height="24" fill="#fff8ee"/><rect x="456" y="228" width="118" height="24" fill="#fff8ee"/><rect x="576" y="228" width="120" height="24" fill="#fff8ee"/>
+      </g>
+      <g font-size="10.5" font-weight="800" fill="#7c3aed" text-anchor="middle">
+        <text x="636" y="116">val</text><text x="515" y="148">val</text><text x="395" y="180">val</text><text x="275" y="212">val</text><text x="155" y="244">val</text>
+      </g>
+      <g font-size="10.5" font-weight="700" fill="#b3660a" text-anchor="middle">
+        <text x="336" y="116">train</text><text x="275" y="148">train</text><text x="215" y="180">train</text><text x="395" y="212">train</text><text x="455" y="244">train</text>
+      </g>
+      <text x="396" y="284" font-size="12.5" font-weight="700" fill="#5a6069" text-anchor="middle">каждая часть обучающей выборки один раз побывала проверочной, итог это среднее пяти прогонов и разброс</text>
+    </g>
+  </svg>
+  <div class="note"><p><b class="mk g">Что это даёт.</b> На тех же данных десять одиночных делений дали размах 0.104, а десять средних по 5-fold уже 0.039: случайность деления ослабла в 2.7 раза. Вместо одной цифры появляются k чисел, и разброс между ними сам по себе полезен, он показывает, насколько результат зависит от разбиения.</p></div>
+</div>
+</div>
+
+
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Повторение · 4 из 4</p>
+  <h2>Grid search и random search</h2>
+  <p class="sub" style="margin-top:0;">Гиперпараметры не подбираются обучением, их перебирают. Два способа перебора отличаются тем, какие точки пространства проверяются.</p>
+  <svg viewBox="0 0 880 200" style="width:100%;max-width:800px;height:auto;margin:8px auto 0;display:block" role="img" aria-label="Grid перебирает сетку, random берёт случайные точки">
+    <g font-family="inherit">
+      <rect x="60" y="24" width="300" height="130" rx="10" fill="#fff" stroke="#dfe2e8" stroke-width="1.6"/>
+      <rect x="520" y="24" width="300" height="130" rx="10" fill="#fff" stroke="#dfe2e8" stroke-width="1.6"/>
+      <text x="210" y="16" font-size="13.5" font-weight="800" fill="#2b2f36" text-anchor="middle">grid search</text>
+      <text x="670" y="16" font-size="13.5" font-weight="800" fill="#2b2f36" text-anchor="middle">random search</text>
+      <g fill="#9db8e8">
+        <circle cx="110" cy="54" r="7"/><circle cx="185" cy="54" r="7"/><circle cx="260" cy="54" r="7"/><circle cx="330" cy="54" r="7"/>
+        <circle cx="110" cy="94" r="7"/><circle cx="185" cy="94" r="7"/><circle cx="260" cy="94" r="7"/><circle cx="330" cy="94" r="7"/>
+        <circle cx="110" cy="132" r="7"/><circle cx="185" cy="132" r="7"/><circle cx="260" cy="132" r="7"/><circle cx="330" cy="132" r="7"/>
+      </g>
+      <g fill="#0064d6">
+        <circle cx="572" cy="48" r="7"/><circle cx="700" cy="70" r="7"/><circle cx="620" cy="118" r="7"/>
+        <circle cx="780" cy="40" r="7"/><circle cx="750" cy="132" r="7"/><circle cx="656" cy="92" r="7"/>
+      </g>
+      <text x="210" y="176" font-size="12" font-weight="700" fill="#5a6069" text-anchor="middle">все сочетания сетки, число прогонов растёт как произведение</text>
+      <text x="670" y="176" font-size="12" font-weight="700" fill="#5a6069" text-anchor="middle">случайные точки, число прогонов задаём сами</text>
+    </g>
+  </svg>
+  <div class="note"><p><b class="mk g alt">Как выбирают лучшее сочетание.</b> Каждую комбинацию оценивают по validation или по кросс-валидации и берут ту, что дала лучший результат. Именно этот шаг и создаст проблему, к которой мы переходим.</p></div>
+</div>
+</div>
+
+
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Что делает кросс-валидация</p>
+  <h2>Кросс-валидация сравнивает варианты и выбирает лучший k</h2>
+  <p class="sub" style="margin-top:0;">Перебор из прошлого слайда сам по себе ничего не решает: ему нужна шкала, по которой варианты можно сравнить. Этой шкалой и работает кросс-валидация.</p>
+  <svg viewBox="0 0 880 244" style="width:100%;max-width:860px;height:auto;margin:6px auto 0;display:block" role="img" aria-label="Качество kNN в зависимости от k, максимум при k = 47">
+    <g font-family="inherit">
+      <line x1="150" y1="196" x2="810" y2="196" stroke="#c3c7cf" stroke-width="1.5"/>
+      <line x1="150" y1="34" x2="150" y2="196" stroke="#c3c7cf" stroke-width="1.5"/>
+      <g stroke="#eceef1" stroke-width="1">
+        <line x1="150" y1="46" x2="810" y2="46"/><line x1="150" y1="96" x2="810" y2="96"/><line x1="150" y1="146" x2="810" y2="146"/>
+      </g>
+      <g font-size="11" font-weight="700" fill="#8a8f9a" text-anchor="end">
+        <text x="142" y="50">0.95</text><text x="142" y="100">0.85</text><text x="142" y="150">0.75</text>
+      </g>
+      <text x="24" y="30" font-size="11.5" font-weight="800" fill="#8a8f9a">качество</text>
+      <text x="24" y="46" font-size="11.5" font-weight="800" fill="#8a8f9a">по CV</text>
+      <g font-size="11" font-weight="700" fill="#8a8f9a" text-anchor="middle">
+        <text x="150" y="216">k=1</text>
+        <text x="355" y="216">17</text>
+        <text x="560" y="216">33</text>
+        <text x="764" y="216">49</text>
+      </g>
+      <text x="480" y="236" font-size="11.5" font-weight="700" fill="#8a8f9a" text-anchor="middle">число соседей k</text>
+      <polyline points="150,177 176,138 201,111 227,111 252,102 278,94 304,90 329,86 355,87 380,86 406,84 432,83 457,83 483,85 508,83 534,83 560,84 585,80 611,78 636,76 662,74 688,74 713,74 739,74 764,78 790,76" fill="none" stroke="#8a8f9a" stroke-width="2"/>
+      <circle cx="150" cy="177" r="4" fill="#8a8f9a"/><circle cx="176" cy="138" r="4" fill="#8a8f9a"/><circle cx="201" cy="111" r="4" fill="#8a8f9a"/><circle cx="227" cy="111" r="4" fill="#8a8f9a"/><circle cx="252" cy="102" r="4" fill="#8a8f9a"/><circle cx="278" cy="94" r="4" fill="#8a8f9a"/><circle cx="304" cy="90" r="4" fill="#8a8f9a"/><circle cx="329" cy="86" r="4" fill="#8a8f9a"/><circle cx="355" cy="87" r="4" fill="#8a8f9a"/><circle cx="380" cy="86" r="4" fill="#8a8f9a"/><circle cx="406" cy="84" r="4" fill="#8a8f9a"/><circle cx="432" cy="83" r="4" fill="#8a8f9a"/><circle cx="457" cy="83" r="4" fill="#8a8f9a"/><circle cx="483" cy="85" r="4" fill="#8a8f9a"/><circle cx="508" cy="83" r="4" fill="#8a8f9a"/><circle cx="534" cy="83" r="4" fill="#8a8f9a"/><circle cx="560" cy="84" r="4" fill="#8a8f9a"/><circle cx="585" cy="80" r="4" fill="#8a8f9a"/><circle cx="611" cy="78" r="4" fill="#8a8f9a"/><circle cx="636" cy="76" r="4" fill="#8a8f9a"/><circle cx="662" cy="74" r="4" fill="#8a8f9a"/><circle cx="688" cy="74" r="4" fill="#8a8f9a"/><circle cx="713" cy="74" r="4" fill="#8a8f9a"/><circle cx="764" cy="78" r="4" fill="#8a8f9a"/><circle cx="790" cy="76" r="4" fill="#8a8f9a"/>
+      <circle cx="739" cy="74" r="8" fill="#1a9d4a"/>
+      <text x="739" y="58" font-size="12.5" font-weight="800" fill="#15803d" text-anchor="middle">k = 47, скор 0.895</text>
+      <text x="164" y="195" font-size="12" font-weight="800" fill="#b91c1c">k = 1, скор 0.687</text>
+    </g>
+  </svg>
+  <ul class="facts stag" style="margin-top:2px;">
+    <li><b>Выбирает гиперпараметр.</b> На одних и тех же данных k = 1 даёт 0.687, а k = 47 даёт 0.895. Разница 0.208, и без общей шкалы понять, какой вариант брать, нечем.</li>
+    <li><b>Даёт устойчивую цифру.</b> Каждое значение на кривой это среднее пяти прогонов, поэтому кривая не пляшет от того, как именно нарезали данные.</li>
+    <li><b>Показывает разброс.</b> Кроме среднего у каждого варианта есть разброс между фолдами: если он велик, вариант считается ненадёжным даже при хорошем среднем.</li>
+    <li><b>Использует все строки.</b> Каждая строка ровно один раз побывала в проверочной части, и ни одна не пропала из оценки. При малой выборке это решающий довод.</li>
+  </ul>
+</div>
+</div>
+
+
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Проблема кросс-валидации</p>
+  <h2>Отложенный тест честнее, но он всего один</h2>
+  <p class="sub" style="margin-top:0;">Максимум кривой отчётной цифрой быть не может, поэтому качество замеряют на отложенном тесте. Вот только замер этот делается ровно один раз.</p>
+  <svg viewBox="0 0 880 210" style="width:100%;max-width:860px;height:auto;margin:6px auto 0;display:block" role="img" aria-label="От максимума кривой к замеру на одном отложенном тесте">
+    <defs><marker id="s8a" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#c3c7cf"/></marker></defs>
+    <g font-family="inherit">
+      <text x="60" y="24" font-size="12.5" font-weight="800" fill="#2b2f36">1. подбор по кросс-валидации</text>
+      <line x1="60" y1="150" x2="372" y2="150" stroke="#c3c7cf" stroke-width="1.4"/>
+      <line x1="60" y1="40" x2="60" y2="150" stroke="#c3c7cf" stroke-width="1.4"/>
+      <polyline points="60,138 72,111 84,93 96,93 108,87 120,82 132,79 144,76 156,77 168,76 180,75 192,75 204,75 216,76 228,74 240,75 252,75 264,73 276,72 288,70 300,69 312,69 324,68 336,68 348,71 360,70" fill="none" stroke="#8a8f9a" stroke-width="2"/>
+      <circle cx="336" cy="68" r="7" fill="#e02d20"/>
+      <text x="336" y="56" font-size="12" font-weight="800" fill="#b91c1c" text-anchor="middle">0.895</text>
+      <text x="216" y="172" font-size="11.5" font-weight="700" fill="#8a8f9a" text-anchor="middle">k подобран, но цифра завышена</text>
+      <text x="216" y="190" font-size="11.5" font-weight="700" fill="#8a8f9a" text-anchor="middle">на 0.009: по ней же выбирали</text>
+
+      <line x1="400" y1="100" x2="448" y2="100" stroke="#c3c7cf" stroke-width="1.8" marker-end="url(#s8a)"/>
+
+      <text x="480" y="24" font-size="12.5" font-weight="800" fill="#2b2f36">2. замер на отложенном тесте</text>
+      <g stroke="#d9dde5" stroke-width="1.4">
+        <rect x="480" y="60" width="76" height="30" fill="#fff8ee"/><rect x="556" y="60" width="76" height="30" fill="#fff8ee"/>
+        <rect x="632" y="60" width="76" height="30" fill="#fff8ee"/><rect x="708" y="60" width="76" height="30" fill="#fff8ee"/>
+      </g>
+      <rect x="784" y="60" width="76" height="30" fill="#2f333c"/>
+      <text x="822" y="80" font-size="11.5" font-weight="800" fill="#fff" text-anchor="middle">test</text>
+      <text x="670" y="112" font-size="12" font-weight="700" fill="#5a6069" text-anchor="middle">подбор этого куска не касался, смещения нет</text>
+      <text x="670" y="150" font-size="13" font-weight="800" fill="#b91c1c" text-anchor="middle">но это одно разбиение, и одна цифра</text>
+      <text x="670" y="172" font-size="12" font-weight="700" fill="#b91c1c" text-anchor="middle">другой кусок в роли теста дал бы другой результат</text>
+    </g>
+  </svg>
+  <div class="note"><p><b class="mk r">Почему нельзя отчитаться максимумом кривой.</b> Из двадцати шести значений k мы взяли то, где кривая выше всего. Максимум из многих шумных чисел систематически выше правды: честная оценка той же процедуры даёт 0.886, значит 0.895 завышено на 0.009.</p></div>
+  <div class="note"><p><b class="mk r alt">Почему одного теста мало.</b> Отложенный тест снимает смещение, ведь подбор его не видел. Но цифра всё равно снята с одного разбиения, а такие цифры гуляют: на этих же данных одиночные замеры давали от 0.813 до 0.917. Тесту может крупно повезти, и тогда в отчёт уйдёт красивое число, которого в проде не будет.</p></div>
+  <div class="note"><p><b class="mk g">Что из этого следует.</b> Лечение то же, что и с подбором: не доверять одной проверке, а перебрать все. Пусть каждый кусок данных по очереди побудет тестом, и тогда вместо одной цифры появится пять.</p></div>
+</div>
+</div>
+
+
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Зачем nested CV</p>
+  <h2>Обычная схема даёт одну оценку, nested CV даёт пять</h2>
+  <p class="sub" style="margin-top:0;">Разница между схемами видна на том, сколько раз данные успевают побывать экзаменом, которого подбор не касался.</p>
+  <svg viewBox="0 0 880 300" style="width:100%;max-width:840px;height:auto;margin:8px auto 0;display:block" role="img" aria-label="Один отложенный тест против пяти">
+    <g font-family="inherit">
+      <text x="20" y="20" font-size="12.5" font-weight="800" fill="#2b2f36">train / val / test: тест это один отложенный кусок</text>
+      <g stroke="#d9dde5" stroke-width="1.4">
+        <rect x="20" y="30" width="152" height="26" fill="#fff8ee"/><rect x="172" y="30" width="152" height="26" fill="#fff8ee"/>
+        <rect x="324" y="30" width="152" height="26" fill="#fff8ee"/><rect x="476" y="30" width="152" height="26" fill="#f3efff"/>
+      </g>
+      <rect x="628" y="30" width="152" height="26" fill="#2f333c"/>
+      <text x="704" y="48" font-size="11.5" font-weight="800" fill="#fff" text-anchor="middle">test</text>
+      <text x="552" y="48" font-size="11" font-weight="800" fill="#7c3aed" text-anchor="middle">val</text>
+      <text x="800" y="48" font-size="13" font-weight="900" fill="#2b2f36">1 оценка</text>
+
+      <text x="20" y="96" font-size="12.5" font-weight="800" fill="#2b2f36">nested CV: тестом по очереди становится каждый кусок</text>
+      <g stroke="#d9dde5" stroke-width="1.4">
+        <rect x="20" y="106" width="152" height="24" fill="#fff8ee"/><rect x="172" y="106" width="152" height="24" fill="#fff8ee"/><rect x="324" y="106" width="152" height="24" fill="#fff8ee"/><rect x="476" y="106" width="152" height="24" fill="#fff8ee"/>
+        <rect x="20" y="136" width="152" height="24" fill="#fff8ee"/><rect x="172" y="136" width="152" height="24" fill="#fff8ee"/><rect x="324" y="136" width="152" height="24" fill="#fff8ee"/><rect x="628" y="136" width="152" height="24" fill="#fff8ee"/>
+        <rect x="20" y="166" width="152" height="24" fill="#fff8ee"/><rect x="172" y="166" width="152" height="24" fill="#fff8ee"/><rect x="476" y="166" width="152" height="24" fill="#fff8ee"/><rect x="628" y="166" width="152" height="24" fill="#fff8ee"/>
+        <rect x="20" y="196" width="152" height="24" fill="#fff8ee"/><rect x="324" y="196" width="152" height="24" fill="#fff8ee"/><rect x="476" y="196" width="152" height="24" fill="#fff8ee"/><rect x="628" y="196" width="152" height="24" fill="#fff8ee"/>
+        <rect x="172" y="226" width="152" height="24" fill="#fff8ee"/><rect x="324" y="226" width="152" height="24" fill="#fff8ee"/><rect x="476" y="226" width="152" height="24" fill="#fff8ee"/><rect x="628" y="226" width="152" height="24" fill="#fff8ee"/>
+      </g>
+      <g fill="#2f333c">
+        <rect x="628" y="106" width="152" height="24"/><rect x="476" y="136" width="152" height="24"/><rect x="324" y="166" width="152" height="24"/>
+        <rect x="172" y="196" width="152" height="24"/><rect x="20" y="226" width="152" height="24"/>
+      </g>
+      <g font-size="11" font-weight="800" fill="#fff" text-anchor="middle">
+        <text x="704" y="123">test</text><text x="552" y="153">test</text><text x="400" y="183">test</text><text x="248" y="213">test</text><text x="96" y="243">test</text>
+      </g>
+      <g font-size="12.5" font-weight="900" fill="#2b2f36">
+        <text x="800" y="123">оценка 1</text><text x="800" y="153">оценка 2</text><text x="800" y="183">оценка 3</text>
+        <text x="800" y="213">оценка 4</text><text x="800" y="243">оценка 5</text>
+      </g>
+      <text x="400" y="278" font-size="13" font-weight="800" fill="#2b2f36" text-anchor="middle">пять оценок дают среднее и разброс, одна оценка не даёт ни того, ни другого</text>
+    </g>
+  </svg>
+</div>
+</div>
+
+
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Nested CV</p>
+  <h2>Nested CV: два вложенных цикла</h2>
+  <p class="sub" style="margin-top:0;">Внешний цикл отвечает на вопрос «какое качество у процедуры», внутренний - «какие гиперпараметры лучшие». Они работают на разных данных.</p>
+  <svg viewBox="0 0 720 210" style="max-width:960px;width:100%;margin-top:8px;">
+    <rect x="20" y="20" width="680" height="70" rx="10" fill="#eef4fc" stroke="#cfe0f7"/>
+    <text x="34" y="16" font-size="11" font-weight="800" fill="#0c447c" font-family="Inter">внешний CV · оценка</text>
+    <rect x="34" y="34" width="120" height="40" rx="6" fill="#3a3f4a"/><text x="94" y="59" text-anchor="middle" font-size="12" font-weight="700" fill="#fff" font-family="Inter">test</text>
+    <rect x="160" y="34" width="524" height="40" rx="6" fill="#e0a92e"/><text x="422" y="59" text-anchor="middle" font-size="12" font-weight="700" fill="#5a4008" font-family="Inter">train внешнего цикла</text>
+    <line x1="300" y1="90" x2="300" y2="118" stroke="#b8bbc2" stroke-width="1.5" marker-end="url(#ar)"/>
+    <defs><marker id="ar" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0 0 L6 3 L0 6 Z" fill="#b8bbc2"/></marker></defs>
+    <rect x="160" y="122" width="400" height="70" rx="10" fill="#f3efff" stroke="#d0c4f8"/>
+    <text x="174" y="118" font-size="11" font-weight="800" fill="#4a1a8e" font-family="Inter">внутренний CV · подбор гиперпараметров</text>
+    <rect x="174" y="136" width="70" height="40" rx="6" fill="#7c3aed" opacity=".55"/><text x="209" y="161" text-anchor="middle" font-size="11" font-weight="700" fill="#fff" font-family="Inter">valid</text>
+    <rect x="250" y="136" width="296" height="40" rx="6" fill="#c9b8f0"/><text x="398" y="161" text-anchor="middle" font-size="11" font-weight="700" fill="#4a1a8e" font-family="Inter">train внутреннего цикла</text>
+    <text x="592" y="150" font-size="11" font-weight="700" fill="#0d5a1e" font-family="Inter">лучшие</text>
+    <text x="592" y="165" font-size="11" font-weight="700" fill="#0d5a1e" font-family="Inter">гиперпараметры</text>
+  </svg>
+  <div class="note" style="max-width:1120px;"><p><b>Внутренний</b> цикл на train внешнего подбирает гиперпараметры. <b>Внешний</b> цикл оценивает уже настроенную модель на нетронутом test. «Выбор модели» и «оценка модели» идут на разных данных - завышения нет.</p></div>
+</div>
+</div>
+
+
+<!-- 09a WALKTHROUGH: SETUP -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Nested CV · практика</p>
+  <h2>Датасет делят на пять кусков</h2>
+  <p class="sub" style="margin-top:0;">Разберём nested CV на числах. Весь датасет - 100 строк. Внешняя кросс-валидация на 5 фолдов делит его на пять равных кусков по 20 строк.</p>
+  <div class="foldbar">
+    <div class="fchunk data"><div class="fn">А</div><div class="fr">1-20</div></div>
+    <div class="fchunk data"><div class="fn">Б</div><div class="fr">21-40</div></div>
+    <div class="fchunk data"><div class="fn">В</div><div class="fr">41-60</div></div>
+    <div class="fchunk data"><div class="fn">Г</div><div class="fr">61-80</div></div>
+    <div class="fchunk data"><div class="fn">Д</div><div class="fr">81-100</div></div>
+  </div>
+
+  <div class="lvl">
+    <div class="lvlrow">
+      <span class="lvln">Внешний цикл</span>
+      <div class="foldbar" style="margin-top:0">
+        <div class="fchunk train" style="flex:4"><div class="fn">А Б В Г</div><div class="ft2">train · настройка</div></div>
+        <div class="fchunk test"><div class="fn">Д</div><div class="ft2">test · экзамен</div></div>
+      </div>
+    </div>
+    <div class="lvlrow">
+      <span class="lvln">Внутренний цикл</span>
+      <div class="foldbar" style="margin-top:0">
+        <div class="fchunk train" style="flex:3"><div class="fn">А Б В</div><div class="ft2">train</div></div>
+        <div class="fchunk val"><div class="fn">Г</div><div class="ft2">val · выбор depth</div></div>
+        <div class="fchunk off"><div class="fn">Д</div><div class="ft2">не трогаем</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="note" style="max-width:960px;"><p>Настраивает <b>val</b>, оценивает <b>test</b>, и это всегда разные куски. За пять итераций каждый кусок ровно один раз побывает тестом.</p></div>
+</div>
+</div>
+
+
+<!-- 09b ITERATION 1 -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Итерация 1 из 5</p>
+  <h2>Итерация 1: тест на куске Д</h2>
+  <div class="foldbar">
+    <div class="fchunk train"><div class="fn">А</div><div class="ft2">train</div></div>
+    <div class="fchunk train"><div class="fn">Б</div><div class="ft2">train</div></div>
+    <div class="fchunk train"><div class="fn">В</div><div class="ft2">train</div></div>
+    <div class="fchunk val"><div class="fn">Г</div><div class="ft2">val</div></div>
+    <div class="fchunk hold" style="margin-left:18px;"><div class="fn">Д</div><div class="ft2">TEST · отложен</div></div>
+  </div>
+  <div class="nsteps">
+    <div class="nstep"><div class="snum">1</div><h5>Изоляция теста</h5><p>Кусок Д (81-100) отставляем в сторону. В подборе он не участвует.</p></div>
+    <div class="narrow">→</div>
+    <div class="nstep tune"><div class="snum">2</div><h5>Настройка · по val</h5><p>На А, Б, В, Г внутренняя CV делит их на train и val. Val подбирает гиперпараметры.</p><div class="kv2">depth = 5</div></div>
+    <div class="narrow">→</div>
+    <div class="nstep exam"><div class="snum">3</div><h5>Экзамен</h5><p>Модель с depth=5 учим на всех 80 строках, проверяем на отложенном TEST (Д).</p><div class="kv2">скор 0.85</div></div>
+    <div class="narrow">→</div>
+    <div class="nstep reset"><div class="snum">4</div><h5>Сброс</h5><p>Модель и depth=5 стираем из памяти. Записываем только скор.</p></div>
+  </div>
+  <div class="nbook"><span class="nlbl">скоры итераций</span><span class="nscore">0.85</span><span class="nscore pending">·</span><span class="nscore pending">·</span><span class="nscore pending">·</span><span class="nscore pending">·</span></div>
+</div>
+</div>
+
+
+<!-- 09c ITERATION 2 -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Итерация 2 из 5</p>
+  <h2>Итерация 2: другой тест, другие параметры</h2>
+  <div class="foldbar">
+    <div class="fchunk train"><div class="fn">А</div><div class="ft2">train</div></div>
+    <div class="fchunk train"><div class="fn">Б</div><div class="ft2">train</div></div>
+    <div class="fchunk val"><div class="fn">В</div><div class="ft2">val</div></div>
+    <div class="fchunk hold" style="margin:0 16px;"><div class="fn">Г</div><div class="ft2">TEST · отложен</div></div>
+    <div class="fchunk train"><div class="fn">Д</div><div class="ft2">train</div></div>
+  </div>
+  <div class="nsteps">
+    <div class="nstep"><div class="snum">1</div><h5>Изоляция теста</h5><p>Память очищена. Теперь отставляем кусок Г (61-80) - новый отложенный TEST.</p></div>
+    <div class="narrow">→</div>
+    <div class="nstep tune"><div class="snum">2</div><h5>Настройка · с нуля по val</h5><p>Заново на А, Б, В, Д. Val подбирает параметры, данные другие - результат другой.</p><div class="kv2">depth = 3 <span style="font-size:.66em;color:#c22317;font-weight:800">не 5</span></div></div>
+    <div class="narrow">→</div>
+    <div class="nstep exam"><div class="snum">3</div><h5>Экзамен</h5><p>Модель с depth=3 учим на 80 строках, проверяем на отложенном TEST (Г).</p><div class="kv2">скор 0.82</div></div>
+    <div class="narrow">→</div>
+    <div class="nstep reset"><div class="snum">4</div><h5>Сброс</h5><p>Снова всё стираем. Записываем только 0.82.</p></div>
+  </div>
+  <div class="note" style="max-width:1120px;"><p><b>Суть вложенности.</b> Каждая внешняя итерация настраивается заново, поэтому лучший гиперпараметр меняется от шага к шагу: depth 5, затем 3. Тест в подборе не участвует.</p></div>
+</div>
+</div>
+
+
+<!-- 09d ITERATIONS 3-5 -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Итерации 3-5</p>
+  <h2>Итерации 3-5: конвейер</h2>
+  <p class="sub" style="margin-top:0;">Тот же цикл для оставшихся кусков: спрятать тест, настроить с нуля на остальных, сдать экзамен, записать скор, сбросить.</p>
+  <div class="result" style="max-width:1000px;margin-top:6px">
+    <table>
+      <thead><tr><th>итерация</th><th>тест (в сейф)</th><th>настройка на</th><th class="num">скор</th></tr></thead>
+      <tbody>
+        <tr style="animation-delay:.15s"><td><b>3 из 5</b></td><td class="hi">Кусок В</td><td>А, Б, Г, Д</td><td class="num ok"><b>0.88</b></td></tr>
+        <tr style="animation-delay:.35s"><td><b>4 из 5</b></td><td class="hi">Кусок Б</td><td>А, В, Г, Д</td><td class="num ok"><b>0.84</b></td></tr>
+        <tr style="animation-delay:.55s"><td><b>5 из 5</b></td><td class="hi">Кусок А</td><td>Б, В, Г, Д</td><td class="num ok"><b>0.86</b></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="nbook"><span class="nlbl">скоры итераций</span><span class="nscore">0.85</span><span class="nscore">0.82</span><span class="nscore">0.88</span><span class="nscore">0.84</span><span class="nscore">0.86</span></div>
+</div>
+</div>
+
+
+<!-- 09e FINAL VERDICT -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Nested CV · итог</p>
+  <h2>Пять скоров, среднее 0.85</h2>
+  <div class="nbook" style="margin-top:2px;"><span class="nlbl">скоры итераций</span><span class="nscore">0.85</span><span class="nscore">0.82</span><span class="nscore">0.88</span><span class="nscore">0.84</span><span class="nscore">0.86</span></div>
+  <div class="bignum" style="margin-top:14px;">
+    <div class="bn good rise" style="animation-delay:.3s"><div class="v">0.85</div><div class="t">средний скор пяти итераций</div></div>
+  </div>
+  <div class="cards c3" style="margin-top:14px">
+    <div class="card"><h4>100% данных проверены</h4><p>Каждый кусок ровно один раз был невидимым тестом. Ни одна строка не осталась без проверки.</p></div>
+    <div class="card"><h4>Оценка стабильности</h4><p>Видно, как скачут параметры: depth 5, потом 3. Слишком большой разброс - пайплайн нестабилен.</p></div>
+    <div class="card"><h4>Тест не участвовал в подборе</h4><p>0.85 - ожидание для прода: подбор параметров теста не касался.</p></div>
+  </div>
+</div>
+</div>
+
+
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Как читать результат</p>
+  <h2>Когда цифре из кросс-валидации можно верить</h2>
+  <p class="sub" style="margin-top:0;">Слева наш пример: 300 строк и перебор k, который дал кривую с максимумом 0.895. Справа тот же перебор, но данных мало, а признаков много.</p>
+  <div class="result" style="max-width:1060px;margin-top:8px">
+    <table>
+      <thead><tr><th class="wrap">Показатель</th><th class="wrap">наш пример, 300 строк</th><th class="wrap">85 строк, 60 признаков</th></tr></thead>
+      <tbody>
+        <tr><td>Обещала обычная CV</td><td class="num">0.895</td><td class="num">0.787</td></tr>
+        <tr><td>Показал внешний цикл</td><td class="num">0.886</td><td class="num">0.644</td></tr>
+        <tr><td><b>Завышение</b></td><td class="num ok"><b>0.009</b></td><td class="num ng"><b>0.143</b></td></tr>
+        <tr><td>Разброс между внешними фолдами</td><td class="num ok">0.020</td><td class="num ng">0.120</td></tr>
+        <tr><td class="wrap">k, выбранный внутри каждого из пяти внешних фолдов</td><td>31, 27, 49, 37, 37</td><td>27, 27, 17, 23, 29</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="note"><p><b class="mk g">Слева цифре можно верить.</b> Внешний цикл дал 0.886 против обещанных 0.895, разброс между фолдами всего 0.020. То, что внутри каждого фолда выбрался свой k, тревоги не вызывает: на этом участке кривая уже выполаживается, и любое значение от 27 до 49 даёт примерно одно качество.</p></div>
+  <div class="note"><p><b class="mk r alt">Справа цифра врёт.</b> Обещали 0.787, честная оценка 0.644, разница четырнадцать пунктов. Разброс 0.120 означает, что результат сильно зависит от разбиения, и в отчёт здесь идёт 0.644. Заметьте, что k скачет в обоих случаях, так что сам по себе разброс k диагнозом не является.</p></div>
+</div>
+</div>
+
+
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Порядок действий</p>
+  <h2>Что в итоге уходит в прод и что в отчёт</h2>
+  <p class="sub" style="margin-top:0;">Nested CV не выбирает гиперпараметры. Он отвечает на вопрос, можно ли верить цифре, которую дала обычная кросс-валидация.</p>
+  <ul class="facts stag" style="margin-top:10px;">
+    <li><b>1. Подбираем гиперпараметры обычной кросс-валидацией</b> на всех доступных данных. В нашем примере она дала k = 47 и скор 0.895.</li>
+    <li><b>2. Проверяем эту цифру вложенной кросс-валидацией.</b> Внешний цикл дал 0.886 при разбросе 0.020, то есть завышение составило 0.009.</li>
+    <li><b>3. Разброс мал и завышение мало, значит оценка устойчива.</b> Берём тот самый k = 47, который дала обычная кросс-валидация, и обучаем финальную модель на всех данных.</li>
+    <li><b>4. В отчёт идёт цифра внешнего цикла.</b> Если бы завышение оказалось заметным, как во втором примере с 0.143, в отчёт пошло бы 0.644, а не 0.787.</li>
+  </ul>
+  <div class="note"><p><b class="mk g">Коротко.</b> Обычная кросс-валидация отвечает за выбор, вложенная за доверие к числу. Разные k по внешним фолдам это не проблема: они говорят лишь о том, что качество не привязано к одному точному значению.</p></div>
+</div>
+</div>
+
+
+<!-- 10 NESTED CV: WHEN -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Nested CV</p>
+  <h2>Nested CV: цена и область применения</h2>
+  <p class="sub" style="margin-top:0;">Оценка без завышения стоит времени обучения, и множитель виден сразу.</p>
+  <svg viewBox="0 0 900 208" style="width:100%;max-width:900px;height:auto;margin:8px auto 0;display:block" role="img" aria-label="Сколько обучений стоит nested CV">
+    <g font-family="inherit">
+      <g font-size="13.5" font-weight="700" fill="#2b2f36" text-anchor="middle">
+        <rect x="20" y="16" width="150" height="42" rx="9" fill="#f5f6f8" stroke="#dfe2e8"/>
+        <text x="95" y="34">5 внешних</text><text x="95" y="50">фолдов</text>
+        <text x="188" y="43" font-size="17" fill="#8a8f9a">×</text>
+        <rect x="206" y="16" width="150" height="42" rx="9" fill="#f5f6f8" stroke="#dfe2e8"/>
+        <text x="281" y="34">5 внутренних</text><text x="281" y="50">фолдов</text>
+        <text x="374" y="43" font-size="17" fill="#8a8f9a">×</text>
+        <rect x="392" y="16" width="150" height="42" rx="9" fill="#f5f6f8" stroke="#dfe2e8"/>
+        <text x="467" y="34">50 комбинаций</text><text x="467" y="50">гиперпараметров</text>
+        <text x="560" y="43" font-size="17" fill="#8a8f9a">=</text>
+        <rect x="578" y="16" width="164" height="42" rx="9" fill="#f5f6f8" stroke="#8a8f9a" stroke-width="1.6"/>
+        <text x="660" y="43" font-size="16" font-weight="900">1250 обучений</text>
+      </g>
+      <text x="20" y="96" font-size="12.5" font-weight="700" fill="#5a6069">подбор на одном разбиении</text>
+      <rect x="20" y="104" width="29" height="26" rx="4" fill="#e7eaee" stroke="#c3c7cf"/>
+      <text x="60" y="123" font-size="14" font-weight="900" fill="#2b2f36" font-variant-numeric="tabular-nums">50</text>
+      <text x="20" y="158" font-size="12.5" font-weight="700" fill="#5a6069">nested CV</text>
+      <rect x="20" y="166" width="725" height="26" rx="4" fill="#2f333c"/>
+      <text x="758" y="185" font-size="14" font-weight="900" fill="#2b2f36" font-variant-numeric="tabular-nums">1250</text>
+      <text x="815" y="185" font-size="13" font-weight="800" fill="#5a6069">в 25 раз</text>
+    </g>
+  </svg>
+  <div class="cards c2" style="margin-top:6px;max-width:1000px">
+    <div class="card"><h4>Когда нужен</h4><p>Когда сравнивают много моделей и наборов гиперпараметров и важна итоговая цифра без завышения: научная статья, тендер, аудит модели.</p></div>
+    <div class="card"><h4>Когда достаточно проще</h4><p>Когда данных много, завышение ничтожно: в разобранном примере на 569 строках оно составило 0.0003, и платить за nested CV в 25 раз большим временем незачем. Хватает отдельного test, как в занятиях 1-3.</p></div>
+  </div>
+</div>
+</div>
+
+
+<!-- 10b WHY LEAKAGE -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Шпаргалка</p>
+  <h2>Валидация от train/test до nested CV</h2>
+  <table style="width:100%;max-width:1060px;margin:10px auto 0;border-collapse:collapse;font-size:clamp(12px,1.3vw,16.5px);text-align:left">
+    <thead><tr>
+      <th style="padding:7px 10px;border-bottom:2px solid #d7dde5;color:#5b6b7c;font-size:.82em;letter-spacing:.03em">Понятие</th>
+      <th style="padding:7px 10px;border-bottom:2px solid #d7dde5;color:#5b6b7c;font-size:.82em;letter-spacing:.03em">Коротко</th>
+    </tr></thead>
+    <tbody>
+      <tr><td style="padding:7px 10px;border-bottom:1px solid #e6e8ee;font-weight:700;white-space:nowrap">Train / val / test</td><td style="padding:7px 10px;border-bottom:1px solid #e6e8ee">обучение · подбор · один финальный экзамен</td></tr>
+      <tr><td style="padding:7px 10px;border-bottom:1px solid #e6e8ee;font-weight:700;white-space:nowrap">K-fold</td><td style="padding:7px 10px;border-bottom:1px solid #e6e8ee">k прогонов вместо одного деления; среднее и разброс</td></tr>
+      <tr><td style="padding:7px 10px;border-bottom:1px solid #e6e8ee;font-weight:700;white-space:nowrap">Смещение</td><td style="padding:7px 10px;border-bottom:1px solid #e6e8ee">максимум из 50 шумных прогонов выше правды</td></tr>
+      <tr><td style="padding:7px 10px;border-bottom:1px solid #e6e8ee;font-weight:700;white-space:nowrap">Nested CV</td><td style="padding:7px 10px;border-bottom:1px solid #e6e8ee">подбор во внутреннем цикле, оценка во внешнем</td></tr>
+      <tr><td style="padding:7px 10px;border-bottom:1px solid #e6e8ee;font-weight:700;white-space:nowrap">Итог</td><td style="padding:7px 10px;border-bottom:1px solid #e6e8ee">среднее пяти скоров и разброс; здесь 0.85</td></tr>
+      <tr><td style="padding:7px 10px;border-bottom:1px solid #e6e8ee;font-weight:700;white-space:nowrap">Покрытие</td><td style="padding:7px 10px;border-bottom:1px solid #e6e8ee">каждый кусок ровно один раз побывал тестом</td></tr>
+      <tr><td style="padding:7px 10px;border-bottom:1px solid #e6e8ee;font-weight:700;white-space:nowrap">Цена</td><td style="padding:7px 10px;border-bottom:1px solid #e6e8ee">в k раз дороже обычной CV</td></tr>
+      <tr><td style="padding:7px 10px;font-weight:700;white-space:nowrap">Когда</td><td style="padding:7px 10px">мало данных, аудит, статья, тендер</td></tr>
+    </tbody>
+  </table>
+</div>
+</div>
+
+
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Проверь себя</p>
+  <ol class="stag" style="max-width:1000px;text-align:left;font-size:clamp(14px,1.5vw,19px);line-height:1.5;color:#2b2f36;padding-left:26px;margin-top:10px;">
+    <li style="margin-bottom:12px">Зачем нужен отдельный test, если гиперпараметры уже подбираются по validation?</li>
+    <li style="margin-bottom:12px">Перебрали 50 комбинаций гиперпараметров, лучшая дала 0.86 по CV, и это число ушло в отчёт. Что завышено и как получить несмещённую цифру?</li>
+    <li style="margin-bottom:12px">Nested CV дал скоры 0.81, 0.84, 0.79, 0.83, 0.83. Итоговая оценка и разброс?</li>
+    <li style="margin-bottom:12px">На итерации 1 val выбрал depth = 5, на итерации 2 - depth = 3. Ошибка или норма?</li>
+    <li style="margin-bottom:12px">Данных 10 млн строк. Нужен ли nested CV или хватит train / validation / test?</li>
+  </ol>
+</div>
+</div>
+
+
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Домашнее задание</p>
+  <h2>К следующему занятию</h2>
+  <ul class="facts checks stag">
+    <li><b>Ноутбук ml05_classwork.ipynb:</b> пройти классную работу до конца и выполнить задачи в разделе «Практика».</li>
+    <li><b>Расчёт на бумаге:</b> nested CV дал скоры 0.77, 0.80, 0.76, 0.79, 0.78. Посчитать итоговое число для отчёта и разброс между фолдами.</li>
+    <li><b>Своя задача:</b> взять любой датасет с платформы, подобрать гиперпараметр обычной кросс-валидацией и проверить эту цифру вложенной. Записать завышение.</li>
+    <li><b>Письменно, три строки:</b> когда nested CV нужен, а когда хватает отдельного теста, и почему разные k по внешним фолдам не считаются проблемой.</li>
+  </ul>
+</div>
+</div>
+
+</div>
+<div class="ind"><span id="cur">1</span> / <span id="tot"></span></div>
+<div class="hint">← → space</div>
+<script>
+const slides=document.querySelectorAll('.slide');
+let cur=0;
+document.getElementById('tot').textContent=slides.length;
+function runCounters(slide){
+  slide.querySelectorAll('[data-cnt]').forEach(el=>{
+    const target=parseFloat(el.dataset.cnt), dec=parseInt(el.dataset.dec||'0'), pre=el.dataset.pre||'', suf=el.dataset.suf||'';
+    const t0=performance.now(), dur=900;
+    function tick(t){
+      const p=Math.min(1,(t-t0)/dur), e=1-Math.pow(1-p,3);
+      el.textContent=pre+(target*e).toFixed(dec)+suf;
+      if(p<1)requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  });
+}
+function go(n){
+  slides[cur].classList.remove('active');
+  cur=(n+slides.length)%slides.length;
+  slides[cur].classList.add('active');
+  const sc=slides[cur].querySelector('.sc');
+  if(sc){sc.style.animation='none';void sc.offsetWidth;sc.style.animation='';}
+  slides[cur].querySelectorAll('.rise,.cl,.growx,.pill,.resbadge').forEach(el=>{
+    el.style.animation='none';void el.offsetWidth;el.style.animation='';
+  });
+  runCounters(slides[cur]);
+  document.getElementById('cur').textContent=cur+1;
+  document.getElementById('prog').style.width=((cur+1)/slides.length*100)+'%';
+}
+document.addEventListener('keydown',e=>{
+  if(e.key==='ArrowRight'||e.key===' '){e.preventDefault();go(cur+1);}
+  if(e.key==='ArrowLeft'){e.preventDefault();go(cur-1);}
+});
+let tx=0;
+document.addEventListener('touchstart',e=>{tx=e.touches[0].clientX;},{passive:true});
+document.addEventListener('touchend',e=>{const dx=e.changedTouches[0].clientX-tx;if(Math.abs(dx)>40)go(cur+(dx<0?1:-1));},{passive:true});
+(function(){
+  const host=document.getElementById('bgdots');
+  if(!host)return;
+  const colors=['#0064d6','#e02d20','#1a9d4a','#e0820a','#7c3aed'];
+  for(let i=0;i<26;i++){
+    const d=document.createElement('i');
+    const s=6+Math.random()*14;
+    d.style.width=d.style.height=s+'px';
+    d.style.left=Math.random()*100+'%';
+    d.style.top=Math.random()*100+'%';
+    d.style.background=colors[i%colors.length];
+    d.style.setProperty('--dx',(Math.random()*60-30)+'px');
+    d.style.setProperty('--dy',(Math.random()*60-30)+'px');
+    d.style.animationDuration=(7+Math.random()*9)+'s';
+    host.appendChild(d);
+  }
+})();
+const h=parseInt((location.hash||'').slice(1));
+go(h>=1&&h<=slides.length?h-1:0);
+</script>
+</body>
+</html>

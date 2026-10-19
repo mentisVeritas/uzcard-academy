@@ -1,0 +1,1792 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OOP in Python · Lecture 7</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700;800&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+            background: #FFFFFF;
+            color: #1d1d1f;
+            line-height: 1.1;
+            overflow: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .presentation { width: 100vw; height: 100vh; position: relative; }
+
+        .slide {
+            width: 100%; height: 100%;
+            display: none;
+            align-items: center; justify-content: center;
+            position: absolute; top: 0; left: 0;
+            padding: clamp(40px, 6vh, 80px) clamp(40px, 6vw, 80px);
+            text-align: center;
+        }
+        .slide.active { display: flex; flex-direction: column; }
+
+        .slide-content {
+            max-width: 1200px; width: 100%; margin: 0 auto;
+            opacity: 0; transform: translateY(20px);
+            animation: fadeInUp 0.8s ease-out 0.2s forwards;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+        }
+
+        @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
+
+        h1 {
+            font-size: clamp(40px, 6.5vw, 96px);
+            font-weight: 700;
+            letter-spacing: -0.025em;
+            line-height: 0.95;
+            margin-bottom: clamp(16px, 2.5vh, 32px);
+            color: #1d1d1f;
+        }
+
+        h2 {
+            font-size: clamp(28px, 4vw, 56px);
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            line-height: 1.05;
+            margin-bottom: clamp(16px, 2vh, 28px);
+            color: #1d1d1f;
+        }
+
+        .subtitle {
+            font-size: clamp(18px, 2.2vw, 28px);
+            font-weight: 400;
+            color: #86868b;
+            margin-bottom: clamp(24px, 4vh, 48px);
+            line-height: 1.3;
+            max-width: 900px;
+        }
+
+        .eyebrow {
+            font-size: clamp(13px, 1.2vw, 16px);
+            font-weight: 600;
+            color: #007aff;
+            text-transform: uppercase;
+            letter-spacing: 0.18em;
+            margin-bottom: 18px;
+        }
+
+        .body-text {
+            font-size: clamp(15px, 1.8vw, 22px);
+            font-weight: 400;
+            color: #515154;
+            line-height: 1.45;
+            max-width: 820px;
+            margin: 0 auto;
+        }
+
+        .highlight { color: #007aff; font-weight: 500; }
+        .accent-green { color: #34c759; font-weight: 500; }
+        .accent-red { color: #ff3b30; font-weight: 500; }
+        .accent-purple { color: #af52de; font-weight: 500; }
+
+        .cards-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: clamp(16px, 2.5vw, 28px);
+            margin-top: clamp(24px, 4vh, 40px);
+            max-width: 1100px; width: 100%;
+        }
+
+        .card {
+            background: rgba(0, 0, 0, 0.025);
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            border-radius: 14px;
+            padding: clamp(20px, 2.5vw, 32px);
+            text-align: left;
+            opacity: 0; transform: translateY(24px);
+            animation: cardSlideUp 0.55s ease-out forwards;
+            transition: all 0.3s ease;
+        }
+        .card:nth-child(1) { animation-delay: 0.4s; }
+        .card:nth-child(2) { animation-delay: 0.5s; }
+        .card:nth-child(3) { animation-delay: 0.6s; }
+        .card:nth-child(4) { animation-delay: 0.7s; }
+        @keyframes cardSlideUp { to { opacity: 1; transform: translateY(0); } }
+        .card .num {
+            font-size: clamp(28px, 3vw, 36px);
+            font-weight: 700;
+            color: #007aff;
+            line-height: 1;
+            margin-bottom: 12px;
+        }
+        .card h3 {
+            font-size: clamp(17px, 2vw, 22px);
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #1d1d1f;
+        }
+        .card p {
+            font-size: clamp(13px, 1.55vw, 16px);
+            color: #6e6e73;
+            line-height: 1.45;
+        }
+
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: clamp(24px, 4vw, 56px);
+            max-width: 1100px;
+            width: 100%;
+            margin-top: clamp(24px, 4vh, 40px);
+            align-items: stretch;
+        }
+        .comparison-item {
+            text-align: left;
+            opacity: 0; transform: scale(0.96);
+            animation: scaleIn 0.6s ease-out forwards;
+            padding: clamp(20px, 2.5vw, 32px);
+            border-radius: 16px;
+            background: rgba(0,0,0,0.02);
+            border: 1px solid rgba(0,0,0,0.06);
+        }
+        .comparison-item:nth-child(1) { animation-delay: 0.4s; }
+        .comparison-item:nth-child(2) { animation-delay: 0.55s; }
+        @keyframes scaleIn { to { opacity: 1; transform: scale(1); } }
+        .comparison-item .label {
+            font-size: clamp(12px, 1.1vw, 14px);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.16em;
+            margin-bottom: 12px;
+        }
+        .comparison-item.old .label { color: #ff3b30; }
+        .comparison-item.new .label { color: #34c759; }
+        .comparison-item h3 {
+            font-size: clamp(20px, 2.4vw, 28px);
+            font-weight: 600;
+            margin-bottom: 14px;
+            color: #1d1d1f;
+            line-height: 1.15;
+        }
+        .comparison-item p, .comparison-item li {
+            font-size: clamp(13px, 1.6vw, 17px);
+            color: #515154;
+            line-height: 1.45;
+        }
+
+        .quote-card {
+            margin-top: clamp(20px, 3vh, 32px);
+            padding: clamp(18px, 2.2vw, 26px) clamp(22px, 2.8vw, 32px);
+            border-left: 3px solid #007aff;
+            background: rgba(0, 122, 255, 0.04);
+            border-radius: 8px;
+            text-align: left;
+            max-width: 820px;
+        }
+        .quote-card.warning {
+            border-left-color: #ff3b30;
+            background: rgba(255, 59, 48, 0.04);
+        }
+        .quote-card.success {
+            border-left-color: #34c759;
+            background: rgba(52, 199, 89, 0.05);
+        }
+        .quote-card .label {
+            font-size: 12px; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 0.16em;
+            color: #007aff; margin-bottom: 8px;
+        }
+        .quote-card.warning .label { color: #ff3b30; }
+        .quote-card.success .label { color: #34c759; }
+        .quote-card p {
+            font-size: clamp(14px, 1.7vw, 19px);
+            color: #1d1d1f; line-height: 1.4; font-weight: 500;
+        }
+
+        .code-block {
+            background: #1d1d1f;
+            color: #f5f5f7;
+            border-radius: 12px;
+            padding: clamp(16px, 1.8vw, 24px);
+            font-family: 'SF Mono', 'Menlo', 'Monaco', 'Consolas', monospace;
+            font-size: clamp(12px, 1.4vw, 16px);
+            line-height: 1.6;
+            text-align: left;
+            margin-top: 18px;
+            max-width: 860px;
+            width: 100%;
+            white-space: pre;
+            overflow-x: auto;
+        }
+        .code-block.tight { padding: clamp(14px, 1.6vw, 20px); font-size: clamp(11px, 1.3vw, 14px); line-height: 1.5; }
+        .code-block .ck { color: #ff79c6; }
+        .code-block .cs { color: #f1fa8c; }
+        .code-block .cn { color: #f8f8f2; }
+        .code-block .co { color: #6272a4; font-style: italic; }
+        .code-block .cf { color: #8be9fd; }
+        .code-block .cm { color: #bd93f9; }
+        .code-block .ce { color: #ff5555; }
+        .code-block .cc { color: #50fa7b; }
+
+        .code-output {
+            display: grid;
+            grid-template-columns: 1.1fr 1fr;
+            gap: 16px;
+            margin-top: 22px;
+            width: 100%;
+            max-width: 1050px;
+        }
+        .code-output .term {
+            background: #1d1d1f;
+            color: #f5f5f7;
+            border-radius: 12px;
+            padding: 18px;
+            font-family: 'SF Mono', 'Menlo', monospace;
+            font-size: clamp(12px, 1.4vw, 15px);
+            line-height: 1.6;
+            text-align: left;
+            white-space: pre;
+            overflow-x: auto;
+        }
+        .term .out { color: #50fa7b; }
+        .term .err { color: #ff5555; }
+
+        .checklist {
+            list-style: none;
+            padding: 0;
+            margin-top: 18px;
+            max-width: 800px;
+            text-align: left;
+        }
+        .checklist li {
+            font-size: clamp(15px, 1.8vw, 19px);
+            color: #1d1d1f;
+            line-height: 1.5;
+            padding: 11px 0 11px 40px;
+            position: relative;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+        .checklist li:last-child { border-bottom: none; }
+        .checklist li::before {
+            content: "✓";
+            position: absolute;
+            left: 0; top: 50%;
+            transform: translateY(-50%);
+            width: 26px; height: 26px;
+            border-radius: 50%;
+            background: rgba(0, 122, 255, 0.1);
+            color: #007aff;
+            font-size: 13px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .bullet-list {
+            list-style: none;
+            padding: 0;
+            margin-top: 14px;
+            max-width: 820px;
+            text-align: left;
+        }
+        .bullet-list li {
+            font-size: clamp(14px, 1.7vw, 18px);
+            color: #1d1d1f;
+            line-height: 1.5;
+            padding: 8px 0 8px 22px;
+            position: relative;
+        }
+        .bullet-list li::before {
+            content: "•";
+            position: absolute;
+            left: 6px; top: 7px;
+            color: #007aff;
+            font-weight: 700;
+        }
+
+        .timer-display {
+            font-family: 'SF Mono', 'Menlo', monospace;
+            font-size: clamp(56px, 9vw, 120px);
+            font-weight: 700;
+            color: #007aff;
+            line-height: 1;
+            letter-spacing: -0.04em;
+            margin: 12px 0 20px 0;
+        }
+
+        .flow-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 22px;
+            font-family: 'SF Mono', 'Menlo', monospace;
+            font-size: clamp(13px, 1.5vw, 17px);
+        }
+        .flow-row .step-pill {
+            padding: 9px 16px;
+            border-radius: 50px;
+            background: rgba(0,122,255,0.08);
+            color: #007aff;
+            font-weight: 600;
+            border: 1px solid rgba(0,122,255,0.18);
+        }
+        .flow-row .arrow { color: #86868b; font-size: 18px; }
+
+        .slide-indicator {
+            position: fixed;
+            bottom: 28px; left: 50%;
+            transform: translateX(-50%);
+            font-size: 13px; color: #86868b;
+            font-weight: 400; z-index: 100;
+            letter-spacing: 0.04em;
+        }
+        .nav-hint {
+            position: fixed;
+            bottom: 28px; right: 28px;
+            font-size: 12px; color: #c7c7cc;
+            font-weight: 400; text-align: right;
+            z-index: 100;
+        }
+        .lesson-tag {
+            position: fixed;
+            top: 28px; left: 28px;
+            font-size: 11px; font-weight: 600;
+            color: #86868b; text-transform: uppercase;
+            letter-spacing: 0.18em;
+            z-index: 100;
+        }
+
+        @media (max-width: 768px) {
+            .comparison-grid, .code-output, .cards-container {
+                grid-template-columns: 1fr; gap: 18px;
+            }
+        }
+        .lang-switcher {
+            position: fixed;
+            top: 22px; right: 28px;
+            z-index: 100;
+            display: flex;
+            gap: 2px;
+            background: rgba(255,255,255,0.95);
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0,0,0,0.06);
+            border-radius: 50px;
+            padding: 3px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        .lang-switcher a {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: #86868b;
+            text-decoration: none;
+            padding: 5px 12px;
+            border-radius: 50px;
+            transition: all 0.2s ease;
+        }
+        .lang-switcher a.active {
+            color: #fff;
+            background: #007aff;
+        }
+        .lang-switcher a:not(.active):hover {
+            color: #1d1d1f;
+        }
+
+        .data-table {
+            width: 100%; max-width: 1020px;
+            margin-top: clamp(16px, 3vh, 30px);
+            border-collapse: collapse;
+            font-size: clamp(11px, 1.5vw, 17px);
+        }
+        .data-table th, .data-table td {
+            text-align: left;
+            padding: clamp(7px,1.3vw,13px) clamp(9px,1.5vw,16px);
+            border-bottom: 1px solid rgba(0,0,0,0.08);
+            vertical-align: top;
+        }
+        .data-table th {
+            font-weight: 600; color: #1d1d1f;
+            border-bottom: 2px solid rgba(0,0,0,0.14);
+        }
+        .data-table td { color: #515154; line-height: 1.4; }
+        .data-table tr:last-child td { border-bottom: none; }
+        .term {
+            background: #1d1d1f; color: #f5f5f7;
+            border-radius: 12px;
+            padding: clamp(13px,1.7vw,20px);
+            font-family: 'SF Mono','Menlo','Monaco','Consolas',monospace;
+            font-size: clamp(10px,1.3vw,15px);
+            line-height: 1.55; text-align: left;
+            white-space: pre; overflow-x: auto;
+            margin-top: 14px; max-width: 880px; width: 100%;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="presentation">
+
+        <!-- 1: Title -->
+        <div class="slide active">
+            <div class="slide-content">
+                <p class="eyebrow">Lecture 7</p>
+                <h1>OOP part 2</h1>
+                <p class="subtitle">Inheritance, dunder methods, @property</p>
+                <p class="body-text" style="margin-top: 18px;">Today we will look at how to design flexible and secure architectures. With real-world examples from fintech - how to manage complex data flows, keep passwords out of logs, and orchestrate dozens of payment gateways through a single interface.</p>
+            </div>
+        </div>
+
+        <!-- 2: Recap intro -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Lecture 6 Recap</p>
+                <h2>Core concepts</h2>
+                <p class="body-text">In the previous session we laid the foundation: we learned to package state and behavior into classes, and we got acquainted with inheritance.</p>
+                <div class="quote-card" style="margin-top: 26px;">
+                    <p>Before moving on to more advanced concepts - dynamic polymorphism and encapsulation - we need to lock in the terminology on basic examples. Without that foundation, it is easy to get lost in the mechanics of MRO and Name Mangling.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3: Purpose of classes -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Recap</p>
+                <h2>The purpose of classes</h2>
+                <p class="body-text" style="margin-bottom: 6px;">Let us compare two approaches to managing data, using bank account bookkeeping as an example.</p>
+                <div class="comparison-grid">
+                    <div class="comparison-item old">
+                        <div class="label">Procedural approach</div>
+                        <div class="code-block tight" style="margin-top: 8px; font-size: clamp(9px,1.05vw,12px);"><span class="co"># data and logic are independent;</span>
+<span class="co"># hard to scale</span>
+acc1_number  = <span class="cs">"44001122"</span>
+acc1_balance = <span class="cm">50000.0</span>
+acc2_number  = <span class="cs">"55003344"</span>
+acc2_balance = <span class="cm">1200.0</span></div>
+                    </div>
+                    <div class="comparison-item new">
+                        <div class="label">OOP approach</div>
+                        <div class="code-block tight" style="margin-top: 8px; font-size: clamp(9px,1.05vw,12px);"><span class="ck">class</span> <span class="cf">BankAccount</span>:
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, number: <span class="cf">str</span>, balance: <span class="cf">float</span>):
+        <span class="cn">self</span>.number = number
+        <span class="cn">self</span>.balance = balance
+
+acc1 = <span class="cf">BankAccount</span>(<span class="cs">"44001122"</span>, <span class="cm">50000.0</span>)</div>
+                    </div>
+                </div>
+                <p class="body-text" style="margin-top: 16px; color: #86868b;">A class is a user-defined data type that binds financial state and the logic for working with it into a single structure.</p>
+            </div>
+        </div>
+
+        <!-- 4: Class and instance -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Recap</p>
+                <h2>Class and instance</h2>
+                <div class="comparison-grid">
+                    <div class="comparison-item new">
+                        <div class="label">Class</div>
+                        <h3>Blueprint</h3>
+                        <p>A programmatic description of structure. On its own it stores no specific client's data and takes up no memory for data.</p>
+                    </div>
+                    <div class="comparison-item new">
+                        <div class="label">Instance</div>
+                        <h3>Instance</h3>
+                        <p>A concrete object in memory - for example, a client's account with a real balance. Millions of isolated objects can be created from a single class.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5: Attributes and methods -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Recap</p>
+                <h2>Attributes and methods</h2>
+                <div class="cards-container" style="grid-template-columns: 1fr 1fr; max-width: 880px;">
+                    <div class="card">
+                        <div class="num">1</div>
+                        <h3>Attributes</h3>
+                        <p>Variables inside an object that reflect its current state: <code style="font-family:'SF Mono',monospace;">account_number</code>, <code style="font-family:'SF Mono',monospace;">currency</code>, <code style="font-family:'SF Mono',monospace;">is_blocked</code>.</p>
+                    </div>
+                    <div class="card">
+                        <div class="num">2</div>
+                        <h3>Methods</h3>
+                        <p>Functions inside a class with access to the object's state: <code style="font-family:'SF Mono',monospace;">withdraw()</code>, <code style="font-family:'SF Mono',monospace;">block_account()</code>.</p>
+                    </div>
+                </div>
+                <div class="quote-card success" style="margin-top: 22px;">
+                    <p>💡 A well-designed class manages its own attributes independently, and external code interacts with it only through method calls.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 6: __init__ and self -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Recap</p>
+                <h2>The <code style="font-family:'SF Mono',monospace;">__init__</code> method and the <code style="font-family:'SF Mono',monospace;">self</code> argument</h2>
+                <div class="code-block"><span class="ck">class</span> <span class="cf">BankAccount</span>:
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, account_number: <span class="cf">str</span>, balance: <span class="cf">float</span>):
+        <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Memory allocated. self refers to address: {id(self)}"</span>)
+        <span class="cn">self</span>.account_number = account_number
+        <span class="cn">self</span>.balance = balance
+
+my_acc = <span class="cf">BankAccount</span>(<span class="cs">"44001122"</span>, <span class="cm">1000.0</span>)</div>
+                <div class="term"><span class="out">Memory allocated. self refers to address: 140237482390224</span></div>
+                <p class="body-text" style="margin-top: 12px; color: #86868b;"><code style="font-family:'SF Mono',monospace;">__init__</code> is the object's constructor, called automatically after memory is allocated. <code style="font-family:'SF Mono',monospace;">self</code> is an explicit reference to the current instance.</p>
+            </div>
+        </div>
+
+        <!-- 7: self vs this -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Context</p>
+                <h2>Python <code style="font-family:'SF Mono',monospace;">self</code> vs Java <code style="font-family:'SF Mono',monospace;">this</code></h2>
+                <div class="comparison-grid">
+                    <div class="comparison-item">
+                        <div class="label" style="color: #007aff;">Python</div>
+                        <h3>Explicit declaration</h3>
+                        <div class="code-block tight" style="margin-top: 10px; font-size: clamp(10px,1.1vw,13px);"><span class="ck">def</span> <span class="cf">deposit</span>(<span class="cn">self</span>, amount: <span class="cf">float</span>):
+    <span class="cn">self</span>.balance += amount</div>
+                        <p style="margin-top: 10px;"><code style="font-family:'SF Mono',monospace;">self</code> is written as the first argument of every method. "Explicit is better than implicit."</p>
+                    </div>
+                    <div class="comparison-item">
+                        <div class="label" style="color: #af52de;">Java</div>
+                        <h3>Implicit passing</h3>
+                        <div class="code-block tight" style="margin-top: 10px; font-size: clamp(10px,1.1vw,13px);">public void <span class="cf">deposit</span>(double amount) {
+    this.balance += amount;
+}</div>
+                        <p style="margin-top: 10px;">The JVM passes the reference automatically; inside the method it is available through <code style="font-family:'SF Mono',monospace;">this</code>.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 8: Namespace isolation -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Recap</p>
+                <h2>Isolation of object namespaces</h2>
+                <div class="code-block"><span class="ck">class</span> <span class="cf">BankAccount</span>:
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, owner: <span class="cf">str</span>, balance: <span class="cf">float</span>):
+        <span class="cn">self</span>.owner = owner
+        <span class="cn">self</span>.balance = balance
+
+alice_acc = <span class="cf">BankAccount</span>(<span class="cs">"Alice"</span>, <span class="cm">500.0</span>)
+bob_acc   = <span class="cf">BankAccount</span>(<span class="cs">"Bob"</span>, <span class="cm">10000.0</span>)
+
+alice_acc.balance -= <span class="cm">50.0</span>
+
+<span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Alice's balance: {alice_acc.balance}"</span>)
+<span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Bob's balance: {bob_acc.balance}"</span>)</div>
+                <div class="term"><span class="out">Alice's balance: 450.0
+Bob's balance: 10000.0</span></div>
+            </div>
+        </div>
+
+        <!-- 9: __str__ -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Recap</p>
+                <h2>The <code style="font-family:'SF Mono',monospace;">__str__</code> method</h2>
+                <div class="code-block"><span class="ck">class</span> <span class="cf">BankAccount</span>:
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, owner: <span class="cf">str</span>, balance: <span class="cf">float</span>):
+        <span class="cn">self</span>.owner = owner
+        <span class="cn">self</span>.balance = balance
+
+    <span class="ck">def</span> <span class="cf">__str__</span>(<span class="cn">self</span>) -&gt; <span class="cf">str</span>:
+        <span class="ck">return</span> <span class="cf">f</span><span class="cs">"Client account: {self.owner} | Balance: {self.balance} USD"</span>
+
+acc = <span class="cf">BankAccount</span>(<span class="cs">"Oleg"</span>, <span class="cm">7500.0</span>)
+<span class="cf">print</span>(acc)</div>
+                <div class="term"><span class="out">Client account: Oleg | Balance: 7500.0 USD</span></div>
+            </div>
+        </div>
+
+        <!-- 10: Method signatures -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Recap</p>
+                <h2>Method signatures</h2>
+                <div class="code-block"><span class="ck">class</span> <span class="cf">BankAccount</span>:
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, balance: <span class="cf">float</span>):
+        <span class="cn">self</span>.balance = balance
+
+    <span class="ck">def</span> <span class="cf">transfer</span>(<span class="cn">self</span>, target_acc: <span class="cs">'BankAccount'</span>, amount: <span class="cf">float</span>) -&gt; <span class="cf">bool</span>:
+        <span class="ck">if</span> <span class="cn">self</span>.balance &gt;= amount:
+            <span class="cn">self</span>.balance -= amount
+            target_acc.balance += amount
+            <span class="ck">return</span> <span class="ck">True</span>
+        <span class="ck">return</span> <span class="ck">False</span>
+
+acc_a = <span class="cf">BankAccount</span>(<span class="cm">100.0</span>)
+acc_b = <span class="cf">BankAccount</span>(<span class="cm">20.0</span>)
+success = acc_a.<span class="cf">transfer</span>(acc_b, <span class="cm">50.0</span>)
+<span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Transaction status: {success} | Remaining: {acc_a.balance}"</span>)</div>
+                <div class="term"><span class="out">Transaction status: True | Remaining: 50.0</span></div>
+            </div>
+        </div>
+
+        <!-- 11: Inheritance and super() -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Recap</p>
+                <h2>Inheritance and <code style="font-family:'SF Mono',monospace;">super()</code></h2>
+                <div class="code-block"><span class="ck">class</span> <span class="cf">BasicCard</span>:
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, holder: <span class="cf">str</span>, number: <span class="cf">str</span>):
+        <span class="cn">self</span>.holder = holder
+        <span class="cn">self</span>.number = number
+
+<span class="ck">class</span> <span class="cf">PremiumCard</span>(<span class="cf">BasicCard</span>):
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, holder: <span class="cf">str</span>, number: <span class="cf">str</span>, cashback_rate: <span class="cf">float</span>):
+        <span class="cf">super</span>().<span class="cf">__init__</span>(holder, number)
+        <span class="cn">self</span>.cashback_rate = cashback_rate
+
+vip = <span class="cf">PremiumCard</span>(<span class="cs">"Asel"</span>, <span class="cs">"4400..."</span>, <span class="cm">0.05</span>)
+<span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Card: {vip.holder}, Cashback: {vip.cashback_rate * 100}%"</span>)</div>
+                <div class="term"><span class="out">Card: Asel, Cashback: 5.0%</span></div>
+            </div>
+        </div>
+
+        <!-- 12: OOP everywhere -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Recap</p>
+                <h2>OOP everywhere in Python</h2>
+                <div class="code-block"><span class="cs">"card_verified"</span>.<span class="cf">upper</span>()    <span class="co"># a method of a str class instance</span>
+balances.<span class="cf">append</span>(<span class="cm">500.0</span>)     <span class="co"># changing the state of a list instance</span>
+df.<span class="cf">dropna</span>()                <span class="co"># a method of a pandas DataFrame object</span>
+api.<span class="cf">send_payment</span>(payload)  <span class="co"># an HTTP-session client via requests / httpx</span></div>
+                <p class="body-text" style="margin-top: 22px; color: #86868b;">When working with Python, you use OOP every minute - almost every call through a dot is a method of an object.</p>
+            </div>
+        </div>
+
+        <!-- 13: Recap summary table -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Recap</p>
+                <h2>Summary table</h2>
+                <table class="data-table">
+                    <tr><th>Concept</th><th>In brief</th><th>Meaning in architecture</th></tr>
+                    <tr><td>Class / Instance</td><td>Description of structure vs object in RAM</td><td>Product template and a real client account</td></tr>
+                    <tr><td>Attribute / Method</td><td>State variable vs function</td><td>Balance (data) and the transfer method (behavior)</td></tr>
+                    <tr><td>__init__ / self</td><td>Constructor and reference to the context</td><td>Entry point at creation and a reference to the instance</td></tr>
+                    <tr><td>Inheritance / super()</td><td>Extension without duplication</td><td>CreditAccount built on BasicAccount</td></tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- 14: OOP status -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Course map</p>
+                <h2>Current status of OOP mastery</h2>
+                <table class="data-table">
+                    <tr><th>Concept</th><th>Status</th><th>Stage</th></tr>
+                    <tr><td>Inheritance</td><td>🟢 DONE</td><td>Syntax of class extension and super().</td></tr>
+                    <tr><td>Polymorphism</td><td>🟡 CURRENT TOPIC</td><td>A single interface for different payment gateways.</td></tr>
+                    <tr><td>Encapsulation</td><td>⚪ UPCOMING</td><td>Hiding critical data and validation.</td></tr>
+                    <tr><td>Abstraction</td><td>⚪ UPCOMING</td><td>Separating business logic from implementation details.</td></tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- 15: Lecture plan -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Today</p>
+                <h2>Lecture 7 plan</h2>
+                <ul class="checklist" style="max-width: 880px;">
+                    <li><span class="highlight">Polymorphism</span> - method overriding, duck typing, MRO and diamond inheritance</li>
+                    <li><span class="highlight">Encapsulation</span> - the <code style="font-family:'SF Mono',monospace;">_</code> and <code style="font-family:'SF Mono',monospace;">__</code> modifiers, <code style="font-family:'SF Mono',monospace;">@property</code>, setters</li>
+                    <li>Class-level tools - <code style="font-family:'SF Mono',monospace;">@staticmethod</code>, <code style="font-family:'SF Mono',monospace;">@classmethod</code></li>
+                    <li>Magic methods - the <code style="font-family:'SF Mono',monospace;">+</code>, <code style="font-family:'SF Mono',monospace;">==</code>, <code style="font-family:'SF Mono',monospace;">len()</code> operators for user-defined objects</li>
+                    <li>Exceptions - custom error classes</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 16: What is polymorphism -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Polymorphism</p>
+                <h2>What is polymorphism?</h2>
+                <p class="body-text">Picture a payment terminal at a checkout. It does not care what exactly the customer presents: a UzCard plastic card, a smartphone with Humo Pay, or a QR code from Milly Bank. For the terminal there is one interface - "accept the payment." And how the charge actually happens depends on the specific payment instrument.</p>
+                <div class="quote-card success" style="margin-top: 22px;">
+                    <p>Polymorphism is the ability of a program to interact with different objects through a single interface, relying only on the method name and not on the object's internal structure.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 17: Two ways -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Polymorphism</p>
+                <h2>Two ways to implement polymorphism</h2>
+                <div class="cards-container" style="grid-template-columns: 1fr 1fr; max-width: 900px;">
+                    <div class="card">
+                        <div class="num">1</div>
+                        <h3>Classical</h3>
+                        <p>Through inheritance and overriding. A parent class is created; descendants implement a method with the same name but their own logic.</p>
+                    </div>
+                    <div class="card">
+                        <div class="num">2</div>
+                        <h3>Dynamic</h3>
+                        <p>Duck typing. No inheritance is required: if independent classes have a method with the same name, it can be called polymorphically.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 18: Mechanisms diagram -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Polymorphism</p>
+                <h2>Polymorphism mechanisms in Python</h2>
+                <div class="code-block" style="font-size: clamp(8px,1.05vw,13px); max-width: 820px;">                ┌──────────────────────────┐
+                │  POLYMORPHISM (concept)  │
+                └────────────┬─────────────┘
+                             │
+          ┌──────────────────┴──────────────────┐
+          ▼                                     ▼
+┌──────────────────────────────┐   ┌──────────────────────────────┐
+│ Classical (hierarchical)     │   │  Dynamic (duck typing)       │
+├──────────────────────────────┤   ├──────────────────────────────┤
+│ Requires a common parent     │   │ No inheritance required      │
+│ Overrides ancestor methods   │   │ Only the method must exist   │
+│ Classes linked in hierarchy  │   │ Classes are fully independent│
+└──────────────────────────────┘   └──────────────────────────────┘</div>
+            </div>
+        </div>
+
+        <!-- A: How overriding works -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Classical polymorphism</p>
+                <h2>How overriding works</h2>
+                <p class="body-text" style="margin-bottom: 4px;">Overriding is when a descendant class declares a method with the same name as the parent's but implements it in its own way.</p>
+                <div class="code-block"><span class="ck">class</span> <span class="cf">Parent</span>:
+    <span class="ck">def</span> <span class="cf">greet</span>(<span class="cn">self</span>):
+        <span class="cf">print</span>(<span class="cs">"Hello from the parent"</span>)
+
+<span class="ck">class</span> <span class="cf">Child</span>(<span class="cf">Parent</span>):
+    <span class="ck">def</span> <span class="cf">greet</span>(<span class="cn">self</span>):                 <span class="co"># same name - its own implementation</span>
+        <span class="cf">print</span>(<span class="cs">"Hello from the child"</span>)
+
+<span class="cf">Child</span>().<span class="cf">greet</span>()</div>
+                <div class="term"><span class="out">Hello from the child</span></div>
+                <div class="quote-card" style="margin-top: 12px;">
+                    <p>When <code style="font-family:'SF Mono',monospace;">obj.greet()</code> is called, Python searches for the method starting from the object's own class. The descendant's version "overrides" the parent's. And <code style="font-family:'SF Mono',monospace;">super().greet()</code> lets you additionally run the parent's version as well.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- split -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Classical polymorphism</p>
+                <h2>Method overriding</h2>
+                <p class="body-text" style="margin-bottom: 4px;">The base class holds the shared logic. The descendant class overrides the method:</p>
+                <div class="code-block"><span class="ck">class</span> <span class="cf">PaymentGateway</span>:
+    <span class="ck">def</span> <span class="cf">process_payment</span>(<span class="cn">self</span>, amount: <span class="cf">float</span>) -&gt; <span class="ck">None</span>:
+        <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"[Core-Banking] Recording transaction for {amount} soum"</span>)
+
+<span class="ck">class</span> <span class="cf">UzCardGateway</span>(<span class="cf">PaymentGateway</span>):
+    <span class="ck">def</span> <span class="cf">process_payment</span>(<span class="cn">self</span>, amount: <span class="cf">float</span>) -&gt; <span class="ck">None</span>:
+        <span class="cf">super</span>().<span class="cf">process_payment</span>(amount)        <span class="co"># core logic first</span>
+        <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"[UzCard API] Generating QR code. Charging {amount} soum."</span>)  <span class="co"># then its own</span></div>
+                <p class="body-text" style="margin-top: 10px; color: #86868b;"><code style="font-family:'SF Mono',monospace;">super()</code> calls the parent's version. UzCardGateway adds its own behavior without losing the shared core logic.</p>
+            </div>
+        </div>
+
+        <!-- split -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Classical polymorphism</p>
+                <h2>The same pattern - other gateways</h2>
+                <p class="body-text" style="margin-bottom: 4px;">Humo and Milly Bank override the method the same way. <code style="font-family:'SF Mono',monospace;">run_checkout</code> works with any gateway:</p>
+                <div class="code-block"><span class="ck">class</span> <span class="cf">HumoGateway</span>(<span class="cf">PaymentGateway</span>):
+    <span class="ck">def</span> <span class="cf">process_payment</span>(<span class="cn">self</span>, amount: <span class="cf">float</span>) -&gt; <span class="ck">None</span>:
+        <span class="cf">super</span>().<span class="cf">process_payment</span>(amount)
+        <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"[Humo API] Acquiring request. Charging {amount} soum."</span>)
+
+<span class="ck">class</span> <span class="cf">MillyBankGateway</span>(<span class="cf">PaymentGateway</span>):
+    <span class="ck">def</span> <span class="cf">process_payment</span>(<span class="cn">self</span>, amount: <span class="cf">float</span>) -&gt; <span class="ck">None</span>:
+        <span class="cf">super</span>().<span class="cf">process_payment</span>(amount)
+        <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"[Milly Bank API] Online payment. Amount: {amount} soum."</span>)
+
+<span class="ck">def</span> <span class="cf">run_checkout</span>(gateway: <span class="cf">PaymentGateway</span>, total: <span class="cf">float</span>):
+    gateway.<span class="cf">process_payment</span>(total)   <span class="co"># the function does not know the gateway type</span>
+
+<span class="cf">run_checkout</span>(<span class="cf">UzCardGateway</span>(), <span class="cm">150000.0</span>)
+<span class="cf">run_checkout</span>(<span class="cf">HumoGateway</span>(), <span class="cm">320000.0</span>)</div>
+            </div>
+        </div>
+
+        <!-- 21: Method overriding - result -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Method overriding</p>
+                <h2>Result of the call</h2>
+                <div class="term"><span class="out">[Core-Banking] Recording transaction for 150000.0 soum
+[UzCard API] Generating QR code. Charging 150000.0 soum.
+[Core-Banking] Recording transaction for 320000.0 soum
+[Humo API] Acquiring request. Charging 320000.0 soum.</span></div>
+                <p class="body-text" style="margin-top: 22px;">Each gateway overrides <code style="font-family:'SF Mono',monospace;">process_payment</code> in its own way. <code style="font-family:'SF Mono',monospace;">super()</code> first runs the shared core logic (writing to the log), then the code of the specific gateway. The <code style="font-family:'SF Mono',monospace;">run_checkout</code> function calls a single method and does not know which class was passed to it.</p>
+            </div>
+        </div>
+
+        <!-- 20: Fee calculation -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Reinforcing overriding</p>
+                <h2>Calculating the transfer fee</h2>
+                <div class="code-block tight"><span class="ck">class</span> <span class="cf">BasicCardTariff</span>:
+    <span class="ck">def</span> <span class="cf">calculate_fee</span>(<span class="cn">self</span>, amount: <span class="cf">float</span>) -&gt; <span class="cf">float</span>:
+        <span class="ck">return</span> amount * <span class="cm">0.015</span>          <span class="co"># 1.5% - standard fee</span>
+
+<span class="ck">class</span> <span class="cf">PremiumCardTariff</span>(<span class="cf">BasicCardTariff</span>):
+    <span class="ck">def</span> <span class="cf">calculate_fee</span>(<span class="cn">self</span>, amount: <span class="cf">float</span>) -&gt; <span class="cf">float</span>:
+        <span class="ck">return</span> amount * <span class="cm">0.005</span>          <span class="co"># 0.5% - for premium clients</span>
+
+<span class="ck">class</span> <span class="cf">CorporateCardTariff</span>(<span class="cf">BasicCardTariff</span>):
+    <span class="ck">def</span> <span class="cf">calculate_fee</span>(<span class="cn">self</span>, amount: <span class="cf">float</span>) -&gt; <span class="cf">float</span>:
+        <span class="ck">return</span> <span class="cm">50000.0</span>                 <span class="co"># flat fee for legal entities</span>
+
+tariffs_pool = [<span class="cf">BasicCardTariff</span>(), <span class="cf">PremiumCardTariff</span>(), <span class="cf">CorporateCardTariff</span>()]
+<span class="ck">for</span> tariff <span class="ck">in</span> tariffs_pool:
+    fee = tariff.<span class="cf">calculate_fee</span>(<span class="cm">10_000_000.0</span>)
+    <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Tariff: {tariff.__class__.__name__} | Fee: {fee} soum"</span>)</div>
+                <div class="term"><span class="out">Tariff: BasicCardTariff     | Fee: 150000.0 soum
+Tariff: PremiumCardTariff   | Fee: 50000.0 soum
+Tariff: CorporateCardTariff | Fee: 50000.0 soum</span></div>
+                <p class="body-text" style="margin-top: 10px; color: #86868b;">Three tariffs override <code style="font-family:'SF Mono',monospace;">calculate_fee</code> with their own formula. The loop calls the same method - Python itself substitutes the right implementation based on the object's type.</p>
+            </div>
+        </div>
+
+        <!-- 21: Python vs Java overriding -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">In other languages</p>
+                <h2>Comparing overriding: Python vs Java</h2>
+                <table class="data-table">
+                    <tr><th>Criterion</th><th>Python</th><th>Java</th></tr>
+                    <tr><td>Default behavior</td><td>All methods are virtual. A matching name in a descendant overrides the parent method.</td><td>Requires matching signatures. The @Override annotation is recommended.</td></tr>
+                    <tr><td>Type checking</td><td>None at the runtime level.</td><td>Enforced by the compiler.</td></tr>
+                    <tr><td>Lookup principle</td><td>Dynamic lookup along the MRO at execution time.</td><td>Via the virtual method table (VMT) at compile time.</td></tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- 22: Fragile base class -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Risk of overriding</p>
+                <h2>The fragile base class</h2>
+                <div class="code-block tight" style="font-size: clamp(8px,1.0vw,12px);"><span class="ck">class</span> <span class="cf">DocumentProcessor</span>:
+    <span class="ck">def</span> <span class="cf">format_inn</span>(<span class="cn">self</span>, raw_inn: <span class="cf">str</span>) -&gt; <span class="cf">str</span>:
+        <span class="ck">return</span> raw_inn.<span class="cf">strip</span>()                 <span class="co"># guarantees returning a str</span>
+
+    <span class="ck">def</span> <span class="cf">register_legal_entity</span>(<span class="cn">self</span>, inn: <span class="cf">str</span>) -&gt; <span class="cf">str</span>:
+        clean_inn = <span class="cn">self</span>.<span class="cf">format_inn</span>(inn)
+        <span class="ck">return</span> <span class="cf">f</span><span class="cs">"Registering company with TIN: {clean_inn.upper()}"</span>
+
+<span class="ck">class</span> <span class="cf">BadCustomProcessor</span>(<span class="cf">DocumentProcessor</span>):
+    <span class="ck">def</span> <span class="cf">format_inn</span>(<span class="cn">self</span>, raw_inn: <span class="cf">str</span>) -&gt; <span class="ck">None</span>:
+        <span class="co"># super() not called; no return -&gt; the method returns None</span>
+        <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"[Log] TIN verification request: {raw_inn}"</span>)
+
+processor = <span class="cf">BadCustomProcessor</span>()
+<span class="ck">try</span>:
+    processor.<span class="cf">register_legal_entity</span>(<span class="cs">"  123456789012  "</span>)
+<span class="ck">except</span> <span class="cf">AttributeError</span> <span class="ck">as</span> error:
+    <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"RUNTIME ERROR: {error}"</span>)</div>
+                <div class="term"><span class="out">[Log] TIN verification request:   123456789012
+RUNTIME ERROR: 'NoneType' object has no attribute 'upper'</span></div>
+                <p class="body-text" style="margin-top: 10px; color: #86868b;">The cause: <code style="font-family:'SF Mono',monospace;">format_inn</code> returned <code style="font-family:'SF Mono',monospace;">None</code>, and the call <code style="font-family:'SF Mono',monospace;">None.upper()</code> failed - the NoneType type has no such method.</p>
+            </div>
+        </div>
+
+        <!-- 23: Typo in method name -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Risk of overriding</p>
+                <h2>A typo in the method name</h2>
+                <div class="code-block"><span class="ck">class</span> <span class="cf">NotificationService</span>:
+    <span class="ck">def</span> <span class="cf">send_critical_alert</span>(<span class="cn">self</span>, msg: <span class="cf">str</span>):
+        <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"[Fallback SMS] Critical error: {msg}"</span>)
+
+<span class="ck">class</span> <span class="cf">TelegramService</span>(<span class="cf">NotificationService</span>):
+    <span class="ck">def</span> <span class="cf">send_criticall_alert</span>(<span class="cn">self</span>, msg: <span class="cf">str</span>):   <span class="co"># typo: double 'l'</span>
+        <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"[Telegram Bot] Error sent to chat: {msg}"</span>)
+
+notifier = <span class="cf">TelegramService</span>()
+notifier.<span class="cf">send_critical_alert</span>(<span class="cs">"The authorization server is down!"</span>)</div>
+                <div class="term"><span class="out">[Fallback SMS] Critical error: The authorization server is down!</span></div>
+                <p class="body-text" style="margin-top: 10px; color: #86868b;">In compiled languages such a typo would cause a build error. Python silently creates a new method and calls the parent's one.</p>
+            </div>
+        </div>
+
+        <!-- D1: What is object -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Type hierarchy</p>
+                <h2>What is <code style="font-family:'SF Mono',monospace;">object</code></h2>
+                <p class="body-text" style="margin-bottom: 4px;">object is a built-in class that Python itself created as the foundation of the entire type system. It exists before your code: it need not be defined or imported.</p>
+                <div class="code-block"><span class="cf">print</span>(object)              <span class="co"># the root class itself</span>
+<span class="cf">print</span>(<span class="cf">type</span>(object))        <span class="co"># its type</span>
+<span class="cf">print</span>(<span class="cf">int</span>.__bases__)       <span class="co"># even int is a descendant of object</span></div>
+                <div class="term"><span class="out">&amp;lt;class 'object'&amp;gt;
+&amp;lt;class 'type'&amp;gt;
+(&amp;lt;class 'object'&amp;gt;,)</span></div>
+                <div class="quote-card success" style="margin-top: 12px;">
+                    <p>Any class in Python is, ultimately, a descendant of object. It is precisely from object that all objects get their basic capabilities: __init__, __str__, __eq__, __hash__ and others.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- D2: object is added automatically -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Type hierarchy</p>
+                <h2>Python supplies <code style="font-family:'SF Mono',monospace;">object</code> automatically</h2>
+                <p class="body-text" style="margin-bottom: 4px;">When you write a class without specifying a parent, Python silently adds object as the base class. The two listings below are completely identical:</p>
+                <div class="code-block"><span class="ck">class</span> <span class="cf">Account</span>:           <span class="co"># this is how we write it</span>
+    <span class="ck">pass</span>
+
+<span class="ck">class</span> <span class="cf">Account</span>(object):   <span class="co"># this is how Python sees it</span>
+    <span class="ck">pass</span>
+
+<span class="cf">print</span>(<span class="cf">Account</span>.__bases__)             <span class="co"># the parent is there, even though we did not write it</span>
+<span class="cf">print</span>(<span class="cf">issubclass</span>(<span class="cf">Account</span>, object))</div>
+                <div class="term"><span class="out">(&amp;lt;class 'object'&amp;gt;,)
+True</span></div>
+                <div class="quote-card" style="margin-top: 12px;">
+                    <p>The parentheses with object can be omitted - Python will supply it itself. That is why we "do not see" the parent in the code, but it is always there.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 24: Root object class -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Type hierarchy</p>
+                <h2>What a class gets from <code style="font-family:'SF Mono',monospace;">object</code></h2>
+                <div class="code-block"><span class="ck">class</span> <span class="cf">SimpleEntity</span>:
+    <span class="ck">pass</span>
+
+entity = <span class="cf">SimpleEntity</span>()
+<span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Base ancestors of the class: {SimpleEntity.__bases__}"</span>)
+<span class="cf">print</span>(<span class="cf">f</span><span class="cs">"__str__: {entity.__str__()}"</span>)
+<span class="cf">print</span>(<span class="cf">f</span><span class="cs">"__eq__: {entity.__eq__(entity)}"</span>)
+<span class="cf">print</span>(<span class="cf">f</span><span class="cs">"__dir__: {len(entity.__dir__())} elements"</span>)</div>
+                <div class="term"><span class="out">Base ancestors of the class: (&lt;class 'object'&gt;,)
+__str__: &lt;__main__.SimpleEntity object at 0x104b2b9a0&gt;
+__eq__: True
+__dir__: 26 elements</span></div>
+                <p class="body-text" style="margin-top: 10px; color: #86868b;">If the parent class is not specified explicitly, Python inherits from <code style="font-family:'SF Mono',monospace;">object</code> - the top of the entire hierarchy.</p>
+            </div>
+        </div>
+
+        <!-- 25: object vs java.lang.Object -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">In other languages</p>
+                <h2>Python <code style="font-family:'SF Mono',monospace;">object</code> vs Java <code style="font-family:'SF Mono',monospace;">java.lang.Object</code></h2>
+                <table class="data-table">
+                    <tr><th>Parameter</th><th>Python</th><th>Java</th></tr>
+                    <tr><td>Auto-linking</td><td>Closes off any user-defined hierarchy.</td><td>The absolute root of the object model.</td></tr>
+                    <tr><td>Base set</td><td>__new__, __init__, __repr__, __eq__.</td><td>toString(), equals(), hashCode().</td></tr>
+                    <tr><td>Multiple inheritance</td><td>The final point of the MRO.</td><td>Not applicable - Java supports single inheritance only.</td></tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- 26: Diamond problem -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Hierarchy conflict</p>
+                <h2>Diamond inheritance (Diamond Problem)</h2>
+                <div class="code-block" style="font-size: clamp(8px,1.1vw,14px); max-width: 700px;">              ┌────────────────┐
+              │  BaseValidator │  declares validate()
+              └───────┬────────┘
+            ┌─────────┴─────────┐
+            ▼                   ▼
+   ┌───────────────┐   ┌───────────────┐
+   │   CardCheck   │   │   LimitCheck  │  both have overridden it
+   └───────┬───────┘   └───────┬───────┘
+           └─────────┬─────────┘
+                     ▼
+            ┌───────────────┐
+            │   FullCheck   │  whose validate() implementation?
+            └───────────────┘</div>
+            </div>
+        </div>
+
+        <!-- 27: MRO -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Deep dive</p>
+                <h2>MRO - method resolution order</h2>
+                <p class="body-text" style="margin-bottom: 4px;">Python uses C3 linearization: when a method is called, classes are scanned in MRO order, and the first one found is executed.</p>
+                <div class="code-block tight" style="font-size: clamp(8px,1.05vw,12px);"><span class="ck">class</span> <span class="cf">BaseValidator</span>:
+    <span class="ck">def</span> <span class="cf">validate</span>(<span class="cn">self</span>): <span class="cf">print</span>(<span class="cs">"Implementation: BaseValidator"</span>)
+
+<span class="ck">class</span> <span class="cf">CardCheck</span>(<span class="cf">BaseValidator</span>):
+    <span class="ck">def</span> <span class="cf">validate</span>(<span class="cn">self</span>): <span class="cf">print</span>(<span class="cs">"Implementation: CardCheck"</span>)
+
+<span class="ck">class</span> <span class="cf">LimitCheck</span>(<span class="cf">BaseValidator</span>):
+    <span class="ck">def</span> <span class="cf">validate</span>(<span class="cn">self</span>): <span class="cf">print</span>(<span class="cs">"Implementation: LimitCheck"</span>)
+
+<span class="ck">class</span> <span class="cf">FullCheck</span>(<span class="cf">CardCheck</span>, <span class="cf">LimitCheck</span>):
+    <span class="ck">pass</span>
+
+checker = <span class="cf">FullCheck</span>()
+checker.<span class="cf">validate</span>()
+<span class="ck">for</span> i, <span class="cn">cls</span> <span class="ck">in</span> <span class="cf">enumerate</span>(<span class="cf">FullCheck</span>.__mro__, start=<span class="cm">1</span>):
+    <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"{i}. {cls.__name__}"</span>)</div>
+                <div class="term"><span class="out">Implementation: CardCheck
+1. FullCheck   2. CardCheck   3. LimitCheck   4. BaseValidator   5. object</span></div>
+            </div>
+        </div>
+
+        <!-- 28: super() and MRO -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Cooperative inheritance</p>
+                <h2><code style="font-family:'SF Mono',monospace;">super()</code> and the MRO</h2>
+                <p class="body-text" style="margin-bottom: 4px;"><code style="font-family:'SF Mono',monospace;">super()</code> calls a method not on the "parent from the declaration," but on the next class in the current object's MRO chain.</p>
+                <div class="code-block tight" style="font-size: clamp(8px,1.05vw,12px);"><span class="ck">class</span> <span class="cf">Base</span>:
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>): <span class="cf">print</span>(<span class="cs">"Initializing Base"</span>)
+
+<span class="ck">class</span> <span class="cf">Left</span>(<span class="cf">Base</span>):
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>):
+        <span class="cf">print</span>(<span class="cs">"Start Left"</span>); <span class="cf">super</span>().<span class="cf">__init__</span>(); <span class="cf">print</span>(<span class="cs">"End Left"</span>)
+
+<span class="ck">class</span> <span class="cf">Right</span>(<span class="cf">Base</span>):
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>):
+        <span class="cf">print</span>(<span class="cs">"Start Right"</span>); <span class="cf">super</span>().<span class="cf">__init__</span>(); <span class="cf">print</span>(<span class="cs">"End Right"</span>)
+
+<span class="ck">class</span> <span class="cf">Child</span>(<span class="cf">Left</span>, <span class="cf">Right</span>):
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>):
+        <span class="cf">print</span>(<span class="cs">"Start Child"</span>); <span class="cf">super</span>().<span class="cf">__init__</span>(); <span class="cf">print</span>(<span class="cs">"End Child"</span>)
+
+instance = <span class="cf">Child</span>()   <span class="co"># MRO: Child -&gt; Left -&gt; Right -&gt; Base</span></div>
+                <div class="term"><span class="out">Start Child -&gt; Start Left -&gt; Start Right -&gt; Initializing Base
+-&gt; End Right -&gt; End Left -&gt; End Child</span></div>
+                <div class="quote-card warning" style="margin-top: 10px;">
+                    <p><code style="font-family:'SF Mono',monospace;">super()</code> inside Left passed control to Right, even though they are not directly related - this is cooperative multiple inheritance.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 29: Linearization errors -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Hierarchy conflict</p>
+                <h2>Linearization errors</h2>
+                <div class="code-block"><span class="ck">class</span> <span class="cf">X</span>: <span class="ck">pass</span>
+<span class="ck">class</span> <span class="cf">Y</span>(<span class="cf">X</span>): <span class="ck">pass</span>
+
+<span class="ck">try</span>:
+    <span class="ck">class</span> <span class="cf">InvalidSystem</span>(<span class="cf">X</span>, <span class="cf">Y</span>):   <span class="co"># X cannot come before its descendant Y</span>
+        <span class="ck">pass</span>
+<span class="ck">except</span> <span class="cf">TypeError</span> <span class="ck">as</span> error:
+    <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Hierarchy construction error:\n{error}"</span>)</div>
+                <div class="term"><span class="out">Hierarchy construction error:
+Cannot create a consistent method resolution order (MRO) for bases X, Y</span></div>
+            </div>
+        </div>
+
+        <!-- 30: Runtime resolution -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Polymorphism</p>
+                <h2>Resolving calls at runtime</h2>
+                <div class="code-block">gateways = [<span class="cf">UzCardGateway</span>(), <span class="cf">HumoGateway</span>(), <span class="cf">MillyBankGateway</span>()]
+
+<span class="ck">def</span> <span class="cf">run_billing</span>(gateway_instance, sum_to_charge):
+    <span class="co"># Python does not check the type in advance.</span>
+    <span class="co"># At the moment of the call it scans the MRO of the passed instance.</span>
+    gateway_instance.<span class="cf">process_payment</span>(sum_to_charge)
+
+<span class="ck">for</span> gw <span class="ck">in</span> gateways:
+    <span class="cf">run_billing</span>(gw, <span class="cm">100000.0</span>)</div>
+            </div>
+        </div>
+
+        <!-- 31: Polymorphic collections -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Polymorphism</p>
+                <h2>Polymorphic processing of collections</h2>
+                <p class="body-text" style="margin-bottom: 4px;">A single interface lets you process sets of heterogeneous objects in ordinary loops - without type checks via <code style="font-family:'SF Mono',monospace;">if isinstance()</code>.</p>
+                <div class="code-block">processing_pool = [<span class="cf">UzCardGateway</span>(), <span class="cf">HumoGateway</span>(),
+                   <span class="cf">MillyBankGateway</span>(), <span class="cf">UzCardGateway</span>()]
+
+<span class="ck">for</span> gateway <span class="ck">in</span> processing_pool:
+    gateway.<span class="cf">process_payment</span>(<span class="cm">50000.0</span>)
+    <span class="cf">print</span>(<span class="cs">"--- Transaction log saved ---"</span>)</div>
+            </div>
+        </div>
+
+        <!-- 32: Interface as contract -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Architecture</p>
+                <h2>A programmatic interface as a contract</h2>
+                <p class="body-text">From an architectural standpoint, polymorphism isolates business logic from the technical details of specific vendors.</p>
+                <div class="quote-card success" style="margin-top: 22px;">
+                    <p>When connecting a new gateway (Click or Payme, for example), there is no need to change the core code. It is enough to create a class that descends from <code style="font-family:'SF Mono',monospace;">PaymentGateway</code> and implement <code style="font-family:'SF Mono',monospace;">process_payment</code>. The rest will work automatically.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 33: Overriding summary -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Takeaways</p>
+                <h2>Method overriding - summary</h2>
+                <table class="data-table" style="margin-top: 12px;">
+                    <tr><th>Rule</th><th>Why it matters</th></tr>
+                    <tr><td>Keep the method name exact</td><td>A typo will create a new method, while the old one keeps running silently</td></tr>
+                    <tr><td>Keep the return type</td><td>The parent code expects to receive a specific data type</td></tr>
+                    <tr><td>Call super() when needed</td><td>If the base logic (audit log) must be executed</td></tr>
+                    <tr><td>Keep the argument signature</td><td>Otherwise the polymorphic call will receive unexpected data</td></tr>
+                </table>
+                <div class="code-block" style="font-size: clamp(9px,1.15vw,14px); max-width: 620px; margin-top: 14px;">PaymentGateway          ← shared contract
+├── UzCardGateway       ← its own implementation
+├── HumoGateway         ← its own implementation
+└── MillyBankGateway    ← its own implementation</div>
+            </div>
+        </div>
+
+        <!-- 34: Duck typing -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Dynamic polymorphism</p>
+                <h2>Duck Typing</h2>
+                <p class="body-text" style="margin-bottom: 4px;">"If an object behaves like a duck - it is a duck." Common ancestors are not required: if there is a method with the right name, it can be called.</p>
+                <div class="code-block"><span class="ck">class</span> <span class="cf">ApplePayService</span>:
+    <span class="ck">def</span> <span class="cf">charge_money</span>(<span class="cn">self</span>, total: <span class="cf">float</span>):
+        <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"[Apple Pay] Charging card token: {total} soum"</span>)
+
+<span class="ck">class</span> <span class="cf">GooglePayService</span>:
+    <span class="co"># not related to ApplePayService by hierarchy, but the method name matches</span>
+    <span class="ck">def</span> <span class="cf">charge_money</span>(<span class="cn">self</span>, total: <span class="cf">float</span>):
+        <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"[Google Pay] Request to the Google Wallet API: {total} soum"</span>)
+
+<span class="ck">def</span> <span class="cf">process_mobile_wallet</span>(payment_service, amount: <span class="cf">float</span>):
+    payment_service.<span class="cf">charge_money</span>(amount)   <span class="co"># only the presence of the method matters</span>
+
+<span class="cf">process_mobile_wallet</span>(<span class="cf">ApplePayService</span>(), <span class="cm">120000.0</span>)
+<span class="cf">process_mobile_wallet</span>(<span class="cf">GooglePayService</span>(), <span class="cm">120000.0</span>)</div>
+            </div>
+        </div>
+
+        <!-- 35: Duck typing risks -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Caution</p>
+                <h2>Risks of duck typing in production</h2>
+                <div class="code-block"><span class="ck">class</span> <span class="cf">TaxService</span>:
+    <span class="ck">def</span> <span class="cf">charge_money</span>(<span class="cn">self</span>, total: <span class="cf">float</span>):
+        <span class="co"># the name matches the payment gateways, but the logic is different</span>
+        <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"[Tax Office] Charging penalties: {total} soum"</span>)
+
+<span class="ck">class</span> <span class="cf">FakePayGateway</span>:
+    <span class="ck">def</span> <span class="cf">charge_monney</span>(<span class="cn">self</span>, total: <span class="cf">float</span>):   <span class="co"># typo in the name</span>
+        <span class="cf">print</span>(total)
+
+<span class="co"># Risk 1: AttributeError because of the typo</span>
+<span class="ck">try</span>:
+    <span class="cf">process_mobile_wallet</span>(<span class="cf">FakePayGateway</span>(), <span class="cm">100.0</span>)
+<span class="ck">except</span> <span class="cf">AttributeError</span> <span class="ck">as</span> err:
+    <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Runtime error: {err}"</span>)
+
+<span class="co"># Risk 2: a semantic error - the code runs, but the logic is broken</span>
+<span class="cf">process_mobile_wallet</span>(<span class="cf">TaxService</span>(), <span class="cm">500000.0</span>)</div>
+            </div>
+        </div>
+
+        <!-- 36: Duck typing in libraries -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">OOP in real projects</p>
+                <h2>Duck Typing in analytics libraries</h2>
+                <div class="code-block"><span class="ck">from</span> sklearn.linear_model <span class="ck">import</span> <span class="cf">LogisticRegression</span>
+<span class="ck">from</span> sklearn.ensemble <span class="ck">import</span> <span class="cf">RandomForestClassifier</span>
+
+<span class="co"># objects of different classes provide a single interface: .fit() and .predict()</span>
+scoring_models = [<span class="cf">LogisticRegression</span>(), <span class="cf">RandomForestClassifier</span>()]
+
+<span class="ck">for</span> model <span class="ck">in</span> scoring_models:
+    model.<span class="cf">fit</span>(<span class="cf">X_train</span>, y_train)
+    predictions = model.<span class="cf">predict</span>(<span class="cf">X_test</span>)</div>
+                <p class="body-text" style="margin-top: 18px; color: #86868b;">Scikit-learn is built entirely on duck typing: any model with the <code style="font-family:'SF Mono',monospace;">.fit()</code> and <code style="font-family:'SF Mono',monospace;">.predict()</code> methods works in a shared pipeline.</p>
+            </div>
+        </div>
+
+        <!-- 37: Polymorphism summary -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Takeaways</p>
+                <h2>Polymorphism - full summary</h2>
+                <table class="data-table" style="margin-top: 10px;">
+                    <tr><th>Characteristic</th><th>Overriding</th><th>Duck typing</th></tr>
+                    <tr><td>Requires a common ancestor</td><td>Yes</td><td>No</td></tr>
+                    <tr><td>Contract enforcement</td><td>Through the hierarchy</td><td>Only by the method name</td></tr>
+                    <tr><td>When errors become visible</td><td>At the design stage</td><td>Only at runtime</td></tr>
+                    <tr><td>Where it is used</td><td>Gateways of one system</td><td>Independent libraries</td></tr>
+                </table>
+                <div class="code-block" style="font-size: clamp(8px,1.05vw,13px); max-width: 660px; margin-top: 12px;">gateway.process_payment(amount)
+              ↓
+   Python looks into the object's MRO
+              ↓
+   → calls the right implementation automatically</div>
+            </div>
+        </div>
+
+        <!-- 38: OOP status -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Course map</p>
+                <h2>Status of mastering OOP concepts</h2>
+                <table class="data-table">
+                    <tr><th>Concept</th><th>Status</th><th>Description</th></tr>
+                    <tr><td>Inheritance</td><td>🟢 DONE</td><td>Syntax of class extension and super().</td></tr>
+                    <tr><td>Polymorphism</td><td>🟢 DONE</td><td>Overriding, MRO and duck typing.</td></tr>
+                    <tr><td>Encapsulation</td><td>🟡 CURRENT TOPIC</td><td>Hiding critical fields from external access.</td></tr>
+                    <tr><td>Abstraction</td><td>⚪ UPCOMING</td><td>Separating business logic from implementation details.</td></tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- 39: Problem - free modification -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Encapsulation</p>
+                <h2>The problem - unrestricted modification of state</h2>
+                <div class="code-block"><span class="ck">class</span> <span class="cf">BankUser</span>:
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, login: <span class="cf">str</span>, raw_password: <span class="cf">str</span>):
+        <span class="cn">self</span>.login = login
+        <span class="cn">self</span>.password = raw_password   <span class="co"># the password is stored in plain text</span>
+
+user = <span class="cf">BankUser</span>(<span class="cs">"manager_olga"</span>, <span class="cs">"123456"</span>)
+
+<span class="co"># any developer can change the password directly:</span>
+user.password = <span class="cs">"HACKED_OR_CLEARED"</span>
+<span class="co"># or read it without any hashing:</span>
+<span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Password in the logs: {user.password}"</span>)</div>
+                <div class="quote-card warning" style="margin-top: 12px;">
+                    <p>A plain-text password, readable and writable by anyone - a straight road to a leak.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 40: Encapsulation goals -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Encapsulation</p>
+                <h2>The goals of encapsulation</h2>
+                <p class="body-text" style="margin-bottom: 4px;">Encapsulation solves two tasks:</p>
+                <ul class="checklist" style="max-width: 860px;">
+                    <li>Combine data and the methods for working with it into a single structure</li>
+                    <li>Hide internal details, exposing outward only a safe public interface with explicit validation</li>
+                </ul>
+                <div class="quote-card success" style="margin-top: 18px;">
+                    <p>🔐 You cannot change the balance or the password directly. For that, the methods <code style="font-family:'SF Mono',monospace;">change_password()</code> (with a check of the old password and hashing) and <code style="font-family:'SF Mono',monospace;">deposit()</code> (with amount validation) are provided.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 41: Python vs Java access control -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">In other languages</p>
+                <h2>The philosophy of access control</h2>
+                <div class="comparison-grid">
+                    <div class="comparison-item">
+                        <div class="label" style="color: #af52de;">Java</div>
+                        <h3>A hard prohibition</h3>
+                        <p>The <code style="font-family:'SF Mono',monospace;">private</code> modifier blocks access at the compilation level. Accessing <code style="font-family:'SF Mono',monospace;">user.password</code> from the outside is a compiler error.</p>
+                    </div>
+                    <div class="comparison-item">
+                        <div class="label" style="color: #007aff;">Python</div>
+                        <h3>A convention</h3>
+                        <p>There are no physical restrictions. Protection rests on attribute naming (<code style="font-family:'SF Mono',monospace;">_</code> and <code style="font-family:'SF Mono',monospace;">__</code>). Developers follow it by agreement.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 42: Protected attributes -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Encapsulation</p>
+                <h2>Protected attributes: <code style="font-family:'SF Mono',monospace;">_</code></h2>
+                <p class="body-text" style="margin-bottom: 4px;">A single underscore is a signal: "this field is internal, not intended for use outside the class."</p>
+                <ul class="bullet-list" style="max-width: 840px;">
+                    <li>Technically, access is open</li>
+                    <li>The IDE highlights such access as a style violation</li>
+                    <li>It is not exported on <code style="font-family:'SF Mono',monospace;">from module import *</code></li>
+                </ul>
+                <div class="code-block"><span class="ck">class</span> <span class="cf">InternalBankConfig</span>:
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>):
+        <span class="cn">self</span>._swift_code = <span class="cs">"UZUZBGBU"</span>   <span class="co"># a protected attribute by convention</span>
+
+config = <span class="cf">InternalBankConfig</span>()
+<span class="cf">print</span>(config._swift_code)   <span class="co"># works, but violates the architectural contract</span></div>
+            </div>
+        </div>
+
+        <!-- 43: Private attributes -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Encapsulation</p>
+                <h2>Private attributes: <code style="font-family:'SF Mono',monospace;">__</code> and Name Mangling</h2>
+                <p class="body-text" style="margin-bottom: 4px;">A double underscore turns on Name Mangling: <code style="font-family:'SF Mono',monospace;">__password_hash</code> becomes <code style="font-family:'SF Mono',monospace;">_ClassName__password_hash</code>. This protects the field from being accidentally overridden during inheritance.</p>
+                <div class="code-block tight" style="font-size: clamp(8px,1.05vw,12px);"><span class="ck">import</span> hashlib
+
+<span class="ck">class</span> <span class="cf">SecureUser</span>:
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, login: <span class="cf">str</span>, raw_password: <span class="cf">str</span>):
+        <span class="cn">self</span>.login = login
+        <span class="cn">self</span>.__password_hash = hashlib.<span class="cf">sha256</span>(raw_password.<span class="cf">encode</span>()).<span class="cf">hexdigest</span>()
+
+user = <span class="cf">SecureUser</span>(<span class="cs">"admin_damir"</span>, <span class="cs">"qwerty2026"</span>)
+<span class="ck">try</span>:
+    <span class="cf">print</span>(user.__password_hash)   <span class="co"># no attribute with such a name exists</span>
+<span class="ck">except</span> <span class="cf">AttributeError</span> <span class="ck">as</span> error:
+    <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Security system: {error}"</span>)
+
+<span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Workaround: {user._SecureUser__password_hash}"</span>)</div>
+                <div class="term"><span class="out">Security system: 'SecureUser' object has no attribute '__password_hash'
+Workaround: 4bc82b9a76d...</span></div>
+            </div>
+        </div>
+
+        <!-- 44: @property getter -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Encapsulation</p>
+                <h2>The <code style="font-family:'SF Mono',monospace;">@property</code> decorator - getters</h2>
+                <p class="body-text" style="margin-bottom: 4px;">If you need to read data but control the process or mask the output - <code style="font-family:'SF Mono',monospace;">@property</code> is used. It turns a method into a "virtual attribute" - accessed without parentheses.</p>
+                <div class="code-block"><span class="ck">class</span> <span class="cf">CreditCard</span>:
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, client_name: <span class="cf">str</span>, raw_pan: <span class="cf">str</span>):
+        <span class="cn">self</span>.client_name = client_name
+        <span class="cn">self</span>._pan = raw_pan
+
+    <span class="cm">@property</span>
+    <span class="ck">def</span> <span class="cf">masked_pan</span>(<span class="cn">self</span>) -&gt; <span class="cf">str</span>:
+        <span class="cf">print</span>(<span class="cs">"[Security Audit] Request to read the card number."</span>)
+        <span class="ck">return</span> <span class="cf">f</span><span class="cs">"{self._pan[:4]} **** **** {self._pan[-4:]}"</span>
+
+card = <span class="cf">CreditCard</span>(<span class="cs">"Arman"</span>, <span class="cs">"8600112233445566"</span>)
+<span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Card number: {card.masked_pan}"</span>)   <span class="co"># no parentheses - like an attribute</span></div>
+                <div class="term"><span class="out">[Security Audit] Request to read the card number.
+Card number: 8600 **** **** 5566</span></div>
+            </div>
+        </div>
+
+        <!-- 45: Why @property - reason 1 -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Why @property</p>
+                <h2>Reason 1 - logic on read</h2>
+                <div class="code-block"><span class="ck">class</span> <span class="cf">UserAccount</span>:
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, email: <span class="cf">str</span>):
+        <span class="cn">self</span>._email = email
+        <span class="cn">self</span>._read_count = <span class="cm">0</span>
+
+    <span class="cm">@property</span>
+    <span class="ck">def</span> <span class="cf">email</span>(<span class="cn">self</span>) -&gt; <span class="cf">str</span>:
+        <span class="cn">self</span>._read_count += <span class="cm">1</span>
+        <span class="ck">return</span> <span class="cn">self</span>._email
+
+acc = <span class="cf">UserAccount</span>(<span class="cs">"user@millybank.uz"</span>)
+<span class="cf">print</span>(acc.email)
+<span class="cf">print</span>(acc.email)
+<span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Email was requested {acc._read_count} times"</span>)</div>
+                <div class="term"><span class="out">user@millybank.uz
+user@millybank.uz
+Email was requested 2 times</span></div>
+            </div>
+        </div>
+
+        <!-- 46: Why @property - reason 2 -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Why @property</p>
+                <h2>Reason 2 - computed values</h2>
+                <div class="code-block"><span class="ck">class</span> <span class="cf">LoanPortfolio</span>:
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, principal: <span class="cf">float</span>, interest_rate: <span class="cf">float</span>):
+        <span class="cn">self</span>.principal = principal
+        <span class="cn">self</span>.interest_rate = interest_rate
+
+    <span class="cm">@property</span>
+    <span class="ck">def</span> <span class="cf">total_debt</span>(<span class="cn">self</span>) -&gt; <span class="cf">float</span>:
+        <span class="ck">return</span> <span class="cn">self</span>.principal * (<span class="cm">1</span> + <span class="cn">self</span>.interest_rate)
+
+portfolio = <span class="cf">LoanPortfolio</span>(<span class="cm">10_000_000</span>, <span class="cm">0.20</span>)
+<span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Total to repay: {portfolio.total_debt} soum"</span>)
+portfolio.principal -= <span class="cm">2_000_000</span>
+<span class="cf">print</span>(<span class="cf">f</span><span class="cs">"After partial repayment: {portfolio.total_debt} soum"</span>)</div>
+                <div class="term"><span class="out">Total to repay: 12000000.0 soum
+After partial repayment: 9600000.0 soum</span></div>
+            </div>
+        </div>
+
+        <!-- 47: Why @property - reason 3 -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Why @property</p>
+                <h2>Reason 3 - interface compatibility</h2>
+                <p class="body-text">If an attribute was public and then logic on read became necessary - <code style="font-family:'SF Mono',monospace;">@property</code> lets you add it without changing the call syntax. All external code keeps working.</p>
+                <div class="code-block" style="margin-top: 16px;"># Before: acc.balance  → simply reads the value
+# Now:    acc.balance  → reads the value AND writes to the audit log
+# The call syntax across the whole project did not change</div>
+                <div class="quote-card success" style="margin-top: 16px;">
+                    <p>That is why in Python you start with an ordinary attribute and turn it into a <code style="font-family:'SF Mono',monospace;">@property</code> only when logic appears.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 48: Python vs Java getters -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">In other languages</p>
+                <h2>Approaches to getters and setters</h2>
+                <div class="comparison-grid">
+                    <div class="comparison-item">
+                        <div class="label" style="color: #af52de;">Java</div>
+                        <h3>Boilerplate from day one</h3>
+                        <p>Every field is wrapped from day one into <code style="font-family:'SF Mono',monospace;">getBalance()</code> / <code style="font-family:'SF Mono',monospace;">setBalance()</code>, even with no logic inside. A large amount of boilerplate code.</p>
+                    </div>
+                    <div class="comparison-item">
+                        <div class="label" style="color: #007aff;">Python</div>
+                        <h3>As needed</h3>
+                        <p>We start with an ordinary attribute. When necessary, we turn it into a <code style="font-family:'SF Mono',monospace;">@property</code> - and all external code keeps working without changes.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 49: @property.setter -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Encapsulation</p>
+                <h2><code style="font-family:'SF Mono',monospace;">@property.setter</code> - validation on write</h2>
+                <p class="body-text" style="margin-bottom: 4px;">A setter intercepts assignment via <code style="font-family:'SF Mono',monospace;">=</code> and checks the data before storing it.</p>
+                <div class="code-block tight" style="font-size: clamp(8px,1.05vw,12px);"><span class="ck">class</span> <span class="cf">CreditLimitManager</span>:
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, current_limit: <span class="cf">float</span>):
+        <span class="cn">self</span>._limit = current_limit
+
+    <span class="cm">@property</span>
+    <span class="ck">def</span> <span class="cf">limit</span>(<span class="cn">self</span>) -&gt; <span class="cf">float</span>:
+        <span class="ck">return</span> <span class="cn">self</span>._limit
+
+    <span class="cm">@limit.setter</span>
+    <span class="ck">def</span> <span class="cf">limit</span>(<span class="cn">self</span>, new_value: <span class="cf">float</span>):
+        <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Attempt to change the credit limit to: {new_value} soum"</span>)
+        <span class="ck">if</span> new_value &lt; <span class="cm">0</span>:
+            <span class="ck">raise</span> <span class="cf">ValueError</span>(<span class="cs">"The credit limit cannot be negative!"</span>)
+        <span class="ck">if</span> new_value &gt; <span class="cm">500_000_000</span>:
+            <span class="ck">raise</span> <span class="cf">ValueError</span>(<span class="cs">"The branch's maximum allowed limit has been exceeded!"</span>)
+        <span class="cn">self</span>._limit = new_value
+
+manager = <span class="cf">CreditLimitManager</span>(<span class="cm">50_000_000</span>)
+<span class="ck">try</span>:
+    manager.limit = <span class="cm">700_000_000</span>
+<span class="ck">except</span> <span class="cf">ValueError</span> <span class="ck">as</span> error:
+    <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Operation rejected: {error}"</span>)</div>
+                <div class="term"><span class="out">Attempt to change the credit limit to: 700000000 soum
+Operation rejected: The branch's maximum allowed limit has been exceeded!</span></div>
+            </div>
+        </div>
+
+        <!-- 50: How property + setter wire up -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Under the hood</p>
+                <h2>How the <code style="font-family:'SF Mono',monospace;">@property</code> + setter pairing works</h2>
+                <div class="code-block" style="font-size: clamp(8px,1.0vw,12px); max-width: 820px;">@property      → Python creates a 'limit' descriptor with read logic
+@limit.setter  → write logic is added to the same descriptor
+
+manager.limit          → calls limit.fget(manager)
+manager.limit = 700000 → calls limit.fset(manager, 700000)</div>
+                <p class="body-text" style="margin-top: 12px; color: #86868b;">The getter and setter names must match - that is why the decorator is written as <code style="font-family:'SF Mono',monospace;">@limit.setter</code>, and not simply <code style="font-family:'SF Mono',monospace;">@setter</code>.</p>
+                <div class="code-block tight" style="font-size: clamp(8px,1.0vw,12px); margin-top: 12px;"><span class="ck">class</span> <span class="cf">PinValidator</span>:
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>):
+        <span class="cn">self</span>._pin = <span class="ck">None</span>
+
+    <span class="cm">@property</span>
+    <span class="ck">def</span> <span class="cf">pin</span>(<span class="cn">self</span>) -&gt; <span class="cf">str</span>:
+        <span class="ck">return</span> <span class="cs">"****"</span>               <span class="co"># the real value is not returned</span>
+
+    <span class="cm">@pin.setter</span>
+    <span class="ck">def</span> <span class="cf">pin</span>(<span class="cn">self</span>, value: <span class="cf">str</span>):
+        <span class="ck">if</span> <span class="ck">not</span> value.<span class="cf">isdigit</span>() <span class="ck">or</span> <span class="cf">len</span>(value) != <span class="cm">4</span>:
+            <span class="ck">raise</span> <span class="cf">ValueError</span>(<span class="cs">"The PIN code must consist of exactly 4 digits!"</span>)
+        <span class="cn">self</span>._pin = value
+        <span class="cf">print</span>(<span class="cs">"PIN code updated successfully."</span>)</div>
+            </div>
+        </div>
+
+        <!-- 51: Read-only property -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Encapsulation</p>
+                <h2>A property without a setter - read-only</h2>
+                <div class="code-block"><span class="ck">class</span> <span class="cf">Contract</span>:
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, contract_id: <span class="cf">str</span>, client: <span class="cf">str</span>):
+        <span class="cn">self</span>._contract_id = contract_id
+        <span class="cn">self</span>.client = client
+
+    <span class="cm">@property</span>
+    <span class="ck">def</span> <span class="cf">contract_id</span>(<span class="cn">self</span>) -&gt; <span class="cf">str</span>:
+        <span class="cs">"""Contract identifier - immutable after creation"""</span>
+        <span class="ck">return</span> <span class="cn">self</span>._contract_id
+
+contract = <span class="cf">Contract</span>(<span class="cs">"UZ-2024-001"</span>, <span class="cs">"Timur"</span>)
+<span class="cf">print</span>(contract.contract_id)
+<span class="ck">try</span>:
+    contract.contract_id = <span class="cs">"UZ-2024-999"</span>
+<span class="ck">except</span> <span class="cf">AttributeError</span> <span class="ck">as</span> e:
+    <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Protection triggered: {e}"</span>)</div>
+                <div class="term"><span class="out">UZ-2024-001
+Protection triggered: can't set attribute</span></div>
+            </div>
+        </div>
+
+        <!-- split -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Encapsulation</p>
+                <h2>The reference BankAccount class</h2>
+                <p class="body-text" style="margin-bottom: 4px;">Constructor, a protected balance, and a deposit with a check:</p>
+                <div class="code-block"><span class="ck">class</span> <span class="cf">BankAccount</span>:
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, owner: <span class="cf">str</span>, initial_balance: <span class="cf">float</span> = <span class="cm">0.0</span>):
+        <span class="cn">self</span>.owner = owner
+        <span class="cn">self</span>._balance = initial_balance      <span class="co"># protected balance</span>
+
+    <span class="cm">@property</span>
+    <span class="ck">def</span> <span class="cf">balance</span>(<span class="cn">self</span>) -&gt; <span class="cf">float</span>:
+        <span class="ck">return</span> <span class="cn">self</span>._balance
+
+    <span class="ck">def</span> <span class="cf">deposit</span>(<span class="cn">self</span>, amount: <span class="cf">float</span>) -&gt; <span class="ck">None</span>:
+        <span class="ck">if</span> amount &lt;= <span class="cm">0</span>:
+            <span class="cf">print</span>(<span class="cs">"Error: the deposit amount must be greater than zero."</span>)
+            <span class="ck">return</span>
+        <span class="cn">self</span>._balance += amount</div>
+                <p class="body-text" style="margin-top: 10px; color: #86868b;">The balance is closed to direct writes: it is read through <code style="font-family:'SF Mono',monospace;">@property</code> and changed only through methods.</p>
+            </div>
+        </div>
+
+        <!-- split -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Encapsulation</p>
+                <h2>BankAccount: withdrawing funds</h2>
+                <p class="body-text" style="margin-bottom: 4px;">The same class - a withdrawal method with a double check:</p>
+                <div class="code-block">    <span class="ck">def</span> <span class="cf">withdraw</span>(<span class="cn">self</span>, amount: <span class="cf">float</span>) -&gt; <span class="ck">None</span>:
+        <span class="ck">if</span> amount &lt;= <span class="cm">0</span>:
+            <span class="cf">print</span>(<span class="cs">"Error: the withdrawal amount must be positive."</span>)
+            <span class="ck">return</span>
+        <span class="ck">if</span> amount &gt; <span class="cn">self</span>._balance:
+            <span class="cf">print</span>(<span class="cs">"Transaction blocked: insufficient funds."</span>)
+            <span class="ck">return</span>
+        <span class="cn">self</span>._balance -= amount
+
+acc = <span class="cf">BankAccount</span>(<span class="cs">"Dmitriy"</span>, <span class="cm">1_000_000.0</span>)
+acc.<span class="cf">withdraw</span>(<span class="cm">1_500_000.0</span>)</div>
+                <div class="term"><span class="out">Transaction blocked: insufficient funds.</span></div>
+                <p class="body-text" style="margin-top: 10px; color: #86868b;">The method itself checks the amount and the remaining balance - an incorrect operation simply will not go through.</p>
+            </div>
+        </div>
+
+        <!-- 53: Computed properties -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Encapsulation</p>
+                <h2>Dynamically computed properties</h2>
+                <div class="code-block"><span class="ck">class</span> <span class="cf">LoanPortfolio</span>:
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, principal: <span class="cf">float</span>, interest_rate: <span class="cf">float</span>):
+        <span class="cn">self</span>.principal = principal
+        <span class="cn">self</span>.interest_rate = interest_rate
+
+    <span class="cm">@property</span>
+    <span class="ck">def</span> <span class="cf">total_debt</span>(<span class="cn">self</span>) -&gt; <span class="cf">float</span>:
+        <span class="cs">"""Computed on every access from the current data"""</span>
+        <span class="ck">return</span> <span class="cn">self</span>.principal * (<span class="cm">1</span> + <span class="cn">self</span>.interest_rate)
+
+portfolio = <span class="cf">LoanPortfolio</span>(<span class="cm">10_000_000</span>, <span class="cm">0.20</span>)
+<span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Total to repay: {portfolio.total_debt} soum"</span>)
+
+portfolio.principal -= <span class="cm">2_000_000</span>
+<span class="cf">print</span>(<span class="cf">f</span><span class="cs">"After partial repayment: {portfolio.total_debt} soum"</span>)</div>
+                <div class="term"><span class="out">Total to repay: 12000000.0 soum
+After partial repayment: 9600000.0 soum</span></div>
+            </div>
+        </div>
+
+        <!-- 54: Encapsulation tools table -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Encapsulation</p>
+                <h2>Summary table of encapsulation tools</h2>
+                <table class="data-table">
+                    <tr><th>Tool</th><th>What it does</th><th>When to use</th></tr>
+                    <tr><td>_name</td><td>A signal of internal ownership</td><td>Fields not intended for external use</td></tr>
+                    <tr><td>__name</td><td>Name Mangling - renames the field in memory</td><td>Critical data: passwords, tokens, PIN codes</td></tr>
+                    <tr><td>@property</td><td>Controlled reading</td><td>Logic on read, masking, computed values</td></tr>
+                    <tr><td>@name.setter</td><td>Validation before writing</td><td>Checking data before storing it</td></tr>
+                    <tr><td>@property without a setter</td><td>Read-only</td><td>Immutable identifiers: contract ID, account number</td></tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- 55: Three concepts matrix -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Takeaways</p>
+                <h2>Three OOP concepts - summary matrix</h2>
+                <table class="data-table" style="margin-top: 10px;">
+                    <tr><th>Concept</th><th>Status</th><th>What problem it solves</th><th>Key tools</th></tr>
+                    <tr><td>Inheritance</td><td>🟢</td><td>Code duplication across similar classes</td><td>class Child(Parent), super()</td></tr>
+                    <tr><td>Polymorphism</td><td>🟢</td><td>Code's dependence on specific implementations</td><td>Overriding, Duck Typing, MRO</td></tr>
+                    <tr><td>Encapsulation</td><td>🟢</td><td>Direct access to data breaks the logic</td><td>_, __, @property, setter</td></tr>
+                    <tr><td>Abstraction</td><td>⚪</td><td>High-level code is mixed with the details</td><td>ABC, @abstractmethod</td></tr>
+                </table>
+                <div class="code-block" style="font-size: clamp(8px,1.0vw,12px); max-width: 760px; margin-top: 12px;">Inheritance    → build a hierarchy:     UzCardGateway(PaymentGateway)
+Polymorphism   → single interface:      gateway.process_payment()
+Encapsulation  → protect the data:      self.__pin_hash, @property</div>
+            </div>
+        </div>
+
+        <!-- 56: Instance vs class attribute -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Class level</p>
+                <h2>Instance attribute vs class attribute</h2>
+                <p class="body-text" style="margin-bottom: 4px;">An instance attribute is created via <code style="font-family:'SF Mono',monospace;">self.field</code> separately for each object. A class attribute is declared in the class body - one copy for all instances.</p>
+                <div class="code-block"><span class="ck">class</span> <span class="cf">NationalBankCreditProduct</span>:
+    base_interest_rate = <span class="cm">0.20</span>          <span class="co"># class attribute - shared by all</span>
+
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, client_name: <span class="cf">str</span>, loan_amount: <span class="cf">float</span>):
+        <span class="cn">self</span>.client_name = client_name <span class="co"># instance attribute</span>
+        <span class="cn">self</span>.loan_amount = loan_amount
+
+contract1 = <span class="cf">NationalBankCreditProduct</span>(<span class="cs">"Timur"</span>, <span class="cm">50_000_000</span>)
+contract2 = <span class="cf">NationalBankCreditProduct</span>(<span class="cs">"Elena"</span>, <span class="cm">90_000_000</span>)
+<span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Rate for Timur: {contract1.base_interest_rate * 100}%"</span>)
+<span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Rate for Elena: {contract2.base_interest_rate * 100}%"</span>)</div>
+                <div class="term"><span class="out">Rate for Timur: 20.0%
+Rate for Elena: 20.0%</span></div>
+            </div>
+        </div>
+
+        <!-- 57: Changing class attribute -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Class level</p>
+                <h2>Changing a class attribute affects everyone</h2>
+                <div class="code-block"><span class="cf">print</span>(<span class="cs">"--- Before changing the rate ---"</span>)
+<span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Timur: {contract1.base_interest_rate * 100}%"</span>)
+<span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Elena: {contract2.base_interest_rate * 100}%"</span>)
+
+<span class="cf">NationalBankCreditProduct</span>.base_interest_rate = <span class="cm">0.22</span>
+
+<span class="cf">print</span>(<span class="cs">"--- After changing the rate ---"</span>)
+<span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Timur: {contract1.base_interest_rate * 100}%"</span>)
+<span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Elena: {contract2.base_interest_rate * 100}%"</span>)</div>
+                <div class="term"><span class="out">--- Before changing the rate ---
+Timur: 20.0%   Elena: 20.0%
+--- After changing the rate ---
+Timur: 22.0%   Elena: 22.0%</span></div>
+                <div class="quote-card warning" style="margin-top: 10px;">
+                    <p>When changed through an instance (<code style="font-family:'SF Mono',monospace;">contract1.base_interest_rate = 0.25</code>), Python will create a new attribute on that instance - the class attribute will remain unchanged.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- end: Practice materials -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Practice</p>
+                <h2>Practice materials</h2>
+                <p class="subtitle">Two Jupyter notebooks for the lecture.</p>
+                <div style="display: flex; gap: 18px; flex-wrap: wrap; justify-content: center; margin-top: 12px;">
+                    <a href="part1_tasks.ipynb" download style="display: inline-flex; align-items: center; gap: 8px; padding: 14px 26px; background: #007aff; color: #fff; border-radius: 50px; font-size: clamp(14px, 1.6vw, 18px); font-weight: 600; text-decoration: none; box-shadow: 0 6px 20px rgba(0,122,255,0.25);">&darr; Tasks and examples</a>
+                    <a href="part1_snippets.ipynb" download style="display: inline-flex; align-items: center; gap: 8px; padding: 14px 26px; background: #fff; color: #007aff; border: 1.5px solid #007aff; border-radius: 50px; font-size: clamp(14px, 1.6vw, 18px); font-weight: 600; text-decoration: none;">&darr; Practice snippets</a>
+                </div>
+                <p class="body-text" style="margin-top: 22px; color: #86868b;">Open in Jupyter Notebook, JupyterLab or VS Code.</p>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="lang-switcher">
+        <a href="index.html">RU</a>
+        <a href="index-uz.html">UZ</a>
+        <a href="index-en.html" class="active">EN</a>
+    </div>
+
+    <div class="lesson-tag">Python · Lecture 7</div>
+    <div class="slide-indicator">
+        <span id="current-slide">1</span> / <span id="total-slides">64</span>
+    </div>
+    <div class="nav-hint">→ or Space - next<br/>← - back</div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+        document.getElementById('total-slides').textContent = totalSlides;
+
+        function showSlide(n) {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (n + totalSlides) % totalSlides;
+            slides[currentSlide].classList.add('active');
+            document.getElementById('current-slide').textContent = currentSlide + 1;
+
+            const slideContent = slides[currentSlide].querySelector('.slide-content');
+            slideContent.style.animation = 'none';
+            void slideContent.offsetHeight;
+            slideContent.style.animation = null;
+
+            const animated = slides[currentSlide].querySelectorAll('.card, .comparison-item');
+            animated.forEach(el => {
+                el.style.animation = 'none';
+                void el.offsetHeight;
+                el.style.animation = null;
+            });
+        }
+
+        function nextSlide() { showSlide(currentSlide + 1); }
+        function prevSlide() { showSlide(currentSlide - 1); }
+
+        document.addEventListener('keydown', (e) => {
+            const tag = (e.target.tagName || '').toLowerCase();
+            if (tag === 'textarea' || tag === 'input') return;
+            if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); nextSlide(); }
+            else if (e.key === 'ArrowLeft') { e.preventDefault(); prevSlide(); }
+        });
+
+        let touchStartX = 0;
+        document.addEventListener('touchstart', (e) => { touchStartX = e.changedTouches[0].screenX; });
+        document.addEventListener('touchend', (e) => {
+            const dx = e.changedTouches[0].screenX - touchStartX;
+            if (dx < -50) nextSlide();
+            else if (dx > 50) prevSlide();
+        });
+    </script>
+</body>
+</html>

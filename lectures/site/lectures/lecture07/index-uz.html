@@ -1,0 +1,1792 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pythonda OOP · Leksiya 7</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700;800&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+            background: #FFFFFF;
+            color: #1d1d1f;
+            line-height: 1.1;
+            overflow: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .presentation { width: 100vw; height: 100vh; position: relative; }
+
+        .slide {
+            width: 100%; height: 100%;
+            display: none;
+            align-items: center; justify-content: center;
+            position: absolute; top: 0; left: 0;
+            padding: clamp(40px, 6vh, 80px) clamp(40px, 6vw, 80px);
+            text-align: center;
+        }
+        .slide.active { display: flex; flex-direction: column; }
+
+        .slide-content {
+            max-width: 1200px; width: 100%; margin: 0 auto;
+            opacity: 0; transform: translateY(20px);
+            animation: fadeInUp 0.8s ease-out 0.2s forwards;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+        }
+
+        @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
+
+        h1 {
+            font-size: clamp(40px, 6.5vw, 96px);
+            font-weight: 700;
+            letter-spacing: -0.025em;
+            line-height: 0.95;
+            margin-bottom: clamp(16px, 2.5vh, 32px);
+            color: #1d1d1f;
+        }
+
+        h2 {
+            font-size: clamp(28px, 4vw, 56px);
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            line-height: 1.05;
+            margin-bottom: clamp(16px, 2vh, 28px);
+            color: #1d1d1f;
+        }
+
+        .subtitle {
+            font-size: clamp(18px, 2.2vw, 28px);
+            font-weight: 400;
+            color: #86868b;
+            margin-bottom: clamp(24px, 4vh, 48px);
+            line-height: 1.3;
+            max-width: 900px;
+        }
+
+        .eyebrow {
+            font-size: clamp(13px, 1.2vw, 16px);
+            font-weight: 600;
+            color: #007aff;
+            text-transform: uppercase;
+            letter-spacing: 0.18em;
+            margin-bottom: 18px;
+        }
+
+        .body-text {
+            font-size: clamp(15px, 1.8vw, 22px);
+            font-weight: 400;
+            color: #515154;
+            line-height: 1.45;
+            max-width: 820px;
+            margin: 0 auto;
+        }
+
+        .highlight { color: #007aff; font-weight: 500; }
+        .accent-green { color: #34c759; font-weight: 500; }
+        .accent-red { color: #ff3b30; font-weight: 500; }
+        .accent-purple { color: #af52de; font-weight: 500; }
+
+        .cards-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: clamp(16px, 2.5vw, 28px);
+            margin-top: clamp(24px, 4vh, 40px);
+            max-width: 1100px; width: 100%;
+        }
+
+        .card {
+            background: rgba(0, 0, 0, 0.025);
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            border-radius: 14px;
+            padding: clamp(20px, 2.5vw, 32px);
+            text-align: left;
+            opacity: 0; transform: translateY(24px);
+            animation: cardSlideUp 0.55s ease-out forwards;
+            transition: all 0.3s ease;
+        }
+        .card:nth-child(1) { animation-delay: 0.4s; }
+        .card:nth-child(2) { animation-delay: 0.5s; }
+        .card:nth-child(3) { animation-delay: 0.6s; }
+        .card:nth-child(4) { animation-delay: 0.7s; }
+        @keyframes cardSlideUp { to { opacity: 1; transform: translateY(0); } }
+        .card .num {
+            font-size: clamp(28px, 3vw, 36px);
+            font-weight: 700;
+            color: #007aff;
+            line-height: 1;
+            margin-bottom: 12px;
+        }
+        .card h3 {
+            font-size: clamp(17px, 2vw, 22px);
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #1d1d1f;
+        }
+        .card p {
+            font-size: clamp(13px, 1.55vw, 16px);
+            color: #6e6e73;
+            line-height: 1.45;
+        }
+
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: clamp(24px, 4vw, 56px);
+            max-width: 1100px;
+            width: 100%;
+            margin-top: clamp(24px, 4vh, 40px);
+            align-items: stretch;
+        }
+        .comparison-item {
+            text-align: left;
+            opacity: 0; transform: scale(0.96);
+            animation: scaleIn 0.6s ease-out forwards;
+            padding: clamp(20px, 2.5vw, 32px);
+            border-radius: 16px;
+            background: rgba(0,0,0,0.02);
+            border: 1px solid rgba(0,0,0,0.06);
+        }
+        .comparison-item:nth-child(1) { animation-delay: 0.4s; }
+        .comparison-item:nth-child(2) { animation-delay: 0.55s; }
+        @keyframes scaleIn { to { opacity: 1; transform: scale(1); } }
+        .comparison-item .label {
+            font-size: clamp(12px, 1.1vw, 14px);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.16em;
+            margin-bottom: 12px;
+        }
+        .comparison-item.old .label { color: #ff3b30; }
+        .comparison-item.new .label { color: #34c759; }
+        .comparison-item h3 {
+            font-size: clamp(20px, 2.4vw, 28px);
+            font-weight: 600;
+            margin-bottom: 14px;
+            color: #1d1d1f;
+            line-height: 1.15;
+        }
+        .comparison-item p, .comparison-item li {
+            font-size: clamp(13px, 1.6vw, 17px);
+            color: #515154;
+            line-height: 1.45;
+        }
+
+        .quote-card {
+            margin-top: clamp(20px, 3vh, 32px);
+            padding: clamp(18px, 2.2vw, 26px) clamp(22px, 2.8vw, 32px);
+            border-left: 3px solid #007aff;
+            background: rgba(0, 122, 255, 0.04);
+            border-radius: 8px;
+            text-align: left;
+            max-width: 820px;
+        }
+        .quote-card.warning {
+            border-left-color: #ff3b30;
+            background: rgba(255, 59, 48, 0.04);
+        }
+        .quote-card.success {
+            border-left-color: #34c759;
+            background: rgba(52, 199, 89, 0.05);
+        }
+        .quote-card .label {
+            font-size: 12px; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 0.16em;
+            color: #007aff; margin-bottom: 8px;
+        }
+        .quote-card.warning .label { color: #ff3b30; }
+        .quote-card.success .label { color: #34c759; }
+        .quote-card p {
+            font-size: clamp(14px, 1.7vw, 19px);
+            color: #1d1d1f; line-height: 1.4; font-weight: 500;
+        }
+
+        .code-block {
+            background: #1d1d1f;
+            color: #f5f5f7;
+            border-radius: 12px;
+            padding: clamp(16px, 1.8vw, 24px);
+            font-family: 'SF Mono', 'Menlo', 'Monaco', 'Consolas', monospace;
+            font-size: clamp(12px, 1.4vw, 16px);
+            line-height: 1.6;
+            text-align: left;
+            margin-top: 18px;
+            max-width: 860px;
+            width: 100%;
+            white-space: pre;
+            overflow-x: auto;
+        }
+        .code-block.tight { padding: clamp(14px, 1.6vw, 20px); font-size: clamp(11px, 1.3vw, 14px); line-height: 1.5; }
+        .code-block .ck { color: #ff79c6; }
+        .code-block .cs { color: #f1fa8c; }
+        .code-block .cn { color: #f8f8f2; }
+        .code-block .co { color: #6272a4; font-style: italic; }
+        .code-block .cf { color: #8be9fd; }
+        .code-block .cm { color: #bd93f9; }
+        .code-block .ce { color: #ff5555; }
+        .code-block .cc { color: #50fa7b; }
+
+        .code-output {
+            display: grid;
+            grid-template-columns: 1.1fr 1fr;
+            gap: 16px;
+            margin-top: 22px;
+            width: 100%;
+            max-width: 1050px;
+        }
+        .code-output .term {
+            background: #1d1d1f;
+            color: #f5f5f7;
+            border-radius: 12px;
+            padding: 18px;
+            font-family: 'SF Mono', 'Menlo', monospace;
+            font-size: clamp(12px, 1.4vw, 15px);
+            line-height: 1.6;
+            text-align: left;
+            white-space: pre;
+            overflow-x: auto;
+        }
+        .term .out { color: #50fa7b; }
+        .term .err { color: #ff5555; }
+
+        .checklist {
+            list-style: none;
+            padding: 0;
+            margin-top: 18px;
+            max-width: 800px;
+            text-align: left;
+        }
+        .checklist li {
+            font-size: clamp(15px, 1.8vw, 19px);
+            color: #1d1d1f;
+            line-height: 1.5;
+            padding: 11px 0 11px 40px;
+            position: relative;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+        .checklist li:last-child { border-bottom: none; }
+        .checklist li::before {
+            content: "✓";
+            position: absolute;
+            left: 0; top: 50%;
+            transform: translateY(-50%);
+            width: 26px; height: 26px;
+            border-radius: 50%;
+            background: rgba(0, 122, 255, 0.1);
+            color: #007aff;
+            font-size: 13px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .bullet-list {
+            list-style: none;
+            padding: 0;
+            margin-top: 14px;
+            max-width: 820px;
+            text-align: left;
+        }
+        .bullet-list li {
+            font-size: clamp(14px, 1.7vw, 18px);
+            color: #1d1d1f;
+            line-height: 1.5;
+            padding: 8px 0 8px 22px;
+            position: relative;
+        }
+        .bullet-list li::before {
+            content: "•";
+            position: absolute;
+            left: 6px; top: 7px;
+            color: #007aff;
+            font-weight: 700;
+        }
+
+        .timer-display {
+            font-family: 'SF Mono', 'Menlo', monospace;
+            font-size: clamp(56px, 9vw, 120px);
+            font-weight: 700;
+            color: #007aff;
+            line-height: 1;
+            letter-spacing: -0.04em;
+            margin: 12px 0 20px 0;
+        }
+
+        .flow-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 22px;
+            font-family: 'SF Mono', 'Menlo', monospace;
+            font-size: clamp(13px, 1.5vw, 17px);
+        }
+        .flow-row .step-pill {
+            padding: 9px 16px;
+            border-radius: 50px;
+            background: rgba(0,122,255,0.08);
+            color: #007aff;
+            font-weight: 600;
+            border: 1px solid rgba(0,122,255,0.18);
+        }
+        .flow-row .arrow { color: #86868b; font-size: 18px; }
+
+        .slide-indicator {
+            position: fixed;
+            bottom: 28px; left: 50%;
+            transform: translateX(-50%);
+            font-size: 13px; color: #86868b;
+            font-weight: 400; z-index: 100;
+            letter-spacing: 0.04em;
+        }
+        .nav-hint {
+            position: fixed;
+            bottom: 28px; right: 28px;
+            font-size: 12px; color: #c7c7cc;
+            font-weight: 400; text-align: right;
+            z-index: 100;
+        }
+        .lesson-tag {
+            position: fixed;
+            top: 28px; left: 28px;
+            font-size: 11px; font-weight: 600;
+            color: #86868b; text-transform: uppercase;
+            letter-spacing: 0.18em;
+            z-index: 100;
+        }
+
+        @media (max-width: 768px) {
+            .comparison-grid, .code-output, .cards-container {
+                grid-template-columns: 1fr; gap: 18px;
+            }
+        }
+        .lang-switcher {
+            position: fixed;
+            top: 22px; right: 28px;
+            z-index: 100;
+            display: flex;
+            gap: 2px;
+            background: rgba(255,255,255,0.95);
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0,0,0,0.06);
+            border-radius: 50px;
+            padding: 3px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        .lang-switcher a {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: #86868b;
+            text-decoration: none;
+            padding: 5px 12px;
+            border-radius: 50px;
+            transition: all 0.2s ease;
+        }
+        .lang-switcher a.active {
+            color: #fff;
+            background: #007aff;
+        }
+        .lang-switcher a:not(.active):hover {
+            color: #1d1d1f;
+        }
+
+        .data-table {
+            width: 100%; max-width: 1020px;
+            margin-top: clamp(16px, 3vh, 30px);
+            border-collapse: collapse;
+            font-size: clamp(11px, 1.5vw, 17px);
+        }
+        .data-table th, .data-table td {
+            text-align: left;
+            padding: clamp(7px,1.3vw,13px) clamp(9px,1.5vw,16px);
+            border-bottom: 1px solid rgba(0,0,0,0.08);
+            vertical-align: top;
+        }
+        .data-table th {
+            font-weight: 600; color: #1d1d1f;
+            border-bottom: 2px solid rgba(0,0,0,0.14);
+        }
+        .data-table td { color: #515154; line-height: 1.4; }
+        .data-table tr:last-child td { border-bottom: none; }
+        .term {
+            background: #1d1d1f; color: #f5f5f7;
+            border-radius: 12px;
+            padding: clamp(13px,1.7vw,20px);
+            font-family: 'SF Mono','Menlo','Monaco','Consolas',monospace;
+            font-size: clamp(10px,1.3vw,15px);
+            line-height: 1.55; text-align: left;
+            white-space: pre; overflow-x: auto;
+            margin-top: 14px; max-width: 880px; width: 100%;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="presentation">
+
+        <!-- 1: Title -->
+        <div class="slide active">
+            <div class="slide-content">
+                <p class="eyebrow">Leksiya 7</p>
+                <h1>OOP 2-qism</h1>
+                <p class="subtitle">Meros, dunder-metodlar, @property</p>
+                <p class="body-text" style="margin-top: 18px;">Bugun biz moslashuvchan va himoyalangan arxitekturalarni qanday loyihalashni koʻrib chiqamiz. Fintex sohasidan olingan haqiqiy misollarda - murakkab maʼlumotlar oqimini qanday boshqarish, parollarni loglarga tushishdan himoya qilish va oʻnlab toʻlov shlyuzlarini yagona interfeys orqali ishini tashkil etish.</p>
+            </div>
+        </div>
+
+        <!-- 2: Recap intro -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">6-leksiya takrori</p>
+                <h2>Asosiy tushunchalar</h2>
+                <p class="body-text">Oʻtgan darsda biz poydevorni qoʻydik: holat va xatti-harakatni klasslarga joylashni oʻrgandik, hamda vorislik bilan tanishdik.</p>
+                <div class="quote-card" style="margin-top: 26px;">
+                    <p>Murakkabroq tushunchalarga - dinamik polimorfizm va inkapsulyatsiyaga - oʻtishdan oldin terminologiyani bazaviy misollarda mustahkamlab olish zarur. Bu poydevorsiz MRO va Name Mangling mexanizmlarida osongina chalkashib ketish mumkin.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3: Purpose of classes -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Takror</p>
+                <h2>Klasslarning vazifasi</h2>
+                <p class="body-text" style="margin-bottom: 6px;">Bank hisoblarini yuritish misolida maʼlumotlarni boshqarishning ikki yondashuvini solishtiramiz.</p>
+                <div class="comparison-grid">
+                    <div class="comparison-item old">
+                        <div class="label">Protsedura yondashuvi</div>
+                        <div class="code-block tight" style="margin-top: 8px; font-size: clamp(9px,1.05vw,12px);"><span class="co"># maʼlumot va mantiq bir-biriga bogʻlanmagan;</span>
+<span class="co"># masshtablashda - qiyin</span>
+acc1_number  = <span class="cs">"44001122"</span>
+acc1_balance = <span class="cm">50000.0</span>
+acc2_number  = <span class="cs">"55003344"</span>
+acc2_balance = <span class="cm">1200.0</span></div>
+                    </div>
+                    <div class="comparison-item new">
+                        <div class="label">OOP yondashuvi</div>
+                        <div class="code-block tight" style="margin-top: 8px; font-size: clamp(9px,1.05vw,12px);"><span class="ck">class</span> <span class="cf">BankAccount</span>:
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, number: <span class="cf">str</span>, balance: <span class="cf">float</span>):
+        <span class="cn">self</span>.number = number
+        <span class="cn">self</span>.balance = balance
+
+acc1 = <span class="cf">BankAccount</span>(<span class="cs">"44001122"</span>, <span class="cm">50000.0</span>)</div>
+                    </div>
+                </div>
+                <p class="body-text" style="margin-top: 16px; color: #86868b;">Klass - moliyaviy holat va u bilan ishlash mantigʻini yagona tuzilmaga bogʻlovchi foydalanuvchi maʼlumot turi.</p>
+            </div>
+        </div>
+
+        <!-- 4: Class and instance -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Takror</p>
+                <h2>Klass va nusxa</h2>
+                <div class="comparison-grid">
+                    <div class="comparison-item new">
+                        <div class="label">Klass</div>
+                        <h3>Blueprint</h3>
+                        <p>Tuzilmaning dasturiy tavsifi. Oʻzi mijozning aniq maʼlumotlarini saqlamaydi va maʼlumot uchun xotira egallamaydi.</p>
+                    </div>
+                    <div class="comparison-item new">
+                        <div class="label">Nusxa</div>
+                        <h3>Instance</h3>
+                        <p>Xotiradagi aniq obyekt - masalan, haqiqiy balansga ega mijoz hisobi. Bitta klassdan millionlab izolyatsiyalangan obyektlar yaratiladi.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5: Attributes and methods -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Takror</p>
+                <h2>Atributlar va metodlar</h2>
+                <div class="cards-container" style="grid-template-columns: 1fr 1fr; max-width: 880px;">
+                    <div class="card">
+                        <div class="num">1</div>
+                        <h3>Atributlar</h3>
+                        <p>Obyekt ichidagi, uning joriy holatini aks ettiruvchi oʻzgaruvchilar: <code style="font-family:'SF Mono',monospace;">account_number</code>, <code style="font-family:'SF Mono',monospace;">currency</code>, <code style="font-family:'SF Mono',monospace;">is_blocked</code>.</p>
+                    </div>
+                    <div class="card">
+                        <div class="num">2</div>
+                        <h3>Metodlar</h3>
+                        <p>Klass ichidagi, obyekt holatiga kirish huquqiga ega funksiyalar: <code style="font-family:'SF Mono',monospace;">withdraw()</code>, <code style="font-family:'SF Mono',monospace;">block_account()</code>.</p>
+                    </div>
+                </div>
+                <div class="quote-card success" style="margin-top: 22px;">
+                    <p>💡 Yaxshi loyihalangan klass oʻz atributlarini mustaqil boshqaradi, tashqi kod esa u bilan faqat metod chaqiruvlari orqali muloqot qiladi.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 6: __init__ and self -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Takror</p>
+                <h2><code style="font-family:'SF Mono',monospace;">__init__</code> metodi va <code style="font-family:'SF Mono',monospace;">self</code> argumenti</h2>
+                <div class="code-block"><span class="ck">class</span> <span class="cf">BankAccount</span>:
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, account_number: <span class="cf">str</span>, balance: <span class="cf">float</span>):
+        <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Xotira ajratildi. self quyidagi manzilga ishora qiladi: {id(self)}"</span>)
+        <span class="cn">self</span>.account_number = account_number
+        <span class="cn">self</span>.balance = balance
+
+my_acc = <span class="cf">BankAccount</span>(<span class="cs">"44001122"</span>, <span class="cm">1000.0</span>)</div>
+                <div class="term"><span class="out">Xotira ajratildi. self quyidagi manzilga ishora qiladi: 140237482390224</span></div>
+                <p class="body-text" style="margin-top: 12px; color: #86868b;"><code style="font-family:'SF Mono',monospace;">__init__</code> - obyekt konstruktori, xotira ajratilgandan soʻng avtomatik chaqiriladi. <code style="font-family:'SF Mono',monospace;">self</code> - joriy nusxaga oshkora havola.</p>
+            </div>
+        </div>
+
+        <!-- 7: self vs this -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Kontekst</p>
+                <h2>Python <code style="font-family:'SF Mono',monospace;">self</code> vs Java <code style="font-family:'SF Mono',monospace;">this</code></h2>
+                <div class="comparison-grid">
+                    <div class="comparison-item">
+                        <div class="label" style="color: #007aff;">Python</div>
+                        <h3>Oshkora eʼlon</h3>
+                        <div class="code-block tight" style="margin-top: 10px; font-size: clamp(10px,1.1vw,13px);"><span class="ck">def</span> <span class="cf">deposit</span>(<span class="cn">self</span>, amount: <span class="cf">float</span>):
+    <span class="cn">self</span>.balance += amount</div>
+                        <p style="margin-top: 10px;"><code style="font-family:'SF Mono',monospace;">self</code> har bir metodning birinchi argumenti sifatida yoziladi. "Oshkora yashirinidan yaxshiroq".</p>
+                    </div>
+                    <div class="comparison-item">
+                        <div class="label" style="color: #af52de;">Java</div>
+                        <h3>Yashirin uzatish</h3>
+                        <div class="code-block tight" style="margin-top: 10px; font-size: clamp(10px,1.1vw,13px);">public void <span class="cf">deposit</span>(double amount) {
+    this.balance += amount;
+}</div>
+                        <p style="margin-top: 10px;">JVM havolani avtomatik uzatadi, ichida esa u <code style="font-family:'SF Mono',monospace;">this</code> orqali mavjud boʻladi.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 8: Namespace isolation -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Takror</p>
+                <h2>Obyektlarning nom fazolari izolyatsiyasi</h2>
+                <div class="code-block"><span class="ck">class</span> <span class="cf">BankAccount</span>:
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, owner: <span class="cf">str</span>, balance: <span class="cf">float</span>):
+        <span class="cn">self</span>.owner = owner
+        <span class="cn">self</span>.balance = balance
+
+alice_acc = <span class="cf">BankAccount</span>(<span class="cs">"Alice"</span>, <span class="cm">500.0</span>)
+bob_acc   = <span class="cf">BankAccount</span>(<span class="cs">"Bob"</span>, <span class="cm">10000.0</span>)
+
+alice_acc.balance -= <span class="cm">50.0</span>
+
+<span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Alice balansi: {alice_acc.balance}"</span>)
+<span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Bob balansi: {bob_acc.balance}"</span>)</div>
+                <div class="term"><span class="out">Alice balansi: 450.0
+Bob balansi: 10000.0</span></div>
+            </div>
+        </div>
+
+        <!-- 9: __str__ -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Takror</p>
+                <h2><code style="font-family:'SF Mono',monospace;">__str__</code> metodi</h2>
+                <div class="code-block"><span class="ck">class</span> <span class="cf">BankAccount</span>:
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, owner: <span class="cf">str</span>, balance: <span class="cf">float</span>):
+        <span class="cn">self</span>.owner = owner
+        <span class="cn">self</span>.balance = balance
+
+    <span class="ck">def</span> <span class="cf">__str__</span>(<span class="cn">self</span>) -&gt; <span class="cf">str</span>:
+        <span class="ck">return</span> <span class="cf">f</span><span class="cs">"Mijoz hisobi: {self.owner} | Balans: {self.balance} USD"</span>
+
+acc = <span class="cf">BankAccount</span>(<span class="cs">"Oleg"</span>, <span class="cm">7500.0</span>)
+<span class="cf">print</span>(acc)</div>
+                <div class="term"><span class="out">Mijoz hisobi: Oleg | Balans: 7500.0 USD</span></div>
+            </div>
+        </div>
+
+        <!-- 10: Method signatures -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Takror</p>
+                <h2>Metod signaturalari</h2>
+                <div class="code-block"><span class="ck">class</span> <span class="cf">BankAccount</span>:
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, balance: <span class="cf">float</span>):
+        <span class="cn">self</span>.balance = balance
+
+    <span class="ck">def</span> <span class="cf">transfer</span>(<span class="cn">self</span>, target_acc: <span class="cs">'BankAccount'</span>, amount: <span class="cf">float</span>) -&gt; <span class="cf">bool</span>:
+        <span class="ck">if</span> <span class="cn">self</span>.balance &gt;= amount:
+            <span class="cn">self</span>.balance -= amount
+            target_acc.balance += amount
+            <span class="ck">return</span> <span class="ck">True</span>
+        <span class="ck">return</span> <span class="ck">False</span>
+
+acc_a = <span class="cf">BankAccount</span>(<span class="cm">100.0</span>)
+acc_b = <span class="cf">BankAccount</span>(<span class="cm">20.0</span>)
+success = acc_a.<span class="cf">transfer</span>(acc_b, <span class="cm">50.0</span>)
+<span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Tranzaksiya holati: {success} | Qoldiq: {acc_a.balance}"</span>)</div>
+                <div class="term"><span class="out">Tranzaksiya holati: True | Qoldiq: 50.0</span></div>
+            </div>
+        </div>
+
+        <!-- 11: Inheritance and super() -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Takror</p>
+                <h2>Vorislik va <code style="font-family:'SF Mono',monospace;">super()</code></h2>
+                <div class="code-block"><span class="ck">class</span> <span class="cf">BasicCard</span>:
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, holder: <span class="cf">str</span>, number: <span class="cf">str</span>):
+        <span class="cn">self</span>.holder = holder
+        <span class="cn">self</span>.number = number
+
+<span class="ck">class</span> <span class="cf">PremiumCard</span>(<span class="cf">BasicCard</span>):
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, holder: <span class="cf">str</span>, number: <span class="cf">str</span>, cashback_rate: <span class="cf">float</span>):
+        <span class="cf">super</span>().<span class="cf">__init__</span>(holder, number)
+        <span class="cn">self</span>.cashback_rate = cashback_rate
+
+vip = <span class="cf">PremiumCard</span>(<span class="cs">"Asel"</span>, <span class="cs">"4400..."</span>, <span class="cm">0.05</span>)
+<span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Karta: {vip.holder}, Keshbek: {vip.cashback_rate * 100}%"</span>)</div>
+                <div class="term"><span class="out">Karta: Asel, Keshbek: 5.0%</span></div>
+            </div>
+        </div>
+
+        <!-- 12: OOP everywhere -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Takror</p>
+                <h2>Pythonda OOP hamma joyda</h2>
+                <div class="code-block"><span class="cs">"card_verified"</span>.<span class="cf">upper</span>()    <span class="co"># str klassi nusxasidagi metod</span>
+balances.<span class="cf">append</span>(<span class="cm">500.0</span>)     <span class="co"># list nusxasi holatini oʻzgartirish</span>
+df.<span class="cf">dropna</span>()                <span class="co"># pandas dagi DataFrame obyekti metodi</span>
+api.<span class="cf">send_payment</span>(payload)  <span class="co"># requests / httpx orqali HTTP-sessiya mijozi</span></div>
+                <p class="body-text" style="margin-top: 22px; color: #86868b;">Python bilan ishlaganda siz OOP dan har daqiqada foydalanasiz - nuqta orqali deyarli har bir chaqiruv - bu obyekt metodi.</p>
+            </div>
+        </div>
+
+        <!-- 13: Recap summary table -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Takror</p>
+                <h2>Umumiy jadval</h2>
+                <table class="data-table">
+                    <tr><th>Tushuncha</th><th>Qisqacha</th><th>Arxitekturadagi maʼnosi</th></tr>
+                    <tr><td>Klass / Nusxa</td><td>Tuzilma tavsifi vs RAMdagi obyekt</td><td>Mahsulot shabloni va mijozning haqiqiy hisobi</td></tr>
+                    <tr><td>Atribut / Metod</td><td>Holat oʻzgaruvchisi vs funksiya</td><td>Balans (maʼlumot) va oʻtkazma metodi (xatti-harakat)</td></tr>
+                    <tr><td>__init__ / self</td><td>Konstruktor va kontekstga havola</td><td>Yaratishdagi kirish nuqtasi va nusxaga havola</td></tr>
+                    <tr><td>Vorislik / super()</td><td>Nusxa-koʻchirmasdan kengaytirish</td><td>BasicAccount asosida CreditAccount</td></tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- 14: OOP status -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Kurs xaritasi</p>
+                <h2>OOP ni oʻzlashtirishning joriy holati</h2>
+                <table class="data-table">
+                    <tr><th>Tushuncha</th><th>Holat</th><th>Bosqich</th></tr>
+                    <tr><td>Vorislik</td><td>🟢 OʻRGANILDI</td><td>Klasslarni kengaytirish sintaksisi va super().</td></tr>
+                    <tr><td>Polimorfizm</td><td>🟡 JORIY MAVZU</td><td>Turli toʻlov shlyuzlari uchun yagona interfeys.</td></tr>
+                    <tr><td>Inkapsulyatsiya</td><td>⚪ KUTILMOQDA</td><td>Kritik maʼlumotlarni yashirish va validatsiya.</td></tr>
+                    <tr><td>Abstraksiya</td><td>⚪ KUTILMOQDA</td><td>Biznes-mantiqni amalga oshirish tafsilotlaridan ajratish.</td></tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- 15: Lecture plan -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Bugun</p>
+                <h2>7-leksiya rejasi</h2>
+                <ul class="checklist" style="max-width: 880px;">
+                    <li><span class="highlight">Polimorfizm</span> - metodlarni qayta aniqlash, duck typing, MRO va romb shaklidagi vorislik</li>
+                    <li><span class="highlight">Inkapsulyatsiya</span> - <code style="font-family:'SF Mono',monospace;">_</code> va <code style="font-family:'SF Mono',monospace;">__</code> modifikatorlari, <code style="font-family:'SF Mono',monospace;">@property</code>, setterlar</li>
+                    <li>Klass darajasidagi vositalar - <code style="font-family:'SF Mono',monospace;">@staticmethod</code>, <code style="font-family:'SF Mono',monospace;">@classmethod</code></li>
+                    <li>Sehrli metodlar - foydalanuvchi obyektlari uchun <code style="font-family:'SF Mono',monospace;">+</code>, <code style="font-family:'SF Mono',monospace;">==</code>, <code style="font-family:'SF Mono',monospace;">len()</code> operatorlari</li>
+                    <li>Istisnolar - foydalanuvchi xato klasslari</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 16: What is polymorphism -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Polimorfizm</p>
+                <h2>Polimorfizm nima?</h2>
+                <p class="body-text">Kassadagi toʻlov terminalini tasavvur qiling. Unga mijoz aynan nimani yaqinlashtirishi farqsiz: UzCard plastik kartasi, Humo Pay'li smartfon yoki Milly Bank'dan QR-kod. Terminal uchun bitta interfeys mavjud - "toʻlovni qabul qilish". Yechib olish aynan qanday roʻy berishi esa aniq toʻlov vositasiga bogʻliq.</p>
+                <div class="quote-card success" style="margin-top: 22px;">
+                    <p>Polimorfizm - dasturning turli obyektlar bilan yagona interfeys orqali, faqat metod nomiga tayanib, obyektning ichki tuzilishiga emas, muloqot qila olish qobiliyati.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 17: Two ways -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Polimorfizm</p>
+                <h2>Polimorfizmni amalga oshirishning ikki yoʻli</h2>
+                <div class="cards-container" style="grid-template-columns: 1fr 1fr; max-width: 900px;">
+                    <div class="card">
+                        <div class="num">1</div>
+                        <h3>Klassik</h3>
+                        <p>Vorislik va qayta aniqlash orqali. Ota-klass yaratiladi; vorislar bir xil nomli, ammo oʻz mantigʻiga ega metodni amalga oshiradi.</p>
+                    </div>
+                    <div class="card">
+                        <div class="num">2</div>
+                        <h3>Dinamik</h3>
+                        <p>Duck typing. Vorislik talab qilinmaydi: mustaqil klasslarda bir xil nomli metod boʻlsa, uni polimorf tarzda chaqirish mumkin.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 18: Mechanisms diagram -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Polimorfizm</p>
+                <h2>Pythonda polimorfizm mexanizmlari</h2>
+                <div class="code-block" style="font-size: clamp(8px,1.05vw,13px); max-width: 820px;">                ┌──────────────────────────┐
+                │  POLIMORFIZM (tushuncha)  │
+                └────────────┬─────────────┘
+                             │
+          ┌──────────────────┴──────────────────┐
+          ▼                                     ▼
+┌──────────────────────────────┐   ┌──────────────────────────────┐
+│  Klassik (ierarxik)          │   │  Dinamik (duck typing)       │
+├──────────────────────────────┤   ├──────────────────────────────┤
+│ Umumiy ota-klass kerak       │   │ Vorislik talab qilinmaydi    │
+│ Ota metodlarini qayta aniql. │   │ Faqat metod mavjudligi muhim │
+│ Klasslar ierarxiyada bogʻliq │   │ Klasslar toʻliq mustaqil     │
+└──────────────────────────────┘   └──────────────────────────────┘</div>
+            </div>
+        </div>
+
+        <!-- A: How overriding works -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Klassik polimorfizm</p>
+                <h2>Qayta aniqlash qanday ishlaydi</h2>
+                <p class="body-text" style="margin-bottom: 4px;">Qayta aniqlash - bu voris-klass ota-klassdagi bilan bir xil nomli metodni eʼlon qilib, uni oʻzicha amalga oshirishidir.</p>
+                <div class="code-block"><span class="ck">class</span> <span class="cf">Parent</span>:
+    <span class="ck">def</span> <span class="cf">greet</span>(<span class="cn">self</span>):
+        <span class="cf">print</span>(<span class="cs">"Ota-klassdan salom"</span>)
+
+<span class="ck">class</span> <span class="cf">Child</span>(<span class="cf">Parent</span>):
+    <span class="ck">def</span> <span class="cf">greet</span>(<span class="cn">self</span>):                 <span class="co"># bir xil nom - oʻz amalga oshirilishi</span>
+        <span class="cf">print</span>(<span class="cs">"Vorisdan salom"</span>)
+
+<span class="cf">Child</span>().<span class="cf">greet</span>()</div>
+                <div class="term"><span class="out">Vorisdan salom</span></div>
+                <div class="quote-card" style="margin-top: 12px;">
+                    <p><code style="font-family:'SF Mono',monospace;">obj.greet()</code> chaqirilganda Python metodni obyektning oʻz klassidan boshlab qidiradi. Vorisdagi versiya ota-klassnikini "yopadi". <code style="font-family:'SF Mono',monospace;">super().greet()</code> esa qoʻshimcha ravishda ota-klass versiyasini ham bajarishga imkon beradi.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- split -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Klassik polimorfizm</p>
+                <h2>Metodlarni qayta aniqlash</h2>
+                <p class="body-text" style="margin-bottom: 4px;">Ota-klass umumiy mantiqni saqlaydi. Voris-klass metodni qayta aniqlaydi:</p>
+                <div class="code-block"><span class="ck">class</span> <span class="cf">PaymentGateway</span>:
+    <span class="ck">def</span> <span class="cf">process_payment</span>(<span class="cn">self</span>, amount: <span class="cf">float</span>) -&gt; <span class="ck">None</span>:
+        <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"[Core-Banking] {amount} soʻmga tranzaksiya qayd etilmoqda"</span>)
+
+<span class="ck">class</span> <span class="cf">UzCardGateway</span>(<span class="cf">PaymentGateway</span>):
+    <span class="ck">def</span> <span class="cf">process_payment</span>(<span class="cn">self</span>, amount: <span class="cf">float</span>) -&gt; <span class="ck">None</span>:
+        <span class="cf">super</span>().<span class="cf">process_payment</span>(amount)        <span class="co"># avval yadro mantigʻi</span>
+        <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"[UzCard API] QR-kod generatsiyasi. {amount} soʻm yechilmoqda."</span>)  <span class="co"># soʻngra oʻziniki</span></div>
+                <p class="body-text" style="margin-top: 10px; color: #86868b;"><code style="font-family:'SF Mono',monospace;">super()</code> ota-klass versiyasini chaqiradi. UzCardGateway umumiy yadro mantigʻini yoʻqotmasdan oʻz xatti-harakatini qoʻshadi.</p>
+            </div>
+        </div>
+
+        <!-- split -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Klassik polimorfizm</p>
+                <h2>Xuddi shu shablon - boshqa shlyuzlar</h2>
+                <p class="body-text" style="margin-bottom: 4px;">Humo va Milly Bank metodni xuddi shunday qayta aniqlaydi. <code style="font-family:'SF Mono',monospace;">run_checkout</code> istalgan shlyuz bilan ishlaydi:</p>
+                <div class="code-block"><span class="ck">class</span> <span class="cf">HumoGateway</span>(<span class="cf">PaymentGateway</span>):
+    <span class="ck">def</span> <span class="cf">process_payment</span>(<span class="cn">self</span>, amount: <span class="cf">float</span>) -&gt; <span class="ck">None</span>:
+        <span class="cf">super</span>().<span class="cf">process_payment</span>(amount)
+        <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"[Humo API] Ekvayringga soʻrov. {amount} soʻm yechilmoqda."</span>)
+
+<span class="ck">class</span> <span class="cf">MillyBankGateway</span>(<span class="cf">PaymentGateway</span>):
+    <span class="ck">def</span> <span class="cf">process_payment</span>(<span class="cn">self</span>, amount: <span class="cf">float</span>) -&gt; <span class="ck">None</span>:
+        <span class="cf">super</span>().<span class="cf">process_payment</span>(amount)
+        <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"[Milly Bank API] Onlayn toʻlov. Summa: {amount} soʻm."</span>)
+
+<span class="ck">def</span> <span class="cf">run_checkout</span>(gateway: <span class="cf">PaymentGateway</span>, total: <span class="cf">float</span>):
+    gateway.<span class="cf">process_payment</span>(total)   <span class="co"># funksiya shlyuz turini bilmaydi</span>
+
+<span class="cf">run_checkout</span>(<span class="cf">UzCardGateway</span>(), <span class="cm">150000.0</span>)
+<span class="cf">run_checkout</span>(<span class="cf">HumoGateway</span>(), <span class="cm">320000.0</span>)</div>
+            </div>
+        </div>
+
+        <!-- 21: Method overriding - result -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Metodlarni qayta aniqlash</p>
+                <h2>Chaqiruv natijasi</h2>
+                <div class="term"><span class="out">[Core-Banking] 150000.0 soʻmga tranzaksiya qayd etilmoqda
+[UzCard API] QR-kod generatsiyasi. 150000.0 soʻm yechilmoqda.
+[Core-Banking] 320000.0 soʻmga tranzaksiya qayd etilmoqda
+[Humo API] Ekvayringga soʻrov. 320000.0 soʻm yechilmoqda.</span></div>
+                <p class="body-text" style="margin-top: 22px;">Har bir shlyuz <code style="font-family:'SF Mono',monospace;">process_payment</code> ni oʻzicha qayta aniqlaydi. <code style="font-family:'SF Mono',monospace;">super()</code> avval umumiy yadro mantigʻini (logga yozish), soʻngra - aniq shlyuz kodini bajaradi. <code style="font-family:'SF Mono',monospace;">run_checkout</code> funksiyasi yagona metodni chaqiradi va unga qaysi klass uzatilganini bilmaydi.</p>
+            </div>
+        </div>
+
+        <!-- 20: Fee calculation -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Qayta aniqlashni mustahkamlaymiz</p>
+                <h2>Oʻtkazma uchun komissiyani hisoblash</h2>
+                <div class="code-block tight"><span class="ck">class</span> <span class="cf">BasicCardTariff</span>:
+    <span class="ck">def</span> <span class="cf">calculate_fee</span>(<span class="cn">self</span>, amount: <span class="cf">float</span>) -&gt; <span class="cf">float</span>:
+        <span class="ck">return</span> amount * <span class="cm">0.015</span>          <span class="co"># 1.5% - standart komissiya</span>
+
+<span class="ck">class</span> <span class="cf">PremiumCardTariff</span>(<span class="cf">BasicCardTariff</span>):
+    <span class="ck">def</span> <span class="cf">calculate_fee</span>(<span class="cn">self</span>, amount: <span class="cf">float</span>) -&gt; <span class="cf">float</span>:
+        <span class="ck">return</span> amount * <span class="cm">0.005</span>          <span class="co"># 0.5% - premium mijozlar uchun</span>
+
+<span class="ck">class</span> <span class="cf">CorporateCardTariff</span>(<span class="cf">BasicCardTariff</span>):
+    <span class="ck">def</span> <span class="cf">calculate_fee</span>(<span class="cn">self</span>, amount: <span class="cf">float</span>) -&gt; <span class="cf">float</span>:
+        <span class="ck">return</span> <span class="cm">50000.0</span>                 <span class="co"># yuridik shaxslar uchun fiks</span>
+
+tariffs_pool = [<span class="cf">BasicCardTariff</span>(), <span class="cf">PremiumCardTariff</span>(), <span class="cf">CorporateCardTariff</span>()]
+<span class="ck">for</span> tariff <span class="ck">in</span> tariffs_pool:
+    fee = tariff.<span class="cf">calculate_fee</span>(<span class="cm">10_000_000.0</span>)
+    <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Tarif: {tariff.__class__.__name__} | Komissiya: {fee} soʻm"</span>)</div>
+                <div class="term"><span class="out">Tarif: BasicCardTariff     | Komissiya: 150000.0 soʻm
+Tarif: PremiumCardTariff   | Komissiya: 50000.0 soʻm
+Tarif: CorporateCardTariff | Komissiya: 50000.0 soʻm</span></div>
+                <p class="body-text" style="margin-top: 10px; color: #86868b;">Uch tarif <code style="font-family:'SF Mono',monospace;">calculate_fee</code> ni oʻz formulasi bilan qayta aniqlaydi. Sikl xuddi shu metodni chaqiradi - Python obyekt turiga qarab kerakli amalga oshirilishni oʻzi qoʻyadi.</p>
+            </div>
+        </div>
+
+        <!-- 21: Python vs Java overriding -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Boshqa tillarda</p>
+                <h2>Qayta aniqlashni solishtirish: Python vs Java</h2>
+                <table class="data-table">
+                    <tr><th>Mezon</th><th>Python</th><th>Java</th></tr>
+                    <tr><td>Standart rejim</td><td>Barcha metodlar virtual. Vorisdagi nom mosligi ota-klass metodini qayta aniqlaydi.</td><td>Signaturalarning mosligini talab qiladi. @Override annotatsiyasi tavsiya etiladi.</td></tr>
+                    <tr><td>Turlarni nazorat qilish</td><td>Runtime darajasida yoʻq.</td><td>Kompilyator nazorat qiladi.</td></tr>
+                    <tr><td>Qidiruv tamoyili</td><td>Bajarilish payti MRO boʻylab dinamik qidiruv.</td><td>Kompilyatsiya bosqichida virtual metodlar jadvali (VMT) boʻylab.</td></tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- 22: Fragile base class -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Qayta aniqlash xavfi</p>
+                <h2>Moʻrt ota-klass</h2>
+                <div class="code-block tight" style="font-size: clamp(8px,1.0vw,12px);"><span class="ck">class</span> <span class="cf">DocumentProcessor</span>:
+    <span class="ck">def</span> <span class="cf">format_inn</span>(<span class="cn">self</span>, raw_inn: <span class="cf">str</span>) -&gt; <span class="cf">str</span>:
+        <span class="ck">return</span> raw_inn.<span class="cf">strip</span>()                 <span class="co"># str qaytishini kafolatlaydi</span>
+
+    <span class="ck">def</span> <span class="cf">register_legal_entity</span>(<span class="cn">self</span>, inn: <span class="cf">str</span>) -&gt; <span class="cf">str</span>:
+        clean_inn = <span class="cn">self</span>.<span class="cf">format_inn</span>(inn)
+        <span class="ck">return</span> <span class="cf">f</span><span class="cs">"Kompaniyani roʻyxatga olish, INN: {clean_inn.upper()}"</span>
+
+<span class="ck">class</span> <span class="cf">BadCustomProcessor</span>(<span class="cf">DocumentProcessor</span>):
+    <span class="ck">def</span> <span class="cf">format_inn</span>(<span class="cn">self</span>, raw_inn: <span class="cf">str</span>) -&gt; <span class="ck">None</span>:
+        <span class="co"># super() chaqirilmadi; return yoʻq -&gt; metod None qaytaradi</span>
+        <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"[Log] INN tekshiruviga soʻrov: {raw_inn}"</span>)
+
+processor = <span class="cf">BadCustomProcessor</span>()
+<span class="ck">try</span>:
+    processor.<span class="cf">register_legal_entity</span>(<span class="cs">"  123456789012  "</span>)
+<span class="ck">except</span> <span class="cf">AttributeError</span> <span class="ck">as</span> error:
+    <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"RUNTIMEDA XATO: {error}"</span>)</div>
+                <div class="term"><span class="out">[Log] INN tekshiruviga soʻrov:   123456789012
+RUNTIMEDA XATO: 'NoneType' object has no attribute 'upper'</span></div>
+                <p class="body-text" style="margin-top: 10px; color: #86868b;">Sababi: <code style="font-family:'SF Mono',monospace;">format_inn</code> <code style="font-family:'SF Mono',monospace;">None</code> qaytardi, <code style="font-family:'SF Mono',monospace;">None.upper()</code> chaqiruvi esa xato bilan tugadi - NoneType turida bu metod yoʻq.</p>
+            </div>
+        </div>
+
+        <!-- 23: Typo in method name -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Qayta aniqlash xavfi</p>
+                <h2>Metod nomidagi xato</h2>
+                <div class="code-block"><span class="ck">class</span> <span class="cf">NotificationService</span>:
+    <span class="ck">def</span> <span class="cf">send_critical_alert</span>(<span class="cn">self</span>, msg: <span class="cf">str</span>):
+        <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"[Fallback SMS] Kritik xato: {msg}"</span>)
+
+<span class="ck">class</span> <span class="cf">TelegramService</span>(<span class="cf">NotificationService</span>):
+    <span class="ck">def</span> <span class="cf">send_criticall_alert</span>(<span class="cn">self</span>, msg: <span class="cf">str</span>):   <span class="co"># xato: ikkita 'l'</span>
+        <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"[Telegram Bot] Xato chatga yuborildi: {msg}"</span>)
+
+notifier = <span class="cf">TelegramService</span>()
+notifier.<span class="cf">send_critical_alert</span>(<span class="cs">"Avtorizatsiya serveri yiqildi!"</span>)</div>
+                <div class="term"><span class="out">[Fallback SMS] Kritik xato: Avtorizatsiya serveri yiqildi!</span></div>
+                <p class="body-text" style="margin-top: 10px; color: #86868b;">Kompilyatsiya qilinadigan tillarda bunday xato yigʻish (build) xatosini chaqirardi. Python esa indamay yangi metod yaratadi va ota-klassnikini chaqiradi.</p>
+            </div>
+        </div>
+
+        <!-- D1: What is object -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Turlar ierarxiyasi</p>
+                <h2><code style="font-family:'SF Mono',monospace;">object</code> nima</h2>
+                <p class="body-text" style="margin-bottom: 4px;">object - bu Python butun turlar tizimining poydevori sifatida oʻzi yaratgan oʻrnatilgan klass. U sizning kodingizdan ham oldin mavjud: uni na aniqlash, na import qilish kerak.</p>
+                <div class="code-block"><span class="cf">print</span>(object)              <span class="co"># ildiz klassning oʻzi</span>
+<span class="cf">print</span>(<span class="cf">type</span>(object))        <span class="co"># uning turi</span>
+<span class="cf">print</span>(<span class="cf">int</span>.__bases__)       <span class="co"># hatto int ham - object vorisi</span></div>
+                <div class="term"><span class="out">&amp;lt;class 'object'&amp;gt;
+&amp;lt;class 'type'&amp;gt;
+(&amp;lt;class 'object'&amp;gt;,)</span></div>
+                <div class="quote-card success" style="margin-top: 12px;">
+                    <p>Pythondagi istalgan klass - oxir-oqibat object vorisi. Aynan undan barcha obyektlar bazaviy imkoniyatlarni oladi: __init__, __str__, __eq__, __hash__ va boshqalar.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- D2: object is added automatically -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Turlar ierarxiyasi</p>
+                <h2>Python <code style="font-family:'SF Mono',monospace;">object</code> ni avtomatik qoʻyadi</h2>
+                <p class="body-text" style="margin-bottom: 4px;">Siz ota-klassni koʻrsatmasdan klass yozsangiz, Python indamay object ni ota-klass sifatida qoʻshadi. Quyidagi ikki yozuv toʻliq bir xil:</p>
+                <div class="code-block"><span class="ck">class</span> <span class="cf">Account</span>:           <span class="co"># biz shunday yozamiz</span>
+    <span class="ck">pass</span>
+
+<span class="ck">class</span> <span class="cf">Account</span>(object):   <span class="co"># Python buni shunday koʻradi</span>
+    <span class="ck">pass</span>
+
+<span class="cf">print</span>(<span class="cf">Account</span>.__bases__)             <span class="co"># biz yozmasak ham ota-klass mavjud</span>
+<span class="cf">print</span>(<span class="cf">issubclass</span>(<span class="cf">Account</span>, object))</div>
+                <div class="term"><span class="out">(&amp;lt;class 'object'&amp;gt;,)
+True</span></div>
+                <div class="quote-card" style="margin-top: 12px;">
+                    <p>object bilan qavslarni yozmaslik mumkin - Python uni oʻzi qoʻyadi. Shu sababli biz kodda ota-klassni "koʻrmaymiz", ammo u doimo oʻsha yerda.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 24: Root object class -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Turlar ierarxiyasi</p>
+                <h2>Klass <code style="font-family:'SF Mono',monospace;">object</code> dan nimani oladi</h2>
+                <div class="code-block"><span class="ck">class</span> <span class="cf">SimpleEntity</span>:
+    <span class="ck">pass</span>
+
+entity = <span class="cf">SimpleEntity</span>()
+<span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Klassning bazaviy ajdodlari: {SimpleEntity.__bases__}"</span>)
+<span class="cf">print</span>(<span class="cf">f</span><span class="cs">"__str__: {entity.__str__()}"</span>)
+<span class="cf">print</span>(<span class="cf">f</span><span class="cs">"__eq__: {entity.__eq__(entity)}"</span>)
+<span class="cf">print</span>(<span class="cf">f</span><span class="cs">"__dir__: {len(entity.__dir__())} ta element"</span>)</div>
+                <div class="term"><span class="out">Klassning bazaviy ajdodlari: (&lt;class 'object'&gt;,)
+__str__: &lt;__main__.SimpleEntity object at 0x104b2b9a0&gt;
+__eq__: True
+__dir__: 26 ta element</span></div>
+                <p class="body-text" style="margin-top: 10px; color: #86868b;">Agar ota-klass oshkora koʻrsatilmasa, Python <code style="font-family:'SF Mono',monospace;">object</code> dan voris qiladi - butun ierarxiyaning choʻqqisidan.</p>
+            </div>
+        </div>
+
+        <!-- 25: object vs java.lang.Object -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Boshqa tillarda</p>
+                <h2>Python <code style="font-family:'SF Mono',monospace;">object</code> vs Java <code style="font-family:'SF Mono',monospace;">java.lang.Object</code></h2>
+                <table class="data-table">
+                    <tr><th>Parametr</th><th>Python</th><th>Java</th></tr>
+                    <tr><td>Avto-bogʻlanish</td><td>Istalgan foydalanuvchi ierarxiyasini yopadi.</td><td>Obyekt modelining mutlaq ildizi.</td></tr>
+                    <tr><td>Bazaviy toʻplam</td><td>__new__, __init__, __repr__, __eq__.</td><td>toString(), equals(), hashCode().</td></tr>
+                    <tr><td>Koʻp vorislik</td><td>MROning yakuniy nuqtasi.</td><td>Qoʻllanilmaydi - Java faqat yagona vorislikni qoʻllaydi.</td></tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- 26: Diamond problem -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Ierarxiyalar ziddiyati</p>
+                <h2>Romb shaklidagi vorislik (Diamond Problem)</h2>
+                <div class="code-block" style="font-size: clamp(8px,1.1vw,14px); max-width: 700px;">              ┌────────────────┐
+              │  BaseValidator │  validate() ni eʼlon qiladi
+              └───────┬────────┘
+            ┌─────────┴─────────┐
+            ▼                   ▼
+   ┌───────────────┐   ┌───────────────┐
+   │   CardCheck   │   │   LimitCheck  │  ikkalasi qayta aniqladi
+   └───────┬───────┘   └───────┬───────┘
+           └─────────┬─────────┘
+                     ▼
+            ┌───────────────┐
+            │   FullCheck   │  kimning validate() versiyasi?
+            └───────────────┘</div>
+            </div>
+        </div>
+
+        <!-- 27: MRO -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Chuqur tahlil</p>
+                <h2>MRO - metodlarni hal qilish tartibi</h2>
+                <p class="body-text" style="margin-bottom: 4px;">Python C3-linearizatsiyadan foydalanadi: metod chaqirilganda klasslar MRO tartibida koʻrib chiqiladi, birinchi topilgani bajariladi.</p>
+                <div class="code-block tight" style="font-size: clamp(8px,1.05vw,12px);"><span class="ck">class</span> <span class="cf">BaseValidator</span>:
+    <span class="ck">def</span> <span class="cf">validate</span>(<span class="cn">self</span>): <span class="cf">print</span>(<span class="cs">"Amalga oshirish: BaseValidator"</span>)
+
+<span class="ck">class</span> <span class="cf">CardCheck</span>(<span class="cf">BaseValidator</span>):
+    <span class="ck">def</span> <span class="cf">validate</span>(<span class="cn">self</span>): <span class="cf">print</span>(<span class="cs">"Amalga oshirish: CardCheck"</span>)
+
+<span class="ck">class</span> <span class="cf">LimitCheck</span>(<span class="cf">BaseValidator</span>):
+    <span class="ck">def</span> <span class="cf">validate</span>(<span class="cn">self</span>): <span class="cf">print</span>(<span class="cs">"Amalga oshirish: LimitCheck"</span>)
+
+<span class="ck">class</span> <span class="cf">FullCheck</span>(<span class="cf">CardCheck</span>, <span class="cf">LimitCheck</span>):
+    <span class="ck">pass</span>
+
+checker = <span class="cf">FullCheck</span>()
+checker.<span class="cf">validate</span>()
+<span class="ck">for</span> i, <span class="cn">cls</span> <span class="ck">in</span> <span class="cf">enumerate</span>(<span class="cf">FullCheck</span>.__mro__, start=<span class="cm">1</span>):
+    <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"{i}. {cls.__name__}"</span>)</div>
+                <div class="term"><span class="out">Amalga oshirish: CardCheck
+1. FullCheck   2. CardCheck   3. LimitCheck   4. BaseValidator   5. object</span></div>
+            </div>
+        </div>
+
+        <!-- 28: super() and MRO -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Kooperativ vorislik</p>
+                <h2><code style="font-family:'SF Mono',monospace;">super()</code> va MRO</h2>
+                <p class="body-text" style="margin-bottom: 4px;"><code style="font-family:'SF Mono',monospace;">super()</code> metodni "eʼlondagi ota-klass" da emas, joriy obyektning MRO zanjiridagi keyingi klassda chaqiradi.</p>
+                <div class="code-block tight" style="font-size: clamp(8px,1.05vw,12px);"><span class="ck">class</span> <span class="cf">Base</span>:
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>): <span class="cf">print</span>(<span class="cs">"Base initsializatsiyasi"</span>)
+
+<span class="ck">class</span> <span class="cf">Left</span>(<span class="cf">Base</span>):
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>):
+        <span class="cf">print</span>(<span class="cs">"Left start"</span>); <span class="cf">super</span>().<span class="cf">__init__</span>(); <span class="cf">print</span>(<span class="cs">"Left tugadi"</span>)
+
+<span class="ck">class</span> <span class="cf">Right</span>(<span class="cf">Base</span>):
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>):
+        <span class="cf">print</span>(<span class="cs">"Right start"</span>); <span class="cf">super</span>().<span class="cf">__init__</span>(); <span class="cf">print</span>(<span class="cs">"Right tugadi"</span>)
+
+<span class="ck">class</span> <span class="cf">Child</span>(<span class="cf">Left</span>, <span class="cf">Right</span>):
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>):
+        <span class="cf">print</span>(<span class="cs">"Child start"</span>); <span class="cf">super</span>().<span class="cf">__init__</span>(); <span class="cf">print</span>(<span class="cs">"Child tugadi"</span>)
+
+instance = <span class="cf">Child</span>()   <span class="co"># MRO: Child -&gt; Left -&gt; Right -&gt; Base</span></div>
+                <div class="term"><span class="out">Child start -&gt; Left start -&gt; Right start -&gt; Base initsializatsiyasi
+-&gt; Right tugadi -&gt; Left tugadi -&gt; Child tugadi</span></div>
+                <div class="quote-card warning" style="margin-top: 10px;">
+                    <p><code style="font-family:'SF Mono',monospace;">Left</code> ichidagi <code style="font-family:'SF Mono',monospace;">super()</code> boshqaruvni <code style="font-family:'SF Mono',monospace;">Right</code> ga uzatdi, garchi ular bevosita bogʻliq boʻlmasa ham - bu kooperativ koʻp vorislik.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 29: Linearization errors -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Ierarxiyalar ziddiyati</p>
+                <h2>Linearizatsiya xatolari</h2>
+                <div class="code-block"><span class="ck">class</span> <span class="cf">X</span>: <span class="ck">pass</span>
+<span class="ck">class</span> <span class="cf">Y</span>(<span class="cf">X</span>): <span class="ck">pass</span>
+
+<span class="ck">try</span>:
+    <span class="ck">class</span> <span class="cf">InvalidSystem</span>(<span class="cf">X</span>, <span class="cf">Y</span>):   <span class="co"># X oʻz vorisi Y dan oldin tura olmaydi</span>
+        <span class="ck">pass</span>
+<span class="ck">except</span> <span class="cf">TypeError</span> <span class="ck">as</span> error:
+    <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Ierarxiyani qurish xatosi:\n{error}"</span>)</div>
+                <div class="term"><span class="out">Ierarxiyani qurish xatosi:
+Cannot create a consistent method resolution order (MRO) for bases X, Y</span></div>
+            </div>
+        </div>
+
+        <!-- 30: Runtime resolution -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Polimorfizm</p>
+                <h2>Chaqiruvlarni Runtimeda hal qilish</h2>
+                <div class="code-block">gateways = [<span class="cf">UzCardGateway</span>(), <span class="cf">HumoGateway</span>(), <span class="cf">MillyBankGateway</span>()]
+
+<span class="ck">def</span> <span class="cf">run_billing</span>(gateway_instance, sum_to_charge):
+    <span class="co"># Python turni oldindan tekshirmaydi.</span>
+    <span class="co"># Chaqiruv payti u uzatilgan nusxaning MRO sini koʻrib chiqadi.</span>
+    gateway_instance.<span class="cf">process_payment</span>(sum_to_charge)
+
+<span class="ck">for</span> gw <span class="ck">in</span> gateways:
+    <span class="cf">run_billing</span>(gw, <span class="cm">100000.0</span>)</div>
+            </div>
+        </div>
+
+        <!-- 31: Polymorphic collections -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Polimorfizm</p>
+                <h2>Toʻplamlarni polimorf qayta ishlash</h2>
+                <p class="body-text" style="margin-bottom: 4px;">Yagona interfeys turli xil obyektlar toʻplamini oddiy sikllarda - <code style="font-family:'SF Mono',monospace;">if isinstance()</code> orqali tur tekshiruvlarisiz - qayta ishlashga imkon beradi.</p>
+                <div class="code-block">processing_pool = [<span class="cf">UzCardGateway</span>(), <span class="cf">HumoGateway</span>(),
+                   <span class="cf">MillyBankGateway</span>(), <span class="cf">UzCardGateway</span>()]
+
+<span class="ck">for</span> gateway <span class="ck">in</span> processing_pool:
+    gateway.<span class="cf">process_payment</span>(<span class="cm">50000.0</span>)
+    <span class="cf">print</span>(<span class="cs">"--- Tranzaksiya logi saqlandi ---"</span>)</div>
+            </div>
+        </div>
+
+        <!-- 32: Interface as contract -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Arxitektura</p>
+                <h2>Dasturiy interfeys kontrakt sifatida</h2>
+                <p class="body-text">Arxitektura nuqtai nazaridan polimorfizm biznes-mantiqni aniq vendorlarning texnik tafsilotlaridan izolyatsiya qiladi.</p>
+                <div class="quote-card success" style="margin-top: 22px;">
+                    <p>Yangi shlyuz (masalan, Click yoki Payme) ulanganda yadro kodini oʻzgartirish talab qilinmaydi. <code style="font-family:'SF Mono',monospace;">PaymentGateway</code> voris klassini yaratish va <code style="font-family:'SF Mono',monospace;">process_payment</code> ni amalga oshirish kifoya. Qolgani avtomatik ishlaydi.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 33: Overriding summary -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Yakunlar</p>
+                <h2>Metodlarni qayta aniqlash - rezyume</h2>
+                <table class="data-table" style="margin-top: 12px;">
+                    <tr><th>Qoida</th><th>Nega muhim</th></tr>
+                    <tr><td>Metod nomini aniq saqlang</td><td>Xato yangi metod yaratadi, eskisi esa indamay ishlashda davom etadi</td></tr>
+                    <tr><td>Qaytariladigan turni saqlang</td><td>Ota-klass kodi aniq maʼlumot turini olishni kutadi</td></tr>
+                    <tr><td>Kerak boʻlsa super() ni chaqiring</td><td>Agar bazaviy mantiq (audit-log) bajarilishi shart boʻlsa</td></tr>
+                    <tr><td>Argumentlar signaturasini saqlang</td><td>Aks holda polimorf chaqiruv kutilmagan maʼlumot oladi</td></tr>
+                </table>
+                <div class="code-block" style="font-size: clamp(9px,1.15vw,14px); max-width: 620px; margin-top: 14px;">PaymentGateway          ← umumiy kontrakt
+├── UzCardGateway       ← oʻz amalga oshirilishi
+├── HumoGateway         ← oʻz amalga oshirilishi
+└── MillyBankGateway    ← oʻz amalga oshirilishi</div>
+            </div>
+        </div>
+
+        <!-- 34: Duck typing -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Dinamik polimorfizm</p>
+                <h2>Duck Typing (utiy tiplashtirish)</h2>
+                <p class="body-text" style="margin-bottom: 4px;">"Agar obyekt oʻrdakdek tutsa - u oʻrdakdir". Umumiy ajdodlar shart emas: kerakli nomli metod boʻlsa - uni chaqirish mumkin.</p>
+                <div class="code-block"><span class="ck">class</span> <span class="cf">ApplePayService</span>:
+    <span class="ck">def</span> <span class="cf">charge_money</span>(<span class="cn">self</span>, total: <span class="cf">float</span>):
+        <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"[Apple Pay] Karta tokenidan yechish: {total} soʻm"</span>)
+
+<span class="ck">class</span> <span class="cf">GooglePayService</span>:
+    <span class="co"># ApplePayService bilan ierarxiya orqali bogʻlanmagan, ammo metod nomi bir xil</span>
+    <span class="ck">def</span> <span class="cf">charge_money</span>(<span class="cn">self</span>, total: <span class="cf">float</span>):
+        <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"[Google Pay] Google Wallet API ga soʻrov: {total} soʻm"</span>)
+
+<span class="ck">def</span> <span class="cf">process_mobile_wallet</span>(payment_service, amount: <span class="cf">float</span>):
+    payment_service.<span class="cf">charge_money</span>(amount)   <span class="co"># faqat metod mavjudligi muhim</span>
+
+<span class="cf">process_mobile_wallet</span>(<span class="cf">ApplePayService</span>(), <span class="cm">120000.0</span>)
+<span class="cf">process_mobile_wallet</span>(<span class="cf">GooglePayService</span>(), <span class="cm">120000.0</span>)</div>
+            </div>
+        </div>
+
+        <!-- 35: Duck typing risks -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Diqqat</p>
+                <h2>Prodakshenda duck typing xavflari</h2>
+                <div class="code-block"><span class="ck">class</span> <span class="cf">TaxService</span>:
+    <span class="ck">def</span> <span class="cf">charge_money</span>(<span class="cn">self</span>, total: <span class="cf">float</span>):
+        <span class="co"># nomi toʻlov shlyuzlariniki bilan bir xil, ammo mantiq boshqa</span>
+        <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"[Soliq xizmati] Jarimalarni yechish: {total} soʻm"</span>)
+
+<span class="ck">class</span> <span class="cf">FakePayGateway</span>:
+    <span class="ck">def</span> <span class="cf">charge_monney</span>(<span class="cn">self</span>, total: <span class="cf">float</span>):   <span class="co"># nomdagi xato</span>
+        <span class="cf">print</span>(total)
+
+<span class="co"># 1-xavf: xato sababli AttributeError</span>
+<span class="ck">try</span>:
+    <span class="cf">process_mobile_wallet</span>(<span class="cf">FakePayGateway</span>(), <span class="cm">100.0</span>)
+<span class="ck">except</span> <span class="cf">AttributeError</span> <span class="ck">as</span> err:
+    <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Bajarilish xatosi: {err}"</span>)
+
+<span class="co"># 2-xavf: semantik xato - kod bajariladi, mantiq buziladi</span>
+<span class="cf">process_mobile_wallet</span>(<span class="cf">TaxService</span>(), <span class="cm">500000.0</span>)</div>
+            </div>
+        </div>
+
+        <!-- 36: Duck typing in libraries -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">OOP haqiqiy loyihalarda</p>
+                <h2>Duck Typing analitik kutubxonalarda</h2>
+                <div class="code-block"><span class="ck">from</span> sklearn.linear_model <span class="ck">import</span> <span class="cf">LogisticRegression</span>
+<span class="ck">from</span> sklearn.ensemble <span class="ck">import</span> <span class="cf">RandomForestClassifier</span>
+
+<span class="co"># turli klass obyektlari yagona interfeys beradi: .fit() va .predict()</span>
+scoring_models = [<span class="cf">LogisticRegression</span>(), <span class="cf">RandomForestClassifier</span>()]
+
+<span class="ck">for</span> model <span class="ck">in</span> scoring_models:
+    model.<span class="cf">fit</span>(<span class="cf">X_train</span>, y_train)
+    predictions = model.<span class="cf">predict</span>(<span class="cf">X_test</span>)</div>
+                <p class="body-text" style="margin-top: 18px; color: #86868b;">Scikit-learn toʻliq duck typing ustiga qurilgan: <code style="font-family:'SF Mono',monospace;">.fit()</code> va <code style="font-family:'SF Mono',monospace;">.predict()</code> metodlariga ega istalgan model umumiy payplaynda ishlaydi.</p>
+            </div>
+        </div>
+
+        <!-- 37: Polymorphism summary -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Yakunlar</p>
+                <h2>Polimorfizm - toʻliq rezyume</h2>
+                <table class="data-table" style="margin-top: 10px;">
+                    <tr><th>Xususiyat</th><th>Qayta aniqlash</th><th>Duck typing</th></tr>
+                    <tr><td>Umumiy ajdod talab qiladi</td><td>Ha</td><td>Yoʻq</td></tr>
+                    <tr><td>Kontrakt nazorati</td><td>Ierarxiya orqali</td><td>Faqat metod nomi boʻyicha</td></tr>
+                    <tr><td>Xatolar qachon koʻrinadi</td><td>Loyihalash bosqichida</td><td>Faqat runtimeda</td></tr>
+                    <tr><td>Qayerda qoʻllaniladi</td><td>Bitta tizim shlyuzlari</td><td>Mustaqil kutubxonalar</td></tr>
+                </table>
+                <div class="code-block" style="font-size: clamp(8px,1.05vw,13px); max-width: 660px; margin-top: 12px;">gateway.process_payment(amount)
+              ↓
+   Python obyektning MRO siga qaraydi
+              ↓
+   → kerakli amalga oshirilishni avtomatik chaqiradi</div>
+            </div>
+        </div>
+
+        <!-- 38: OOP status -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Kurs xaritasi</p>
+                <h2>OOP tushunchalarini oʻzlashtirish holati</h2>
+                <table class="data-table">
+                    <tr><th>Tushuncha</th><th>Holat</th><th>Tavsif</th></tr>
+                    <tr><td>Vorislik</td><td>🟢 OʻRGANILDI</td><td>Klasslarni kengaytirish sintaksisi va super().</td></tr>
+                    <tr><td>Polimorfizm</td><td>🟢 OʻRGANILDI</td><td>Qayta aniqlash, MRO va duck typing.</td></tr>
+                    <tr><td>Inkapsulyatsiya</td><td>🟡 JORIY MAVZU</td><td>Kritik maydonlarni tashqi kirishdan yashirish.</td></tr>
+                    <tr><td>Abstraksiya</td><td>⚪ KUTILMOQDA</td><td>Biznes-mantiqni amalga oshirish tafsilotlaridan ajratish.</td></tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- 39: Problem - free modification -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Inkapsulyatsiya</p>
+                <h2>Muammo - holatni erkin oʻzgartirish</h2>
+                <div class="code-block"><span class="ck">class</span> <span class="cf">BankUser</span>:
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, login: <span class="cf">str</span>, raw_password: <span class="cf">str</span>):
+        <span class="cn">self</span>.login = login
+        <span class="cn">self</span>.password = raw_password   <span class="co"># parol ochiq koʻrinishda saqlanadi</span>
+
+user = <span class="cf">BankUser</span>(<span class="cs">"manager_olga"</span>, <span class="cs">"123456"</span>)
+
+<span class="co"># istalgan dasturchi parolni toʻgʻridan-toʻgʻri oʻzgartira oladi:</span>
+user.password = <span class="cs">"HACKED_OR_CLEARED"</span>
+<span class="co"># yoki uni hech qanday xeshlashsiz oʻqiy oladi:</span>
+<span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Loglardagi parol: {user.password}"</span>)</div>
+                <div class="quote-card warning" style="margin-top: 12px;">
+                    <p>Ochiq koʻrinishdagi, har kimga oʻqish va yozish uchun ochiq parol - sizib chiqishga toʻgʻridan-toʻgʻri yoʻl.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 40: Encapsulation goals -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Inkapsulyatsiya</p>
+                <h2>Inkapsulyatsiya vazifalari</h2>
+                <p class="body-text" style="margin-bottom: 4px;">Inkapsulyatsiya ikki vazifani hal qiladi:</p>
+                <ul class="checklist" style="max-width: 860px;">
+                    <li>Maʼlumotlarni va ular bilan ishlash metodlarini bitta tuzilmaga birlashtirish</li>
+                    <li>Ichki tafsilotlarni yashirib, tashqariga faqat xavfsiz, oshkora validatsiyaga ega ochiq interfeysni taqdim etish</li>
+                </ul>
+                <div class="quote-card success" style="margin-top: 18px;">
+                    <p>🔐 Balans yoki parolni toʻgʻridan-toʻgʻri oʻzgartirib boʻlmaydi. Buning uchun <code style="font-family:'SF Mono',monospace;">change_password()</code> (eski parolni tekshirish va xeshlash bilan) va <code style="font-family:'SF Mono',monospace;">deposit()</code> (summani validatsiya qilish bilan) metodlari taqdim etiladi.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 41: Python vs Java access control -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Boshqa tillarda</p>
+                <h2>Kirishni boshqarish falsafasi</h2>
+                <div class="comparison-grid">
+                    <div class="comparison-item">
+                        <div class="label" style="color: #af52de;">Java</div>
+                        <h3>Qatʼiy taqiq</h3>
+                        <p><code style="font-family:'SF Mono',monospace;">private</code> modifikatori kirishni kompilyatsiya darajasida bloklaydi. Tashqaridan <code style="font-family:'SF Mono',monospace;">user.password</code> ga murojaat - kompilyator xatosi.</p>
+                    </div>
+                    <div class="comparison-item">
+                        <div class="label" style="color: #007aff;">Python</div>
+                        <h3>Kelishuv</h3>
+                        <p>Jismoniy cheklovlar yoʻq. Himoya atributlarni nomlash (<code style="font-family:'SF Mono',monospace;">_</code> va <code style="font-family:'SF Mono',monospace;">__</code>) ustiga quriladi. Dasturchilar ularga kelishuv asosida amal qiladi.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 42: Protected attributes -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Inkapsulyatsiya</p>
+                <h2>Himoyalangan atributlar: <code style="font-family:'SF Mono',monospace;">_</code></h2>
+                <p class="body-text" style="margin-bottom: 4px;">Bitta tag chizigʻi - signal: "maydon ichki, klassdan tashqarida foydalanish uchun moʻljallanmagan".</p>
+                <ul class="bullet-list" style="max-width: 840px;">
+                    <li>Texnik jihatdan kirish ochiq</li>
+                    <li>IDE bunday murojaatni uslub buzilishi sifatida belgilaydi</li>
+                    <li><code style="font-family:'SF Mono',monospace;">from module import *</code> da eksport qilinmaydi</li>
+                </ul>
+                <div class="code-block"><span class="ck">class</span> <span class="cf">InternalBankConfig</span>:
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>):
+        <span class="cn">self</span>._swift_code = <span class="cs">"UZUZBGBU"</span>   <span class="co"># kelishuv boʻyicha himoyalangan atribut</span>
+
+config = <span class="cf">InternalBankConfig</span>()
+<span class="cf">print</span>(config._swift_code)   <span class="co"># ishlaydi, ammo arxitektura kontraktini buzadi</span></div>
+            </div>
+        </div>
+
+        <!-- 43: Private attributes -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Inkapsulyatsiya</p>
+                <h2>Privat atributlar: <code style="font-family:'SF Mono',monospace;">__</code> va Name Mangling</h2>
+                <p class="body-text" style="margin-bottom: 4px;">Ikkita tag chizigʻi Name Mangling ni yoqadi: <code style="font-family:'SF Mono',monospace;">__password_hash</code> <code style="font-family:'SF Mono',monospace;">_KlassNomi__password_hash</code> ga aylanadi. Bu maydonni vorislikda tasodifan qayta aniqlanishidan himoya qiladi.</p>
+                <div class="code-block tight" style="font-size: clamp(8px,1.05vw,12px);"><span class="ck">import</span> hashlib
+
+<span class="ck">class</span> <span class="cf">SecureUser</span>:
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, login: <span class="cf">str</span>, raw_password: <span class="cf">str</span>):
+        <span class="cn">self</span>.login = login
+        <span class="cn">self</span>.__password_hash = hashlib.<span class="cf">sha256</span>(raw_password.<span class="cf">encode</span>()).<span class="cf">hexdigest</span>()
+
+user = <span class="cf">SecureUser</span>(<span class="cs">"admin_damir"</span>, <span class="cs">"qwerty2026"</span>)
+<span class="ck">try</span>:
+    <span class="cf">print</span>(user.__password_hash)   <span class="co"># bunday nomli atribut mavjud emas</span>
+<span class="ck">except</span> <span class="cf">AttributeError</span> <span class="ck">as</span> error:
+    <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Xavfsizlik tizimi: {error}"</span>)
+
+<span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Aylanma yoʻl: {user._SecureUser__password_hash}"</span>)</div>
+                <div class="term"><span class="out">Xavfsizlik tizimi: 'SecureUser' object has no attribute '__password_hash'
+Aylanma yoʻl: 4bc82b9a76d...</span></div>
+            </div>
+        </div>
+
+        <!-- 44: @property getter -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Inkapsulyatsiya</p>
+                <h2><code style="font-family:'SF Mono',monospace;">@property</code> dekoratori - getterlar</h2>
+                <p class="body-text" style="margin-bottom: 4px;">Agar maʼlumotni oʻqish, ammo jarayonni nazorat qilish yoki chiqishni niqoblash kerak boʻlsa - <code style="font-family:'SF Mono',monospace;">@property</code> ishlatiladi. U metodni "virtual atribut" ga aylantiradi - murojaat qavslarsiz.</p>
+                <div class="code-block"><span class="ck">class</span> <span class="cf">CreditCard</span>:
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, client_name: <span class="cf">str</span>, raw_pan: <span class="cf">str</span>):
+        <span class="cn">self</span>.client_name = client_name
+        <span class="cn">self</span>._pan = raw_pan
+
+    <span class="cm">@property</span>
+    <span class="ck">def</span> <span class="cf">masked_pan</span>(<span class="cn">self</span>) -&gt; <span class="cf">str</span>:
+        <span class="cf">print</span>(<span class="cs">"[Security Audit] Karta raqamini oʻqishga soʻrov."</span>)
+        <span class="ck">return</span> <span class="cf">f</span><span class="cs">"{self._pan[:4]} **** **** {self._pan[-4:]}"</span>
+
+card = <span class="cf">CreditCard</span>(<span class="cs">"Arman"</span>, <span class="cs">"8600112233445566"</span>)
+<span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Karta raqami: {card.masked_pan}"</span>)   <span class="co"># qavslarsiz - atribut kabi</span></div>
+                <div class="term"><span class="out">[Security Audit] Karta raqamini oʻqishga soʻrov.
+Karta raqami: 8600 **** **** 5566</span></div>
+            </div>
+        </div>
+
+        <!-- 45: Why @property - reason 1 -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">@property nima uchun</p>
+                <h2>1-sabab - oʻqishdagi mantiq</h2>
+                <div class="code-block"><span class="ck">class</span> <span class="cf">UserAccount</span>:
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, email: <span class="cf">str</span>):
+        <span class="cn">self</span>._email = email
+        <span class="cn">self</span>._read_count = <span class="cm">0</span>
+
+    <span class="cm">@property</span>
+    <span class="ck">def</span> <span class="cf">email</span>(<span class="cn">self</span>) -&gt; <span class="cf">str</span>:
+        <span class="cn">self</span>._read_count += <span class="cm">1</span>
+        <span class="ck">return</span> <span class="cn">self</span>._email
+
+acc = <span class="cf">UserAccount</span>(<span class="cs">"user@millybank.uz"</span>)
+<span class="cf">print</span>(acc.email)
+<span class="cf">print</span>(acc.email)
+<span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Email {acc._read_count} marta soʻraldi"</span>)</div>
+                <div class="term"><span class="out">user@millybank.uz
+user@millybank.uz
+Email 2 marta soʻraldi</span></div>
+            </div>
+        </div>
+
+        <!-- 46: Why @property - reason 2 -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">@property nima uchun</p>
+                <h2>2-sabab - hisoblanadigan qiymatlar</h2>
+                <div class="code-block"><span class="ck">class</span> <span class="cf">LoanPortfolio</span>:
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, principal: <span class="cf">float</span>, interest_rate: <span class="cf">float</span>):
+        <span class="cn">self</span>.principal = principal
+        <span class="cn">self</span>.interest_rate = interest_rate
+
+    <span class="cm">@property</span>
+    <span class="ck">def</span> <span class="cf">total_debt</span>(<span class="cn">self</span>) -&gt; <span class="cf">float</span>:
+        <span class="ck">return</span> <span class="cn">self</span>.principal * (<span class="cm">1</span> + <span class="cn">self</span>.interest_rate)
+
+portfolio = <span class="cf">LoanPortfolio</span>(<span class="cm">10_000_000</span>, <span class="cm">0.20</span>)
+<span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Jami qaytariladigan summa: {portfolio.total_debt} soʻm"</span>)
+portfolio.principal -= <span class="cm">2_000_000</span>
+<span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Qisman toʻlovdan keyin: {portfolio.total_debt} soʻm"</span>)</div>
+                <div class="term"><span class="out">Jami qaytariladigan summa: 12000000.0 soʻm
+Qisman toʻlovdan keyin: 9600000.0 soʻm</span></div>
+            </div>
+        </div>
+
+        <!-- 47: Why @property - reason 3 -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">@property nima uchun</p>
+                <h2>3-sabab - interfeys mosligi</h2>
+                <p class="body-text">Agar atribut ochiq boʻlgan, soʻngra oʻqishda mantiq talab qilingan boʻlsa - <code style="font-family:'SF Mono',monospace;">@property</code> uni chaqiruv sintaksisini oʻzgartirmasdan qoʻshishga imkon beradi. Butun tashqi kod ishlashda davom etadi.</p>
+                <div class="code-block" style="margin-top: 16px;"># Edi:    acc.balance  → shunchaki qiymatni oʻqiydi
+# Boʻldi: acc.balance  → qiymatni oʻqiydi VA audit-logga yozadi
+# Chaqiruv sintaksisi butun loyihada oʻzgarmadi</div>
+                <div class="quote-card success" style="margin-top: 16px;">
+                    <p>Shu sababli Pythonda oddiy atributdan boshlaydi va uni mantiq paydo boʻlgandagina <code style="font-family:'SF Mono',monospace;">@property</code> ga aylantiradi.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 48: Python vs Java getters -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Boshqa tillarda</p>
+                <h2>Getter va setterlarga yondashuvlar</h2>
+                <div class="comparison-grid">
+                    <div class="comparison-item">
+                        <div class="label" style="color: #af52de;">Java</div>
+                        <h3>Birinchi kundan boilerplate</h3>
+                        <p>Har bir maydon birinchi kundan <code style="font-family:'SF Mono',monospace;">getBalance()</code> / <code style="font-family:'SF Mono',monospace;">setBalance()</code> ga oʻraladi, ichida mantiq boʻlmasa ham. Katta hajmdagi shablon kod.</p>
+                    </div>
+                    <div class="comparison-item">
+                        <div class="label" style="color: #007aff;">Python</div>
+                        <h3>Zarurat boʻyicha</h3>
+                        <p>Oddiy atributdan boshlaymiz. Zarurat boʻlganda <code style="font-family:'SF Mono',monospace;">@property</code> ga aylantiramiz - va butun tashqi kod oʻzgarishlarsiz ishlashda davom etadi.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 49: @property.setter -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Inkapsulyatsiya</p>
+                <h2><code style="font-family:'SF Mono',monospace;">@property.setter</code> - yozishdagi validatsiya</h2>
+                <p class="body-text" style="margin-bottom: 4px;">Setter <code style="font-family:'SF Mono',monospace;">=</code> orqali qiymat berishni ushlab qoladi va maʼlumotni saqlashdan oldin tekshiradi.</p>
+                <div class="code-block tight" style="font-size: clamp(8px,1.05vw,12px);"><span class="ck">class</span> <span class="cf">CreditLimitManager</span>:
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, current_limit: <span class="cf">float</span>):
+        <span class="cn">self</span>._limit = current_limit
+
+    <span class="cm">@property</span>
+    <span class="ck">def</span> <span class="cf">limit</span>(<span class="cn">self</span>) -&gt; <span class="cf">float</span>:
+        <span class="ck">return</span> <span class="cn">self</span>._limit
+
+    <span class="cm">@limit.setter</span>
+    <span class="ck">def</span> <span class="cf">limit</span>(<span class="cn">self</span>, new_value: <span class="cf">float</span>):
+        <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Kredit limitini quyidagiga oʻzgartirishga urinish: {new_value} soʻm"</span>)
+        <span class="ck">if</span> new_value &lt; <span class="cm">0</span>:
+            <span class="ck">raise</span> <span class="cf">ValueError</span>(<span class="cs">"Kredit limiti manfiy boʻla olmaydi!"</span>)
+        <span class="ck">if</span> new_value &gt; <span class="cm">500_000_000</span>:
+            <span class="ck">raise</span> <span class="cf">ValueError</span>(<span class="cs">"Filialning ruxsat etilgan maksimal limiti oshib ketdi!"</span>)
+        <span class="cn">self</span>._limit = new_value
+
+manager = <span class="cf">CreditLimitManager</span>(<span class="cm">50_000_000</span>)
+<span class="ck">try</span>:
+    manager.limit = <span class="cm">700_000_000</span>
+<span class="ck">except</span> <span class="cf">ValueError</span> <span class="ck">as</span> error:
+    <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Operatsiya rad etildi: {error}"</span>)</div>
+                <div class="term"><span class="out">Kredit limitini quyidagiga oʻzgartirishga urinish: 700000000 soʻm
+Operatsiya rad etildi: Filialning ruxsat etilgan maksimal limiti oshib ketdi!</span></div>
+            </div>
+        </div>
+
+        <!-- 50: How property + setter wire up -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Ichki mexanizm</p>
+                <h2><code style="font-family:'SF Mono',monospace;">@property</code> + setter bogʻlanishi qanday ishlaydi</h2>
+                <div class="code-block" style="font-size: clamp(8px,1.0vw,12px); max-width: 820px;">@property      → Python oʻqish mantigʻiga ega 'limit' deskriptorini yaratadi
+@limit.setter  → xuddi shu deskriptorga yozish mantigʻi qoʻshiladi
+
+manager.limit          → limit.fget(manager) ni chaqiradi
+manager.limit = 700000 → limit.fset(manager, 700000) ni chaqiradi</div>
+                <p class="body-text" style="margin-top: 12px; color: #86868b;">Getter va setter nomlari mos kelishi shart - shuning uchun dekorator <code style="font-family:'SF Mono',monospace;">@limit.setter</code> deb yoziladi, shunchaki <code style="font-family:'SF Mono',monospace;">@setter</code> emas.</p>
+                <div class="code-block tight" style="font-size: clamp(8px,1.0vw,12px); margin-top: 12px;"><span class="ck">class</span> <span class="cf">PinValidator</span>:
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>):
+        <span class="cn">self</span>._pin = <span class="ck">None</span>
+
+    <span class="cm">@property</span>
+    <span class="ck">def</span> <span class="cf">pin</span>(<span class="cn">self</span>) -&gt; <span class="cf">str</span>:
+        <span class="ck">return</span> <span class="cs">"****"</span>               <span class="co"># haqiqiy qiymat qaytarilmaydi</span>
+
+    <span class="cm">@pin.setter</span>
+    <span class="ck">def</span> <span class="cf">pin</span>(<span class="cn">self</span>, value: <span class="cf">str</span>):
+        <span class="ck">if</span> <span class="ck">not</span> value.<span class="cf">isdigit</span>() <span class="ck">or</span> <span class="cf">len</span>(value) != <span class="cm">4</span>:
+            <span class="ck">raise</span> <span class="cf">ValueError</span>(<span class="cs">"PIN-kod aniq 4 ta raqamdan iborat boʻlishi kerak!"</span>)
+        <span class="cn">self</span>._pin = value
+        <span class="cf">print</span>(<span class="cs">"PIN-kod muvaffaqiyatli yangilandi."</span>)</div>
+            </div>
+        </div>
+
+        <!-- 51: Read-only property -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Inkapsulyatsiya</p>
+                <h2>Settersiz xususiyat - faqat oʻqish uchun</h2>
+                <div class="code-block"><span class="ck">class</span> <span class="cf">Contract</span>:
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, contract_id: <span class="cf">str</span>, client: <span class="cf">str</span>):
+        <span class="cn">self</span>._contract_id = contract_id
+        <span class="cn">self</span>.client = client
+
+    <span class="cm">@property</span>
+    <span class="ck">def</span> <span class="cf">contract_id</span>(<span class="cn">self</span>) -&gt; <span class="cf">str</span>:
+        <span class="cs">"""Shartnoma identifikatori - yaratilgandan keyin oʻzgarmas"""</span>
+        <span class="ck">return</span> <span class="cn">self</span>._contract_id
+
+contract = <span class="cf">Contract</span>(<span class="cs">"UZ-2024-001"</span>, <span class="cs">"Timur"</span>)
+<span class="cf">print</span>(contract.contract_id)
+<span class="ck">try</span>:
+    contract.contract_id = <span class="cs">"UZ-2024-999"</span>
+<span class="ck">except</span> <span class="cf">AttributeError</span> <span class="ck">as</span> e:
+    <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Himoya ishladi: {e}"</span>)</div>
+                <div class="term"><span class="out">UZ-2024-001
+Himoya ishladi: can't set attribute</span></div>
+            </div>
+        </div>
+
+        <!-- split -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Inkapsulyatsiya</p>
+                <h2>Etalon klass BankAccount</h2>
+                <p class="body-text" style="margin-bottom: 4px;">Konstruktor, himoyalangan balans va tekshiruv bilan hisobni toʻldirish:</p>
+                <div class="code-block"><span class="ck">class</span> <span class="cf">BankAccount</span>:
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, owner: <span class="cf">str</span>, initial_balance: <span class="cf">float</span> = <span class="cm">0.0</span>):
+        <span class="cn">self</span>.owner = owner
+        <span class="cn">self</span>._balance = initial_balance      <span class="co"># himoyalangan balans</span>
+
+    <span class="cm">@property</span>
+    <span class="ck">def</span> <span class="cf">balance</span>(<span class="cn">self</span>) -&gt; <span class="cf">float</span>:
+        <span class="ck">return</span> <span class="cn">self</span>._balance
+
+    <span class="ck">def</span> <span class="cf">deposit</span>(<span class="cn">self</span>, amount: <span class="cf">float</span>) -&gt; <span class="ck">None</span>:
+        <span class="ck">if</span> amount &lt;= <span class="cm">0</span>:
+            <span class="cf">print</span>(<span class="cs">"Xato: toʻldirish summasi noldan katta boʻlishi kerak."</span>)
+            <span class="ck">return</span>
+        <span class="cn">self</span>._balance += amount</div>
+                <p class="body-text" style="margin-top: 10px; color: #86868b;">Balans toʻgʻridan-toʻgʻri yozishdan yopiq: <code style="font-family:'SF Mono',monospace;">@property</code> orqali oʻqiladi, faqat metodlar orqali oʻzgartiriladi.</p>
+            </div>
+        </div>
+
+        <!-- split -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Inkapsulyatsiya</p>
+                <h2>BankAccount: mablagʻni yechish</h2>
+                <p class="body-text" style="margin-bottom: 4px;">Xuddi shu klass - ikki tomonlama tekshiruvga ega yechish metodi:</p>
+                <div class="code-block">    <span class="ck">def</span> <span class="cf">withdraw</span>(<span class="cn">self</span>, amount: <span class="cf">float</span>) -&gt; <span class="ck">None</span>:
+        <span class="ck">if</span> amount &lt;= <span class="cm">0</span>:
+            <span class="cf">print</span>(<span class="cs">"Xato: yechish summasi musbat boʻlishi kerak."</span>)
+            <span class="ck">return</span>
+        <span class="ck">if</span> amount &gt; <span class="cn">self</span>._balance:
+            <span class="cf">print</span>(<span class="cs">"Tranzaksiya bloklandi: mablagʻ yetarli emas."</span>)
+            <span class="ck">return</span>
+        <span class="cn">self</span>._balance -= amount
+
+acc = <span class="cf">BankAccount</span>(<span class="cs">"Dmitriy"</span>, <span class="cm">1_000_000.0</span>)
+acc.<span class="cf">withdraw</span>(<span class="cm">1_500_000.0</span>)</div>
+                <div class="term"><span class="out">Tranzaksiya bloklandi: mablagʻ yetarli emas.</span></div>
+                <p class="body-text" style="margin-top: 10px; color: #86868b;">Metod summa va qoldiqni oʻzi tekshiradi - notoʻgʻri operatsiya shunchaki oʻtmaydi.</p>
+            </div>
+        </div>
+
+        <!-- 53: Computed properties -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Inkapsulyatsiya</p>
+                <h2>Dinamik hisoblanadigan xususiyatlar</h2>
+                <div class="code-block"><span class="ck">class</span> <span class="cf">LoanPortfolio</span>:
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, principal: <span class="cf">float</span>, interest_rate: <span class="cf">float</span>):
+        <span class="cn">self</span>.principal = principal
+        <span class="cn">self</span>.interest_rate = interest_rate
+
+    <span class="cm">@property</span>
+    <span class="ck">def</span> <span class="cf">total_debt</span>(<span class="cn">self</span>) -&gt; <span class="cf">float</span>:
+        <span class="cs">"""Har bir murojaatda dolzarb maʼlumotlar boʻyicha hisoblanadi"""</span>
+        <span class="ck">return</span> <span class="cn">self</span>.principal * (<span class="cm">1</span> + <span class="cn">self</span>.interest_rate)
+
+portfolio = <span class="cf">LoanPortfolio</span>(<span class="cm">10_000_000</span>, <span class="cm">0.20</span>)
+<span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Jami qaytariladigan summa: {portfolio.total_debt} soʻm"</span>)
+
+portfolio.principal -= <span class="cm">2_000_000</span>
+<span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Qisman toʻlovdan keyin: {portfolio.total_debt} soʻm"</span>)</div>
+                <div class="term"><span class="out">Jami qaytariladigan summa: 12000000.0 soʻm
+Qisman toʻlovdan keyin: 9600000.0 soʻm</span></div>
+            </div>
+        </div>
+
+        <!-- 54: Encapsulation tools table -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Inkapsulyatsiya</p>
+                <h2>Inkapsulyatsiya vositalarining umumiy jadvali</h2>
+                <table class="data-table">
+                    <tr><th>Vosita</th><th>Nima qiladi</th><th>Qachon ishlatish kerak</th></tr>
+                    <tr><td>_name</td><td>Ichki tegishlilik haqida signal</td><td>Tashqi foydalanish uchun moʻljallanmagan maydonlar</td></tr>
+                    <tr><td>__name</td><td>Name Mangling - maydonni xotirada qayta nomlaydi</td><td>Kritik maʼlumotlar: parollar, tokenlar, PIN-kodlar</td></tr>
+                    <tr><td>@property</td><td>Nazorat ostida oʻqish</td><td>Oʻqishdagi mantiq, niqoblash, hisoblanadigan qiymatlar</td></tr>
+                    <tr><td>@name.setter</td><td>Yozishdan oldin validatsiya</td><td>Saqlashdan oldin maʼlumotni tekshirish</td></tr>
+                    <tr><td>@property settersiz</td><td>Faqat oʻqish uchun</td><td>Oʻzgarmas identifikatorlar: shartnoma ID si, hisob raqami</td></tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- 55: Three concepts matrix -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Yakunlar</p>
+                <h2>OOP ning uch tushunchasi - umumiy matritsa</h2>
+                <table class="data-table" style="margin-top: 10px;">
+                    <tr><th>Tushuncha</th><th>Holat</th><th>Qaysi muammoni hal qiladi</th><th>Asosiy vositalar</th></tr>
+                    <tr><td>Vorislik</td><td>🟢</td><td>Oʻxshash klasslarda kod takrorlanishi</td><td>class Child(Parent), super()</td></tr>
+                    <tr><td>Polimorfizm</td><td>🟢</td><td>Kodning aniq amalga oshirilishlarga bogʻliqligi</td><td>Qayta aniqlash, Duck Typing, MRO</td></tr>
+                    <tr><td>Inkapsulyatsiya</td><td>🟢</td><td>Maʼlumotga toʻgʻridan-toʻgʻri kirish mantiqni buzadi</td><td>_, __, @property, setter</td></tr>
+                    <tr><td>Abstraksiya</td><td>⚪</td><td>Yuqori darajadagi kod tafsilotlar bilan aralashgan</td><td>ABC, @abstractmethod</td></tr>
+                </table>
+                <div class="code-block" style="font-size: clamp(8px,1.0vw,12px); max-width: 760px; margin-top: 12px;">Vorislik       → ierarxiya yaratamiz: UzCardGateway(PaymentGateway)
+Polimorfizm    → yagona interfeys:   gateway.process_payment()
+Inkapsulyatsiya → maʼlumotni himoya: self.__pin_hash, @property</div>
+            </div>
+        </div>
+
+        <!-- 56: Instance vs class attribute -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Klass darajasi</p>
+                <h2>Nusxa atributi vs klass atributi</h2>
+                <p class="body-text" style="margin-bottom: 4px;">Nusxa atributi <code style="font-family:'SF Mono',monospace;">self.maydon</code> orqali har bir obyekt uchun alohida yaratiladi. Klass atributi klass tanasida eʼlon qilinadi - barcha nusxalar uchun bitta nusxa.</p>
+                <div class="code-block"><span class="ck">class</span> <span class="cf">NationalBankCreditProduct</span>:
+    base_interest_rate = <span class="cm">0.20</span>          <span class="co"># klass atributi - barcha uchun umumiy</span>
+
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, client_name: <span class="cf">str</span>, loan_amount: <span class="cf">float</span>):
+        <span class="cn">self</span>.client_name = client_name <span class="co"># nusxa atributi</span>
+        <span class="cn">self</span>.loan_amount = loan_amount
+
+contract1 = <span class="cf">NationalBankCreditProduct</span>(<span class="cs">"Timur"</span>, <span class="cm">50_000_000</span>)
+contract2 = <span class="cf">NationalBankCreditProduct</span>(<span class="cs">"Elena"</span>, <span class="cm">90_000_000</span>)
+<span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Timur uchun stavka: {contract1.base_interest_rate * 100}%"</span>)
+<span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Elena uchun stavka: {contract2.base_interest_rate * 100}%"</span>)</div>
+                <div class="term"><span class="out">Timur uchun stavka: 20.0%
+Elena uchun stavka: 20.0%</span></div>
+            </div>
+        </div>
+
+        <!-- 57: Changing class attribute -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Klass darajasi</p>
+                <h2>Klass atributini oʻzgartirish hammasiga taʼsir qiladi</h2>
+                <div class="code-block"><span class="cf">print</span>(<span class="cs">"--- Stavkani oʻzgartirishdan oldin ---"</span>)
+<span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Timur: {contract1.base_interest_rate * 100}%"</span>)
+<span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Elena: {contract2.base_interest_rate * 100}%"</span>)
+
+<span class="cf">NationalBankCreditProduct</span>.base_interest_rate = <span class="cm">0.22</span>
+
+<span class="cf">print</span>(<span class="cs">"--- Stavkani oʻzgartirgandan keyin ---"</span>)
+<span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Timur: {contract1.base_interest_rate * 100}%"</span>)
+<span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Elena: {contract2.base_interest_rate * 100}%"</span>)</div>
+                <div class="term"><span class="out">--- Stavkani oʻzgartirishdan oldin ---
+Timur: 20.0%   Elena: 20.0%
+--- Stavkani oʻzgartirgandan keyin ---
+Timur: 22.0%   Elena: 22.0%</span></div>
+                <div class="quote-card warning" style="margin-top: 10px;">
+                    <p>Nusxa orqali oʻzgartirilganda (<code style="font-family:'SF Mono',monospace;">contract1.base_interest_rate = 0.25</code>) Python shu nusxada yangi atribut yaratadi - klass atributi oʻzgarmasdan qoladi.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- end: Practice materials -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Amaliyot</p>
+                <h2>Amaliyot uchun materiallar</h2>
+                <p class="subtitle">Maʼruzaning birinchi qismi uchun ikkita Jupyter daftari.</p>
+                <div style="display: flex; gap: 18px; flex-wrap: wrap; justify-content: center; margin-top: 12px;">
+                    <a href="part1_tasks.ipynb" download style="display: inline-flex; align-items: center; gap: 8px; padding: 14px 26px; background: #007aff; color: #fff; border-radius: 50px; font-size: clamp(14px, 1.6vw, 18px); font-weight: 600; text-decoration: none; box-shadow: 0 6px 20px rgba(0,122,255,0.25);">&darr; Topshiriqlar va misollar</a>
+                    <a href="part1_snippets.ipynb" download style="display: inline-flex; align-items: center; gap: 8px; padding: 14px 26px; background: #fff; color: #007aff; border: 1.5px solid #007aff; border-radius: 50px; font-size: clamp(14px, 1.6vw, 18px); font-weight: 600; text-decoration: none;">&darr; Amaliyot uchun snippetlar</a>
+                </div>
+                <p class="body-text" style="margin-top: 22px; color: #86868b;">Jupyter Notebook, JupyterLab yoki VS Code da oching.</p>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="lang-switcher">
+        <a href="index.html">RU</a>
+        <a href="index-uz.html" class="active">UZ</a>
+        <a href="index-en.html">EN</a>
+    </div>
+
+    <div class="lesson-tag">Python · Leksiya 7</div>
+    <div class="slide-indicator">
+        <span id="current-slide">1</span> / <span id="total-slides">64</span>
+    </div>
+    <div class="nav-hint">→ yoki Space - oldinga<br/>← - orqaga</div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+        document.getElementById('total-slides').textContent = totalSlides;
+
+        function showSlide(n) {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (n + totalSlides) % totalSlides;
+            slides[currentSlide].classList.add('active');
+            document.getElementById('current-slide').textContent = currentSlide + 1;
+
+            const slideContent = slides[currentSlide].querySelector('.slide-content');
+            slideContent.style.animation = 'none';
+            void slideContent.offsetHeight;
+            slideContent.style.animation = null;
+
+            const animated = slides[currentSlide].querySelectorAll('.card, .comparison-item');
+            animated.forEach(el => {
+                el.style.animation = 'none';
+                void el.offsetHeight;
+                el.style.animation = null;
+            });
+        }
+
+        function nextSlide() { showSlide(currentSlide + 1); }
+        function prevSlide() { showSlide(currentSlide - 1); }
+
+        document.addEventListener('keydown', (e) => {
+            const tag = (e.target.tagName || '').toLowerCase();
+            if (tag === 'textarea' || tag === 'input') return;
+            if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); nextSlide(); }
+            else if (e.key === 'ArrowLeft') { e.preventDefault(); prevSlide(); }
+        });
+
+        let touchStartX = 0;
+        document.addEventListener('touchstart', (e) => { touchStartX = e.changedTouches[0].screenX; });
+        document.addEventListener('touchend', (e) => {
+            const dx = e.changedTouches[0].screenX - touchStartX;
+            if (dx < -50) nextSlide();
+            else if (dx > 50) prevSlide();
+        });
+    </script>
+</body>
+</html>

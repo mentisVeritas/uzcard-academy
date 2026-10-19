@@ -1,0 +1,1792 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ООП в Python · Лекция 7</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700;800&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+            background: #FFFFFF;
+            color: #1d1d1f;
+            line-height: 1.1;
+            overflow: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .presentation { width: 100vw; height: 100vh; position: relative; }
+
+        .slide {
+            width: 100%; height: 100%;
+            display: none;
+            align-items: center; justify-content: center;
+            position: absolute; top: 0; left: 0;
+            padding: clamp(40px, 6vh, 80px) clamp(40px, 6vw, 80px);
+            text-align: center;
+        }
+        .slide.active { display: flex; flex-direction: column; }
+
+        .slide-content {
+            max-width: 1200px; width: 100%; margin: 0 auto;
+            opacity: 0; transform: translateY(20px);
+            animation: fadeInUp 0.8s ease-out 0.2s forwards;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+        }
+
+        @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
+
+        h1 {
+            font-size: clamp(40px, 6.5vw, 96px);
+            font-weight: 700;
+            letter-spacing: -0.025em;
+            line-height: 0.95;
+            margin-bottom: clamp(16px, 2.5vh, 32px);
+            color: #1d1d1f;
+        }
+
+        h2 {
+            font-size: clamp(28px, 4vw, 56px);
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            line-height: 1.05;
+            margin-bottom: clamp(16px, 2vh, 28px);
+            color: #1d1d1f;
+        }
+
+        .subtitle {
+            font-size: clamp(18px, 2.2vw, 28px);
+            font-weight: 400;
+            color: #86868b;
+            margin-bottom: clamp(24px, 4vh, 48px);
+            line-height: 1.3;
+            max-width: 900px;
+        }
+
+        .eyebrow {
+            font-size: clamp(13px, 1.2vw, 16px);
+            font-weight: 600;
+            color: #007aff;
+            text-transform: uppercase;
+            letter-spacing: 0.18em;
+            margin-bottom: 18px;
+        }
+
+        .body-text {
+            font-size: clamp(15px, 1.8vw, 22px);
+            font-weight: 400;
+            color: #515154;
+            line-height: 1.45;
+            max-width: 820px;
+            margin: 0 auto;
+        }
+
+        .highlight { color: #007aff; font-weight: 500; }
+        .accent-green { color: #34c759; font-weight: 500; }
+        .accent-red { color: #ff3b30; font-weight: 500; }
+        .accent-purple { color: #af52de; font-weight: 500; }
+
+        .cards-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: clamp(16px, 2.5vw, 28px);
+            margin-top: clamp(24px, 4vh, 40px);
+            max-width: 1100px; width: 100%;
+        }
+
+        .card {
+            background: rgba(0, 0, 0, 0.025);
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            border-radius: 14px;
+            padding: clamp(20px, 2.5vw, 32px);
+            text-align: left;
+            opacity: 0; transform: translateY(24px);
+            animation: cardSlideUp 0.55s ease-out forwards;
+            transition: all 0.3s ease;
+        }
+        .card:nth-child(1) { animation-delay: 0.4s; }
+        .card:nth-child(2) { animation-delay: 0.5s; }
+        .card:nth-child(3) { animation-delay: 0.6s; }
+        .card:nth-child(4) { animation-delay: 0.7s; }
+        @keyframes cardSlideUp { to { opacity: 1; transform: translateY(0); } }
+        .card .num {
+            font-size: clamp(28px, 3vw, 36px);
+            font-weight: 700;
+            color: #007aff;
+            line-height: 1;
+            margin-bottom: 12px;
+        }
+        .card h3 {
+            font-size: clamp(17px, 2vw, 22px);
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #1d1d1f;
+        }
+        .card p {
+            font-size: clamp(13px, 1.55vw, 16px);
+            color: #6e6e73;
+            line-height: 1.45;
+        }
+
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: clamp(24px, 4vw, 56px);
+            max-width: 1100px;
+            width: 100%;
+            margin-top: clamp(24px, 4vh, 40px);
+            align-items: stretch;
+        }
+        .comparison-item {
+            text-align: left;
+            opacity: 0; transform: scale(0.96);
+            animation: scaleIn 0.6s ease-out forwards;
+            padding: clamp(20px, 2.5vw, 32px);
+            border-radius: 16px;
+            background: rgba(0,0,0,0.02);
+            border: 1px solid rgba(0,0,0,0.06);
+        }
+        .comparison-item:nth-child(1) { animation-delay: 0.4s; }
+        .comparison-item:nth-child(2) { animation-delay: 0.55s; }
+        @keyframes scaleIn { to { opacity: 1; transform: scale(1); } }
+        .comparison-item .label {
+            font-size: clamp(12px, 1.1vw, 14px);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.16em;
+            margin-bottom: 12px;
+        }
+        .comparison-item.old .label { color: #ff3b30; }
+        .comparison-item.new .label { color: #34c759; }
+        .comparison-item h3 {
+            font-size: clamp(20px, 2.4vw, 28px);
+            font-weight: 600;
+            margin-bottom: 14px;
+            color: #1d1d1f;
+            line-height: 1.15;
+        }
+        .comparison-item p, .comparison-item li {
+            font-size: clamp(13px, 1.6vw, 17px);
+            color: #515154;
+            line-height: 1.45;
+        }
+
+        .quote-card {
+            margin-top: clamp(20px, 3vh, 32px);
+            padding: clamp(18px, 2.2vw, 26px) clamp(22px, 2.8vw, 32px);
+            border-left: 3px solid #007aff;
+            background: rgba(0, 122, 255, 0.04);
+            border-radius: 8px;
+            text-align: left;
+            max-width: 820px;
+        }
+        .quote-card.warning {
+            border-left-color: #ff3b30;
+            background: rgba(255, 59, 48, 0.04);
+        }
+        .quote-card.success {
+            border-left-color: #34c759;
+            background: rgba(52, 199, 89, 0.05);
+        }
+        .quote-card .label {
+            font-size: 12px; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 0.16em;
+            color: #007aff; margin-bottom: 8px;
+        }
+        .quote-card.warning .label { color: #ff3b30; }
+        .quote-card.success .label { color: #34c759; }
+        .quote-card p {
+            font-size: clamp(14px, 1.7vw, 19px);
+            color: #1d1d1f; line-height: 1.4; font-weight: 500;
+        }
+
+        .code-block {
+            background: #1d1d1f;
+            color: #f5f5f7;
+            border-radius: 12px;
+            padding: clamp(16px, 1.8vw, 24px);
+            font-family: 'SF Mono', 'Menlo', 'Monaco', 'Consolas', monospace;
+            font-size: clamp(12px, 1.4vw, 16px);
+            line-height: 1.6;
+            text-align: left;
+            margin-top: 18px;
+            max-width: 860px;
+            width: 100%;
+            white-space: pre;
+            overflow-x: auto;
+        }
+        .code-block.tight { padding: clamp(14px, 1.6vw, 20px); font-size: clamp(11px, 1.3vw, 14px); line-height: 1.5; }
+        .code-block .ck { color: #ff79c6; }
+        .code-block .cs { color: #f1fa8c; }
+        .code-block .cn { color: #f8f8f2; }
+        .code-block .co { color: #6272a4; font-style: italic; }
+        .code-block .cf { color: #8be9fd; }
+        .code-block .cm { color: #bd93f9; }
+        .code-block .ce { color: #ff5555; }
+        .code-block .cc { color: #50fa7b; }
+
+        .code-output {
+            display: grid;
+            grid-template-columns: 1.1fr 1fr;
+            gap: 16px;
+            margin-top: 22px;
+            width: 100%;
+            max-width: 1050px;
+        }
+        .code-output .term {
+            background: #1d1d1f;
+            color: #f5f5f7;
+            border-radius: 12px;
+            padding: 18px;
+            font-family: 'SF Mono', 'Menlo', monospace;
+            font-size: clamp(12px, 1.4vw, 15px);
+            line-height: 1.6;
+            text-align: left;
+            white-space: pre;
+            overflow-x: auto;
+        }
+        .term .out { color: #50fa7b; }
+        .term .err { color: #ff5555; }
+
+        .checklist {
+            list-style: none;
+            padding: 0;
+            margin-top: 18px;
+            max-width: 800px;
+            text-align: left;
+        }
+        .checklist li {
+            font-size: clamp(15px, 1.8vw, 19px);
+            color: #1d1d1f;
+            line-height: 1.5;
+            padding: 11px 0 11px 40px;
+            position: relative;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+        .checklist li:last-child { border-bottom: none; }
+        .checklist li::before {
+            content: "✓";
+            position: absolute;
+            left: 0; top: 50%;
+            transform: translateY(-50%);
+            width: 26px; height: 26px;
+            border-radius: 50%;
+            background: rgba(0, 122, 255, 0.1);
+            color: #007aff;
+            font-size: 13px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .bullet-list {
+            list-style: none;
+            padding: 0;
+            margin-top: 14px;
+            max-width: 820px;
+            text-align: left;
+        }
+        .bullet-list li {
+            font-size: clamp(14px, 1.7vw, 18px);
+            color: #1d1d1f;
+            line-height: 1.5;
+            padding: 8px 0 8px 22px;
+            position: relative;
+        }
+        .bullet-list li::before {
+            content: "•";
+            position: absolute;
+            left: 6px; top: 7px;
+            color: #007aff;
+            font-weight: 700;
+        }
+
+        .timer-display {
+            font-family: 'SF Mono', 'Menlo', monospace;
+            font-size: clamp(56px, 9vw, 120px);
+            font-weight: 700;
+            color: #007aff;
+            line-height: 1;
+            letter-spacing: -0.04em;
+            margin: 12px 0 20px 0;
+        }
+
+        .flow-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 22px;
+            font-family: 'SF Mono', 'Menlo', monospace;
+            font-size: clamp(13px, 1.5vw, 17px);
+        }
+        .flow-row .step-pill {
+            padding: 9px 16px;
+            border-radius: 50px;
+            background: rgba(0,122,255,0.08);
+            color: #007aff;
+            font-weight: 600;
+            border: 1px solid rgba(0,122,255,0.18);
+        }
+        .flow-row .arrow { color: #86868b; font-size: 18px; }
+
+        .slide-indicator {
+            position: fixed;
+            bottom: 28px; left: 50%;
+            transform: translateX(-50%);
+            font-size: 13px; color: #86868b;
+            font-weight: 400; z-index: 100;
+            letter-spacing: 0.04em;
+        }
+        .nav-hint {
+            position: fixed;
+            bottom: 28px; right: 28px;
+            font-size: 12px; color: #c7c7cc;
+            font-weight: 400; text-align: right;
+            z-index: 100;
+        }
+        .lesson-tag {
+            position: fixed;
+            top: 28px; left: 28px;
+            font-size: 11px; font-weight: 600;
+            color: #86868b; text-transform: uppercase;
+            letter-spacing: 0.18em;
+            z-index: 100;
+        }
+
+        @media (max-width: 768px) {
+            .comparison-grid, .code-output, .cards-container {
+                grid-template-columns: 1fr; gap: 18px;
+            }
+        }
+        .lang-switcher {
+            position: fixed;
+            top: 22px; right: 28px;
+            z-index: 100;
+            display: flex;
+            gap: 2px;
+            background: rgba(255,255,255,0.95);
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0,0,0,0.06);
+            border-radius: 50px;
+            padding: 3px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        .lang-switcher a {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: #86868b;
+            text-decoration: none;
+            padding: 5px 12px;
+            border-radius: 50px;
+            transition: all 0.2s ease;
+        }
+        .lang-switcher a.active {
+            color: #fff;
+            background: #007aff;
+        }
+        .lang-switcher a:not(.active):hover {
+            color: #1d1d1f;
+        }
+
+        .data-table {
+            width: 100%; max-width: 1020px;
+            margin-top: clamp(16px, 3vh, 30px);
+            border-collapse: collapse;
+            font-size: clamp(11px, 1.5vw, 17px);
+        }
+        .data-table th, .data-table td {
+            text-align: left;
+            padding: clamp(7px,1.3vw,13px) clamp(9px,1.5vw,16px);
+            border-bottom: 1px solid rgba(0,0,0,0.08);
+            vertical-align: top;
+        }
+        .data-table th {
+            font-weight: 600; color: #1d1d1f;
+            border-bottom: 2px solid rgba(0,0,0,0.14);
+        }
+        .data-table td { color: #515154; line-height: 1.4; }
+        .data-table tr:last-child td { border-bottom: none; }
+        .term {
+            background: #1d1d1f; color: #f5f5f7;
+            border-radius: 12px;
+            padding: clamp(13px,1.7vw,20px);
+            font-family: 'SF Mono','Menlo','Monaco','Consolas',monospace;
+            font-size: clamp(10px,1.3vw,15px);
+            line-height: 1.55; text-align: left;
+            white-space: pre; overflow-x: auto;
+            margin-top: 14px; max-width: 880px; width: 100%;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="presentation">
+
+        <!-- 1: Title -->
+        <div class="slide active">
+            <div class="slide-content">
+                <p class="eyebrow">Лекция 7</p>
+                <h1>ООП часть 2</h1>
+                <p class="subtitle">Наследование, dunder-методы, @property</p>
+                <p class="body-text" style="margin-top: 18px;">Сегодня мы разберём, как проектировать гибкие и защищённые архитектуры. На реальных примерах из сферы финтеха - как управлять сложными потоками данных, защищать пароли от попадания в логи и организовывать работу десятков платёжных шлюзов через единый интерфейс.</p>
+            </div>
+        </div>
+
+        <!-- 2: Recap intro -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Повторение Лекции 6</p>
+                <h2>Базовые концепции</h2>
+                <p class="body-text">На прошлом занятии мы заложили фундамент: научились упаковывать состояние и поведение в классы, а также познакомились с наследованием.</p>
+                <div class="quote-card" style="margin-top: 26px;">
+                    <p>Прежде чем перейти к более сложным концепциям - динамическому полиморфизму и инкапсуляции - необходимо закрепить терминологию на базовых примерах. Без этой базы в механизмах MRO и Name Mangling легко запутаться.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3: Purpose of classes -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Повторение</p>
+                <h2>Назначение классов</h2>
+                <p class="body-text" style="margin-bottom: 6px;">Сравним два подхода к управлению данными на примере ведения банковских счетов.</p>
+                <div class="comparison-grid">
+                    <div class="comparison-item old">
+                        <div class="label">Процедурный подход</div>
+                        <div class="code-block tight" style="margin-top: 8px; font-size: clamp(9px,1.05vw,12px);"><span class="co"># данные и логика независимы;</span>
+<span class="co"># при масштабировании - сложно</span>
+acc1_number  = <span class="cs">"44001122"</span>
+acc1_balance = <span class="cm">50000.0</span>
+acc2_number  = <span class="cs">"55003344"</span>
+acc2_balance = <span class="cm">1200.0</span></div>
+                    </div>
+                    <div class="comparison-item new">
+                        <div class="label">ООП-подход</div>
+                        <div class="code-block tight" style="margin-top: 8px; font-size: clamp(9px,1.05vw,12px);"><span class="ck">class</span> <span class="cf">BankAccount</span>:
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, number: <span class="cf">str</span>, balance: <span class="cf">float</span>):
+        <span class="cn">self</span>.number = number
+        <span class="cn">self</span>.balance = balance
+
+acc1 = <span class="cf">BankAccount</span>(<span class="cs">"44001122"</span>, <span class="cm">50000.0</span>)</div>
+                    </div>
+                </div>
+                <p class="body-text" style="margin-top: 16px; color: #86868b;">Класс - пользовательский тип данных, связывающий финансовое состояние и логику работы с ним в единую структуру.</p>
+            </div>
+        </div>
+
+        <!-- 4: Class and instance -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Повторение</p>
+                <h2>Класс и экземпляр</h2>
+                <div class="comparison-grid">
+                    <div class="comparison-item new">
+                        <div class="label">Класс</div>
+                        <h3>Blueprint</h3>
+                        <p>Программное описание структуры. Сам по себе не хранит данные конкретного клиента и не занимает места в памяти под данные.</p>
+                    </div>
+                    <div class="comparison-item new">
+                        <div class="label">Экземпляр</div>
+                        <h3>Instance</h3>
+                        <p>Конкретный объект в памяти - например, счёт клиента с реальным балансом. По одному классу создаются миллионы изолированных объектов.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5: Attributes and methods -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Повторение</p>
+                <h2>Атрибуты и методы</h2>
+                <div class="cards-container" style="grid-template-columns: 1fr 1fr; max-width: 880px;">
+                    <div class="card">
+                        <div class="num">1</div>
+                        <h3>Атрибуты</h3>
+                        <p>Переменные внутри объекта, отражающие его текущее состояние: <code style="font-family:'SF Mono',monospace;">account_number</code>, <code style="font-family:'SF Mono',monospace;">currency</code>, <code style="font-family:'SF Mono',monospace;">is_blocked</code>.</p>
+                    </div>
+                    <div class="card">
+                        <div class="num">2</div>
+                        <h3>Методы</h3>
+                        <p>Функции внутри класса с доступом к состоянию объекта: <code style="font-family:'SF Mono',monospace;">withdraw()</code>, <code style="font-family:'SF Mono',monospace;">block_account()</code>.</p>
+                    </div>
+                </div>
+                <div class="quote-card success" style="margin-top: 22px;">
+                    <p>💡 Хорошо спроектированный класс самостоятельно управляет своими атрибутами, а внешний код взаимодействует с ним только через вызовы методов.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 6: __init__ and self -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Повторение</p>
+                <h2>Метод <code style="font-family:'SF Mono',monospace;">__init__</code> и аргумент <code style="font-family:'SF Mono',monospace;">self</code></h2>
+                <div class="code-block"><span class="ck">class</span> <span class="cf">BankAccount</span>:
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, account_number: <span class="cf">str</span>, balance: <span class="cf">float</span>):
+        <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Выделена память. self ссылается на адрес: {id(self)}"</span>)
+        <span class="cn">self</span>.account_number = account_number
+        <span class="cn">self</span>.balance = balance
+
+my_acc = <span class="cf">BankAccount</span>(<span class="cs">"44001122"</span>, <span class="cm">1000.0</span>)</div>
+                <div class="term"><span class="out">Выделена память. self ссылается на адрес: 140237482390224</span></div>
+                <p class="body-text" style="margin-top: 12px; color: #86868b;"><code style="font-family:'SF Mono',monospace;">__init__</code> - конструктор объекта, вызывается автоматически после выделения памяти. <code style="font-family:'SF Mono',monospace;">self</code> - явная ссылка на текущий экземпляр.</p>
+            </div>
+        </div>
+
+        <!-- 7: self vs this -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Контекст</p>
+                <h2>Python <code style="font-family:'SF Mono',monospace;">self</code> vs Java <code style="font-family:'SF Mono',monospace;">this</code></h2>
+                <div class="comparison-grid">
+                    <div class="comparison-item">
+                        <div class="label" style="color: #007aff;">Python</div>
+                        <h3>Явное объявление</h3>
+                        <div class="code-block tight" style="margin-top: 10px; font-size: clamp(10px,1.1vw,13px);"><span class="ck">def</span> <span class="cf">deposit</span>(<span class="cn">self</span>, amount: <span class="cf">float</span>):
+    <span class="cn">self</span>.balance += amount</div>
+                        <p style="margin-top: 10px;"><code style="font-family:'SF Mono',monospace;">self</code> пишется первым аргументом каждого метода. «Явное лучше неявного».</p>
+                    </div>
+                    <div class="comparison-item">
+                        <div class="label" style="color: #af52de;">Java</div>
+                        <h3>Неявная передача</h3>
+                        <div class="code-block tight" style="margin-top: 10px; font-size: clamp(10px,1.1vw,13px);">public void <span class="cf">deposit</span>(double amount) {
+    this.balance += amount;
+}</div>
+                        <p style="margin-top: 10px;">JVM передаёт ссылку автоматически, внутри доступна через <code style="font-family:'SF Mono',monospace;">this</code>.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 8: Namespace isolation -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Повторение</p>
+                <h2>Изоляция пространств имён объектов</h2>
+                <div class="code-block"><span class="ck">class</span> <span class="cf">BankAccount</span>:
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, owner: <span class="cf">str</span>, balance: <span class="cf">float</span>):
+        <span class="cn">self</span>.owner = owner
+        <span class="cn">self</span>.balance = balance
+
+alice_acc = <span class="cf">BankAccount</span>(<span class="cs">"Alice"</span>, <span class="cm">500.0</span>)
+bob_acc   = <span class="cf">BankAccount</span>(<span class="cs">"Bob"</span>, <span class="cm">10000.0</span>)
+
+alice_acc.balance -= <span class="cm">50.0</span>
+
+<span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Баланс Элис: {alice_acc.balance}"</span>)
+<span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Баланс Боба: {bob_acc.balance}"</span>)</div>
+                <div class="term"><span class="out">Баланс Элис: 450.0
+Баланс Боба: 10000.0</span></div>
+            </div>
+        </div>
+
+        <!-- 9: __str__ -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Повторение</p>
+                <h2>Метод <code style="font-family:'SF Mono',monospace;">__str__</code></h2>
+                <div class="code-block"><span class="ck">class</span> <span class="cf">BankAccount</span>:
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, owner: <span class="cf">str</span>, balance: <span class="cf">float</span>):
+        <span class="cn">self</span>.owner = owner
+        <span class="cn">self</span>.balance = balance
+
+    <span class="ck">def</span> <span class="cf">__str__</span>(<span class="cn">self</span>) -&gt; <span class="cf">str</span>:
+        <span class="ck">return</span> <span class="cf">f</span><span class="cs">"Счёт клиента: {self.owner} | Баланс: {self.balance} USD"</span>
+
+acc = <span class="cf">BankAccount</span>(<span class="cs">"Олег"</span>, <span class="cm">7500.0</span>)
+<span class="cf">print</span>(acc)</div>
+                <div class="term"><span class="out">Счёт клиента: Олег | Баланс: 7500.0 USD</span></div>
+            </div>
+        </div>
+
+        <!-- 10: Method signatures -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Повторение</p>
+                <h2>Сигнатуры методов</h2>
+                <div class="code-block"><span class="ck">class</span> <span class="cf">BankAccount</span>:
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, balance: <span class="cf">float</span>):
+        <span class="cn">self</span>.balance = balance
+
+    <span class="ck">def</span> <span class="cf">transfer</span>(<span class="cn">self</span>, target_acc: <span class="cs">'BankAccount'</span>, amount: <span class="cf">float</span>) -&gt; <span class="cf">bool</span>:
+        <span class="ck">if</span> <span class="cn">self</span>.balance &gt;= amount:
+            <span class="cn">self</span>.balance -= amount
+            target_acc.balance += amount
+            <span class="ck">return</span> <span class="ck">True</span>
+        <span class="ck">return</span> <span class="ck">False</span>
+
+acc_a = <span class="cf">BankAccount</span>(<span class="cm">100.0</span>)
+acc_b = <span class="cf">BankAccount</span>(<span class="cm">20.0</span>)
+success = acc_a.<span class="cf">transfer</span>(acc_b, <span class="cm">50.0</span>)
+<span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Статус транзакции: {success} | Остаток: {acc_a.balance}"</span>)</div>
+                <div class="term"><span class="out">Статус транзакции: True | Остаток: 50.0</span></div>
+            </div>
+        </div>
+
+        <!-- 11: Inheritance and super() -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Повторение</p>
+                <h2>Наследование и <code style="font-family:'SF Mono',monospace;">super()</code></h2>
+                <div class="code-block"><span class="ck">class</span> <span class="cf">BasicCard</span>:
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, holder: <span class="cf">str</span>, number: <span class="cf">str</span>):
+        <span class="cn">self</span>.holder = holder
+        <span class="cn">self</span>.number = number
+
+<span class="ck">class</span> <span class="cf">PremiumCard</span>(<span class="cf">BasicCard</span>):
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, holder: <span class="cf">str</span>, number: <span class="cf">str</span>, cashback_rate: <span class="cf">float</span>):
+        <span class="cf">super</span>().<span class="cf">__init__</span>(holder, number)
+        <span class="cn">self</span>.cashback_rate = cashback_rate
+
+vip = <span class="cf">PremiumCard</span>(<span class="cs">"Asel"</span>, <span class="cs">"4400..."</span>, <span class="cm">0.05</span>)
+<span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Карта: {vip.holder}, Кэшбэк: {vip.cashback_rate * 100}%"</span>)</div>
+                <div class="term"><span class="out">Карта: Asel, Кэшбэк: 5.0%</span></div>
+            </div>
+        </div>
+
+        <!-- 12: OOP everywhere -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Повторение</p>
+                <h2>ООП повсюду в Python</h2>
+                <div class="code-block"><span class="cs">"card_verified"</span>.<span class="cf">upper</span>()    <span class="co"># метод экземпляра класса str</span>
+balances.<span class="cf">append</span>(<span class="cm">500.0</span>)     <span class="co"># изменение состояния экземпляра list</span>
+df.<span class="cf">dropna</span>()                <span class="co"># метод объекта DataFrame из pandas</span>
+api.<span class="cf">send_payment</span>(payload)  <span class="co"># клиент HTTP-сессии через requests / httpx</span></div>
+                <p class="body-text" style="margin-top: 22px; color: #86868b;">Работая с Python, вы используете ООП ежеминутно - почти каждый вызов через точку - это метод объекта.</p>
+            </div>
+        </div>
+
+        <!-- 13: Recap summary table -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Повторение</p>
+                <h2>Сводная таблица</h2>
+                <table class="data-table">
+                    <tr><th>Понятие</th><th>Коротко</th><th>Смысл в архитектуре</th></tr>
+                    <tr><td>Класс / Экземпляр</td><td>Описание структуры vs объект в RAM</td><td>Шаблон продукта и реальный счёт клиента</td></tr>
+                    <tr><td>Атрибут / Метод</td><td>Переменная состояния vs функция</td><td>Баланс (данные) и метод перевода (поведение)</td></tr>
+                    <tr><td>__init__ / self</td><td>Конструктор и ссылка на контекст</td><td>Точка входа при создании и ссылка на экземпляр</td></tr>
+                    <tr><td>Наследование / super()</td><td>Расширение без дублирования</td><td>CreditAccount на базе BasicAccount</td></tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- 14: OOP status -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Карта курса</p>
+                <h2>Текущий статус освоения ООП</h2>
+                <table class="data-table">
+                    <tr><th>Концепция</th><th>Статус</th><th>Этап</th></tr>
+                    <tr><td>Наследование</td><td>🟢 ПРОЙДЕНО</td><td>Синтаксис расширения классов и super().</td></tr>
+                    <tr><td>Полиморфизм</td><td>🟡 ТЕКУЩАЯ ТЕМА</td><td>Единый интерфейс для разных платёжных шлюзов.</td></tr>
+                    <tr><td>Инкапсуляция</td><td>⚪ ПРЕДСТОИТ</td><td>Сокрытие критических данных и валидация.</td></tr>
+                    <tr><td>Абстракция</td><td>⚪ ПРЕДСТОИТ</td><td>Отделение бизнес-логики от деталей реализации.</td></tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- 15: Lecture plan -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Сегодня</p>
+                <h2>План лекции №7</h2>
+                <ul class="checklist" style="max-width: 880px;">
+                    <li><span class="highlight">Полиморфизм</span> - переопределение методов, утиная типизация, MRO и ромбовидное наследование</li>
+                    <li><span class="highlight">Инкапсуляция</span> - модификаторы <code style="font-family:'SF Mono',monospace;">_</code> и <code style="font-family:'SF Mono',monospace;">__</code>, <code style="font-family:'SF Mono',monospace;">@property</code>, сеттеры</li>
+                    <li>Инструменты уровня класса - <code style="font-family:'SF Mono',monospace;">@staticmethod</code>, <code style="font-family:'SF Mono',monospace;">@classmethod</code></li>
+                    <li>Магические методы - операторы <code style="font-family:'SF Mono',monospace;">+</code>, <code style="font-family:'SF Mono',monospace;">==</code>, <code style="font-family:'SF Mono',monospace;">len()</code> для пользовательских объектов</li>
+                    <li>Исключения - пользовательские классы ошибок</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 16: What is polymorphism -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Полиморфизм</p>
+                <h2>Что такое полиморфизм?</h2>
+                <p class="body-text">Представьте платёжный терминал на кассе. Ему не важно, что именно клиент прикладывает: пластиковую карту UzCard, смартфон с Humo Pay или QR-код от Milly Bank. Для терминала существует один интерфейс - «принять оплату». А то, как именно происходит списание, зависит от конкретного платёжного средства.</p>
+                <div class="quote-card success" style="margin-top: 22px;">
+                    <p>Полиморфизм - способность программы взаимодействовать с разными объектами через единый интерфейс, опираясь только на имя метода, но не на внутреннее устройство объекта.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 17: Two ways -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Полиморфизм</p>
+                <h2>Два пути реализации полиморфизма</h2>
+                <div class="cards-container" style="grid-template-columns: 1fr 1fr; max-width: 900px;">
+                    <div class="card">
+                        <div class="num">1</div>
+                        <h3>Классический</h3>
+                        <p>Через наследование и переопределение. Создаётся родительский класс; потомки реализуют метод с одним именем, но собственной логикой.</p>
+                    </div>
+                    <div class="card">
+                        <div class="num">2</div>
+                        <h3>Динамический</h3>
+                        <p>Утиная типизация. Наследование не требуется: если у независимых классов есть метод с одним именем, его можно вызвать полиморфно.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 18: Mechanisms diagram -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Полиморфизм</p>
+                <h2>Механизмы полиморфизма в Python</h2>
+                <div class="code-block" style="font-size: clamp(8px,1.05vw,13px); max-width: 820px;">                ┌──────────────────────────┐
+                │  ПОЛИМОРФИЗМ (концепция) │
+                └────────────┬─────────────┘
+                             │
+          ┌──────────────────┴──────────────────┐
+          ▼                                     ▼
+┌──────────────────────────────┐   ┌──────────────────────────────┐
+│ Классический (иерархический) │   │  Динамический (утиный)       │
+├──────────────────────────────┤   ├──────────────────────────────┤
+│ Требует общего родителя      │   │ Наследование не требуется    │
+│ Переопределяет методы предка │   │ Важно только наличие метода  │
+│ Классы связаны в иерархии    │   │ Классы полностью независимы  │
+└──────────────────────────────┘   └──────────────────────────────┘</div>
+            </div>
+        </div>
+
+        <!-- A: How overriding works -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Классический полиморфизм</p>
+                <h2>Как работает переопределение</h2>
+                <p class="body-text" style="margin-bottom: 4px;">Переопределение - это когда класс-потомок объявляет метод с тем же именем, что и у родителя, но реализует его по-своему.</p>
+                <div class="code-block"><span class="ck">class</span> <span class="cf">Parent</span>:
+    <span class="ck">def</span> <span class="cf">greet</span>(<span class="cn">self</span>):
+        <span class="cf">print</span>(<span class="cs">"Привет от родителя"</span>)
+
+<span class="ck">class</span> <span class="cf">Child</span>(<span class="cf">Parent</span>):
+    <span class="ck">def</span> <span class="cf">greet</span>(<span class="cn">self</span>):                 <span class="co"># то же имя - своя реализация</span>
+        <span class="cf">print</span>(<span class="cs">"Привет от потомка"</span>)
+
+<span class="cf">Child</span>().<span class="cf">greet</span>()</div>
+                <div class="term"><span class="out">Привет от потомка</span></div>
+                <div class="quote-card" style="margin-top: 12px;">
+                    <p>При вызове <code style="font-family:'SF Mono',monospace;">obj.greet()</code> Python ищет метод начиная с класса самого объекта. Версия из потомка «перекрывает» родительскую. А <code style="font-family:'SF Mono',monospace;">super().greet()</code> позволяет дополнительно выполнить и версию родителя.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- split -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Классический полиморфизм</p>
+                <h2>Переопределение методов</h2>
+                <p class="body-text" style="margin-bottom: 4px;">Базовый класс хранит общую логику. Класс-наследник переопределяет метод:</p>
+                <div class="code-block"><span class="ck">class</span> <span class="cf">PaymentGateway</span>:
+    <span class="ck">def</span> <span class="cf">process_payment</span>(<span class="cn">self</span>, amount: <span class="cf">float</span>) -&gt; <span class="ck">None</span>:
+        <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"[Core-Banking] Фиксация транзакции на {amount} сум"</span>)
+
+<span class="ck">class</span> <span class="cf">UzCardGateway</span>(<span class="cf">PaymentGateway</span>):
+    <span class="ck">def</span> <span class="cf">process_payment</span>(<span class="cn">self</span>, amount: <span class="cf">float</span>) -&gt; <span class="ck">None</span>:
+        <span class="cf">super</span>().<span class="cf">process_payment</span>(amount)        <span class="co"># сначала логика ядра</span>
+        <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"[UzCard API] Генерация QR-кода. Списание {amount} сум."</span>)  <span class="co"># затем своё</span></div>
+                <p class="body-text" style="margin-top: 10px; color: #86868b;"><code style="font-family:'SF Mono',monospace;">super()</code> вызывает версию родителя. UzCardGateway добавляет своё поведение, не теряя общую логику ядра.</p>
+            </div>
+        </div>
+
+        <!-- split -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Классический полиморфизм</p>
+                <h2>Тот же шаблон - другие шлюзы</h2>
+                <p class="body-text" style="margin-bottom: 4px;">Humo и Milly Bank переопределяют метод так же. <code style="font-family:'SF Mono',monospace;">run_checkout</code> работает с любым шлюзом:</p>
+                <div class="code-block"><span class="ck">class</span> <span class="cf">HumoGateway</span>(<span class="cf">PaymentGateway</span>):
+    <span class="ck">def</span> <span class="cf">process_payment</span>(<span class="cn">self</span>, amount: <span class="cf">float</span>) -&gt; <span class="ck">None</span>:
+        <span class="cf">super</span>().<span class="cf">process_payment</span>(amount)
+        <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"[Humo API] Запрос к эквайрингу. Списание {amount} сум."</span>)
+
+<span class="ck">class</span> <span class="cf">MillyBankGateway</span>(<span class="cf">PaymentGateway</span>):
+    <span class="ck">def</span> <span class="cf">process_payment</span>(<span class="cn">self</span>, amount: <span class="cf">float</span>) -&gt; <span class="ck">None</span>:
+        <span class="cf">super</span>().<span class="cf">process_payment</span>(amount)
+        <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"[Milly Bank API] Онлайн-платёж. Сумма: {amount} сум."</span>)
+
+<span class="ck">def</span> <span class="cf">run_checkout</span>(gateway: <span class="cf">PaymentGateway</span>, total: <span class="cf">float</span>):
+    gateway.<span class="cf">process_payment</span>(total)   <span class="co"># функция не знает тип шлюза</span>
+
+<span class="cf">run_checkout</span>(<span class="cf">UzCardGateway</span>(), <span class="cm">150000.0</span>)
+<span class="cf">run_checkout</span>(<span class="cf">HumoGateway</span>(), <span class="cm">320000.0</span>)</div>
+            </div>
+        </div>
+
+        <!-- 21: Method overriding - result -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Переопределение методов</p>
+                <h2>Результат вызова</h2>
+                <div class="term"><span class="out">[Core-Banking] Фиксация транзакции на 150000.0 сум
+[UzCard API] Генерация QR-кода. Списание 150000.0 сум.
+[Core-Banking] Фиксация транзакции на 320000.0 сум
+[Humo API] Запрос к эквайрингу. Списание 320000.0 сум.</span></div>
+                <p class="body-text" style="margin-top: 22px;">Каждый шлюз по-своему переопределяет <code style="font-family:'SF Mono',monospace;">process_payment</code>. <code style="font-family:'SF Mono',monospace;">super()</code> сначала выполняет общую логику ядра (запись в лог), затем - код конкретного шлюза. Функция <code style="font-family:'SF Mono',monospace;">run_checkout</code> вызывает единый метод и не знает, какой класс ей передан.</p>
+            </div>
+        </div>
+
+        <!-- 20: Fee calculation -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Закрепляем переопределение</p>
+                <h2>Расчёт комиссии за перевод</h2>
+                <div class="code-block tight"><span class="ck">class</span> <span class="cf">BasicCardTariff</span>:
+    <span class="ck">def</span> <span class="cf">calculate_fee</span>(<span class="cn">self</span>, amount: <span class="cf">float</span>) -&gt; <span class="cf">float</span>:
+        <span class="ck">return</span> amount * <span class="cm">0.015</span>          <span class="co"># 1.5% - стандартная комиссия</span>
+
+<span class="ck">class</span> <span class="cf">PremiumCardTariff</span>(<span class="cf">BasicCardTariff</span>):
+    <span class="ck">def</span> <span class="cf">calculate_fee</span>(<span class="cn">self</span>, amount: <span class="cf">float</span>) -&gt; <span class="cf">float</span>:
+        <span class="ck">return</span> amount * <span class="cm">0.005</span>          <span class="co"># 0.5% - для премиум-клиентов</span>
+
+<span class="ck">class</span> <span class="cf">CorporateCardTariff</span>(<span class="cf">BasicCardTariff</span>):
+    <span class="ck">def</span> <span class="cf">calculate_fee</span>(<span class="cn">self</span>, amount: <span class="cf">float</span>) -&gt; <span class="cf">float</span>:
+        <span class="ck">return</span> <span class="cm">50000.0</span>                 <span class="co"># фикс для юридических лиц</span>
+
+tariffs_pool = [<span class="cf">BasicCardTariff</span>(), <span class="cf">PremiumCardTariff</span>(), <span class="cf">CorporateCardTariff</span>()]
+<span class="ck">for</span> tariff <span class="ck">in</span> tariffs_pool:
+    fee = tariff.<span class="cf">calculate_fee</span>(<span class="cm">10_000_000.0</span>)
+    <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Тариф: {tariff.__class__.__name__} | Комиссия: {fee} сум"</span>)</div>
+                <div class="term"><span class="out">Тариф: BasicCardTariff     | Комиссия: 150000.0 сум
+Тариф: PremiumCardTariff   | Комиссия: 50000.0 сум
+Тариф: CorporateCardTariff | Комиссия: 50000.0 сум</span></div>
+                <p class="body-text" style="margin-top: 10px; color: #86868b;">Три тарифа переопределяют <code style="font-family:'SF Mono',monospace;">calculate_fee</code> со своей формулой. Цикл вызывает один и тот же метод - Python сам подставляет нужную реализацию по типу объекта.</p>
+            </div>
+        </div>
+
+        <!-- 21: Python vs Java overriding -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">В других языках</p>
+                <h2>Сравнение переопределения: Python vs Java</h2>
+                <table class="data-table">
+                    <tr><th>Критерий</th><th>Python</th><th>Java</th></tr>
+                    <tr><td>Режим по умолчанию</td><td>Все методы виртуальные. Совпадение имени в потомке переопределяет родительский метод.</td><td>Требует совпадения сигнатур. Рекомендуется аннотация @Override.</td></tr>
+                    <tr><td>Контроль типов</td><td>Отсутствует на уровне рантайма.</td><td>Контролируется компилятором.</td></tr>
+                    <tr><td>Принцип поиска</td><td>Динамический поиск по MRO в момент выполнения.</td><td>По таблице виртуальных методов (VMT) на этапе компиляции.</td></tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- 22: Fragile base class -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Риск переопределения</p>
+                <h2>Хрупкий базовый класс</h2>
+                <div class="code-block tight" style="font-size: clamp(8px,1.0vw,12px);"><span class="ck">class</span> <span class="cf">DocumentProcessor</span>:
+    <span class="ck">def</span> <span class="cf">format_inn</span>(<span class="cn">self</span>, raw_inn: <span class="cf">str</span>) -&gt; <span class="cf">str</span>:
+        <span class="ck">return</span> raw_inn.<span class="cf">strip</span>()                 <span class="co"># гарантирует возврат str</span>
+
+    <span class="ck">def</span> <span class="cf">register_legal_entity</span>(<span class="cn">self</span>, inn: <span class="cf">str</span>) -&gt; <span class="cf">str</span>:
+        clean_inn = <span class="cn">self</span>.<span class="cf">format_inn</span>(inn)
+        <span class="ck">return</span> <span class="cf">f</span><span class="cs">"Регистрация компании с ИНН: {clean_inn.upper()}"</span>
+
+<span class="ck">class</span> <span class="cf">BadCustomProcessor</span>(<span class="cf">DocumentProcessor</span>):
+    <span class="ck">def</span> <span class="cf">format_inn</span>(<span class="cn">self</span>, raw_inn: <span class="cf">str</span>) -&gt; <span class="ck">None</span>:
+        <span class="co"># super() не вызван; нет return -&gt; метод возвращает None</span>
+        <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"[Лог] Запрос на проверку ИНН: {raw_inn}"</span>)
+
+processor = <span class="cf">BadCustomProcessor</span>()
+<span class="ck">try</span>:
+    processor.<span class="cf">register_legal_entity</span>(<span class="cs">"  123456789012  "</span>)
+<span class="ck">except</span> <span class="cf">AttributeError</span> <span class="ck">as</span> error:
+    <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"ОШИБКА В РАНТАЙМЕ: {error}"</span>)</div>
+                <div class="term"><span class="out">[Лог] Запрос на проверку ИНН:   123456789012
+ОШИБКА В РАНТАЙМЕ: 'NoneType' object has no attribute 'upper'</span></div>
+                <p class="body-text" style="margin-top: 10px; color: #86868b;">Причина: <code style="font-family:'SF Mono',monospace;">format_inn</code> вернул <code style="font-family:'SF Mono',monospace;">None</code>, а вызов <code style="font-family:'SF Mono',monospace;">None.upper()</code> завершился ошибкой - у типа NoneType нет этого метода.</p>
+            </div>
+        </div>
+
+        <!-- 23: Typo in method name -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Риск переопределения</p>
+                <h2>Опечатка в имени метода</h2>
+                <div class="code-block"><span class="ck">class</span> <span class="cf">NotificationService</span>:
+    <span class="ck">def</span> <span class="cf">send_critical_alert</span>(<span class="cn">self</span>, msg: <span class="cf">str</span>):
+        <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"[Fallback SMS] Критическая ошибка: {msg}"</span>)
+
+<span class="ck">class</span> <span class="cf">TelegramService</span>(<span class="cf">NotificationService</span>):
+    <span class="ck">def</span> <span class="cf">send_criticall_alert</span>(<span class="cn">self</span>, msg: <span class="cf">str</span>):   <span class="co"># опечатка: двойная 'l'</span>
+        <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"[Telegram Bot] Ошибка отправлена в чат: {msg}"</span>)
+
+notifier = <span class="cf">TelegramService</span>()
+notifier.<span class="cf">send_critical_alert</span>(<span class="cs">"Упал сервер авторизации!"</span>)</div>
+                <div class="term"><span class="out">[Fallback SMS] Критическая ошибка: Упал сервер авторизации!</span></div>
+                <p class="body-text" style="margin-top: 10px; color: #86868b;">В компилируемых языках такая опечатка вызвала бы ошибку сборки. Python молча создаёт новый метод и вызывает родительский.</p>
+            </div>
+        </div>
+
+        <!-- D1: What is object -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Иерархия типов</p>
+                <h2>Что такое <code style="font-family:'SF Mono',monospace;">object</code></h2>
+                <p class="body-text" style="margin-bottom: 4px;">object - это встроенный класс, который Python создал сам как фундамент всей системы типов. Он существует ещё до вашего кода: его не нужно ни определять, ни импортировать.</p>
+                <div class="code-block"><span class="cf">print</span>(object)              <span class="co"># сам корневой класс</span>
+<span class="cf">print</span>(<span class="cf">type</span>(object))        <span class="co"># его тип</span>
+<span class="cf">print</span>(<span class="cf">int</span>.__bases__)       <span class="co"># даже int - потомок object</span></div>
+                <div class="term"><span class="out">&amp;lt;class 'object'&amp;gt;
+&amp;lt;class 'type'&amp;gt;
+(&amp;lt;class 'object'&amp;gt;,)</span></div>
+                <div class="quote-card success" style="margin-top: 12px;">
+                    <p>Любой класс в Python - в конечном счёте потомок object. Именно от него все объекты получают базовые возможности: __init__, __str__, __eq__, __hash__ и другие.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- D2: object is added automatically -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Иерархия типов</p>
+                <h2>Python подставляет <code style="font-family:'SF Mono',monospace;">object</code> автоматически</h2>
+                <p class="body-text" style="margin-bottom: 4px;">Когда вы пишете класс без указания родителя, Python молча добавляет object базовым классом. Две записи ниже полностью идентичны:</p>
+                <div class="code-block"><span class="ck">class</span> <span class="cf">Account</span>:           <span class="co"># так пишем мы</span>
+    <span class="ck">pass</span>
+
+<span class="ck">class</span> <span class="cf">Account</span>(object):   <span class="co"># так это видит Python</span>
+    <span class="ck">pass</span>
+
+<span class="cf">print</span>(<span class="cf">Account</span>.__bases__)             <span class="co"># родитель есть, хотя мы его не писали</span>
+<span class="cf">print</span>(<span class="cf">issubclass</span>(<span class="cf">Account</span>, object))</div>
+                <div class="term"><span class="out">(&amp;lt;class 'object'&amp;gt;,)
+True</span></div>
+                <div class="quote-card" style="margin-top: 12px;">
+                    <p>Скобки с object можно не писать - Python подставит его сам. Поэтому мы «не видим» родителя в коде, но он всегда там.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 24: Root object class -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Иерархия типов</p>
+                <h2>Что класс получает от <code style="font-family:'SF Mono',monospace;">object</code></h2>
+                <div class="code-block"><span class="ck">class</span> <span class="cf">SimpleEntity</span>:
+    <span class="ck">pass</span>
+
+entity = <span class="cf">SimpleEntity</span>()
+<span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Базовые предки класса: {SimpleEntity.__bases__}"</span>)
+<span class="cf">print</span>(<span class="cf">f</span><span class="cs">"__str__: {entity.__str__()}"</span>)
+<span class="cf">print</span>(<span class="cf">f</span><span class="cs">"__eq__: {entity.__eq__(entity)}"</span>)
+<span class="cf">print</span>(<span class="cf">f</span><span class="cs">"__dir__: {len(entity.__dir__())} элементов"</span>)</div>
+                <div class="term"><span class="out">Базовые предки класса: (&lt;class 'object'&gt;,)
+__str__: &lt;__main__.SimpleEntity object at 0x104b2b9a0&gt;
+__eq__: True
+__dir__: 26 элементов</span></div>
+                <p class="body-text" style="margin-top: 10px; color: #86868b;">Если родительский класс не указан явно, Python наследует от <code style="font-family:'SF Mono',monospace;">object</code> - вершины всей иерархии.</p>
+            </div>
+        </div>
+
+        <!-- 25: object vs java.lang.Object -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">В других языках</p>
+                <h2>Python <code style="font-family:'SF Mono',monospace;">object</code> vs Java <code style="font-family:'SF Mono',monospace;">java.lang.Object</code></h2>
+                <table class="data-table">
+                    <tr><th>Параметр</th><th>Python</th><th>Java</th></tr>
+                    <tr><td>Автосвязывание</td><td>Замыкает любую пользовательскую иерархию.</td><td>Абсолютный корень объектной модели.</td></tr>
+                    <tr><td>Базовый набор</td><td>__new__, __init__, __repr__, __eq__.</td><td>toString(), equals(), hashCode().</td></tr>
+                    <tr><td>Множественное наследование</td><td>Финальная точка MRO.</td><td>Не применимо - Java поддерживает только одиночное наследование.</td></tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- 26: Diamond problem -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Конфликт иерархий</p>
+                <h2>Ромбовидное наследование (Diamond Problem)</h2>
+                <div class="code-block" style="font-size: clamp(8px,1.1vw,14px); max-width: 700px;">              ┌────────────────┐
+              │  BaseValidator │  объявляет validate()
+              └───────┬────────┘
+            ┌─────────┴─────────┐
+            ▼                   ▼
+   ┌───────────────┐   ┌───────────────┐
+   │   CardCheck   │   │   LimitCheck  │  оба переопределили
+   └───────┬───────┘   └───────┬───────┘
+           └─────────┬─────────┘
+                     ▼
+            ┌───────────────┐
+            │   FullCheck   │  чья реализация validate()?
+            └───────────────┘</div>
+            </div>
+        </div>
+
+        <!-- 27: MRO -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Глубокий разбор</p>
+                <h2>MRO - порядок разрешения методов</h2>
+                <p class="body-text" style="margin-bottom: 4px;">Python использует C3-линеаризацию: при вызове метода классы просматриваются по порядку MRO, выполняется первый найденный.</p>
+                <div class="code-block tight" style="font-size: clamp(8px,1.05vw,12px);"><span class="ck">class</span> <span class="cf">BaseValidator</span>:
+    <span class="ck">def</span> <span class="cf">validate</span>(<span class="cn">self</span>): <span class="cf">print</span>(<span class="cs">"Реализация: BaseValidator"</span>)
+
+<span class="ck">class</span> <span class="cf">CardCheck</span>(<span class="cf">BaseValidator</span>):
+    <span class="ck">def</span> <span class="cf">validate</span>(<span class="cn">self</span>): <span class="cf">print</span>(<span class="cs">"Реализация: CardCheck"</span>)
+
+<span class="ck">class</span> <span class="cf">LimitCheck</span>(<span class="cf">BaseValidator</span>):
+    <span class="ck">def</span> <span class="cf">validate</span>(<span class="cn">self</span>): <span class="cf">print</span>(<span class="cs">"Реализация: LimitCheck"</span>)
+
+<span class="ck">class</span> <span class="cf">FullCheck</span>(<span class="cf">CardCheck</span>, <span class="cf">LimitCheck</span>):
+    <span class="ck">pass</span>
+
+checker = <span class="cf">FullCheck</span>()
+checker.<span class="cf">validate</span>()
+<span class="ck">for</span> i, <span class="cn">cls</span> <span class="ck">in</span> <span class="cf">enumerate</span>(<span class="cf">FullCheck</span>.__mro__, start=<span class="cm">1</span>):
+    <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"{i}. {cls.__name__}"</span>)</div>
+                <div class="term"><span class="out">Реализация: CardCheck
+1. FullCheck   2. CardCheck   3. LimitCheck   4. BaseValidator   5. object</span></div>
+            </div>
+        </div>
+
+        <!-- 28: super() and MRO -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Кооперативное наследование</p>
+                <h2><code style="font-family:'SF Mono',monospace;">super()</code> и MRO</h2>
+                <p class="body-text" style="margin-bottom: 4px;"><code style="font-family:'SF Mono',monospace;">super()</code> вызывает метод не у «родителя из объявления», а у следующего класса в цепочке MRO текущего объекта.</p>
+                <div class="code-block tight" style="font-size: clamp(8px,1.05vw,12px);"><span class="ck">class</span> <span class="cf">Base</span>:
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>): <span class="cf">print</span>(<span class="cs">"Инициализация Base"</span>)
+
+<span class="ck">class</span> <span class="cf">Left</span>(<span class="cf">Base</span>):
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>):
+        <span class="cf">print</span>(<span class="cs">"Старт Left"</span>); <span class="cf">super</span>().<span class="cf">__init__</span>(); <span class="cf">print</span>(<span class="cs">"Конец Left"</span>)
+
+<span class="ck">class</span> <span class="cf">Right</span>(<span class="cf">Base</span>):
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>):
+        <span class="cf">print</span>(<span class="cs">"Старт Right"</span>); <span class="cf">super</span>().<span class="cf">__init__</span>(); <span class="cf">print</span>(<span class="cs">"Конец Right"</span>)
+
+<span class="ck">class</span> <span class="cf">Child</span>(<span class="cf">Left</span>, <span class="cf">Right</span>):
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>):
+        <span class="cf">print</span>(<span class="cs">"Старт Child"</span>); <span class="cf">super</span>().<span class="cf">__init__</span>(); <span class="cf">print</span>(<span class="cs">"Конец Child"</span>)
+
+instance = <span class="cf">Child</span>()   <span class="co"># MRO: Child -&gt; Left -&gt; Right -&gt; Base</span></div>
+                <div class="term"><span class="out">Старт Child -&gt; Старт Left -&gt; Старт Right -&gt; Инициализация Base
+-&gt; Конец Right -&gt; Конец Left -&gt; Конец Child</span></div>
+                <div class="quote-card warning" style="margin-top: 10px;">
+                    <p><code style="font-family:'SF Mono',monospace;">super()</code> внутри Left передал управление в Right, хотя они не связаны напрямую - это кооперативное множественное наследование.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 29: Linearization errors -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Конфликт иерархий</p>
+                <h2>Ошибки линеаризации</h2>
+                <div class="code-block"><span class="ck">class</span> <span class="cf">X</span>: <span class="ck">pass</span>
+<span class="ck">class</span> <span class="cf">Y</span>(<span class="cf">X</span>): <span class="ck">pass</span>
+
+<span class="ck">try</span>:
+    <span class="ck">class</span> <span class="cf">InvalidSystem</span>(<span class="cf">X</span>, <span class="cf">Y</span>):   <span class="co"># X не может стоять раньше потомка Y</span>
+        <span class="ck">pass</span>
+<span class="ck">except</span> <span class="cf">TypeError</span> <span class="ck">as</span> error:
+    <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Ошибка построения иерархии:\n{error}"</span>)</div>
+                <div class="term"><span class="out">Ошибка построения иерархии:
+Cannot create a consistent method resolution order (MRO) for bases X, Y</span></div>
+            </div>
+        </div>
+
+        <!-- 30: Runtime resolution -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Полиморфизм</p>
+                <h2>Разрешение вызовов в Runtime</h2>
+                <div class="code-block">gateways = [<span class="cf">UzCardGateway</span>(), <span class="cf">HumoGateway</span>(), <span class="cf">MillyBankGateway</span>()]
+
+<span class="ck">def</span> <span class="cf">run_billing</span>(gateway_instance, sum_to_charge):
+    <span class="co"># Python не проверяет тип заранее.</span>
+    <span class="co"># В момент вызова он просматривает MRO переданного экземпляра.</span>
+    gateway_instance.<span class="cf">process_payment</span>(sum_to_charge)
+
+<span class="ck">for</span> gw <span class="ck">in</span> gateways:
+    <span class="cf">run_billing</span>(gw, <span class="cm">100000.0</span>)</div>
+            </div>
+        </div>
+
+        <!-- 31: Polymorphic collections -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Полиморфизм</p>
+                <h2>Полиморфная обработка коллекций</h2>
+                <p class="body-text" style="margin-bottom: 4px;">Единый интерфейс позволяет обрабатывать наборы разнородных объектов в обычных циклах - без проверок типов через <code style="font-family:'SF Mono',monospace;">if isinstance()</code>.</p>
+                <div class="code-block">processing_pool = [<span class="cf">UzCardGateway</span>(), <span class="cf">HumoGateway</span>(),
+                   <span class="cf">MillyBankGateway</span>(), <span class="cf">UzCardGateway</span>()]
+
+<span class="ck">for</span> gateway <span class="ck">in</span> processing_pool:
+    gateway.<span class="cf">process_payment</span>(<span class="cm">50000.0</span>)
+    <span class="cf">print</span>(<span class="cs">"--- Лог транзакции сохранён ---"</span>)</div>
+            </div>
+        </div>
+
+        <!-- 32: Interface as contract -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Архитектура</p>
+                <h2>Программный интерфейс как контракт</h2>
+                <p class="body-text">С архитектурной точки зрения полиморфизм изолирует бизнес-логику от технических деталей конкретных вендоров.</p>
+                <div class="quote-card success" style="margin-top: 22px;">
+                    <p>При подключении нового шлюза (например, Click или Payme) не требуется менять код ядра. Достаточно создать класс - наследник <code style="font-family:'SF Mono',monospace;">PaymentGateway</code> и реализовать <code style="font-family:'SF Mono',monospace;">process_payment</code>. Остальное заработает автоматически.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 33: Overriding summary -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Итоги</p>
+                <h2>Переопределение методов - резюме</h2>
+                <table class="data-table" style="margin-top: 12px;">
+                    <tr><th>Правило</th><th>Почему важно</th></tr>
+                    <tr><td>Сохраняйте имя метода точно</td><td>Опечатка создаст новый метод, старый продолжит работать молча</td></tr>
+                    <tr><td>Сохраняйте возвращаемый тип</td><td>Родительский код рассчитывает получить конкретный тип данных</td></tr>
+                    <tr><td>Вызывайте super() при необходимости</td><td>Если базовая логика (аудит-лог) должна выполняться</td></tr>
+                    <tr><td>Сохраняйте сигнатуру аргументов</td><td>Иначе полиморфный вызов получит неожиданные данные</td></tr>
+                </table>
+                <div class="code-block" style="font-size: clamp(9px,1.15vw,14px); max-width: 620px; margin-top: 14px;">PaymentGateway          ← общий контракт
+├── UzCardGateway       ← своя реализация
+├── HumoGateway         ← своя реализация
+└── MillyBankGateway    ← своя реализация</div>
+            </div>
+        </div>
+
+        <!-- 34: Duck typing -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Динамический полиморфизм</p>
+                <h2>Утиная типизация (Duck Typing)</h2>
+                <p class="body-text" style="margin-bottom: 4px;">«Если объект ведёт себя как утка - он и есть утка». Общие предки не обязательны: есть метод с нужным именем - его можно вызвать.</p>
+                <div class="code-block"><span class="ck">class</span> <span class="cf">ApplePayService</span>:
+    <span class="ck">def</span> <span class="cf">charge_money</span>(<span class="cn">self</span>, total: <span class="cf">float</span>):
+        <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"[Apple Pay] Списание токена карты: {total} сум"</span>)
+
+<span class="ck">class</span> <span class="cf">GooglePayService</span>:
+    <span class="co"># не связан с ApplePayService иерархией, но имя метода совпадает</span>
+    <span class="ck">def</span> <span class="cf">charge_money</span>(<span class="cn">self</span>, total: <span class="cf">float</span>):
+        <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"[Google Pay] Запрос к Google Wallet API: {total} сум"</span>)
+
+<span class="ck">def</span> <span class="cf">process_mobile_wallet</span>(payment_service, amount: <span class="cf">float</span>):
+    payment_service.<span class="cf">charge_money</span>(amount)   <span class="co"># важно лишь наличие метода</span>
+
+<span class="cf">process_mobile_wallet</span>(<span class="cf">ApplePayService</span>(), <span class="cm">120000.0</span>)
+<span class="cf">process_mobile_wallet</span>(<span class="cf">GooglePayService</span>(), <span class="cm">120000.0</span>)</div>
+            </div>
+        </div>
+
+        <!-- 35: Duck typing risks -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Внимание</p>
+                <h2>Риски утиной типизации в продакшене</h2>
+                <div class="code-block"><span class="ck">class</span> <span class="cf">TaxService</span>:
+    <span class="ck">def</span> <span class="cf">charge_money</span>(<span class="cn">self</span>, total: <span class="cf">float</span>):
+        <span class="co"># имя совпадает с платёжными шлюзами, но логика другая</span>
+        <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"[Налоговая] Списание штрафов: {total} сум"</span>)
+
+<span class="ck">class</span> <span class="cf">FakePayGateway</span>:
+    <span class="ck">def</span> <span class="cf">charge_monney</span>(<span class="cn">self</span>, total: <span class="cf">float</span>):   <span class="co"># опечатка в имени</span>
+        <span class="cf">print</span>(total)
+
+<span class="co"># Риск 1: AttributeError из-за опечатки</span>
+<span class="ck">try</span>:
+    <span class="cf">process_mobile_wallet</span>(<span class="cf">FakePayGateway</span>(), <span class="cm">100.0</span>)
+<span class="ck">except</span> <span class="cf">AttributeError</span> <span class="ck">as</span> err:
+    <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Ошибка выполнения: {err}"</span>)
+
+<span class="co"># Риск 2: семантическая ошибка - код выполнится, логика нарушена</span>
+<span class="cf">process_mobile_wallet</span>(<span class="cf">TaxService</span>(), <span class="cm">500000.0</span>)</div>
+            </div>
+        </div>
+
+        <!-- 36: Duck typing in libraries -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">ООП в реальных проектах</p>
+                <h2>Duck Typing в аналитических библиотеках</h2>
+                <div class="code-block"><span class="ck">from</span> sklearn.linear_model <span class="ck">import</span> <span class="cf">LogisticRegression</span>
+<span class="ck">from</span> sklearn.ensemble <span class="ck">import</span> <span class="cf">RandomForestClassifier</span>
+
+<span class="co"># объекты разных классов дают единый интерфейс: .fit() и .predict()</span>
+scoring_models = [<span class="cf">LogisticRegression</span>(), <span class="cf">RandomForestClassifier</span>()]
+
+<span class="ck">for</span> model <span class="ck">in</span> scoring_models:
+    model.<span class="cf">fit</span>(<span class="cf">X_train</span>, y_train)
+    predictions = model.<span class="cf">predict</span>(<span class="cf">X_test</span>)</div>
+                <p class="body-text" style="margin-top: 18px; color: #86868b;">Scikit-learn целиком построен на утиной типизации: любая модель с методами <code style="font-family:'SF Mono',monospace;">.fit()</code> и <code style="font-family:'SF Mono',monospace;">.predict()</code> работает в общем пайплайне.</p>
+            </div>
+        </div>
+
+        <!-- 37: Polymorphism summary -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Итоги</p>
+                <h2>Полиморфизм - полное резюме</h2>
+                <table class="data-table" style="margin-top: 10px;">
+                    <tr><th>Характеристика</th><th>Переопределение</th><th>Утиная типизация</th></tr>
+                    <tr><td>Требует общего предка</td><td>Да</td><td>Нет</td></tr>
+                    <tr><td>Контроль контракта</td><td>Через иерархию</td><td>Только по имени метода</td></tr>
+                    <tr><td>Когда заметны ошибки</td><td>На этапе проектирования</td><td>Только в рантайме</td></tr>
+                    <tr><td>Где применяется</td><td>Шлюзы одной системы</td><td>Независимые библиотеки</td></tr>
+                </table>
+                <div class="code-block" style="font-size: clamp(8px,1.05vw,13px); max-width: 660px; margin-top: 12px;">gateway.process_payment(amount)
+              ↓
+   Python смотрит в MRO объекта
+              ↓
+   → вызывает нужную реализацию автоматически</div>
+            </div>
+        </div>
+
+        <!-- 38: OOP status -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Карта курса</p>
+                <h2>Статус освоения концепций ООП</h2>
+                <table class="data-table">
+                    <tr><th>Концепция</th><th>Статус</th><th>Описание</th></tr>
+                    <tr><td>Наследование</td><td>🟢 ПРОЙДЕНО</td><td>Синтаксис расширения классов и super().</td></tr>
+                    <tr><td>Полиморфизм</td><td>🟢 ПРОЙДЕНО</td><td>Переопределение, MRO и утиная типизация.</td></tr>
+                    <tr><td>Инкапсуляция</td><td>🟡 ТЕКУЩАЯ ТЕМА</td><td>Сокрытие критических полей от внешнего доступа.</td></tr>
+                    <tr><td>Абстракция</td><td>⚪ ПРЕДСТОИТ</td><td>Отделение бизнес-логики от деталей реализации.</td></tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- 39: Problem - free modification -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Инкапсуляция</p>
+                <h2>Проблема - свободная модификация состояния</h2>
+                <div class="code-block"><span class="ck">class</span> <span class="cf">BankUser</span>:
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, login: <span class="cf">str</span>, raw_password: <span class="cf">str</span>):
+        <span class="cn">self</span>.login = login
+        <span class="cn">self</span>.password = raw_password   <span class="co"># пароль хранится в открытом виде</span>
+
+user = <span class="cf">BankUser</span>(<span class="cs">"manager_olga"</span>, <span class="cs">"123456"</span>)
+
+<span class="co"># любой разработчик может изменить пароль напрямую:</span>
+user.password = <span class="cs">"HACKED_OR_CLEARED"</span>
+<span class="co"># или прочитать его без какого-либо хеширования:</span>
+<span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Пароль в логах: {user.password}"</span>)</div>
+                <div class="quote-card warning" style="margin-top: 12px;">
+                    <p>Пароль в открытом виде, доступный кому угодно на чтение и запись - прямая дорога к утечке.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 40: Encapsulation goals -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Инкапсуляция</p>
+                <h2>Задачи инкапсуляции</h2>
+                <p class="body-text" style="margin-bottom: 4px;">Инкапсуляция решает две задачи:</p>
+                <ul class="checklist" style="max-width: 860px;">
+                    <li>Объединить данные и методы работы с ними в одну структуру</li>
+                    <li>Скрыть внутренние детали, предоставив наружу только безопасный публичный интерфейс с явной валидацией</li>
+                </ul>
+                <div class="quote-card success" style="margin-top: 18px;">
+                    <p>🔐 Изменить баланс или пароль напрямую нельзя. Для этого предоставляются методы <code style="font-family:'SF Mono',monospace;">change_password()</code> (с проверкой старого пароля и хешированием) и <code style="font-family:'SF Mono',monospace;">deposit()</code> (с валидацией суммы).</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 41: Python vs Java access control -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">В других языках</p>
+                <h2>Философия управления доступом</h2>
+                <div class="comparison-grid">
+                    <div class="comparison-item">
+                        <div class="label" style="color: #af52de;">Java</div>
+                        <h3>Жёсткий запрет</h3>
+                        <p>Модификатор <code style="font-family:'SF Mono',monospace;">private</code> блокирует доступ на уровне компиляции. Обращение к <code style="font-family:'SF Mono',monospace;">user.password</code> извне - ошибка компилятора.</p>
+                    </div>
+                    <div class="comparison-item">
+                        <div class="label" style="color: #007aff;">Python</div>
+                        <h3>Соглашение</h3>
+                        <p>Физических ограничений нет. Защита строится на именовании атрибутов (<code style="font-family:'SF Mono',monospace;">_</code> и <code style="font-family:'SF Mono',monospace;">__</code>). Разработчики придерживаются их по договорённости.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 42: Protected attributes -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Инкапсуляция</p>
+                <h2>Защищённые атрибуты: <code style="font-family:'SF Mono',monospace;">_</code></h2>
+                <p class="body-text" style="margin-bottom: 4px;">Одно подчёркивание - сигнал: «поле внутреннее, не предназначено для использования снаружи класса».</p>
+                <ul class="bullet-list" style="max-width: 840px;">
+                    <li>Технически доступ открыт</li>
+                    <li>IDE подсвечивает такое обращение как нарушение стиля</li>
+                    <li>Не экспортируется при <code style="font-family:'SF Mono',monospace;">from module import *</code></li>
+                </ul>
+                <div class="code-block"><span class="ck">class</span> <span class="cf">InternalBankConfig</span>:
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>):
+        <span class="cn">self</span>._swift_code = <span class="cs">"UZUZBGBU"</span>   <span class="co"># защищённый атрибут по соглашению</span>
+
+config = <span class="cf">InternalBankConfig</span>()
+<span class="cf">print</span>(config._swift_code)   <span class="co"># работает, но нарушает архитектурный контракт</span></div>
+            </div>
+        </div>
+
+        <!-- 43: Private attributes -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Инкапсуляция</p>
+                <h2>Приватные атрибуты: <code style="font-family:'SF Mono',monospace;">__</code> и Name Mangling</h2>
+                <p class="body-text" style="margin-bottom: 4px;">Двойное подчёркивание включает Name Mangling: <code style="font-family:'SF Mono',monospace;">__password_hash</code> становится <code style="font-family:'SF Mono',monospace;">_ИмяКласса__password_hash</code>. Это защищает поле от случайного переопределения при наследовании.</p>
+                <div class="code-block tight" style="font-size: clamp(8px,1.05vw,12px);"><span class="ck">import</span> hashlib
+
+<span class="ck">class</span> <span class="cf">SecureUser</span>:
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, login: <span class="cf">str</span>, raw_password: <span class="cf">str</span>):
+        <span class="cn">self</span>.login = login
+        <span class="cn">self</span>.__password_hash = hashlib.<span class="cf">sha256</span>(raw_password.<span class="cf">encode</span>()).<span class="cf">hexdigest</span>()
+
+user = <span class="cf">SecureUser</span>(<span class="cs">"admin_damir"</span>, <span class="cs">"qwerty2026"</span>)
+<span class="ck">try</span>:
+    <span class="cf">print</span>(user.__password_hash)   <span class="co"># атрибута с таким именем не существует</span>
+<span class="ck">except</span> <span class="cf">AttributeError</span> <span class="ck">as</span> error:
+    <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Система безопасности: {error}"</span>)
+
+<span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Обходной путь: {user._SecureUser__password_hash}"</span>)</div>
+                <div class="term"><span class="out">Система безопасности: 'SecureUser' object has no attribute '__password_hash'
+Обходной путь: 4bc82b9a76d...</span></div>
+            </div>
+        </div>
+
+        <!-- 44: @property getter -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Инкапсуляция</p>
+                <h2>Декоратор <code style="font-family:'SF Mono',monospace;">@property</code> - геттеры</h2>
+                <p class="body-text" style="margin-bottom: 4px;">Если нужно читать данные, но контролировать процесс или маскировать вывод - используется <code style="font-family:'SF Mono',monospace;">@property</code>. Он превращает метод в «виртуальный атрибут» - обращение без круглых скобок.</p>
+                <div class="code-block"><span class="ck">class</span> <span class="cf">CreditCard</span>:
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, client_name: <span class="cf">str</span>, raw_pan: <span class="cf">str</span>):
+        <span class="cn">self</span>.client_name = client_name
+        <span class="cn">self</span>._pan = raw_pan
+
+    <span class="cm">@property</span>
+    <span class="ck">def</span> <span class="cf">masked_pan</span>(<span class="cn">self</span>) -&gt; <span class="cf">str</span>:
+        <span class="cf">print</span>(<span class="cs">"[Security Audit] Запрос на чтение номера карты."</span>)
+        <span class="ck">return</span> <span class="cf">f</span><span class="cs">"{self._pan[:4]} **** **** {self._pan[-4:]}"</span>
+
+card = <span class="cf">CreditCard</span>(<span class="cs">"Arman"</span>, <span class="cs">"8600112233445566"</span>)
+<span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Номер карты: {card.masked_pan}"</span>)   <span class="co"># без скобок - как атрибут</span></div>
+                <div class="term"><span class="out">[Security Audit] Запрос на чтение номера карты.
+Номер карты: 8600 **** **** 5566</span></div>
+            </div>
+        </div>
+
+        <!-- 45: Why @property - reason 1 -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Зачем @property</p>
+                <h2>Причина 1 - логика при чтении</h2>
+                <div class="code-block"><span class="ck">class</span> <span class="cf">UserAccount</span>:
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, email: <span class="cf">str</span>):
+        <span class="cn">self</span>._email = email
+        <span class="cn">self</span>._read_count = <span class="cm">0</span>
+
+    <span class="cm">@property</span>
+    <span class="ck">def</span> <span class="cf">email</span>(<span class="cn">self</span>) -&gt; <span class="cf">str</span>:
+        <span class="cn">self</span>._read_count += <span class="cm">1</span>
+        <span class="ck">return</span> <span class="cn">self</span>._email
+
+acc = <span class="cf">UserAccount</span>(<span class="cs">"user@millybank.uz"</span>)
+<span class="cf">print</span>(acc.email)
+<span class="cf">print</span>(acc.email)
+<span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Email запрашивали {acc._read_count} раза"</span>)</div>
+                <div class="term"><span class="out">user@millybank.uz
+user@millybank.uz
+Email запрашивали 2 раза</span></div>
+            </div>
+        </div>
+
+        <!-- 46: Why @property - reason 2 -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Зачем @property</p>
+                <h2>Причина 2 - вычисляемые значения</h2>
+                <div class="code-block"><span class="ck">class</span> <span class="cf">LoanPortfolio</span>:
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, principal: <span class="cf">float</span>, interest_rate: <span class="cf">float</span>):
+        <span class="cn">self</span>.principal = principal
+        <span class="cn">self</span>.interest_rate = interest_rate
+
+    <span class="cm">@property</span>
+    <span class="ck">def</span> <span class="cf">total_debt</span>(<span class="cn">self</span>) -&gt; <span class="cf">float</span>:
+        <span class="ck">return</span> <span class="cn">self</span>.principal * (<span class="cm">1</span> + <span class="cn">self</span>.interest_rate)
+
+portfolio = <span class="cf">LoanPortfolio</span>(<span class="cm">10_000_000</span>, <span class="cm">0.20</span>)
+<span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Итого к возврату: {portfolio.total_debt} сум"</span>)
+portfolio.principal -= <span class="cm">2_000_000</span>
+<span class="cf">print</span>(<span class="cf">f</span><span class="cs">"После частичного погашения: {portfolio.total_debt} сум"</span>)</div>
+                <div class="term"><span class="out">Итого к возврату: 12000000.0 сум
+После частичного погашения: 9600000.0 сум</span></div>
+            </div>
+        </div>
+
+        <!-- 47: Why @property - reason 3 -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Зачем @property</p>
+                <h2>Причина 3 - совместимость интерфейса</h2>
+                <p class="body-text">Если атрибут был публичным, а потом потребовалась логика при чтении - <code style="font-family:'SF Mono',monospace;">@property</code> позволяет добавить её без изменения синтаксиса вызова. Весь внешний код продолжает работать.</p>
+                <div class="code-block" style="margin-top: 16px;"># Было:  acc.balance  → просто читает значение
+# Стало: acc.balance  → читает значение И пишет в аудит-лог
+# Синтаксис вызова во всём проекте не изменился</div>
+                <div class="quote-card success" style="margin-top: 16px;">
+                    <p>Поэтому в Python начинают с обычного атрибута и превращают его в <code style="font-family:'SF Mono',monospace;">@property</code> только при появлении логики.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 48: Python vs Java getters -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">В других языках</p>
+                <h2>Подходы к геттерам и сеттерам</h2>
+                <div class="comparison-grid">
+                    <div class="comparison-item">
+                        <div class="label" style="color: #af52de;">Java</div>
+                        <h3>Boilerplate с первого дня</h3>
+                        <p>Каждое поле с первого дня оборачивается в <code style="font-family:'SF Mono',monospace;">getBalance()</code> / <code style="font-family:'SF Mono',monospace;">setBalance()</code>, даже без логики внутри. Большой объём шаблонного кода.</p>
+                    </div>
+                    <div class="comparison-item">
+                        <div class="label" style="color: #007aff;">Python</div>
+                        <h3>По необходимости</h3>
+                        <p>Начинаем с обычного атрибута. При необходимости превращаем в <code style="font-family:'SF Mono',monospace;">@property</code> - и весь внешний код продолжает работать без изменений.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 49: @property.setter -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Инкапсуляция</p>
+                <h2><code style="font-family:'SF Mono',monospace;">@property.setter</code> - валидация при записи</h2>
+                <p class="body-text" style="margin-bottom: 4px;">Сеттер перехватывает присвоение через <code style="font-family:'SF Mono',monospace;">=</code> и проверяет данные перед сохранением.</p>
+                <div class="code-block tight" style="font-size: clamp(8px,1.05vw,12px);"><span class="ck">class</span> <span class="cf">CreditLimitManager</span>:
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, current_limit: <span class="cf">float</span>):
+        <span class="cn">self</span>._limit = current_limit
+
+    <span class="cm">@property</span>
+    <span class="ck">def</span> <span class="cf">limit</span>(<span class="cn">self</span>) -&gt; <span class="cf">float</span>:
+        <span class="ck">return</span> <span class="cn">self</span>._limit
+
+    <span class="cm">@limit.setter</span>
+    <span class="ck">def</span> <span class="cf">limit</span>(<span class="cn">self</span>, new_value: <span class="cf">float</span>):
+        <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Попытка изменить кредитный лимит на: {new_value} сум"</span>)
+        <span class="ck">if</span> new_value &lt; <span class="cm">0</span>:
+            <span class="ck">raise</span> <span class="cf">ValueError</span>(<span class="cs">"Кредитный лимит не может быть отрицательным!"</span>)
+        <span class="ck">if</span> new_value &gt; <span class="cm">500_000_000</span>:
+            <span class="ck">raise</span> <span class="cf">ValueError</span>(<span class="cs">"Превышен максимально допустимый лимит филиала!"</span>)
+        <span class="cn">self</span>._limit = new_value
+
+manager = <span class="cf">CreditLimitManager</span>(<span class="cm">50_000_000</span>)
+<span class="ck">try</span>:
+    manager.limit = <span class="cm">700_000_000</span>
+<span class="ck">except</span> <span class="cf">ValueError</span> <span class="ck">as</span> error:
+    <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Операция отклонена: {error}"</span>)</div>
+                <div class="term"><span class="out">Попытка изменить кредитный лимит на: 700000000 сум
+Операция отклонена: Превышен максимально допустимый лимит филиала!</span></div>
+            </div>
+        </div>
+
+        <!-- 50: How property + setter wire up -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Под капотом</p>
+                <h2>Как работает связка <code style="font-family:'SF Mono',monospace;">@property</code> + setter</h2>
+                <div class="code-block" style="font-size: clamp(8px,1.0vw,12px); max-width: 820px;">@property      → Python создаёт дескриптор 'limit' с логикой чтения
+@limit.setter  → к тому же дескриптору добавляется логика записи
+
+manager.limit          → вызывает limit.fget(manager)
+manager.limit = 700000 → вызывает limit.fset(manager, 700000)</div>
+                <p class="body-text" style="margin-top: 12px; color: #86868b;">Имена геттера и сеттера обязаны совпадать - поэтому декоратор записывается как <code style="font-family:'SF Mono',monospace;">@limit.setter</code>, а не просто <code style="font-family:'SF Mono',monospace;">@setter</code>.</p>
+                <div class="code-block tight" style="font-size: clamp(8px,1.0vw,12px); margin-top: 12px;"><span class="ck">class</span> <span class="cf">PinValidator</span>:
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>):
+        <span class="cn">self</span>._pin = <span class="ck">None</span>
+
+    <span class="cm">@property</span>
+    <span class="ck">def</span> <span class="cf">pin</span>(<span class="cn">self</span>) -&gt; <span class="cf">str</span>:
+        <span class="ck">return</span> <span class="cs">"****"</span>               <span class="co"># реальное значение не возвращается</span>
+
+    <span class="cm">@pin.setter</span>
+    <span class="ck">def</span> <span class="cf">pin</span>(<span class="cn">self</span>, value: <span class="cf">str</span>):
+        <span class="ck">if</span> <span class="ck">not</span> value.<span class="cf">isdigit</span>() <span class="ck">or</span> <span class="cf">len</span>(value) != <span class="cm">4</span>:
+            <span class="ck">raise</span> <span class="cf">ValueError</span>(<span class="cs">"ПИН-код должен состоять ровно из 4 цифр!"</span>)
+        <span class="cn">self</span>._pin = value
+        <span class="cf">print</span>(<span class="cs">"ПИН-код успешно обновлён."</span>)</div>
+            </div>
+        </div>
+
+        <!-- 51: Read-only property -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Инкапсуляция</p>
+                <h2>Свойство без сеттера - только для чтения</h2>
+                <div class="code-block"><span class="ck">class</span> <span class="cf">Contract</span>:
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, contract_id: <span class="cf">str</span>, client: <span class="cf">str</span>):
+        <span class="cn">self</span>._contract_id = contract_id
+        <span class="cn">self</span>.client = client
+
+    <span class="cm">@property</span>
+    <span class="ck">def</span> <span class="cf">contract_id</span>(<span class="cn">self</span>) -&gt; <span class="cf">str</span>:
+        <span class="cs">"""Идентификатор контракта - неизменяем после создания"""</span>
+        <span class="ck">return</span> <span class="cn">self</span>._contract_id
+
+contract = <span class="cf">Contract</span>(<span class="cs">"UZ-2024-001"</span>, <span class="cs">"Тимур"</span>)
+<span class="cf">print</span>(contract.contract_id)
+<span class="ck">try</span>:
+    contract.contract_id = <span class="cs">"UZ-2024-999"</span>
+<span class="ck">except</span> <span class="cf">AttributeError</span> <span class="ck">as</span> e:
+    <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Защита сработала: {e}"</span>)</div>
+                <div class="term"><span class="out">UZ-2024-001
+Защита сработала: can't set attribute</span></div>
+            </div>
+        </div>
+
+        <!-- split -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Инкапсуляция</p>
+                <h2>Эталонный класс BankAccount</h2>
+                <p class="body-text" style="margin-bottom: 4px;">Конструктор, защищённый баланс и пополнение с проверкой:</p>
+                <div class="code-block"><span class="ck">class</span> <span class="cf">BankAccount</span>:
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, owner: <span class="cf">str</span>, initial_balance: <span class="cf">float</span> = <span class="cm">0.0</span>):
+        <span class="cn">self</span>.owner = owner
+        <span class="cn">self</span>._balance = initial_balance      <span class="co"># защищённый баланс</span>
+
+    <span class="cm">@property</span>
+    <span class="ck">def</span> <span class="cf">balance</span>(<span class="cn">self</span>) -&gt; <span class="cf">float</span>:
+        <span class="ck">return</span> <span class="cn">self</span>._balance
+
+    <span class="ck">def</span> <span class="cf">deposit</span>(<span class="cn">self</span>, amount: <span class="cf">float</span>) -&gt; <span class="ck">None</span>:
+        <span class="ck">if</span> amount &lt;= <span class="cm">0</span>:
+            <span class="cf">print</span>(<span class="cs">"Ошибка: сумма пополнения должна быть больше нуля."</span>)
+            <span class="ck">return</span>
+        <span class="cn">self</span>._balance += amount</div>
+                <p class="body-text" style="margin-top: 10px; color: #86868b;">Баланс закрыт от прямой записи: читается через <code style="font-family:'SF Mono',monospace;">@property</code>, меняется только через методы.</p>
+            </div>
+        </div>
+
+        <!-- split -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Инкапсуляция</p>
+                <h2>BankAccount: списание средств</h2>
+                <p class="body-text" style="margin-bottom: 4px;">Тот же класс - метод списания с двойной проверкой:</p>
+                <div class="code-block">    <span class="ck">def</span> <span class="cf">withdraw</span>(<span class="cn">self</span>, amount: <span class="cf">float</span>) -&gt; <span class="ck">None</span>:
+        <span class="ck">if</span> amount &lt;= <span class="cm">0</span>:
+            <span class="cf">print</span>(<span class="cs">"Ошибка: сумма списания должна быть положительной."</span>)
+            <span class="ck">return</span>
+        <span class="ck">if</span> amount &gt; <span class="cn">self</span>._balance:
+            <span class="cf">print</span>(<span class="cs">"Транзакция заблокирована: недостаточно средств."</span>)
+            <span class="ck">return</span>
+        <span class="cn">self</span>._balance -= amount
+
+acc = <span class="cf">BankAccount</span>(<span class="cs">"Дмитрий"</span>, <span class="cm">1_000_000.0</span>)
+acc.<span class="cf">withdraw</span>(<span class="cm">1_500_000.0</span>)</div>
+                <div class="term"><span class="out">Транзакция заблокирована: недостаточно средств.</span></div>
+                <p class="body-text" style="margin-top: 10px; color: #86868b;">Метод сам проверяет сумму и остаток - некорректная операция просто не пройдёт.</p>
+            </div>
+        </div>
+
+        <!-- 53: Computed properties -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Инкапсуляция</p>
+                <h2>Динамически вычисляемые свойства</h2>
+                <div class="code-block"><span class="ck">class</span> <span class="cf">LoanPortfolio</span>:
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, principal: <span class="cf">float</span>, interest_rate: <span class="cf">float</span>):
+        <span class="cn">self</span>.principal = principal
+        <span class="cn">self</span>.interest_rate = interest_rate
+
+    <span class="cm">@property</span>
+    <span class="ck">def</span> <span class="cf">total_debt</span>(<span class="cn">self</span>) -&gt; <span class="cf">float</span>:
+        <span class="cs">"""Вычисляется при каждом обращении по актуальным данным"""</span>
+        <span class="ck">return</span> <span class="cn">self</span>.principal * (<span class="cm">1</span> + <span class="cn">self</span>.interest_rate)
+
+portfolio = <span class="cf">LoanPortfolio</span>(<span class="cm">10_000_000</span>, <span class="cm">0.20</span>)
+<span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Итого к возврату: {portfolio.total_debt} сум"</span>)
+
+portfolio.principal -= <span class="cm">2_000_000</span>
+<span class="cf">print</span>(<span class="cf">f</span><span class="cs">"После частичного погашения: {portfolio.total_debt} сум"</span>)</div>
+                <div class="term"><span class="out">Итого к возврату: 12000000.0 сум
+После частичного погашения: 9600000.0 сум</span></div>
+            </div>
+        </div>
+
+        <!-- 54: Encapsulation tools table -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Инкапсуляция</p>
+                <h2>Сводная таблица инструментов инкапсуляции</h2>
+                <table class="data-table">
+                    <tr><th>Инструмент</th><th>Что делает</th><th>Когда использовать</th></tr>
+                    <tr><td>_name</td><td>Сигнал о внутренней принадлежности</td><td>Поля, не предназначенные для внешнего использования</td></tr>
+                    <tr><td>__name</td><td>Name Mangling - переименовывает поле в памяти</td><td>Критичные данные: пароли, токены, ПИН-коды</td></tr>
+                    <tr><td>@property</td><td>Контролируемое чтение</td><td>Логика при чтении, маскировка, вычисляемые значения</td></tr>
+                    <tr><td>@name.setter</td><td>Валидация перед записью</td><td>Проверка данных перед сохранением</td></tr>
+                    <tr><td>@property без setter</td><td>Только для чтения</td><td>Неизменяемые идентификаторы: ID контракта, номер счёта</td></tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- 55: Three concepts matrix -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Итоги</p>
+                <h2>Три концепции ООП - сводная матрица</h2>
+                <table class="data-table" style="margin-top: 10px;">
+                    <tr><th>Концепция</th><th>Статус</th><th>Какую проблему решает</th><th>Ключевые инструменты</th></tr>
+                    <tr><td>Наследование</td><td>🟢</td><td>Дублирование кода в похожих классах</td><td>class Child(Parent), super()</td></tr>
+                    <tr><td>Полиморфизм</td><td>🟢</td><td>Зависимость кода от конкретных реализаций</td><td>Переопределение, Duck Typing, MRO</td></tr>
+                    <tr><td>Инкапсуляция</td><td>🟢</td><td>Прямой доступ к данным ломает логику</td><td>_, __, @property, setter</td></tr>
+                    <tr><td>Абстракция</td><td>⚪</td><td>Высокоуровневый код смешан с деталями</td><td>ABC, @abstractmethod</td></tr>
+                </table>
+                <div class="code-block" style="font-size: clamp(8px,1.0vw,12px); max-width: 760px; margin-top: 12px;">Наследование  → создаём иерархию:    UzCardGateway(PaymentGateway)
+Полиморфизм   → единый интерфейс:    gateway.process_payment()
+Инкапсуляция  → защищаем данные:     self.__pin_hash, @property</div>
+            </div>
+        </div>
+
+        <!-- 56: Instance vs class attribute -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Уровень класса</p>
+                <h2>Атрибут экземпляра vs атрибут класса</h2>
+                <p class="body-text" style="margin-bottom: 4px;">Атрибут экземпляра создаётся через <code style="font-family:'SF Mono',monospace;">self.поле</code> отдельно для каждого объекта. Атрибут класса объявляется в теле класса - одна копия для всех экземпляров.</p>
+                <div class="code-block"><span class="ck">class</span> <span class="cf">NationalBankCreditProduct</span>:
+    base_interest_rate = <span class="cm">0.20</span>          <span class="co"># атрибут класса - общий для всех</span>
+
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, client_name: <span class="cf">str</span>, loan_amount: <span class="cf">float</span>):
+        <span class="cn">self</span>.client_name = client_name <span class="co"># атрибут экземпляра</span>
+        <span class="cn">self</span>.loan_amount = loan_amount
+
+contract1 = <span class="cf">NationalBankCreditProduct</span>(<span class="cs">"Тимур"</span>, <span class="cm">50_000_000</span>)
+contract2 = <span class="cf">NationalBankCreditProduct</span>(<span class="cs">"Елена"</span>, <span class="cm">90_000_000</span>)
+<span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Ставка для Тимура: {contract1.base_interest_rate * 100}%"</span>)
+<span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Ставка для Елены:  {contract2.base_interest_rate * 100}%"</span>)</div>
+                <div class="term"><span class="out">Ставка для Тимура: 20.0%
+Ставка для Елены:  20.0%</span></div>
+            </div>
+        </div>
+
+        <!-- 57: Changing class attribute -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Уровень класса</p>
+                <h2>Изменение атрибута класса затрагивает всех</h2>
+                <div class="code-block"><span class="cf">print</span>(<span class="cs">"--- До изменения ставки ---"</span>)
+<span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Тимур: {contract1.base_interest_rate * 100}%"</span>)
+<span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Елена: {contract2.base_interest_rate * 100}%"</span>)
+
+<span class="cf">NationalBankCreditProduct</span>.base_interest_rate = <span class="cm">0.22</span>
+
+<span class="cf">print</span>(<span class="cs">"--- После изменения ставки ---"</span>)
+<span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Тимур: {contract1.base_interest_rate * 100}%"</span>)
+<span class="cf">print</span>(<span class="cf">f</span><span class="cs">"Елена: {contract2.base_interest_rate * 100}%"</span>)</div>
+                <div class="term"><span class="out">--- До изменения ставки ---
+Тимур: 20.0%   Елена: 20.0%
+--- После изменения ставки ---
+Тимур: 22.0%   Елена: 22.0%</span></div>
+                <div class="quote-card warning" style="margin-top: 10px;">
+                    <p>При изменении через экземпляр (<code style="font-family:'SF Mono',monospace;">contract1.base_interest_rate = 0.25</code>) Python создаст новый атрибут в этом экземпляре - атрибут класса останется прежним.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- end: Practice materials -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Практика</p>
+                <h2>Материалы для практики</h2>
+                <p class="subtitle">Два блокнота Jupyter к первой части лекции.</p>
+                <div style="display: flex; gap: 18px; flex-wrap: wrap; justify-content: center; margin-top: 12px;">
+                    <a href="part1_tasks.ipynb" download style="display: inline-flex; align-items: center; gap: 8px; padding: 14px 26px; background: #007aff; color: #fff; border-radius: 50px; font-size: clamp(14px, 1.6vw, 18px); font-weight: 600; text-decoration: none; box-shadow: 0 6px 20px rgba(0,122,255,0.25);">&darr; Задания и примеры</a>
+                    <a href="part1_snippets.ipynb" download style="display: inline-flex; align-items: center; gap: 8px; padding: 14px 26px; background: #fff; color: #007aff; border: 1.5px solid #007aff; border-radius: 50px; font-size: clamp(14px, 1.6vw, 18px); font-weight: 600; text-decoration: none;">&darr; Сниппеты для практики</a>
+                </div>
+                <p class="body-text" style="margin-top: 22px; color: #86868b;">Откройте в Jupyter Notebook, JupyterLab или VS Code.</p>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="lang-switcher">
+        <a href="index.html" class="active">RU</a>
+        <a href="index-uz.html">UZ</a>
+        <a href="index-en.html">EN</a>
+    </div>
+
+    <div class="lesson-tag">Python · Лекция 7</div>
+    <div class="slide-indicator">
+        <span id="current-slide">1</span> / <span id="total-slides">64</span>
+    </div>
+    <div class="nav-hint">→ или Space - далее<br/>← - назад</div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+        document.getElementById('total-slides').textContent = totalSlides;
+
+        function showSlide(n) {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (n + totalSlides) % totalSlides;
+            slides[currentSlide].classList.add('active');
+            document.getElementById('current-slide').textContent = currentSlide + 1;
+
+            const slideContent = slides[currentSlide].querySelector('.slide-content');
+            slideContent.style.animation = 'none';
+            void slideContent.offsetHeight;
+            slideContent.style.animation = null;
+
+            const animated = slides[currentSlide].querySelectorAll('.card, .comparison-item');
+            animated.forEach(el => {
+                el.style.animation = 'none';
+                void el.offsetHeight;
+                el.style.animation = null;
+            });
+        }
+
+        function nextSlide() { showSlide(currentSlide + 1); }
+        function prevSlide() { showSlide(currentSlide - 1); }
+
+        document.addEventListener('keydown', (e) => {
+            const tag = (e.target.tagName || '').toLowerCase();
+            if (tag === 'textarea' || tag === 'input') return;
+            if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); nextSlide(); }
+            else if (e.key === 'ArrowLeft') { e.preventDefault(); prevSlide(); }
+        });
+
+        let touchStartX = 0;
+        document.addEventListener('touchstart', (e) => { touchStartX = e.changedTouches[0].screenX; });
+        document.addEventListener('touchend', (e) => {
+            const dx = e.changedTouches[0].screenX - touchStartX;
+            if (dx < -50) nextSlide();
+            else if (dx > 50) prevSlide();
+        });
+    </script>
+</body>
+</html>

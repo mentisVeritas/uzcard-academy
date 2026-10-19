@@ -1,0 +1,7 @@
+*.csv
+*.csv.gz
+*.parquet
+*.pkl
+*.json
+*.tmp
+!README.md

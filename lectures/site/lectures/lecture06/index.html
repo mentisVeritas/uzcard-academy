@@ -1,0 +1,1527 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ООП в Python · Лекция 6</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700;800&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+            background: #FFFFFF;
+            color: #1d1d1f;
+            line-height: 1.1;
+            overflow: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .presentation { width: 100vw; height: 100vh; position: relative; }
+
+        .slide {
+            width: 100%; height: 100%;
+            display: none;
+            align-items: center; justify-content: center;
+            position: absolute; top: 0; left: 0;
+            padding: clamp(40px, 6vh, 80px) clamp(40px, 6vw, 80px);
+            text-align: center;
+        }
+        .slide.active { display: flex; flex-direction: column; }
+
+        .slide-content {
+            max-width: 1200px; width: 100%; margin: 0 auto;
+            opacity: 0; transform: translateY(20px);
+            animation: fadeInUp 0.8s ease-out 0.2s forwards;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+        }
+
+        @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
+
+        h1 {
+            font-size: clamp(40px, 6.5vw, 96px);
+            font-weight: 700;
+            letter-spacing: -0.025em;
+            line-height: 0.95;
+            margin-bottom: clamp(16px, 2.5vh, 32px);
+            color: #1d1d1f;
+        }
+
+        h2 {
+            font-size: clamp(28px, 4vw, 56px);
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            line-height: 1.05;
+            margin-bottom: clamp(16px, 2vh, 28px);
+            color: #1d1d1f;
+        }
+
+        .subtitle {
+            font-size: clamp(18px, 2.2vw, 28px);
+            font-weight: 400;
+            color: #86868b;
+            margin-bottom: clamp(24px, 4vh, 48px);
+            line-height: 1.3;
+            max-width: 900px;
+        }
+
+        .eyebrow {
+            font-size: clamp(13px, 1.2vw, 16px);
+            font-weight: 600;
+            color: #007aff;
+            text-transform: uppercase;
+            letter-spacing: 0.18em;
+            margin-bottom: 18px;
+        }
+
+        .body-text {
+            font-size: clamp(15px, 1.8vw, 22px);
+            font-weight: 400;
+            color: #515154;
+            line-height: 1.45;
+            max-width: 820px;
+            margin: 0 auto;
+        }
+
+        .highlight { color: #007aff; font-weight: 500; }
+        .accent-green { color: #34c759; font-weight: 500; }
+        .accent-red { color: #ff3b30; font-weight: 500; }
+        .accent-purple { color: #af52de; font-weight: 500; }
+
+        .cards-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: clamp(16px, 2.5vw, 28px);
+            margin-top: clamp(24px, 4vh, 40px);
+            max-width: 1100px; width: 100%;
+        }
+
+        .card {
+            background: rgba(0, 0, 0, 0.025);
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            border-radius: 14px;
+            padding: clamp(20px, 2.5vw, 32px);
+            text-align: left;
+            opacity: 0; transform: translateY(24px);
+            animation: cardSlideUp 0.55s ease-out forwards;
+            transition: all 0.3s ease;
+        }
+        .card:nth-child(1) { animation-delay: 0.4s; }
+        .card:nth-child(2) { animation-delay: 0.5s; }
+        .card:nth-child(3) { animation-delay: 0.6s; }
+        .card:nth-child(4) { animation-delay: 0.7s; }
+        @keyframes cardSlideUp { to { opacity: 1; transform: translateY(0); } }
+        .card .num {
+            font-size: clamp(28px, 3vw, 36px);
+            font-weight: 700;
+            color: #007aff;
+            line-height: 1;
+            margin-bottom: 12px;
+        }
+        .card h3 {
+            font-size: clamp(17px, 2vw, 22px);
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #1d1d1f;
+        }
+        .card p {
+            font-size: clamp(13px, 1.55vw, 16px);
+            color: #6e6e73;
+            line-height: 1.45;
+        }
+
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: clamp(24px, 4vw, 56px);
+            max-width: 1100px;
+            width: 100%;
+            margin-top: clamp(24px, 4vh, 40px);
+            align-items: stretch;
+        }
+        .comparison-item {
+            text-align: left;
+            opacity: 0; transform: scale(0.96);
+            animation: scaleIn 0.6s ease-out forwards;
+            padding: clamp(20px, 2.5vw, 32px);
+            border-radius: 16px;
+            background: rgba(0,0,0,0.02);
+            border: 1px solid rgba(0,0,0,0.06);
+        }
+        .comparison-item:nth-child(1) { animation-delay: 0.4s; }
+        .comparison-item:nth-child(2) { animation-delay: 0.55s; }
+        @keyframes scaleIn { to { opacity: 1; transform: scale(1); } }
+        .comparison-item .label {
+            font-size: clamp(12px, 1.1vw, 14px);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.16em;
+            margin-bottom: 12px;
+        }
+        .comparison-item.old .label { color: #ff3b30; }
+        .comparison-item.new .label { color: #34c759; }
+        .comparison-item h3 {
+            font-size: clamp(20px, 2.4vw, 28px);
+            font-weight: 600;
+            margin-bottom: 14px;
+            color: #1d1d1f;
+            line-height: 1.15;
+        }
+        .comparison-item p, .comparison-item li {
+            font-size: clamp(13px, 1.6vw, 17px);
+            color: #515154;
+            line-height: 1.45;
+        }
+
+        .quote-card {
+            margin-top: clamp(20px, 3vh, 32px);
+            padding: clamp(18px, 2.2vw, 26px) clamp(22px, 2.8vw, 32px);
+            border-left: 3px solid #007aff;
+            background: rgba(0, 122, 255, 0.04);
+            border-radius: 8px;
+            text-align: left;
+            max-width: 820px;
+        }
+        .quote-card.warning {
+            border-left-color: #ff3b30;
+            background: rgba(255, 59, 48, 0.04);
+        }
+        .quote-card.success {
+            border-left-color: #34c759;
+            background: rgba(52, 199, 89, 0.05);
+        }
+        .quote-card .label {
+            font-size: 12px; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 0.16em;
+            color: #007aff; margin-bottom: 8px;
+        }
+        .quote-card.warning .label { color: #ff3b30; }
+        .quote-card.success .label { color: #34c759; }
+        .quote-card p {
+            font-size: clamp(14px, 1.7vw, 19px);
+            color: #1d1d1f; line-height: 1.4; font-weight: 500;
+        }
+
+        .code-block {
+            background: #1d1d1f;
+            color: #f5f5f7;
+            border-radius: 12px;
+            padding: clamp(16px, 1.8vw, 24px);
+            font-family: 'SF Mono', 'Menlo', 'Monaco', 'Consolas', monospace;
+            font-size: clamp(12px, 1.4vw, 16px);
+            line-height: 1.6;
+            text-align: left;
+            margin-top: 18px;
+            max-width: 860px;
+            width: 100%;
+            white-space: pre;
+            overflow-x: auto;
+        }
+        .code-block.tight { padding: clamp(14px, 1.6vw, 20px); font-size: clamp(11px, 1.3vw, 14px); line-height: 1.5; }
+        .code-block .ck { color: #ff79c6; }
+        .code-block .cs { color: #f1fa8c; }
+        .code-block .cn { color: #f8f8f2; }
+        .code-block .co { color: #6272a4; font-style: italic; }
+        .code-block .cf { color: #8be9fd; }
+        .code-block .cm { color: #bd93f9; }
+        .code-block .ce { color: #ff5555; }
+        .code-block .cc { color: #50fa7b; }
+
+        .code-output {
+            display: grid;
+            grid-template-columns: 1.1fr 1fr;
+            gap: 16px;
+            margin-top: 22px;
+            width: 100%;
+            max-width: 1050px;
+        }
+        .code-output .term {
+            background: #1d1d1f;
+            color: #f5f5f7;
+            border-radius: 12px;
+            padding: 18px;
+            font-family: 'SF Mono', 'Menlo', monospace;
+            font-size: clamp(12px, 1.4vw, 15px);
+            line-height: 1.6;
+            text-align: left;
+            white-space: pre;
+            overflow-x: auto;
+        }
+        .term .out { color: #50fa7b; }
+        .term .err { color: #ff5555; }
+
+        .checklist {
+            list-style: none;
+            padding: 0;
+            margin-top: 18px;
+            max-width: 800px;
+            text-align: left;
+        }
+        .checklist li {
+            font-size: clamp(15px, 1.8vw, 19px);
+            color: #1d1d1f;
+            line-height: 1.5;
+            padding: 11px 0 11px 40px;
+            position: relative;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+        .checklist li:last-child { border-bottom: none; }
+        .checklist li::before {
+            content: "✓";
+            position: absolute;
+            left: 0; top: 50%;
+            transform: translateY(-50%);
+            width: 26px; height: 26px;
+            border-radius: 50%;
+            background: rgba(0, 122, 255, 0.1);
+            color: #007aff;
+            font-size: 13px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .bullet-list {
+            list-style: none;
+            padding: 0;
+            margin-top: 14px;
+            max-width: 820px;
+            text-align: left;
+        }
+        .bullet-list li {
+            font-size: clamp(14px, 1.7vw, 18px);
+            color: #1d1d1f;
+            line-height: 1.5;
+            padding: 8px 0 8px 22px;
+            position: relative;
+        }
+        .bullet-list li::before {
+            content: "•";
+            position: absolute;
+            left: 6px; top: 7px;
+            color: #007aff;
+            font-weight: 700;
+        }
+
+        .timer-display {
+            font-family: 'SF Mono', 'Menlo', monospace;
+            font-size: clamp(56px, 9vw, 120px);
+            font-weight: 700;
+            color: #007aff;
+            line-height: 1;
+            letter-spacing: -0.04em;
+            margin: 12px 0 20px 0;
+        }
+
+        .flow-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 22px;
+            font-family: 'SF Mono', 'Menlo', monospace;
+            font-size: clamp(13px, 1.5vw, 17px);
+        }
+        .flow-row .step-pill {
+            padding: 9px 16px;
+            border-radius: 50px;
+            background: rgba(0,122,255,0.08);
+            color: #007aff;
+            font-weight: 600;
+            border: 1px solid rgba(0,122,255,0.18);
+        }
+        .flow-row .arrow { color: #86868b; font-size: 18px; }
+
+        .slide-indicator {
+            position: fixed;
+            bottom: 28px; left: 50%;
+            transform: translateX(-50%);
+            font-size: 13px; color: #86868b;
+            font-weight: 400; z-index: 100;
+            letter-spacing: 0.04em;
+        }
+        .nav-hint {
+            position: fixed;
+            bottom: 28px; right: 28px;
+            font-size: 12px; color: #c7c7cc;
+            font-weight: 400; text-align: right;
+            z-index: 100;
+        }
+        .lesson-tag {
+            position: fixed;
+            top: 28px; left: 28px;
+            font-size: 11px; font-weight: 600;
+            color: #86868b; text-transform: uppercase;
+            letter-spacing: 0.18em;
+            z-index: 100;
+        }
+
+        @media (max-width: 768px) {
+            .comparison-grid, .code-output, .cards-container {
+                grid-template-columns: 1fr; gap: 18px;
+            }
+        }
+        .lang-switcher {
+            position: fixed;
+            top: 22px; right: 28px;
+            z-index: 100;
+            display: flex;
+            gap: 2px;
+            background: rgba(255,255,255,0.95);
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0,0,0,0.06);
+            border-radius: 50px;
+            padding: 3px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        .lang-switcher a {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: #86868b;
+            text-decoration: none;
+            padding: 5px 12px;
+            border-radius: 50px;
+            transition: all 0.2s ease;
+        }
+        .lang-switcher a.active {
+            color: #fff;
+            background: #007aff;
+        }
+        .lang-switcher a:not(.active):hover {
+            color: #1d1d1f;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="presentation">
+
+        <!-- 1: Title -->
+        <div class="slide active">
+            <div class="slide-content">
+                <p class="eyebrow">Лекция 6</p>
+                <h1>ООП часть 1</h1>
+                <p class="subtitle">Классы, атрибуты, методы, базовые концепции</p>
+            </div>
+        </div>
+
+        <!-- 2: Постановка задачи -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Постановка задачи</p>
+                <h2>Вы запускаете Майнкрафт</h2>
+                <p class="subtitle">Ваш персонаж - Steve.<br/>У него: имя, здоровье, координаты на карте, инвентарь.</p>
+                <div class="quote-card">
+                    <p>Как это <span class="highlight">запрограммировать</span>?</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3: Подход через переменные -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Первая попытка</p>
+                <h2>Подход через переменные</h2>
+                <div class="code-block"><span class="cn">player_name</span> = <span class="cs">"Steve"</span>
+<span class="cn">player_hp</span>   = <span class="cm">20</span>
+<span class="cn">player_x</span>    = <span class="cm">0</span>
+<span class="cn">player_y</span>    = <span class="cm">64</span></div>
+                <p class="body-text" style="margin-top: 22px;">Один игрок - отлично работает.</p>
+            </div>
+        </div>
+
+        <!-- 4: Масштабирование -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">А если их 1000?</p>
+                <h2>Масштабирование подхода</h2>
+                <div class="code-block tight"><span class="cn">p1_name</span>, <span class="cn">p1_hp</span>, <span class="cn">p1_x</span> = <span class="cs">"Steve"</span>,  <span class="cm">20</span>, <span class="cm">0</span>
+<span class="cn">p2_name</span>, <span class="cn">p2_hp</span>, <span class="cn">p2_x</span> = <span class="cs">"Alex"</span>,   <span class="cm">20</span>, <span class="cm">5</span>
+<span class="cn">p3_name</span>, <span class="cn">p3_hp</span>, <span class="cn">p3_x</span> = ...
+<span class="co"># ... ещё 997 строк ...</span></div>
+                <p class="body-text" style="margin-top: 22px; color: #86868b;">А ещё мобы вокруг. И деревни. И животные. Что-то пошло не так.</p>
+            </div>
+        </div>
+
+        <!-- 5: Подход через словари -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Получше, но не идеально</p>
+                <h2>Подход через словари</h2>
+                <div class="code-block"><span class="cn">p1</span> = {<span class="cs">"name"</span>: <span class="cs">"Steve"</span>, <span class="cs">"hp"</span>: <span class="cm">20</span>, <span class="cs">"x"</span>: <span class="cm">0</span>}
+<span class="cn">p2</span> = {<span class="cs">"name"</span>: <span class="cs">"Alex"</span>,  <span class="cs">"hp"</span>: <span class="cm">20</span>, <span class="cs">"x"</span>: <span class="cm">5</span>}</div>
+                <p class="body-text" style="margin-top: 22px;">Уже лучше. Но игрок должен <span class="highlight">ходить</span>, <span class="highlight">ломать блоки</span>, <span class="highlight">есть еду</span>.</p>
+                <p class="body-text" style="margin-top: 10px; color: #86868b;">Каждый раз - отдельная функция, которая принимает словарь. А если кто-то передаст «не тот» словарь?</p>
+            </div>
+        </div>
+
+        <!-- 6: Идея ООП -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Класс и объект</p>
+                <h2>Идея ООП</h2>
+                <p class="subtitle">Программисты - люди ленивые.<br/>Они придумали: давайте упакуем данные игрока и то, что он умеет, в одну коробку.</p>
+                <div class="quote-card success">
+                    <p>Эта коробка называется <span class="accent-green">класс</span>.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 7: Класс - это чертёж -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Концепция</p>
+                <h2>Класс - это чертёж</h2>
+                <p class="body-text">Класс - описание того, как устроен игрок.<br/>Сам по себе он ничего не делает.</p>
+                <div class="quote-card" style="margin-top: 28px;">
+                    <p>Это <span class="highlight">шаблон</span>, по которому потом делают настоящих игроков.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 8: Объект - экземпляр класса -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Концепция</p>
+                <h2>Объект - экземпляр класса</h2>
+                <p class="body-text">Объект - то, что родилось из чертежа.<br/>Один объект = один настоящий игрок со своим именем и hp.</p>
+                <div class="quote-card success" style="margin-top: 28px;">
+                    <p>По одному чертежу можно сделать <span class="accent-green">сколько угодно</span> объектов.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 9: Один чертёж - тысяча игроков -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Главная мысль</p>
+                <h2>Один чертёж, тысяча игроков</h2>
+                <div class="code-block" style="text-align: center; font-size: clamp(12px, 1.4vw, 15px); max-width: 620px;">       ┌───────────────┐
+       │  <span class="ck">class</span> <span class="cf">Player</span> │   ◄── чертёж
+       └───────┬───────┘
+               │
+       ┌───────┼───────┐
+       ▼       ▼       ▼
+     <span class="cs">Steve</span>   <span class="cs">Alex</span>   <span class="cs">Notch</span>
+     hp <span class="cm">20</span>  hp <span class="cm">20</span>   hp <span class="cm">20</span></div>
+                <p class="body-text" style="margin-top: 22px; color: #86868b;">Каждый со своими данными. Чертёж один.</p>
+            </div>
+        </div>
+
+        <!-- 10: Две составляющие объекта -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Из чего состоит объект</p>
+                <h2>Две составляющие объекта</h2>
+                <div class="cards-container" style="grid-template-columns: 1fr 1fr; max-width: 820px;">
+                    <div class="card">
+                        <div class="num">1</div>
+                        <h3>Что объект знает о себе</h3>
+                        <p>Это <span class="highlight">атрибуты</span> - данные.</p>
+                    </div>
+                    <div class="card">
+                        <div class="num">2</div>
+                        <h3>Что объект умеет делать</h3>
+                        <p>Это <span class="highlight">методы</span> - действия.</p>
+                    </div>
+                </div>
+                <p class="body-text" style="margin-top: 28px; color: #86868b;">Всё ООП - про эти два слова.</p>
+            </div>
+        </div>
+
+        <!-- 11: Атрибуты -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Из чего состоит объект</p>
+                <h2>Атрибуты: данные объекта</h2>
+                <div class="flow-row">
+                    <span class="step-pill">имя</span>
+                    <span class="step-pill">здоровье</span>
+                    <span class="step-pill">координата</span>
+                    <span class="step-pill">инвентарь</span>
+                    <span class="step-pill">скорость</span>
+                </div>
+                <p class="body-text" style="margin-top: 32px;">Атрибут - переменная, «<span class="highlight">приклеенная</span>» к объекту.</p>
+                <p class="body-text" style="margin-top: 10px; color: #86868b;">У каждого объекта свои атрибуты.</p>
+            </div>
+        </div>
+
+        <!-- 12: Методы -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Из чего состоит объект</p>
+                <h2>Методы: действия объекта</h2>
+                <div class="flow-row">
+                    <span class="step-pill">ходить</span>
+                    <span class="step-pill">ломать блок</span>
+                    <span class="step-pill">есть</span>
+                    <span class="step-pill">прыгать</span>
+                    <span class="step-pill">атаковать</span>
+                </div>
+                <p class="body-text" style="margin-top: 32px;">Метод - функция, «<span class="highlight">приклеенная</span>» к объекту.</p>
+                <p class="body-text" style="margin-top: 10px; color: #86868b;">Все объекты одного класса умеют одно и то же.</p>
+            </div>
+        </div>
+
+        <!-- 13: Минимальный класс -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Создание первого класса</p>
+                <h2>Минимальный класс</h2>
+                <div class="code-block"><span class="ck">class</span> <span class="cf">Player</span>:
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, <span class="cn">name</span>, <span class="cn">hp</span>):
+        <span class="cn">self</span>.<span class="cn">name</span> = <span class="cn">name</span>
+        <span class="cn">self</span>.<span class="cn">hp</span>   = <span class="cn">hp</span></div>
+                <p class="body-text" style="margin-top: 22px; color: #86868b;">Это весь класс. Три строки тела.</p>
+            </div>
+        </div>
+
+        <!-- 14: Разбор по строкам -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Синтаксис</p>
+                <h2>Разбор по строкам</h2>
+                <div class="code-block tight"><span class="ck">class</span> <span class="cf">Player</span>:                  <span class="co">← дальше идёт чертёж</span>
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, ...):    <span class="co">← функция-настройщик</span>
+        <span class="cn">self</span>.<span class="cn">name</span> = <span class="cn">name</span>        <span class="co">← кладём имя «в карман»</span>
+        <span class="cn">self</span>.<span class="cn">hp</span>   = <span class="cn">hp</span>          <span class="co">← кладём здоровье</span></div>
+                <p class="body-text" style="margin-top: 22px; color: #86868b;">Имя класса - с большой буквы. Это соглашение.</p>
+            </div>
+        </div>
+
+        <!-- 15: Назначение __init__ -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Конструктор</p>
+                <h2>Назначение <code style="font-family:'SF Mono',monospace;">__init__</code></h2>
+                <div class="code-block tight" style="max-width: 720px;"><span class="ck">class</span> <span class="cf">Player</span>:                  <span class="co">← дальше идёт чертёж</span>
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, ...):    <span class="co">← функция-настройщик</span>
+        <span class="cn">self</span>.<span class="cn">name</span> = <span class="cn">name</span>        <span class="co">← кладём имя «в карман»</span>
+        <span class="cn">self</span>.<span class="cn">hp</span>   = <span class="cn">hp</span>          <span class="co">← кладём здоровье</span></div>
+                <p class="subtitle" style="margin-top: 18px;">Когда мы говорим Python «сделай игрока», он:</p>
+                <ol class="checklist" style="max-width: 720px;">
+                    <li>берёт чертёж <code style="font-family:'SF Mono',monospace;">Player</code></li>
+                    <li>делает пустую заготовку</li>
+                    <li>прогоняет её через <code style="font-family:'SF Mono',monospace;">__init__</code></li>
+                    <li>на выходе - готовый игрок с именем и hp</li>
+                </ol>
+                <p class="body-text" style="margin-top: 24px; color: #86868b;"><code style="font-family:'SF Mono',monospace;">__init__</code> - от слова <span class="highlight">initialize</span>, «настроить».</p>
+            </div>
+        </div>
+
+        <!-- 16: Параметр self -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Параметр self</p>
+                <h2>Местоимение «мой»</h2>
+                <div class="code-block tight" style="max-width: 720px;"><span class="ck">class</span> <span class="cf">Player</span>:                  <span class="co">← дальше идёт чертёж</span>
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, ...):    <span class="co">← функция-настройщик</span>
+        <span class="cn">self</span>.<span class="cn">name</span> = <span class="cn">name</span>        <span class="co">← кладём имя «в карман»</span>
+        <span class="cn">self</span>.<span class="cn">hp</span>   = <span class="cn">hp</span>          <span class="co">← кладём здоровье</span></div>
+                <p class="body-text" style="margin-top: 22px;">Когда мы пишем чертёж, мы ещё не знаем,<br/>как зовут конкретного игрока.</p>
+                <div class="quote-card" style="margin-top: 28px;">
+                    <p><code style="font-family:'SF Mono',monospace;">self</code> - это <span class="highlight">местоимение</span>. Внутри класса означает «мой, этого конкретного игрока».</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 17: self продолжение -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Параметр self</p>
+                <h2>Привязка к объекту</h2>
+                <div class="code-block tight" style="max-width: 720px;"><span class="ck">class</span> <span class="cf">Player</span>:                  <span class="co">← дальше идёт чертёж</span>
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, ...):    <span class="co">← функция-настройщик</span>
+        <span class="cn">self</span>.<span class="cn">name</span> = <span class="cn">name</span>        <span class="co">← кладём имя «в карман»</span>
+        <span class="cn">self</span>.<span class="cn">hp</span>   = <span class="cn">hp</span>          <span class="co">← кладём здоровье</span></div>
+                <div class="code-block" style="margin-top: 14px; max-width: 640px;">Когда работаем со <span class="cs">Steve</span>  → <span class="cn">self</span>.<span class="cn">name</span> = <span class="cs">"Steve"</span>
+Когда с <span class="cs">Alex</span>             → <span class="cn">self</span>.<span class="cn">name</span> = <span class="cs">"Alex"</span></div>
+                <p class="body-text" style="margin-top: 22px;"><code style="font-family:'SF Mono',monospace;">self</code> - способ объекта обратиться к своим <span class="highlight">карманам</span>.</p>
+            </div>
+        </div>
+
+        <!-- 18: Создание объекта -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Создаём первого игрока</p>
+                <h2>Steve из чертежа</h2>
+                <div class="code-block tight" style="max-width: 720px;"><span class="ck">class</span> <span class="cf">Player</span>:                  <span class="co">← дальше идёт чертёж</span>
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, ...):    <span class="co">← функция-настройщик</span>
+        <span class="cn">self</span>.<span class="cn">name</span> = <span class="cn">name</span>        <span class="co">← кладём имя «в карман»</span>
+        <span class="cn">self</span>.<span class="cn">hp</span>   = <span class="cn">hp</span>          <span class="co">← кладём здоровье</span></div>
+                <div class="code-output" style="margin-top: 14px;">
+                    <div class="code-block" style="margin-top: 0;"><span class="cn">steve</span> = <span class="cf">Player</span>(<span class="cs">"Steve"</span>, <span class="cm">20</span>)
+
+<span class="cf">print</span>(<span class="cn">steve</span>.<span class="cn">name</span>)
+<span class="cf">print</span>(<span class="cn">steve</span>.<span class="cn">hp</span>)</div>
+                    <div class="term"><span class="out">Steve
+20</span></div>
+                </div>
+                <p class="body-text" style="margin-top: 22px; color: #86868b;">Точка читается как «у»: «у Steve имя», «у Steve hp».</p>
+            </div>
+        </div>
+
+        <!-- 19: Независимость объектов -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Множество объектов</p>
+                <h2>Независимость объектов</h2>
+                <div class="code-block tight" style="max-width: 720px;"><span class="ck">class</span> <span class="cf">Player</span>:                  <span class="co">← дальше идёт чертёж</span>
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, ...):    <span class="co">← функция-настройщик</span>
+        <span class="cn">self</span>.<span class="cn">name</span> = <span class="cn">name</span>        <span class="co">← кладём имя «в карман»</span>
+        <span class="cn">self</span>.<span class="cn">hp</span>   = <span class="cn">hp</span>          <span class="co">← кладём здоровье</span></div>
+                <div class="code-output" style="margin-top: 14px;">
+                    <div class="code-block" style="margin-top: 0;"><span class="cn">steve</span> = <span class="cf">Player</span>(<span class="cs">"Steve"</span>, <span class="cm">20</span>)
+<span class="cn">alex</span>  = <span class="cf">Player</span>(<span class="cs">"Alex"</span>,  <span class="cm">20</span>)
+
+<span class="cf">print</span>(<span class="cn">steve</span>.<span class="cn">name</span>, <span class="cn">alex</span>.<span class="cn">name</span>)</div>
+                    <div class="term"><span class="out">Steve Alex</span></div>
+                </div>
+                <p class="body-text" style="margin-top: 22px;">Один чертёж - <span class="highlight">два разных</span> объекта.</p>
+            </div>
+        </div>
+
+        <!-- 20: Объекты в памяти -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Множество объектов</p>
+                <h2>Две отдельные коробки в памяти</h2>
+                <div class="code-block" style="font-size: clamp(12px, 1.4vw, 15px); max-width: 620px;"><span class="cn">steve</span>  ──►  ┌────────────────┐
+            │ <span class="cn">name</span> = <span class="cs">"Steve"</span> │
+            │ <span class="cn">hp</span>   = <span class="cm">20</span>      │
+            └────────────────┘
+
+<span class="cn">alex</span>   ──►  ┌────────────────┐
+            │ <span class="cn">name</span> = <span class="cs">"Alex"</span>  │
+            │ <span class="cn">hp</span>   = <span class="cm">20</span>      │
+            └────────────────┘</div>
+                <p class="body-text" style="margin-top: 22px; color: #86868b;">Это две разные коробки. Физически разные.</p>
+            </div>
+        </div>
+
+        <!-- 21 (NEW): Адреса и размер в памяти -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Множество объектов</p>
+                <h2>Адреса и размер в памяти</h2>
+                <div class="code-output">
+                    <div class="code-block" style="margin-top: 0;"><span class="cf">print</span>(<span class="cf">id</span>(<span class="cn">steve</span>))
+<span class="cf">print</span>(<span class="cf">id</span>(<span class="cn">alex</span>))
+<span class="cf">print</span>(<span class="cn">steve</span> <span class="ck">is</span> <span class="cn">alex</span>)
+
+<span class="ck">import</span> <span class="cn">sys</span>
+<span class="cf">print</span>(<span class="cf">sys</span>.<span class="cf">getsizeof</span>(<span class="cn">steve</span>))</div>
+                    <div class="term"><span class="out">140234567890
+140234571248
+False
+48</span>  <span style="color: #6272a4;">// байт</span></div>
+                </div>
+                <p class="body-text" style="margin-top: 22px;"><code style="font-family:'SF Mono',monospace;">id()</code> - уникальный <span class="highlight">адрес</span> объекта в памяти. <code style="font-family:'SF Mono',monospace;">is</code> сравнивает по адресу.</p>
+                <div class="quote-card success" style="margin-top: 18px;">
+                    <p>Десятки байт на объект. <span class="accent-green">1000 игроков ≈ 50 КБ</span> - объекты дёшевы.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 22 (NEW): Переменная как наклейка -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Множество объектов</p>
+                <h2>Переменная - наклейка на коробку</h2>
+                <div class="code-block" style="font-size: clamp(12px, 1.4vw, 15px); max-width: 560px;"><span class="cn">steve</span> ──►  ┌────────────────┐
+<span class="cn">hero</span>  ──►  │ <span class="cn">name</span> = <span class="cs">"Steve"</span> │
+           │ <span class="cn">hp</span>   = <span class="cm">20</span>      │
+           └────────────────┘</div>
+                <div class="code-output" style="margin-top: 14px;">
+                    <div class="code-block" style="margin-top: 0;"><span class="cn">hero</span> = <span class="cn">steve</span>            <span class="co"># вторая наклейка</span>
+<span class="cn">hero</span>.<span class="cn">hp</span> = <span class="cm">5</span>
+<span class="cf">print</span>(<span class="cn">steve</span>.<span class="cn">hp</span>)
+<span class="cf">print</span>(<span class="cn">steve</span> <span class="ck">is</span> <span class="cn">hero</span>)</div>
+                    <div class="term"><span class="out">5
+True</span></div>
+                </div>
+                <div class="quote-card warning" style="margin-top: 14px;">
+                    <p><code style="font-family:'SF Mono',monospace;">b = a</code> - не копия, а <span class="accent-red">второе имя</span> для той же коробки.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 23: Изменения локальны -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Множество объектов</p>
+                <h2>Изменения не пересекаются</h2>
+                <div class="code-output">
+                    <div class="code-block" style="margin-top: 0;"><span class="cn">steve</span>.<span class="cn">hp</span> = <span class="cm">0</span>
+<span class="cf">print</span>(<span class="cn">alex</span>.<span class="cn">hp</span>)</div>
+                    <div class="term"><span class="out">20</span>  <span style="color: #6272a4;">// он жив</span></div>
+                </div>
+                <p class="body-text" style="margin-top: 22px;">Объекты <span class="highlight">не связаны</span> друг с другом.</p>
+                <p class="body-text" style="margin-top: 10px; color: #86868b;">Изменение одного не влияет на других.</p>
+            </div>
+        </div>
+
+        <!-- 22: Сервер на 1000 -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Множество объектов</p>
+                <h2>Создание множества объектов</h2>
+                <div class="code-output">
+                    <div class="code-block" style="margin-top: 0;"><span class="cn">server</span> = [<span class="cf">Player</span>(<span class="cf">f</span><span class="cs">"Player_{i}"</span>, <span class="cm">20</span>)
+          <span class="ck">for</span> <span class="cn">i</span> <span class="ck">in</span> <span class="cf">range</span>(<span class="cm">1000</span>)]
+
+<span class="cf">print</span>(<span class="cn">server</span>[<span class="cm">0</span>].<span class="cn">name</span>)
+<span class="cf">print</span>(<span class="cn">server</span>[<span class="cm">999</span>].<span class="cn">hp</span>)</div>
+                    <div class="term"><span class="out">Player_0
+20</span></div>
+                </div>
+                <p class="body-text" style="margin-top: 22px;">Тысяча игроков. Каждый со своими данными.</p>
+                <p class="body-text" style="margin-top: 10px; color: #86868b;">То, ради чего всё и затевалось.</p>
+            </div>
+        </div>
+
+        <!-- 23: Метод без параметров -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Методы класса</p>
+                <h2>Метод без параметров</h2>
+                <div class="code-block tight"><span class="ck">class</span> <span class="cf">Player</span>:
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, <span class="cn">name</span>, <span class="cn">hp</span>):
+        <span class="cn">self</span>.<span class="cn">name</span> = <span class="cn">name</span>
+        <span class="cn">self</span>.<span class="cn">hp</span>   = <span class="cn">hp</span>
+
+    <span class="ck">def</span> <span class="cf">say</span>(<span class="cn">self</span>, <span class="cn">text</span>):
+        <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"&lt;{self.name}&gt; {text}"</span>)</div>
+                <p class="body-text" style="margin-top: 18px; color: #86868b;">Метод - функция внутри класса. Первым параметром всегда <code style="font-family:'SF Mono',monospace;">self</code>.</p>
+            </div>
+        </div>
+
+        <!-- 24: Вызов метода -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Методы класса</p>
+                <h2>Вызов метода через точку</h2>
+                <div class="code-output">
+                    <div class="code-block" style="margin-top: 0;"><span class="cn">steve</span> = <span class="cf">Player</span>(<span class="cs">"Steve"</span>, <span class="cm">20</span>)
+<span class="cn">steve</span>.<span class="cf">say</span>(<span class="cs">"Привет, мир!"</span>)</div>
+                    <div class="term"><span class="out">&lt;Steve&gt; Привет, мир!</span></div>
+                </div>
+                <p class="body-text" style="margin-top: 22px;">Вызов через точку. <code style="font-family:'SF Mono',monospace;">self</code> Python <span class="highlight">подставит сам</span>.</p>
+            </div>
+        </div>
+
+        <!-- 25: Как работает вызов метода -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Под капотом</p>
+                <h2>Как работает вызов метода</h2>
+                <p class="body-text" style="margin-bottom: 10px;">Когда вы пишете</p>
+                <div class="code-block" style="max-width: 560px;"><span class="cn">steve</span>.<span class="cf">say</span>(<span class="cs">"Привет, мир!"</span>)</div>
+                <p class="body-text" style="margin-top: 14px; margin-bottom: 10px;">Python внутри переводит это в</p>
+                <div class="code-block" style="max-width: 560px;"><span class="cf">Player</span>.<span class="cf">say</span>(<span class="cn">steve</span>, <span class="cs">"Привет, мир!"</span>)</div>
+                <p class="body-text" style="margin-top: 22px;"><code style="font-family:'SF Mono',monospace;">steve</code> автоматически попадает на место <code style="font-family:'SF Mono',monospace;">self</code>.</p>
+            </div>
+        </div>
+
+        <!-- 26: Метод с параметром -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Методы класса</p>
+                <h2>Метод с параметром</h2>
+                <div class="code-block tight"><span class="ck">class</span> <span class="cf">Player</span>:
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, <span class="cn">name</span>, <span class="cn">hp</span>):
+        <span class="cn">self</span>.<span class="cn">name</span> = <span class="cn">name</span>
+        <span class="cn">self</span>.<span class="cn">hp</span>   = <span class="cn">hp</span>
+
+    <span class="ck">def</span> <span class="cf">take_damage</span>(<span class="cn">self</span>, <span class="cn">amount</span>):
+        <span class="cn">self</span>.<span class="cn">hp</span> -= <span class="cn">amount</span></div>
+                <div class="code-output" style="margin-top: 14px;">
+                    <div class="code-block" style="margin-top: 0;"><span class="cn">steve</span> = <span class="cf">Player</span>(<span class="cs">"Steve"</span>, <span class="cm">20</span>)
+<span class="cn">steve</span>.<span class="cf">take_damage</span>(<span class="cm">5</span>)
+<span class="cf">print</span>(<span class="cn">steve</span>.<span class="cn">hp</span>)</div>
+                    <div class="term"><span class="out">15</span></div>
+                </div>
+                <p class="body-text" style="margin-top: 14px; color: #86868b;">В скобках только <code style="font-family:'SF Mono',monospace;">amount</code>. <code style="font-family:'SF Mono',monospace;">self</code> Python подставляет сам.</p>
+            </div>
+        </div>
+
+        <!-- 27: Метод с возвращаемым значением -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Методы класса</p>
+                <h2>Метод с возвращаемым значением</h2>
+                <div class="code-block tight"><span class="ck">class</span> <span class="cf">Player</span>:
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, <span class="cn">name</span>, <span class="cn">hp</span>):
+        <span class="cn">self</span>.<span class="cn">name</span> = <span class="cn">name</span>
+        <span class="cn">self</span>.<span class="cn">hp</span>   = <span class="cn">hp</span>
+
+    <span class="ck">def</span> <span class="cf">take_damage</span>(<span class="cn">self</span>, <span class="cn">amount</span>):
+        <span class="cn">self</span>.<span class="cn">hp</span> -= <span class="cn">amount</span>
+
+    <span class="ck">def</span> <span class="cf">is_alive</span>(<span class="cn">self</span>):
+        <span class="ck">return</span> <span class="cn">self</span>.<span class="cn">hp</span> > <span class="cm">0</span></div>
+                <div class="code-output" style="margin-top: 14px;">
+                    <div class="code-block" style="margin-top: 0;"><span class="cf">print</span>(<span class="cn">steve</span>.<span class="cf">is_alive</span>())
+<span class="cn">steve</span>.<span class="cf">take_damage</span>(<span class="cm">100</span>)
+<span class="cf">print</span>(<span class="cn">steve</span>.<span class="cf">is_alive</span>())</div>
+                    <div class="term"><span class="out">True
+False</span></div>
+                </div>
+                <p class="body-text" style="margin-top: 14px; color: #86868b;">Метод может возвращать значение - как обычная функция.</p>
+            </div>
+        </div>
+
+        <!-- 28: Вызов метода из метода -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Методы класса</p>
+                <h2>Вызов метода из метода</h2>
+                <div class="code-block tight"><span class="ck">class</span> <span class="cf">Player</span>:
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, <span class="cn">name</span>, <span class="cn">hp</span>):
+        <span class="cn">self</span>.<span class="cn">name</span> = <span class="cn">name</span>
+        <span class="cn">self</span>.<span class="cn">hp</span>   = <span class="cn">hp</span>
+
+    <span class="ck">def</span> <span class="cf">say</span>(<span class="cn">self</span>, <span class="cn">text</span>):
+        <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"&lt;{self.name}&gt; {text}"</span>)
+
+    <span class="ck">def</span> <span class="cf">eat</span>(<span class="cn">self</span>, <span class="cn">food_hp</span>):
+        <span class="cn">self</span>.<span class="cn">hp</span> += <span class="cn">food_hp</span>
+        <span class="ck">if</span> <span class="cn">self</span>.<span class="cn">hp</span> > <span class="cm">20</span>:
+            <span class="cn">self</span>.<span class="cn">hp</span> = <span class="cm">20</span>
+        <span class="cn">self</span>.<span class="cf">say</span>(<span class="cf">f</span><span class="cs">"съел еду, hp: {self.hp}"</span>)</div>
+                <p class="body-text" style="margin-top: 14px;">Внутри класса методы свободно общаются через <code style="font-family:'SF Mono',monospace;">self</code>.</p>
+            </div>
+        </div>
+
+        <!-- 29: __str__ -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Магический метод</p>
+                <h2><code style="font-family:'SF Mono',monospace;">__str__</code>: управляем print()</h2>
+                <div class="code-block tight"><span class="ck">class</span> <span class="cf">Player</span>:
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, <span class="cn">name</span>, <span class="cn">hp</span>):
+        <span class="cn">self</span>.<span class="cn">name</span> = <span class="cn">name</span>
+        <span class="cn">self</span>.<span class="cn">hp</span>   = <span class="cn">hp</span>
+
+    <span class="ck">def</span> <span class="cf">__str__</span>(<span class="cn">self</span>):
+        <span class="ck">return</span> <span class="cf">f</span><span class="cs">"&lt;{self.name}&gt; hp: {self.hp}"</span></div>
+                <div class="code-output" style="margin-top: 14px;">
+                    <div class="code-block" style="margin-top: 0;"><span class="cn">steve</span> = <span class="cf">Player</span>(<span class="cs">"Steve"</span>, <span class="cm">20</span>)
+<span class="cf">print</span>(<span class="cn">steve</span>)</div>
+                    <div class="term"><span class="out">&lt;Steve&gt; hp: 20</span></div>
+                </div>
+                <div class="quote-card warning" style="margin-top: 14px;">
+                    <p>Без <code style="font-family:'SF Mono',monospace;">__str__</code> вы бы увидели <code style="font-family:'SF Mono',monospace;">&lt;__main__.Player object at 0x7f...&gt;</code> - адрес в памяти.</p>
+                </div>
+                <p class="body-text" style="margin-top: 22px; color: #86868b;">Двойные подчёркивания - соглашение для «служебных» методов, которые Python вызывает сам.</p>
+            </div>
+        </div>
+
+        <!-- 30: ООП в Python-коде -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">ООП в стандартных библиотеках</p>
+                <h2>ООП в Python-коде</h2>
+                <div class="code-block" style="max-width: 560px;"><span class="cn">df</span>.<span class="cf">head</span>()
+<span class="cn">df</span>.<span class="cf">groupby</span>(<span class="cs">"city"</span>)
+<span class="cs">"hello"</span>.<span class="cf">upper</span>()
+[<span class="cm">1</span>, <span class="cm">2</span>, <span class="cm">3</span>].<span class="cf">append</span>(<span class="cm">4</span>)</div>
+                <p class="body-text" style="margin-top: 22px;">Каждая точка - это вызов <span class="highlight">метода у объекта</span>.</p>
+                <p class="body-text" style="margin-top: 10px; color: #86868b;">ООП вы используете с первой лекции, просто не называли его так.</p>
+            </div>
+        </div>
+
+        <!-- 31: Строка как объект -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Пример</p>
+                <h2>Строка как объект</h2>
+                <div class="code-block" style="max-width: 460px;"><span class="cs">"hello"</span>.<span class="cf">upper</span>()</div>
+                <p class="body-text" style="margin-top: 22px;">Строка - это объект класса <code style="font-family:'SF Mono',monospace;">str</code>.<br/>У него есть метод <code style="font-family:'SF Mono',monospace;">upper</code>.</p>
+                <div class="quote-card" style="margin-top: 24px;">
+                    <p>То же самое, что <code style="font-family:'SF Mono',monospace;">steve.say(...)</code>. Просто класс <code style="font-family:'SF Mono',monospace;">str</code> написали разработчики Python.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 32: DataFrame как объект -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Пример</p>
+                <h2>DataFrame как объект класса</h2>
+                <div class="code-block" style="max-width: 560px;"><span class="cn">df</span> = <span class="cn">pd</span>.<span class="cf">read_csv</span>(<span class="cs">"data.csv"</span>)
+<span class="cn">df</span>.<span class="cf">head</span>()
+<span class="cn">df</span>.<span class="cn">shape</span></div>
+                <p class="body-text" style="margin-top: 22px;"><code style="font-family:'SF Mono',monospace;">df</code> - объект класса <span class="highlight">DataFrame</span>.</p>
+                <p class="body-text" style="margin-top: 10px; color: #86868b;">Методы: <code style="font-family:'SF Mono',monospace;">head</code>, <code style="font-family:'SF Mono',monospace;">groupby</code>, <code style="font-family:'SF Mono',monospace;">describe</code>. Атрибуты: <code style="font-family:'SF Mono',monospace;">shape</code>, <code style="font-family:'SF Mono',monospace;">columns</code>.</p>
+                <p class="body-text" style="margin-top: 10px; color: #86868b;">Устроен точно как наш <code style="font-family:'SF Mono',monospace;">Player</code> - только методов сотни.</p>
+            </div>
+        </div>
+
+        <!-- 33: Модели sklearn -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Пример</p>
+                <h2>Модели sklearn как классы</h2>
+                <div class="code-block" style="max-width: 560px;"><span class="cn">model</span> = <span class="cf">LinearRegression</span>()
+<span class="cn">model</span>.<span class="cf">fit</span>(<span class="cn">X</span>, <span class="cn">y</span>)
+<span class="cn">model</span>.<span class="cf">predict</span>(<span class="cn">X_test</span>)</div>
+                <p class="body-text" style="margin-top: 22px;"><code style="font-family:'SF Mono',monospace;">LinearRegression</code> - класс. <code style="font-family:'SF Mono',monospace;">model</code> - объект. <code style="font-family:'SF Mono',monospace;">fit</code>/<code style="font-family:'SF Mono',monospace;">predict</code> - методы.</p>
+                <div class="quote-card success" style="margin-top: 22px;">
+                    <p>Когда вы понимаете ООП, вы понимаете, как устроены <span class="accent-green">большие библиотеки</span>.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 34: Задача 1 -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Практика #1</p>
+                <h2>Задача 1: расширенный класс Player</h2>
+                <ul class="checklist" style="max-width: 780px;">
+                    <li>атрибуты: <code style="font-family:'SF Mono',monospace;">name</code>, <code style="font-family:'SF Mono',monospace;">hp</code> (по умолчанию 20), <code style="font-family:'SF Mono',monospace;">inventory</code> (пустой список)</li>
+                    <li>метод <code style="font-family:'SF Mono',monospace;">pickup(item)</code> - добавить предмет в инвентарь</li>
+                    <li>метод <code style="font-family:'SF Mono',monospace;">has(item)</code> - есть ли предмет</li>
+                    <li>метод <code style="font-family:'SF Mono',monospace;">__str__</code> - <code style="font-family:'SF Mono',monospace;">&lt;Steve&gt; hp: 20, items: 3</code></li>
+                </ul>
+                <div class="timer-display" style="font-size: clamp(28px, 4vw, 48px); margin-top: 24px;">10 минут</div>
+            </div>
+        </div>
+
+        <!-- 35: Задача 2 -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Практика #1</p>
+                <h2>Задача 2: BankAccount</h2>
+                <p class="subtitle">То же, но из жизни:</p>
+                <ul class="checklist" style="max-width: 780px;">
+                    <li>атрибуты: <code style="font-family:'SF Mono',monospace;">owner</code>, <code style="font-family:'SF Mono',monospace;">balance</code> (по умолчанию 0)</li>
+                    <li>метод <code style="font-family:'SF Mono',monospace;">deposit(amount)</code>, <code style="font-family:'SF Mono',monospace;">withdraw(amount)</code></li>
+                    <li>если денег не хватает - печатаем «Недостаточно средств»</li>
+                </ul>
+                <p class="body-text" style="margin-top: 24px; color: #86868b;">Не игра - но устроено так же.</p>
+            </div>
+        </div>
+
+        <!-- 36: Разбор задачи 1 -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Разбор</p>
+                <h2>Решение задачи 1</h2>
+                <div class="code-block tight"><span class="ck">class</span> <span class="cf">Player</span>:
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, <span class="cn">name</span>, <span class="cn">hp</span>=<span class="cm">20</span>):
+        <span class="cn">self</span>.<span class="cn">name</span> = <span class="cn">name</span>
+        <span class="cn">self</span>.<span class="cn">hp</span> = <span class="cn">hp</span>
+        <span class="cn">self</span>.<span class="cn">inventory</span> = []          <span class="co"># ← важно: в __init__</span>
+
+    <span class="ck">def</span> <span class="cf">pickup</span>(<span class="cn">self</span>, <span class="cn">item</span>):
+        <span class="cn">self</span>.<span class="cn">inventory</span>.<span class="cf">append</span>(<span class="cn">item</span>)
+
+    <span class="ck">def</span> <span class="cf">has</span>(<span class="cn">self</span>, <span class="cn">item</span>):
+        <span class="ck">return</span> <span class="cn">item</span> <span class="ck">in</span> <span class="cn">self</span>.<span class="cn">inventory</span>
+
+    <span class="ck">def</span> <span class="cf">__str__</span>(<span class="cn">self</span>):
+        <span class="ck">return</span> <span class="cf">f</span><span class="cs">"&lt;{self.name}&gt; hp: {self.hp}, items: {len(self.inventory)}"</span></div>
+            </div>
+        </div>
+
+        <!-- 37: Перерыв -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Перерыв</p>
+                <h1>Кофе-брейк</h1>
+                <div class="timer-display">5–10 мин</div>
+                <p class="body-text" style="color: #86868b;">Дальше: наступает ночь, появляются мобы - и мы поймём,<br/>почему пишем один метод вместо ста.</p>
+            </div>
+        </div>
+
+        <!-- 38: Наступает ночь -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Проблема дублирования</p>
+                <h2>Новая задача: мобы</h2>
+                <p class="subtitle">Из темноты выходят мобы:</p>
+                <div class="cards-container" style="grid-template-columns: repeat(3, 1fr); max-width: 1020px;">
+                    <div class="card">
+                        <h3 style="color: #007aff;">Zombie</h3>
+                        <p>медленно идёт и бьёт в ближнем</p>
+                    </div>
+                    <div class="card">
+                        <h3 style="color: #007aff;">Skeleton</h3>
+                        <p>стреляет из лука издалека</p>
+                    </div>
+                    <div class="card">
+                        <h3 style="color: #007aff;">Creeper</h3>
+                        <p>тихо подходит и взрывается</p>
+                    </div>
+                </div>
+                <p class="body-text" style="margin-top: 22px;">У всех общее: имя, hp, координата, могут получить урон.<br/>Различается только то, как они <span class="highlight">атакуют</span>.</p>
+            </div>
+        </div>
+
+        <!-- 39: Подход через копирование -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Лобовое решение</p>
+                <h2>Подход через копирование</h2>
+                <div class="code-block tight" style="font-size: clamp(10px, 1.2vw, 13px);"><span class="ck">class</span> <span class="cf">Zombie</span>:
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, <span class="cn">name</span>, <span class="cn">hp</span>):
+        <span class="cn">self</span>.<span class="cn">name</span> = <span class="cn">name</span>; <span class="cn">self</span>.<span class="cn">hp</span> = <span class="cn">hp</span>
+    <span class="ck">def</span> <span class="cf">take_damage</span>(<span class="cn">self</span>, <span class="cn">amount</span>): <span class="cn">self</span>.<span class="cn">hp</span> -= <span class="cn">amount</span>
+    <span class="ck">def</span> <span class="cf">is_alive</span>(<span class="cn">self</span>): <span class="ck">return</span> <span class="cn">self</span>.<span class="cn">hp</span> > <span class="cm">0</span>
+    <span class="ck">def</span> <span class="cf">attack</span>(<span class="cn">self</span>, <span class="cn">target</span>): ...
+
+<span class="ck">class</span> <span class="cf">Skeleton</span>:
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, <span class="cn">name</span>, <span class="cn">hp</span>):
+        <span class="cn">self</span>.<span class="cn">name</span> = <span class="cn">name</span>; <span class="cn">self</span>.<span class="cn">hp</span> = <span class="cn">hp</span>
+    <span class="ck">def</span> <span class="cf">take_damage</span>(<span class="cn">self</span>, <span class="cn">amount</span>): <span class="cn">self</span>.<span class="cn">hp</span> -= <span class="cn">amount</span>
+    <span class="ck">def</span> <span class="cf">is_alive</span>(<span class="cn">self</span>): <span class="ck">return</span> <span class="cn">self</span>.<span class="cn">hp</span> > <span class="cm">0</span>
+    <span class="ck">def</span> <span class="cf">attack</span>(<span class="cn">self</span>, <span class="cn">target</span>): ...</div>
+                <p class="body-text" style="margin-top: 16px; color: #86868b;">И ещё то же самое для Creeper. Семь строк скопированы трижды.</p>
+            </div>
+        </div>
+
+        <!-- 40: Проблемы дублирования -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Почему так нельзя</p>
+                <h2>Проблемы дублирования</h2>
+                <ul class="checklist" style="max-width: 820px;">
+                    <li>Один и тот же код в нескольких местах</li>
+                    <li>Появится Enderman, Spider, Witch - копировать снова</li>
+                    <li>Нашли баг в <code style="font-family:'SF Mono',monospace;">take_damage</code> - поправили в Zombie, забыли в Skeleton</li>
+                </ul>
+                <div class="quote-card warning" style="margin-top: 24px;">
+                    <p>Так делать не будем.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 41: Идея наследования -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Наследование</p>
+                <h2>Идея наследования</h2>
+                <p class="subtitle">Общее - в один класс-родитель.<br/>Уникальное - в потомков.</p>
+                <div class="quote-card success">
+                    <p>Потомки получают общее <span class="accent-green">автоматически</span>.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 42: Родительский класс -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Наследование</p>
+                <h2>Родительский класс</h2>
+                <div class="code-block tight"><span class="ck">class</span> <span class="cf">Mob</span>:
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, <span class="cn">name</span>, <span class="cn">hp</span>):
+        <span class="cn">self</span>.<span class="cn">name</span> = <span class="cn">name</span>
+        <span class="cn">self</span>.<span class="cn">hp</span>   = <span class="cn">hp</span>
+
+    <span class="ck">def</span> <span class="cf">take_damage</span>(<span class="cn">self</span>, <span class="cn">amount</span>):
+        <span class="cn">self</span>.<span class="cn">hp</span> -= <span class="cn">amount</span>
+
+    <span class="ck">def</span> <span class="cf">is_alive</span>(<span class="cn">self</span>):
+        <span class="ck">return</span> <span class="cn">self</span>.<span class="cn">hp</span> > <span class="cm">0</span></div>
+                <p class="body-text" style="margin-top: 18px; color: #86868b;">Общая часть собрана в одном месте.</p>
+            </div>
+        </div>
+
+        <!-- 43: Класс-наследник -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Наследование</p>
+                <h2>Класс-наследник</h2>
+                <div class="code-block tight" style="max-width: 720px;"><span class="ck">class</span> <span class="cf">Mob</span>:                                  <span class="co">← родитель</span>
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, <span class="cn">name</span>, <span class="cn">hp</span>): ...
+    <span class="ck">def</span> <span class="cf">take_damage</span>(<span class="cn">self</span>, <span class="cn">amount</span>): ...
+    <span class="ck">def</span> <span class="cf">is_alive</span>(<span class="cn">self</span>): ...</div>
+                <div class="code-block tight" style="margin-top: 14px;"><span class="ck">class</span> <span class="cf">Zombie</span>(<span class="cf">Mob</span>):                          <span class="co">← наследник</span>
+    <span class="ck">def</span> <span class="cf">attack</span>(<span class="cn">self</span>, <span class="cn">target</span>):
+        <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"{self.name} кусает {target.name}"</span>)
+        <span class="cn">target</span>.<span class="cf">take_damage</span>(<span class="cm">3</span>)</div>
+                <p class="body-text" style="margin-top: 14px;"><code style="font-family:'SF Mono',monospace;">Zombie(Mob)</code> - «<span class="highlight">Zombie наследует от Mob</span>». Внутри - только новое умение.</p>
+            </div>
+        </div>
+
+        <!-- 44: Использование наследника -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Что досталось бесплатно</p>
+                <h2>Использование наследника</h2>
+                <div class="code-block tight" style="max-width: 720px;"><span class="ck">class</span> <span class="cf">Mob</span>:                                  <span class="co">← родитель</span>
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, <span class="cn">name</span>, <span class="cn">hp</span>): ...
+    <span class="ck">def</span> <span class="cf">take_damage</span>(<span class="cn">self</span>, <span class="cn">amount</span>): ...
+    <span class="ck">def</span> <span class="cf">is_alive</span>(<span class="cn">self</span>): ...
+
+<span class="ck">class</span> <span class="cf">Zombie</span>(<span class="cf">Mob</span>):                          <span class="co">← наследник</span>
+    <span class="ck">def</span> <span class="cf">attack</span>(<span class="cn">self</span>, <span class="cn">target</span>): ...</div>
+                <div class="code-block tight" style="margin-top: 14px;"><span class="cn">z</span> = <span class="cf">Zombie</span>(<span class="cs">"Zombie-1"</span>, <span class="cm">20</span>)
+
+<span class="cf">print</span>(<span class="cn">z</span>.<span class="cn">name</span>)         <span class="co"># Zombie-1   - атрибут от родителя</span>
+<span class="cf">print</span>(<span class="cn">z</span>.<span class="cf">is_alive</span>())   <span class="co"># True       - метод от родителя</span>
+<span class="cn">z</span>.<span class="cf">attack</span>(<span class="cn">steve</span>)       <span class="co"># своё умение</span></div>
+                <p class="body-text" style="margin-top: 14px;">Мы определили только <code style="font-family:'SF Mono',monospace;">attack</code>, но всё остальное <span class="highlight">работает</span>.</p>
+            </div>
+        </div>
+
+        <!-- 45: Расширение конструктора -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Расширяем __init__</p>
+                <h2>Расширение конструктора</h2>
+                <div class="code-block tight" style="max-width: 720px;"><span class="ck">class</span> <span class="cf">Mob</span>:                                  <span class="co">← родитель</span>
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, <span class="cn">name</span>, <span class="cn">hp</span>):
+        <span class="cn">self</span>.<span class="cn">name</span> = <span class="cn">name</span>
+        <span class="cn">self</span>.<span class="cn">hp</span>   = <span class="cn">hp</span></div>
+                <div class="code-block tight" style="margin-top: 14px;"><span class="ck">class</span> <span class="cf">Creeper</span>(<span class="cf">Mob</span>):
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, <span class="cn">name</span>, <span class="cn">hp</span>, <span class="cn">fuse</span>):
+        <span class="cf">super</span>().<span class="cf">__init__</span>(<span class="cn">name</span>, <span class="cn">hp</span>)   <span class="co"># позвать родителя</span>
+        <span class="cn">self</span>.<span class="cn">fuse</span> = <span class="cn">fuse</span>             <span class="co"># добавить своё</span></div>
+                <div class="quote-card" style="margin-top: 14px;">
+                    <p><code style="font-family:'SF Mono',monospace;">super().__init__(name, hp)</code> - «сделай всё, что делает родитель, а потом я добавлю своё».</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 46: Без super -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Внимание</p>
+                <h2>Распространённая ошибка: без super()</h2>
+                <div class="code-block tight" style="max-width: 720px;"><span class="ck">class</span> <span class="cf">Mob</span>:                                  <span class="co">← родитель, тут создаются name и hp</span>
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, <span class="cn">name</span>, <span class="cn">hp</span>):
+        <span class="cn">self</span>.<span class="cn">name</span> = <span class="cn">name</span>
+        <span class="cn">self</span>.<span class="cn">hp</span>   = <span class="cn">hp</span></div>
+                <div class="code-block tight" style="margin-top: 14px;"><span class="ck">class</span> <span class="cf">Creeper</span>(<span class="cf">Mob</span>):
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, <span class="cn">name</span>, <span class="cn">hp</span>, <span class="cn">fuse</span>):
+        <span class="cn">self</span>.<span class="cn">fuse</span> = <span class="cn">fuse</span>     <span class="co"># забыли позвать родителя</span>
+
+<span class="cn">c</span> = <span class="cf">Creeper</span>(<span class="cs">"Creeper-1"</span>, <span class="cm">20</span>, <span class="cm">3</span>)
+<span class="cf">print</span>(<span class="cn">c</span>.<span class="cn">name</span>)
+<span class="ce"># AttributeError: 'Creeper' object has no attribute 'name'</span></div>
+                <div class="quote-card warning" style="margin-top: 14px;">
+                    <p>Переопределили <code style="font-family:'SF Mono',monospace;">__init__</code> - первой строкой <code style="font-family:'SF Mono',monospace;">super().__init__(...)</code>.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 47: Терминология -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Слова</p>
+                <h2>Терминология</h2>
+                <div class="comparison-grid">
+                    <div class="comparison-item new">
+                        <div class="label">Mob</div>
+                        <h3>Родительский класс</h3>
+                        <p>parent, базовый, суперкласс</p>
+                    </div>
+                    <div class="comparison-item new">
+                        <div class="label">Zombie, Skeleton, Creeper</div>
+                        <h3>Дочерние классы</h3>
+                        <p>child, наследники, подклассы</p>
+                    </div>
+                </div>
+                <div class="quote-card" style="margin-top: 24px;">
+                    <p>Запись <code style="font-family:'SF Mono',monospace;">Zombie(Mob)</code> читается: «<span class="highlight">Zombie - это Mob плюс ещё кое-что</span>».</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 48: Переопределение метода -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Переопределение и полиморфизм</p>
+                <h2>Переопределение метода</h2>
+                <div class="code-block tight" style="font-size: clamp(11px, 1.3vw, 14px);"><span class="ck">class</span> <span class="cf">Zombie</span>(<span class="cf">Mob</span>):
+    <span class="ck">def</span> <span class="cf">attack</span>(<span class="cn">self</span>, <span class="cn">target</span>):
+        <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"{self.name} кусает {target.name}"</span>)
+        <span class="cn">target</span>.<span class="cf">take_damage</span>(<span class="cm">3</span>)
+
+<span class="ck">class</span> <span class="cf">Skeleton</span>(<span class="cf">Mob</span>):
+    <span class="ck">def</span> <span class="cf">attack</span>(<span class="cn">self</span>, <span class="cn">target</span>):
+        <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"{self.name} стреляет в {target.name}"</span>)
+        <span class="cn">target</span>.<span class="cf">take_damage</span>(<span class="cm">2</span>)
+
+<span class="ck">class</span> <span class="cf">Creeper</span>(<span class="cf">Mob</span>):
+    <span class="ck">def</span> <span class="cf">attack</span>(<span class="cn">self</span>, <span class="cn">target</span>):
+        <span class="cf">print</span>(<span class="cf">f</span><span class="cs">"{self.name}: SSSSS... БУМ!"</span>)
+        <span class="cn">target</span>.<span class="cf">take_damage</span>(<span class="cm">15</span>)</div>
+                <p class="body-text" style="margin-top: 18px; color: #86868b;">Одинаковое имя метода - <span class="highlight">разная реализация</span>.</p>
+            </div>
+        </div>
+
+        <!-- 49: Выбор реализации -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Какую версию вызвать?</p>
+                <h2>Выбор реализации при вызове</h2>
+                <div class="code-output">
+                    <div class="code-block" style="margin-top: 0;"><span class="cn">z</span> = <span class="cf">Zombie</span>(<span class="cs">"Zombie-1"</span>, <span class="cm">20</span>)
+<span class="cn">s</span> = <span class="cf">Skeleton</span>(<span class="cs">"Skeleton-1"</span>, <span class="cm">20</span>)
+<span class="cn">c</span> = <span class="cf">Creeper</span>(<span class="cs">"Creeper-1"</span>, <span class="cm">20</span>, <span class="cm">3</span>)
+
+<span class="cn">z</span>.<span class="cf">attack</span>(<span class="cn">steve</span>)
+<span class="cn">s</span>.<span class="cf">attack</span>(<span class="cn">steve</span>)
+<span class="cn">c</span>.<span class="cf">attack</span>(<span class="cn">steve</span>)</div>
+                    <div class="term"><span class="out">Zombie-1 кусает Steve
+Skeleton-1 стреляет в Steve
+Creeper-1: SSSSS... БУМ!</span></div>
+                </div>
+                <p class="body-text" style="margin-top: 18px; color: #86868b;">Python смотрит на тип объекта и зовёт нужную версию <code style="font-family:'SF Mono',monospace;">attack</code>.</p>
+            </div>
+        </div>
+
+        <!-- 50: Полиморфизм -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Магия в одном цикле</p>
+                <h2>Полиморфизм на практике</h2>
+                <div class="code-block tight"><span class="cn">night</span> = [
+    <span class="cf">Zombie</span>(<span class="cs">"Z-1"</span>, <span class="cm">20</span>),
+    <span class="cf">Skeleton</span>(<span class="cs">"S-1"</span>, <span class="cm">20</span>),
+    <span class="cf">Creeper</span>(<span class="cs">"C-1"</span>, <span class="cm">20</span>, <span class="cm">3</span>),
+    <span class="cf">Zombie</span>(<span class="cs">"Z-2"</span>, <span class="cm">20</span>),
+]
+
+<span class="ck">for</span> <span class="cn">mob</span> <span class="ck">in</span> <span class="cn">night</span>:
+    <span class="ck">if</span> <span class="cn">mob</span>.<span class="cf">is_alive</span>():
+        <span class="cn">mob</span>.<span class="cf">attack</span>(<span class="cn">steve</span>)</div>
+                <p class="body-text" style="margin-top: 18px;">Циклу неважно, кто внутри. Он просто зовёт <code style="font-family:'SF Mono',monospace;">.attack()</code>.</p>
+                <div class="quote-card success" style="margin-top: 18px;">
+                    <p>Это и называется <span class="accent-green">полиморфизм</span>. Идея простая: один интерфейс, разное поведение.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 51: Полиморфизм в sklearn -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">ООП в реальных проектах</p>
+                <h2>Полиморфизм в sklearn</h2>
+                <div class="code-block tight"><span class="ck">from</span> <span class="cn">sklearn.linear_model</span> <span class="ck">import</span> <span class="cf">LinearRegression</span>
+<span class="ck">from</span> <span class="cn">sklearn.tree</span>         <span class="ck">import</span> <span class="cf">DecisionTreeRegressor</span>
+
+<span class="cn">models</span> = [<span class="cf">LinearRegression</span>(), <span class="cf">DecisionTreeRegressor</span>()]
+<span class="ck">for</span> <span class="cn">m</span> <span class="ck">in</span> <span class="cn">models</span>:
+    <span class="cn">m</span>.<span class="cf">fit</span>(<span class="cn">X</span>, <span class="cn">y</span>)
+    <span class="cn">m</span>.<span class="cf">predict</span>(<span class="cn">X_test</span>)</div>
+                <p class="body-text" style="margin-top: 22px;">Разные модели - один интерфейс <code style="font-family:'SF Mono',monospace;">fit</code>/<code style="font-family:'SF Mono',monospace;">predict</code>.</p>
+                <p class="body-text" style="margin-top: 10px; color: #86868b;">Тот же цикл, что был с мобами.</p>
+            </div>
+        </div>
+
+        <!-- 52: Иерархия исключений -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Тоже наследование</p>
+                <h2>Иерархия исключений</h2>
+                <div class="code-block" style="text-align: center; font-size: clamp(13px, 1.5vw, 16px); max-width: 460px;"><span class="cf">Exception</span>
+  ├── <span class="cf">ValueError</span>
+  ├── <span class="cf">KeyError</span>
+  ├── <span class="cf">TypeError</span>
+  └── ...</div>
+                <p class="body-text" style="margin-top: 22px;"><code style="font-family:'SF Mono',monospace;">ValueError</code> - разновидность <code style="font-family:'SF Mono',monospace;">Exception</code>.</p>
+                <p class="body-text" style="margin-top: 10px; color: #86868b;">Когда вы пишете <code style="font-family:'SF Mono',monospace;">except Exception</code> - ловятся все, потому что наследование.</p>
+            </div>
+        </div>
+
+        <!-- 53: Ошибка 1 -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Частые ошибки</p>
+                <h2>Ошибка 1: пропущенный self</h2>
+                <div class="code-block tight"><span class="ck">class</span> <span class="cf">Player</span>:
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, <span class="cn">name</span>):
+        <span class="cn">name</span> = <span class="cn">name</span>      <span class="ce"># ⚠ создали локальную переменную</span>
+
+<span class="cn">steve</span> = <span class="cf">Player</span>(<span class="cs">"Steve"</span>)
+<span class="cf">print</span>(<span class="cn">steve</span>.<span class="cn">name</span>)
+<span class="ce"># AttributeError</span></div>
+                <div class="quote-card warning" style="margin-top: 18px;">
+                    <p>Атрибут создаётся <span class="accent-red">только</span> через <code style="font-family:'SF Mono',monospace;">self.имя = ...</code></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 54: Ошибка 2 -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Частые ошибки</p>
+                <h2>Ошибка 2: пропущенный super().__init__()</h2>
+                <div class="code-block tight"><span class="ck">class</span> <span class="cf">Creeper</span>(<span class="cf">Mob</span>):
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cn">self</span>, <span class="cn">name</span>, <span class="cn">hp</span>, <span class="cn">fuse</span>):
+        <span class="cn">self</span>.<span class="cn">fuse</span> = <span class="cn">fuse</span>    <span class="ce"># ⚠ родитель не вызван</span>
+
+<span class="cn">c</span> = <span class="cf">Creeper</span>(<span class="cs">"Creeper-1"</span>, <span class="cm">20</span>, <span class="cm">3</span>)
+<span class="cf">print</span>(<span class="cn">c</span>.<span class="cn">name</span>)
+<span class="ce"># AttributeError</span></div>
+                <div class="quote-card warning" style="margin-top: 18px;">
+                    <p>Переопределили <code style="font-family:'SF Mono',monospace;">__init__</code> - первой строкой <code style="font-family:'SF Mono',monospace;">super().__init__(...)</code>.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 55: Ошибка 3 -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Частые ошибки</p>
+                <h2>Ошибка 3: изменяемый атрибут класса</h2>
+                <div class="code-block tight"><span class="ck">class</span> <span class="cf">Player</span>:
+    <span class="cn">inventory</span> = []          <span class="ce"># ⚠ один на всех игроков</span>
+
+    <span class="ck">def</span> <span class="cf">pickup</span>(<span class="cn">self</span>, <span class="cn">item</span>):
+        <span class="cn">self</span>.<span class="cn">inventory</span>.<span class="cf">append</span>(<span class="cn">item</span>)
+
+<span class="cn">steve</span>.<span class="cf">pickup</span>(<span class="cs">"меч"</span>)
+<span class="cf">print</span>(<span class="cn">alex</span>.<span class="cn">inventory</span>)
+<span class="co"># ['меч'] - у Alex тоже!</span></div>
+                <div class="quote-card warning" style="margin-top: 18px;">
+                    <p>Списки и словари - только в <code style="font-family:'SF Mono',monospace;">__init__</code>, а не на уровне класса.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 56: Задача Animal -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Практика #2</p>
+                <h2>Задача: иерархия Animal</h2>
+                <p class="subtitle">Без Майнкрафта - закрепляем приём на простом примере.</p>
+                <ul class="checklist" style="max-width: 820px;">
+                    <li><code style="font-family:'SF Mono',monospace;">Animal(name)</code> с методом <code style="font-family:'SF Mono',monospace;">sound() = "..."</code></li>
+                    <li><code style="font-family:'SF Mono',monospace;">Dog(Animal)</code> переопределяет <code style="font-family:'SF Mono',monospace;">sound() = "Гав"</code></li>
+                    <li><code style="font-family:'SF Mono',monospace;">Cat(Animal)</code> переопределяет <code style="font-family:'SF Mono',monospace;">sound() = "Мяу"</code></li>
+                    <li>Метод <code style="font-family:'SF Mono',monospace;">describe()</code> в Animal: «{name} говорит {sound()}»</li>
+                    <li>Создайте список зверей и пройдитесь по нему</li>
+                </ul>
+                <div class="timer-display" style="font-size: clamp(28px, 4vw, 48px); margin-top: 18px;">10 минут</div>
+            </div>
+        </div>
+
+        <!-- 57: Ожидаемый результат -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Разбор</p>
+                <h2>Ожидаемый результат</h2>
+                <div class="code-output">
+                    <div class="code-block" style="margin-top: 0;"><span class="cn">zoo</span> = [<span class="cf">Dog</span>(<span class="cs">"Рекс"</span>), <span class="cf">Cat</span>(<span class="cs">"Мурка"</span>)]
+<span class="ck">for</span> <span class="cn">a</span> <span class="ck">in</span> <span class="cn">zoo</span>:
+    <span class="cf">print</span>(<span class="cn">a</span>.<span class="cf">describe</span>())</div>
+                    <div class="term"><span class="out">Рекс говорит Гав
+Мурка говорит Мяу</span></div>
+                </div>
+                <p class="body-text" style="margin-top: 22px; color: #86868b;">Тот же приём, что с Zombie/Skeleton/Creeper. Тот же цикл. Просто другие имена.</p>
+            </div>
+        </div>
+
+        <!-- 58: Что мы изучили -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Итоги</p>
+                <h2>Что мы изучили</h2>
+                <ul class="checklist" style="max-width: 820px;">
+                    <li><span class="highlight">класс</span> - чертёж</li>
+                    <li><span class="highlight">объект</span> - то, что родилось из чертежа</li>
+                    <li><span class="highlight">атрибуты</span> и <span class="highlight">методы</span> - что объект знает и умеет</li>
+                    <li><code style="font-family:'SF Mono',monospace;">self</code> - «мой» внутри класса</li>
+                    <li><code style="font-family:'SF Mono',monospace;">__str__</code> - управляем тем, как объект печатается</li>
+                    <li><span class="highlight">наследование</span> - общее в родителя, уникальное в потомков</li>
+                    <li><code style="font-family:'SF Mono',monospace;">super()</code> - позвать родителя</li>
+                    <li><span class="highlight">полиморфизм</span> - один интерфейс, разное поведение</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 59: Зачем это нужно -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Итоги</p>
+                <h2>Применение в реальной работе</h2>
+                <p class="subtitle">Когда вы видите <code style="font-family:'SF Mono',monospace;">df.groupby(...)</code> или <code style="font-family:'SF Mono',monospace;">model.fit(...)</code>, теперь вы знаете, как это устроено внутри.</p>
+                <ul class="bullet-list" style="max-width: 720px;">
+                    <li>Можно лезть в исходники</li>
+                    <li>Можно писать свои классы поверх библиотек</li>
+                    <li>Большая часть Python-кода - это классы</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 61: Вопросы -->
+        <div class="slide">
+            <div class="slide-content">
+                <p class="eyebrow">Завершение</p>
+                <h1>Вопросы?</h1>
+                <p class="subtitle" style="margin-top: 24px;">Telegram: <span class="highlight">@gokalqurt</span></p>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="lang-switcher">
+        <a href="index.html" class="active">RU</a>
+        <a href="index-uz.html">UZ</a>
+        <a href="index-en.html">EN</a>
+    </div>
+
+    <div class="lesson-tag">Python · Лекция 6</div>
+    <div class="slide-indicator">
+        <span id="current-slide">1</span> / <span id="total-slides">62</span>
+    </div>
+    <div class="nav-hint">→ или Space - далее<br/>← - назад</div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+        document.getElementById('total-slides').textContent = totalSlides;
+
+        function showSlide(n) {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (n + totalSlides) % totalSlides;
+            slides[currentSlide].classList.add('active');
+            document.getElementById('current-slide').textContent = currentSlide + 1;
+
+            const slideContent = slides[currentSlide].querySelector('.slide-content');
+            slideContent.style.animation = 'none';
+            void slideContent.offsetHeight;
+            slideContent.style.animation = null;
+
+            const animated = slides[currentSlide].querySelectorAll('.card, .comparison-item');
+            animated.forEach(el => {
+                el.style.animation = 'none';
+                void el.offsetHeight;
+                el.style.animation = null;
+            });
+        }
+
+        function nextSlide() { showSlide(currentSlide + 1); }
+        function prevSlide() { showSlide(currentSlide - 1); }
+
+        document.addEventListener('keydown', (e) => {
+            const tag = (e.target.tagName || '').toLowerCase();
+            if (tag === 'textarea' || tag === 'input') return;
+            if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); nextSlide(); }
+            else if (e.key === 'ArrowLeft') { e.preventDefault(); prevSlide(); }
+        });
+
+        let touchStartX = 0;
+        document.addEventListener('touchstart', (e) => { touchStartX = e.changedTouches[0].screenX; });
+        document.addEventListener('touchend', (e) => {
+            const dx = e.changedTouches[0].screenX - touchStartX;
+            if (dx < -50) nextSlide();
+            else if (dx > 50) prevSlide();
+        });
+    </script>
+</body>
+</html>

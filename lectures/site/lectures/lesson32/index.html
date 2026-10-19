@@ -1,0 +1,2167 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Data leakage · пять блоков утечки</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+/* --accent размечает навигацию дека: надзаголовок, прогресс, счётчик блоков.
+   Зелёный взят из ml02, чтобы серия выглядела одинаково. */
+:root{--accent:#1a9d4a;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Inter',-apple-system,sans-serif;background:#fcfcfd;color:#16171a;overflow:hidden;-webkit-font-smoothing:antialiased;}
+.deck{width:100vw;height:100vh;position:relative;}
+.slide{width:100%;height:100%;display:none;flex-direction:column;align-items:center;justify-content:center;position:absolute;inset:0;padding:clamp(12px,2vh,28px) clamp(32px,5vw,72px);}
+.slide.active{display:flex;}
+.sc{max-width:1200px;width:100%;margin:0 auto;opacity:0;transform:translateY(16px);animation:up .4s ease-out forwards;display:flex;flex-direction:column;align-items:center;}
+@keyframes up{to{opacity:1;transform:translateY(0);}}
+.rise{opacity:0;transform:translateY(12px);animation:up .45s ease-out forwards;}
+.result{width:100%;border-radius:12px;overflow:hidden;border:1.5px solid #e2e4ea;background:#fff;}
+.result table{width:100%;border-collapse:collapse;font-size:clamp(10px,.95vw,12.5px);}
+.result thead tr{background:#f4f5f8;}
+.result th{padding:clamp(5px,.7vw,8px) clamp(8px,1vw,13px);font-weight:700;color:#4a4d53;border-bottom:1.5px solid #e2e4ea;white-space:nowrap;text-align:left;}
+.result td{padding:clamp(4px,.55vw,7px) clamp(8px,1vw,13px);border-bottom:1px solid #f0f1f4;color:#2a2c30;text-align:left;white-space:nowrap;}
+.result tr:last-child td{border-bottom:none;}
+.result td.wrap,.result th.wrap{white-space:normal;line-height:1.4;}
+.ok{color:#1a9d4a;font-weight:600;}.ng{color:#e02d20;font-weight:600;}
+.num{text-align:right;font-variant-numeric:tabular-nums;}
+
+h1{font-size:clamp(36px,5.2vw,80px);font-weight:900;letter-spacing:-.04em;line-height:.95;margin-bottom:clamp(10px,1.8vh,22px);}
+h2{font-size:clamp(17px,2.2vw,33px);font-weight:800;letter-spacing:-.025em;line-height:1.08;margin-bottom:clamp(4px,.7vh,10px);}
+.eyebrow{font-size:clamp(10px,.95vw,12px);font-weight:700;text-transform:uppercase;letter-spacing:.2em;color:var(--accent);margin-bottom:clamp(5px,.9vh,12px);}
+.sub{font-size:clamp(12px,1.5vw,19px);color:#5b6b7c;line-height:1.45;max-width:940px;margin-top:clamp(5px,.9vh,12px);}
+.c-red{color:#e02d20;}.c-green{color:#1a9d4a;}
+
+.codebox{width:100%;max-width:940px;border-radius:14px;overflow:hidden;border:1px solid #252830;box-shadow:0 16px 40px -20px rgba(10,12,18,.5);}
+.codebar{display:flex;align-items:center;gap:6px;background:#1d2026;padding:8px 14px;}
+.codebar span{font-size:11px;color:#8a8f9a;font-family:'SF Mono','Consolas',monospace;}
+.code{font-family:'SF Mono','Menlo','Consolas',monospace;font-size:clamp(10px,.98vw,12.8px);background:#141618;color:#e8eaf0;padding:clamp(9px,1.2vw,15px) clamp(11px,1.4vw,17px);width:100%;text-align:left;line-height:1.6;white-space:pre;overflow-x:auto;}
+.code .fn{color:#e2c08d;}.code .cm{color:#5a9a5a;font-style:italic;}
+.code .bad{background:rgba(224,45,32,.18);box-shadow:inset 0 0 0 1.5px rgba(224,45,32,.5);border-radius:5px;padding:0 4px;}
+.code .good{background:rgba(26,157,74,.2);box-shadow:inset 0 0 0 1.5px rgba(26,157,74,.55);border-radius:5px;padding:0 4px;}
+
+/* врезка: без заливки и без линеек, смысл несёт маркер на ярлыке */
+.note{padding:clamp(3px,.5vw,6px) 0;text-align:left;width:100%;max-width:1080px;margin-top:clamp(6px,.9vh,11px);}
+.note p{font-size:clamp(10.5px,1.02vw,13.2px);color:#2a2c30;line-height:1.5;font-weight:500;}
+.note b{font-weight:700;color:#0b0c0e;}
+
+/* след маркера: прямоугольник под текстом искажается шумом из SVG-фильтра,
+   поэтому края получаются неровными. Текст лежит выше и не искажается. */
+.mk{position:relative;z-index:0;white-space:nowrap;}
+.mk::before{content:"";position:absolute;left:-.36em;right:-.36em;top:-.18em;bottom:-.20em;z-index:-1;filter:url(#mkrough);}
+.mk.alt::before{filter:url(#mkrough2);}
+.mk.r::before{background:rgba(224,45,32,.38);}
+.mk.g::before{background:rgba(26,157,74,.40);}
+
+.qslide .sc{position:relative;z-index:2;}
+.qbig{font-size:clamp(20px,2.9vw,42px);font-weight:850;letter-spacing:-.03em;line-height:1.18;max-width:1020px;text-align:center;}
+
+.prog{position:fixed;top:0;left:0;height:3px;background:var(--accent);z-index:200;transition:width .28s ease;}
+.ind{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);font-size:12px;color:#b8bbc2;z-index:100;letter-spacing:.04em;}
+.hint{position:fixed;bottom:16px;right:20px;font-size:11px;color:#d0d3da;z-index:100;}
+.tag{position:fixed;top:16px;left:20px;font-size:10px;font-weight:700;color:#c8cace;text-transform:uppercase;letter-spacing:.16em;z-index:100;}
+
+.mono{font-family:'SF Mono','Consolas',monospace;font-size:.92em;background:#f0f1f4;padding:1px 6px;border-radius:5px;color:#0b0c0e;}
+ul.facts{list-style:none;text-align:left;max-width:1040px;margin-top:10px;width:100%;}
+ul.facts li{font-size:clamp(11px,1.15vw,15px);color:#2a2c30;line-height:1.45;padding:6px 0 6px 24px;position:relative;border-bottom:1px solid #f0f1f4;}
+ul.facts li:last-child{border-bottom:none;}
+ul.facts li:before{content:'';position:absolute;left:0;top:14px;width:8px;height:8px;border-radius:2px;background:#c3c7cf;}
+ul.facts b{color:#0b0c0e;}
+ul.facts.stag li{opacity:0;animation:up .45s ease-out forwards;}
+ul.facts.stag li:nth-child(1){animation-delay:.16s;}ul.facts.stag li:nth-child(2){animation-delay:.32s;}
+ul.facts.stag li:nth-child(3){animation-delay:.48s;}ul.facts.stag li:nth-child(4){animation-delay:.64s;}
+ul.facts.stag li:nth-child(5){animation-delay:.8s;}ul.facts.stag li:nth-child(6){animation-delay:.96s;}
+ul.facts.checks li:before{content:'✓';background:none;color:#1a9d4a;font-weight:900;font-size:16px;top:5px;}
+
+.bgdots{position:absolute;inset:0;overflow:hidden;pointer-events:none;}
+.bgdots i{position:absolute;border-radius:50%;opacity:.16;animation:drift linear infinite;}
+@keyframes drift{0%{transform:translate(0,0);}50%{transform:translate(var(--dx),var(--dy));}100%{transform:translate(0,0);}}
+
+.bignum{display:flex;gap:clamp(8px,1.3vw,18px);margin-top:clamp(6px,1vh,13px);flex-wrap:wrap;justify-content:center;align-items:center;}
+.bn{background:#fff;border:1.5px solid #e6e8ee;border-radius:14px;padding:clamp(8px,1.05vw,14px) clamp(13px,1.8vw,22px);text-align:center;min-width:178px;}
+.bn .v{font-size:clamp(23px,3vw,40px);font-weight:900;letter-spacing:-.03em;font-variant-numeric:tabular-nums;}
+.bn .t{font-size:clamp(10px,.98vw,12px);color:#5b6b7c;font-weight:600;margin-top:2px;line-height:1.32;}
+.bn.good{border-color:#b8dfc1;background:#f4fbf6;}.bn.good .v{color:#1a9d4a;}
+.bn.bad{border-color:#f0c8c8;background:#fef7f6;}.bn.bad .v{color:#e02d20;}
+
+/* ===== разделители блоков ===== */
+.gdiv .sc{align-items:flex-start;}
+.lvkick{font-size:clamp(10px,1vw,12.5px);font-weight:800;text-transform:uppercase;letter-spacing:.2em;color:var(--accent);}
+.gdiv h1{font-size:clamp(28px,4.4vw,58px);margin:10px 0 0;}
+.gdiv .ten{font-size:clamp(13px,1.5vw,19px);font-weight:700;color:#9aa1ab;margin-top:7px;letter-spacing:-.01em;}
+.tline{font-size:clamp(12.5px,1.5vw,19px);color:#4a4d53;line-height:1.45;max-width:920px;margin-top:14px;}
+.ltypes{display:flex;flex-wrap:wrap;gap:7px;margin-top:18px;}
+.ltypes span{font-size:clamp(11px,1.1vw,13.5px);font-weight:700;color:#3f4652;background:#f0f1f4;border:1px solid #e2e5ea;border-radius:99px;padding:5px 13px;}
+.tprog{display:flex;gap:3px;width:100%;max-width:660px;margin-top:16px;}
+.tprog i{flex:1;height:6px;border-radius:2px;background:#eceef1;}
+.tprog i.done{background:#bfe3cb;}
+.tprog i.now{background:var(--accent);}
+
+/* ===== разделитель типа ===== */
+.typdiv .tnum{font-size:clamp(40px,7vw,96px);font-weight:900;color:#e7eaf0;letter-spacing:-.05em;line-height:.82;margin-bottom:2px;}
+.typdiv h1{font-size:clamp(24px,3.7vw,52px);margin:2px 0 0;}
+.typdiv .tru{font-size:clamp(14px,1.7vw,22px);font-weight:700;color:#5b6b7c;margin-top:8px;letter-spacing:-.01em;}
+.typdiv .tline{margin-top:12px;}
+
+/* ===== карта пяти блоков ===== */
+.gmap{width:100%;max-width:1170px;display:flex;flex-direction:column;gap:6px;margin-top:6px;}
+.grow{border:1.5px solid #e2e5ea;border-radius:12px;padding:8px 12px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:#fff;}
+.grow .gl{width:26px;height:26px;flex-shrink:0;border-radius:8px;background:#16171a;color:#fff;font-size:13px;font-weight:900;display:flex;align-items:center;justify-content:center;}
+.grow .gh{min-width:250px;}
+.grow .gt{font-size:clamp(11.5px,1.15vw,15px);font-weight:900;letter-spacing:-.01em;color:#16171a;}
+.grow .gs{font-size:clamp(9.5px,.95vw,11.8px);color:#5b6b7c;font-weight:600;margin-top:1px;}
+.gchips{display:flex;flex-wrap:wrap;gap:5px;flex:1;}
+.lvchip{font-size:clamp(9.5px,.97vw,12.2px);font-weight:700;color:#2a2c30;background:#f8f9fb;border:1px solid #dfe2e8;border-radius:7px;padding:4px 9px;}
+.lvchip b{color:#9aa1ab;font-weight:800;margin-right:5px;}
+
+/* ===== таблица данных с утекающей колонкой ===== */
+.dtab{border-collapse:collapse;font-size:clamp(10px,1.02vw,13px);background:#fff;border:1.5px solid #e2e4ea;margin:6px auto 0;}
+.dtab th{background:#f4f5f8;padding:5px 12px;font-weight:800;color:#4a4d53;text-align:left;white-space:nowrap;border-bottom:1.5px solid #e2e4ea;}
+.dtab td{padding:4px 12px;border-bottom:1px solid #f0f1f4;color:#2a2c30;white-space:nowrap;}
+.dtab tr:last-child td{border-bottom:none;}
+.dtab .lkc{background:#fee2e2;color:#b91c1c;font-weight:700;}
+.dtab th.lkc{background:#fcd5d0;}
+.dtab .dim{color:#b8bbc2;}
+
+/* ===== формулы ===== */
+.fml{font-family:Georgia,'Times New Roman',serif;font-size:clamp(14px,1.75vw,24px);color:#16171a;text-align:center;margin-top:clamp(8px,1.3vh,16px);line-height:1.5;display:flex;align-items:center;justify-content:center;gap:.28em;flex-wrap:wrap;}
+.fml i{font-style:italic;}
+.fml sub{font-size:.6em;font-style:normal;}
+.frac{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;font-size:.82em;}
+.frac .n{padding:0 .35em;}
+.frac .d{padding:0 .35em;border-top:1.5px solid #16171a;}
+.fleak{color:#b91c1c;}
+
+@media(max-width:860px){.grow{flex-direction:column;align-items:flex-start;}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <filter id="mkrough" x="-10%" y="-30%" width="120%" height="160%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.04 0.09" numOctaves="3" seed="7" result="n"/>
+    <feDisplacementMap in="SourceGraphic" in2="n" scale="6" xChannelSelector="R" yChannelSelector="G"/>
+  </filter>
+  <filter id="mkrough2" x="-10%" y="-30%" width="120%" height="160%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.05 0.07" numOctaves="2" seed="19" result="n"/>
+    <feDisplacementMap in="SourceGraphic" in2="n" scale="7" xChannelSelector="R" yChannelSelector="G"/>
+  </filter>
+  <marker id="arw" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0 0 L9 4.5 L0 9 z" fill="#c3c7cf"/></marker>
+  <marker id="arwr" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0 0 L9 4.5 L0 9 z" fill="#e02d20"/></marker>
+  <marker id="arwg" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0 0 L9 4.5 L0 9 z" fill="#1a9d4a"/></marker>
+  <marker id="arwb" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0 0 L9 4.5 L0 9 z" fill="#3b6fb5"/></marker>
+  <pattern id="hatchr" width="7" height="7" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">
+    <rect width="7" height="7" fill="#fee2e2"/><line x1="0" y1="0" x2="0" y2="7" stroke="#e02d20" stroke-width="2" opacity=".55"/>
+  </pattern>
+</defs></svg>
+<div class="tag" id="ltag">ML · Data leakage · 5 блоков</div>
+<div class="prog" id="prog"></div>
+<div class="deck" id="deck">
+
+
+<!-- 01 TITLE -->
+<div class="slide" style="text-align:center;">
+<div class="bgdots" id="bgdots"></div>
+<div class="sc">
+  <p class="eyebrow">Блок 3 · Машинное обучение · Занятие 4</p>
+  <h1>Data leakage</h1>
+  <p class="sub" style="margin:14px auto 0;max-width:960px;">Data Leakage (утечка данных) это ситуация в машинном обучении, когда модель во время обучения случайно получает доступ к информации, которая должна быть скрыта от неё. Из-за этого алгоритм начинает «жульничать»: показывает идеальную точность на проверке, но полностью проваливается на реальных задачах.</p>
+</div>
+</div>
+
+
+<!-- 02 MAP -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Карта темы</p>
+  <h2>Двенадцать типов утечки в пяти блоках</h2>
+  <p class="sub" style="margin-top:0;max-width:1080px;">Блок определяется тем, где спрятана ошибка: в логике бизнес-процесса, в порядке операций препроцессинга, во времени и географии, в устройстве самих объектов или в процессе работы над моделью.</p>
+  <div class="gmap">
+    <div class="grow">
+      <div class="gl">1</div>
+      <div class="gh"><div class="gt">Business &amp; Domain Leakage</div><div class="gs">Бизнес-утечки и логика процессов</div></div>
+      <div class="gchips">
+        <span class="lvchip"><b>1</b>Direct Target Leakage (Функция от будущего)</span>
+        <span class="lvchip"><b>2</b>Indirect Proxy Leakage (Прокси-признаки)</span>
+      </div>
+    </div>
+    <div class="grow">
+      <div class="gl">2</div>
+      <div class="gh"><div class="gt">Data Pipeline Leakage</div><div class="gs">Инженерные утечки и препроцессинг</div></div>
+      <div class="gchips">
+        <span class="lvchip"><b>3</b>Global Preprocessing (Контаминация при обработке)</span>
+        <span class="lvchip"><b>4</b>Global Target Encoding (Категориальные утечки)</span>
+      </div>
+    </div>
+    <div class="grow">
+      <div class="gl">3</div>
+      <div class="gh"><div class="gt">Space-Time Leakage</div><div class="gs">Временная и географическая связность</div></div>
+      <div class="gchips">
+        <span class="lvchip"><b>5</b>Look-Ahead Bias (Временные утечки)</span>
+        <span class="lvchip"><b>6</b>Rolling Windows Overlap (Скользящие окна)</span>
+        <span class="lvchip"><b>7</b>Spatial Leakage (Пространственная утечка)</span>
+      </div>
+    </div>
+    <div class="grow">
+      <div class="gl">4</div>
+      <div class="gh"><div class="gt">Entity &amp; Structural Leakage</div><div class="gs">Зависимости объектов и структуры</div></div>
+      <div class="gchips">
+        <span class="lvchip"><b>8</b>Group Leakage (Утечка по сущности)</span>
+        <span class="lvchip"><b>9</b>Graph &amp; Link Leakage (Графовые утечки)</span>
+      </div>
+    </div>
+    <div class="grow">
+      <div class="gl">5</div>
+      <div class="gh"><div class="gt">Process &amp; Systemic Leakage</div><div class="gs">Мета-утечки и MLOps</div></div>
+      <div class="gchips">
+        <span class="lvchip"><b>10</b>Feature Selection (Отбор признаков)</span>
+        <span class="lvchip"><b>11</b>Validation Overfitting (Переобучение на валидации)</span>
+        <span class="lvchip"><b>12</b>Hardware &amp; Data Collection (Системные артефакты)</span>
+      </div>
+    </div>
+  </div>
+  <div class="note" style="max-width:1170px;"><p>Чем ниже блок в этом списке, тем чище выглядит код. В блоке 5 и колонки в порядке, и pipeline на месте, а утечка всё равно есть.</p></div>
+</div>
+</div>
+
+
+<!-- 03 BLOCK 1 DIVIDER -->
+<div class="slide gdiv">
+<div class="sc">
+  <p class="lvkick">Блок 1 · типы 1-2</p>
+  <h1>Business &amp; Domain Leakage</h1>
+  <div class="ten">Бизнес-утечки и логика процессов</div>
+  <p class="tline">Утечка спрятана не в коде, а в том, как устроен процесс компании: кто и в какой момент заполняет поле в базе. Список колонок выглядит нормально до тех пор, пока не спросишь у владельца процесса, когда именно появляется значение.</p>
+  <div class="ltypes">
+    <span>1. Direct Target Leakage (Функция от будущего)</span>
+    <span>2. Indirect Proxy Leakage (Прокси-признаки)</span>
+  </div>
+  <div class="tprog"><i class="now"></i><i></i><i></i><i></i><i></i></div>
+</div>
+</div>
+
+
+<!-- T1 DIVIDER -->
+<div class="slide gdiv typdiv">
+<div class="sc">
+  <p class="lvkick">Блок 1 · Тип 1 из 12</p>
+  <div class="tnum">01</div>
+  <h1>Direct Target Leakage</h1>
+  <div class="tru">Функция от будущего</div>
+  <p class="tline">В признак попало то, что известно только после наступления целевого события Y.</p>
+  <div class="tprog"><i class="now"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+</div>
+</div>
+
+
+<!-- 04 TYPE 1 SUT -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Блок 1 · тип 1 · суть</p>
+  <h2>Direct Target Leakage (Функция от будущего)</h2>
+  <p class="sub" style="margin-top:0;max-width:1060px;">В обучающие данные попадает признак, который генерируется в момент или после того, как целевое событие Y уже произошло. Это прямое «заглядывание в будущее».</p>
+  <svg viewBox="0 0 960 178" style="width:100%;max-width:960px;height:auto;margin:10px auto 0;display:block" role="img" aria-label="Признак генерируется в момент целевого события или после него">
+    <g font-family="inherit">
+      <rect x="52" y="86" width="138" height="24" rx="6" fill="#e7f5ec"/>
+      <rect x="540" y="86" width="372" height="24" rx="6" fill="#fdecea"/>
+      <line x1="50" y1="98" x2="912" y2="98" stroke="#c3c7cf" stroke-width="2" marker-end="url(#arw)"/>
+      <path d="M60 64 H190" stroke="#1a9d4a" stroke-width="2" fill="none"/>
+      <path d="M60 64 v9 M190 64 v9" stroke="#1a9d4a" stroke-width="2"/>
+      <text x="125" y="52" font-size="12.5" font-weight="800" fill="#15803d" text-anchor="middle">данные, доступные модели</text>
+      <path d="M540 64 H800" stroke="#e02d20" stroke-width="2" fill="none"/>
+      <path d="M540 64 v9 M800 64 v9" stroke="#e02d20" stroke-width="2"/>
+      <text x="670" y="52" font-size="13.5" font-weight="800" fill="#b91c1c" text-anchor="middle">здесь генерируется признак</text>
+      <circle cx="190" cy="98" r="9" fill="#16171a"/>
+      <circle cx="380" cy="98" r="7" fill="#8a8f9a"/>
+      <circle cx="540" cy="98" r="10" fill="#e02d20"/>
+      <circle cx="800" cy="98" r="9" fill="#e02d20"/>
+      <g font-size="12.5" fill="#5a6069" text-anchor="middle">
+        <text x="190" y="126" font-weight="800" fill="#16171a">момент прогноза</text>
+        <text x="190" y="143" font-weight="700">модель работает здесь</text>
+        <text x="380" y="126" font-weight="700">жизнь клиента</text>
+        <text x="540" y="126" font-weight="800" fill="#b91c1c">целевое событие Y</text>
+        <text x="540" y="143" font-weight="700" fill="#b91c1c">произошло</text>
+        <text x="800" y="126" font-weight="800" fill="#b91c1c">система заполнила поле</text>
+        <text x="800" y="143" font-weight="700" fill="#b91c1c">признак попал в выгрузку</text>
+      </g>
+    </g>
+  </svg>
+  <div class="note"><p><b class="mk r">Как это происходит.</b> Система в БД автоматически заполняет системные поля, когда пользователь совершает целевое действие. Дата-саентист берет всю таблицу из базы, не проверяя, когда именно заполняются эти поля.</p></div>
+  <div class="note"><p><b>Следствие.</b> На валидации модель выдает идеальные 99.9% точности, а в продакшене не работает вовсе, так как у новых клиентов этих данных нет.</p></div>
+</div>
+</div>
+
+
+<!-- 05 TYPE 1 EX 1 -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Блок 1 · тип 1 · пример 1 из 2</p>
+  <h2>Банковский Churn / Уход клиентов</h2>
+  <p class="sub" style="margin-top:0;max-width:1060px;">Предсказываем, уйдет ли клиент из банка в следующие 30 дней (Y = 1). В признаках есть колонка <span class="mono">причина_закрытия_счета</span> или <span class="mono">дата_вывода_средств</span>.</p>
+  <table class="dtab">
+    <thead><tr><th>клиент</th><th>стаж в банке</th><th>операций в месяц</th><th class="lkc">avg_monthly_fee</th><th class="lkc">дата_вывода_средств</th><th class="lkc">причина_закрытия_счета</th><th>Y: ушёл</th></tr></thead>
+    <tbody>
+      <tr><td>действующий</td><td>18 мес</td><td>24</td><td>списывается</td><td class="dim">пусто</td><td class="dim">пусто</td><td>нет</td></tr>
+      <tr><td>действующий</td><td>31 мес</td><td>9</td><td>списывается</td><td class="dim">пусто</td><td class="dim">пусто</td><td>нет</td></tr>
+      <tr><td>написал заявление</td><td>7 мес</td><td>3</td><td class="lkc">0</td><td class="lkc">заполнена</td><td class="lkc">заполнена</td><td>да</td></tr>
+      <tr><td>написал заявление</td><td>5 мес</td><td>11</td><td class="lkc">0</td><td class="lkc">заполнена</td><td class="lkc">заполнена</td><td>да</td></tr>
+    </tbody>
+  </table>
+  <svg viewBox="0 0 760 44" style="width:100%;max-width:680px;height:auto;margin:0 auto;display:block" role="img" aria-label="Три колонки повторяют ответ">
+    <g font-family="inherit">
+      <path d="M300 8 C 300 28, 640 28, 640 8" fill="none" stroke="#e02d20" stroke-width="1.8"/>
+      <text x="470" y="42" font-size="13" font-weight="800" fill="#b91c1c" text-anchor="middle">это одна и та же информация</text>
+    </g>
+  </svg>
+  <div class="note"><p><b class="mk r">Почему это утечка.</b> Когда клиент приходит в отделение и пишет заявление на закрытие счёта, система автоматически меняет значение этих полей или обнуляет комиссию за обслуживание (<span class="mono">avg_monthly_fee = 0</span>). Модель просто учит правило: «Если комиссия 0 или есть дата вывода, клиент ушел». Но у действующих клиентов, которые только думают уйти, комиссия еще списывается.</p></div>
+</div>
+</div>
+
+
+<!-- 06 TYPE 1 EX 2 -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Блок 1 · тип 1 · пример 2 из 2</p>
+  <h2>E-commerce / Покупка на сайте</h2>
+  <p class="sub" style="margin-top:0;max-width:1060px;">Предсказываем, совершит ли посетитель интернет-магазина покупку во время текущей сессии. В признаках стоит <span class="mono">время_на_странице_успешной_оплаты</span> (Thank You Page).</p>
+  <svg viewBox="0 0 1000 214" style="width:100%;max-width:1000px;height:auto;margin:10px auto 0;display:block" role="img" aria-label="Признак существует только на последнем шаге воронки">
+    <g font-family="inherit">
+      <g stroke="#c3c7cf" stroke-width="1.6" marker-end="url(#arw)">
+        <line x1="222" y1="58" x2="252" y2="58"/><line x1="454" y1="58" x2="484" y2="58"/><line x1="686" y1="58" x2="716" y2="58"/>
+      </g>
+      <rect x="14" y="34" width="208" height="48" rx="10" fill="#f5f6f8" stroke="#dfe2e8" stroke-width="1.5"/>
+      <rect x="252" y="34" width="202" height="48" rx="10" fill="#f5f6f8" stroke="#dfe2e8" stroke-width="1.5"/>
+      <rect x="484" y="34" width="202" height="48" rx="10" fill="#f5f6f8" stroke="#dfe2e8" stroke-width="1.5"/>
+      <rect x="716" y="34" width="270" height="48" rx="10" fill="#fee2e2" stroke="#e02d20" stroke-width="1.8"/>
+      <g font-size="14" font-weight="800" fill="#2b2f36" text-anchor="middle">
+        <text x="118" y="63">Каталог</text>
+        <text x="353" y="63">Корзина</text>
+        <text x="585" y="63">Форма оплаты</text>
+        <text x="851" y="63" fill="#b91c1c">Thank You Page</text>
+      </g>
+      <text x="851" y="102" font-size="12.5" font-weight="700" fill="#b91c1c" text-anchor="middle">время_на_странице_успешной_оплаты &gt; 0</text>
+      <path d="M118 96 V132" stroke="#3b6fb5" stroke-width="1.8" marker-end="url(#arwb)"/>
+      <rect x="14" y="136" width="208" height="44" rx="10" fill="#d3e4f8" stroke="#3b6fb5" stroke-width="1.7"/>
+      <text x="118" y="156" font-size="12.5" font-weight="800" fill="#274d80" text-anchor="middle">на вход модели подаётся</text>
+      <text x="118" y="172" font-size="12.5" font-weight="800" fill="#274d80" text-anchor="middle">пользователь на этом шаге</text>
+      <text x="253" y="158" font-size="13.5" font-weight="800" fill="#b91c1c">время_на_странице_успешной_оплаты = 0 у всех, кого модель видит в реальном времени</text>
+      <text x="253" y="178" font-size="13.5" font-weight="700" fill="#5a6069">признак работает только задним числом, на истории</text>
+    </g>
+  </svg>
+  <div class="note"><p><b class="mk r alt">Почему это утечка.</b> Пользователь попадет на эту страницу только после того, как его платеж прошел. На вход модели в реальном времени подается пользователь, который еще ходит по каталогу, у него время на этой странице равно 0.</p></div>
+</div>
+</div>
+
+
+<!-- T2 DIVIDER -->
+<div class="slide gdiv typdiv">
+<div class="sc">
+  <p class="lvkick">Блок 1 · Тип 2 из 12</p>
+  <div class="tnum">02</div>
+  <h1>Indirect Proxy Leakage</h1>
+  <div class="tru">Прокси-признаки</div>
+  <p class="tline">Признак не равен ответу, но из-за регламента компании совпадает с Y на 100%.</p>
+  <div class="tprog"><i class="done"></i><i class="now"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+</div>
+</div>
+
+
+<!-- 07 TYPE 2 SUT -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Блок 1 · тип 2 · суть</p>
+  <h2>Indirect Proxy Leakage (Прокси-признаки)</h2>
+  <p class="sub" style="margin-top:0;max-width:1060px;">Признак формально не является целевым действием, но из-за внутренних регламентов компании или железных правил бизнес-процесса он совпадает с Y на 100%.</p>
+  <svg viewBox="0 0 960 216" style="width:100%;max-width:940px;height:auto;margin:10px auto 0;display:block" role="img" aria-label="Регламент связывает признак с целевой переменной">
+    <g font-family="inherit">
+      <rect x="30" y="26" width="330" height="62" rx="12" fill="#f5f6f8" stroke="#dfe2e8" stroke-width="1.6"/>
+      <text x="195" y="52" font-size="15" font-weight="900" fill="#2b2f36" text-anchor="middle">Прокси-признак</text>
+      <text x="195" y="74" font-size="12.5" font-weight="700" fill="#5a6069" text-anchor="middle">формально это не целевое действие</text>
+
+      <rect x="600" y="26" width="330" height="62" rx="12" fill="#fee2e2" stroke="#e02d20" stroke-width="1.8"/>
+      <text x="765" y="52" font-size="15" font-weight="900" fill="#b91c1c" text-anchor="middle">Целевая переменная Y</text>
+      <text x="765" y="74" font-size="12.5" font-weight="700" fill="#b91c1c" text-anchor="middle">ответ, который надо предсказать</text>
+
+      <line x1="360" y1="57" x2="596" y2="57" stroke="#e02d20" stroke-width="2.4"/>
+      <path d="M596 57 L586 52 L586 62 z" fill="#e02d20"/>
+      <path d="M360 57 L370 52 L370 62 z" fill="#e02d20"/>
+      <rect x="384" y="42" width="192" height="30" rx="8" fill="#fff" stroke="#e02d20" stroke-width="1.4"/>
+      <text x="480" y="62" font-size="12.5" font-weight="800" fill="#b91c1c" text-anchor="middle">регламент компании</text>
+
+      <rect x="30" y="128" width="900" height="34" rx="8" fill="#fee2e2" stroke="#e02d20" stroke-width="1.6"/>
+      <text x="480" y="150" font-size="14" font-weight="900" fill="#b91c1c" text-anchor="middle">совпадение с Y на 100%</text>
+      <text x="480" y="188" font-size="13" font-weight="700" fill="#2b2f36" text-anchor="middle">Связь держится не на природе явления, а на инструкции, по которой работают сотрудники.</text>
+      <text x="480" y="207" font-size="13" font-weight="700" fill="#2b2f36" text-anchor="middle">Модель находит эту инструкцию быстрее, чем любую настоящую закономерность.</text>
+    </g>
+  </svg>
+  <div class="note"><p><b class="mk g">Как обнаружить.</b> Внимательно изучать бизнес-регламенты компании. Если модель ставит огромный вес на один вторичный признак, это прокси.</p></div>
+</div>
+</div>
+
+
+<!-- 08 TYPE 2 EX 1 -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Блок 1 · тип 2 · пример 1 из 2</p>
+  <h2>Медицинская диагностика</h2>
+  <p class="sub" style="margin-top:0;max-width:1060px;">Обучаем модель определять наличие редкого заболевания головного мозга по первичным анализам. В признаках стоит <span class="mono">назначено_МРТ_головного_мозга</span> (Да/Нет).</p>
+  <svg viewBox="0 0 1000 220" style="width:100%;max-width:1000px;height:auto;margin:8px auto 0;display:block" role="img" aria-label="Регламент клиники и вес признаков в модели">
+    <g font-family="inherit">
+      <rect x="14" y="18" width="248" height="46" rx="10" fill="#f5f6f8" stroke="#dfe2e8" stroke-width="1.5"/>
+      <text x="138" y="47" font-size="13" font-weight="800" fill="#2b2f36" text-anchor="middle">экспресс-тест положительный</text>
+      <line x1="262" y1="41" x2="300" y2="41" stroke="#c3c7cf" stroke-width="1.6" marker-end="url(#arw)"/>
+      <rect x="304" y="18" width="216" height="46" rx="10" fill="#fff" stroke="#e02d20" stroke-width="1.6"/>
+      <text x="412" y="41" font-size="12.5" font-weight="800" fill="#b91c1c" text-anchor="middle">регламент клиники:</text>
+      <text x="412" y="57" font-size="11.5" font-weight="700" fill="#b91c1c" text-anchor="middle">МРТ только по положительному тесту</text>
+      <line x1="520" y1="41" x2="558" y2="41" stroke="#c3c7cf" stroke-width="1.6" marker-end="url(#arw)"/>
+      <rect x="562" y="18" width="248" height="46" rx="10" fill="#fee2e2" stroke="#e02d20" stroke-width="1.8"/>
+      <text x="686" y="47" font-size="13" font-weight="800" fill="#b91c1c" text-anchor="middle">назначено_МРТ = Да</text>
+
+      <text x="14" y="100" font-size="12.5" font-weight="800" fill="#5a6069">Вес признака в обученной модели</text>
+      <line x1="14" y1="110" x2="986" y2="110" stroke="#eceef1" stroke-width="1.4"/>
+      <g font-size="12.5" font-weight="700" fill="#5a6069">
+        <text x="14" y="134">назначено_МРТ</text>
+        <text x="14" y="162">анализ крови</text>
+        <text x="14" y="190">артериальное давление</text>
+        <text x="14" y="212">возраст</text>
+      </g>
+      <rect x="222" y="122" width="560" height="16" rx="4" fill="#e02d20"/>
+      <rect x="222" y="150" width="46" height="16" rx="4" fill="#c3c7cf"/>
+      <rect x="222" y="178" width="34" height="16" rx="4" fill="#c3c7cf"/>
+      <rect x="222" y="200" width="22" height="16" rx="4" fill="#c3c7cf"/>
+      <text x="796" y="135" font-size="12" font-weight="800" fill="#b91c1c">почти вся модель</text>
+    </g>
+  </svg>
+  <div class="note"><p><b class="mk r">Почему это утечка.</b> В регламенте клиники строго прописано: «МРТ головного мозга за счет страховки назначается ТОЛЬКО пациентам, у которых экспресс-тест дал положительный результат». Модель перестает анализировать кровь и давление, она просто смотрит, отправил ли врач человека на МРТ.</p></div>
+</div>
+</div>
+
+
+<!-- 09 TYPE 2 EX 2 -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Блок 1 · тип 2 · пример 2 из 2</p>
+  <h2>B2B-Продажи / Закрытие сделок</h2>
+  <p class="sub" style="margin-top:0;max-width:1060px;">Предсказываем, подпишет ли корпоративный клиент контракт с IT-компанией. В признаках стоит <span class="mono">выставлен_счет_на_оплату_лицензии</span>.</p>
+  <svg viewBox="0 0 1000 200" style="width:100%;max-width:1000px;height:auto;margin:10px auto 0;display:block" role="img" aria-label="Этапы сделки в CRM и момент выставления счёта">
+    <g font-family="inherit">
+      <rect x="14" y="40" width="972" height="52" rx="12" fill="#fff" stroke="#dfe2e8" stroke-width="1.6"/>
+      <line x1="256" y1="40" x2="256" y2="92" stroke="#e6e8ee" stroke-width="1.4"/>
+      <line x1="498" y1="40" x2="498" y2="92" stroke="#e6e8ee" stroke-width="1.4"/>
+      <line x1="740" y1="40" x2="740" y2="92" stroke="#e6e8ee" stroke-width="1.4"/>
+      <path d="M740 41 h234 a12 12 0 0 1 12 12 v26 a12 12 0 0 1 -12 12 h-234 z" fill="#fee2e2"/>
+      <line x1="740" y1="40" x2="740" y2="92" stroke="#e02d20" stroke-width="1.8"/>
+      <g font-size="13.5" font-weight="800" text-anchor="middle" fill="#2b2f36">
+        <text x="135" y="71">Первый контакт</text>
+        <text x="377" y="71">Переговоры</text>
+        <text x="619" y="71">Юристы согласуют</text>
+        <text x="863" y="71" fill="#b91c1c">Договор подписан</text>
+      </g>
+      <path d="M377 100 V128" stroke="#3b6fb5" stroke-width="1.8" marker-end="url(#arwb)"/>
+      <text x="377" y="146" font-size="12.5" font-weight="800" fill="#274d80" text-anchor="middle">момент прогноза</text>
+      <text x="377" y="164" font-size="12" font-weight="700" fill="#274d80" text-anchor="middle">счёта в CRM ещё нет</text>
+      <path d="M863 100 V128" stroke="#e02d20" stroke-width="1.8" marker-end="url(#arwr)"/>
+      <text x="863" y="146" font-size="12.5" font-weight="800" fill="#b91c1c" text-anchor="middle">выставлен_счет_на_оплату_лицензии</text>
+      <text x="863" y="164" font-size="12" font-weight="700" fill="#b91c1c" text-anchor="middle">менеджер заносит запись сюда</text>
+      <line x1="14" y1="182" x2="986" y2="182" stroke="#eceef1" stroke-width="1.4"/>
+      <text x="500" y="198" font-size="13" font-weight="700" fill="#2b2f36" text-anchor="middle">Признак отмечает не вероятность сделки, а факт уже состоявшейся сделки.</text>
+    </g>
+  </svg>
+  <div class="note"><p><b class="mk r alt">Почему это утечка.</b> Менеджеры по продажам заносят в CRM-систему выставленный счет только тогда, когда юристы обеих сторон уже согласовали и подписали договор. На ранних этапах переговоров счета никто не выставляет.</p></div>
+</div>
+</div>
+
+
+<!-- 10 Q: BLOCK 1 CHECK -->
+<div class="slide qslide">
+<div class="sc">
+  <p class="eyebrow">Вопрос</p>
+  <p class="qbig">Банк предсказывает дефолт в момент подачи заявки. В данных два признака: <span class="c-green">доход_на_момент_заявки</span> и <span class="c-red">количество_звонков_от_коллекторов</span>.<br>Какой из них утечка, к какому типу относится и почему второй честный?</p>
+</div>
+</div>
+
+
+<!-- 10b A: BLOCK 1 -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Ответ</p>
+  <h2 style="text-align:center;max-width:1060px;">Утечка это звонки коллекторов, тип 1 (функция от будущего)</h2>
+  <div class="bignum" style="margin-top:14px;">
+    <div class="bn bad" style="min-width:340px;"><div class="v" style="font-size:clamp(15px,1.7vw,21px);">количество_звонков_от_коллекторов</div><div class="t">коллекторы звонят только после выдачи и просрочки, признак заполнен лишь у уже-дефолтных</div></div>
+    <div class="bn good" style="min-width:340px;"><div class="v" style="font-size:clamp(15px,1.7vw,21px);">доход_на_момент_заявки</div><div class="t">зафиксирован в T₀ и доступен для нового клиента, признак честный</div></div>
+  </div>
+  <p class="sub" style="text-align:center;margin:14px auto 0;max-width:1000px;">Тест на машину времени разделяет их: в ту миллисекунду, когда модель работает на сервере для нового заёмщика, звонков коллекторов ещё нет, а доход уже указан в заявке.</p>
+</div>
+</div>
+
+
+<!-- 11 BLOCK 2 DIVIDER -->
+<div class="slide gdiv">
+<div class="sc">
+  <p class="lvkick">Блок 2 · типы 3-4</p>
+  <h1>Data Pipeline Leakage</h1>
+  <div class="ten">Инженерные утечки и препроцессинг</div>
+  <p class="tline">Каждая колонка существует в момент прогноза, список признаков чистый. Ошибка в том, что операция подготовки данных выполнена раньше деления и посчитала свои параметры вместе с тестовой частью.</p>
+  <div class="ltypes">
+    <span>3. Global Preprocessing (Контаминация при обработке)</span>
+    <span>4. Global Target Encoding (Категориальные утечки)</span>
+  </div>
+  <div class="tprog"><i class="done"></i><i class="now"></i><i></i><i></i><i></i></div>
+</div>
+</div>
+
+
+<!-- T3 DIVIDER -->
+<div class="slide gdiv typdiv">
+<div class="sc">
+  <p class="lvkick">Блок 2 · Тип 3 из 12</p>
+  <div class="tnum">03</div>
+  <h1>Global Preprocessing</h1>
+  <div class="tru">Контаминация при обработке</div>
+  <p class="tline">Статистика препроцессинга посчитана до деления, вместе с тестовой частью.</p>
+  <div class="tprog"><i class="done"></i><i class="done"></i><i class="now"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+</div>
+</div>
+
+
+<!-- 12 ARCHITECTURE -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Блок 2 · тип 3 · схема процесса</p>
+  <h2>Обработка всей таблицы до её разбиения на выборки</h2>
+  <p class="sub" style="margin-top:0;max-width:1060px;">Главная ошибка начинающих: обработка всей таблицы ДО ее разбиения на обучающую и тестовую выборки.</p>
+  <svg viewBox="0 0 1000 340" style="width:100%;max-width:1080px;height:auto;margin:8px auto 0;display:block" role="img" aria-label="Неправильная и правильная архитектура препроцессинга">
+    <g font-family="inherit">
+      <rect x="6" y="6" width="482" height="328" rx="14" fill="#fffafa" stroke="#e02d20" stroke-width="1.8"/>
+      <text x="247" y="32" font-size="13.5" font-weight="900" fill="#b91c1c" text-anchor="middle">НЕПРАВИЛЬНАЯ АРХИТЕКТУРА</text>
+      <text x="247" y="50" font-size="12" font-weight="700" fill="#b91c1c" text-anchor="middle">утечка контекста</text>
+
+      <rect x="40" y="62" width="414" height="40" rx="9" fill="#f0f2f6" stroke="#c3c7cf" stroke-width="1.5"/>
+      <text x="247" y="87" font-size="13.5" font-weight="800" fill="#2b2f36" text-anchor="middle">Вся база (Train + Test)</text>
+      <line x1="247" y1="102" x2="247" y2="134" stroke="#e02d20" stroke-width="1.7" marker-end="url(#arwr)"/>
+      <text x="258" y="122" font-size="10.5" font-weight="700" fill="#b91c1c">1. Расчет stats (Mean/Std/Min/Max)</text>
+
+      <rect x="94" y="138" width="306" height="38" rx="9" fill="#fee2e2" stroke="#e02d20" stroke-width="1.6"/>
+      <text x="247" y="162" font-size="13" font-weight="800" fill="#b91c1c" text-anchor="middle">Обработанный датасет</text>
+      <line x1="247" y1="176" x2="247" y2="208" stroke="#c3c7cf" stroke-width="1.7" marker-end="url(#arw)"/>
+      <text x="258" y="196" font-size="10.5" font-weight="700" fill="#5a6069">2. Train / Test Split</text>
+
+      <rect x="64" y="212" width="176" height="40" rx="9" fill="#e9edf1" stroke="#6b7280" stroke-width="1.6"/>
+      <text x="152" y="237" font-size="13" font-weight="800" fill="#374151" text-anchor="middle">Train</text>
+      <rect x="256" y="212" width="176" height="40" rx="9" fill="#d3e4f8" stroke="#3b6fb5" stroke-width="1.6"/>
+      <text x="344" y="237" font-size="13" font-weight="800" fill="#274d80" text-anchor="middle">Test</text>
+
+      <text x="247" y="278" font-size="12.5" font-weight="800" fill="#b91c1c" text-anchor="middle">Test уже влиял на stats</text>
+      <text x="247" y="300" font-size="12" font-weight="700" fill="#2b2f36" text-anchor="middle">Оценка на тесте завышена, а обучающий код</text>
+      <text x="247" y="318" font-size="12" font-weight="700" fill="#2b2f36" text-anchor="middle">невозможно повторить на сервере в проде.</text>
+
+      <rect x="512" y="6" width="482" height="328" rx="14" fill="#fafdfb" stroke="#1a9d4a" stroke-width="1.8"/>
+      <text x="753" y="32" font-size="13.5" font-weight="900" fill="#15803d" text-anchor="middle">ПРАВИЛЬНАЯ АРХИТЕКТУРА</text>
+      <text x="753" y="50" font-size="12" font-weight="700" fill="#15803d" text-anchor="middle">изоляция</text>
+
+      <rect x="546" y="62" width="414" height="40" rx="9" fill="#f0f2f6" stroke="#c3c7cf" stroke-width="1.5"/>
+      <text x="753" y="87" font-size="13.5" font-weight="800" fill="#2b2f36" text-anchor="middle">Вся база</text>
+      <line x1="753" y1="102" x2="753" y2="134" stroke="#1a9d4a" stroke-width="1.7" marker-end="url(#arwg)"/>
+      <text x="764" y="122" font-size="10.5" font-weight="700" fill="#15803d">1. Сначала Сплит</text>
+
+      <rect x="570" y="138" width="176" height="40" rx="9" fill="#e9edf1" stroke="#6b7280" stroke-width="1.6"/>
+      <text x="658" y="163" font-size="13" font-weight="800" fill="#374151" text-anchor="middle">Train</text>
+      <rect x="762" y="138" width="176" height="40" rx="9" fill="#d3e4f8" stroke="#3b6fb5" stroke-width="1.6"/>
+      <text x="850" y="163" font-size="13" font-weight="800" fill="#274d80" text-anchor="middle">Test</text>
+
+      <line x1="658" y1="178" x2="658" y2="222" stroke="#1a9d4a" stroke-width="1.7" marker-end="url(#arwg)"/>
+      <text x="600" y="204" font-size="10.5" font-weight="700" fill="#15803d" text-anchor="end">2. fit_transform()</text>
+      <path d="M850 178 V204 H760" fill="none" stroke="#3b6fb5" stroke-width="1.7" stroke-dasharray="5 4" marker-end="url(#arwb)"/>
+      <text x="866" y="200" font-size="10.5" font-weight="700" fill="#274d80">3. transform() only</text>
+
+      <rect x="570" y="226" width="368" height="40" rx="9" fill="#e7f5ec" stroke="#1a9d4a" stroke-width="1.8"/>
+      <text x="754" y="251" font-size="13" font-weight="800" fill="#15803d" text-anchor="middle">Скалирование на базе Train</text>
+
+      <text x="753" y="292" font-size="12" font-weight="700" fill="#2b2f36" text-anchor="middle">Параметры преобразования знают только про Train.</text>
+      <text x="753" y="312" font-size="12" font-weight="700" fill="#2b2f36" text-anchor="middle">Ровно так же код отработает на одном объекте в проде.</text>
+    </g>
+  </svg>
+</div>
+</div>
+
+
+<!-- 13 MATH -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Блок 2 · тип 3 · механика ошибки</p>
+  <h2>Статистика по всему датасету переносит распределение теста в обучение</h2>
+  <p class="sub" style="margin-top:0;max-width:1060px;">Любая статистика (μ, σ, медиана, перцентили), посчитанная по всему датасету, передает информацию о распределении тестовой выборки в обучающую.</p>
+  <div class="fml"><i>x</i>′ = <span class="frac"><span class="n"><i>x</i> − μ</span><span class="d">σ</span></span></div>
+  <div class="fml" style="margin-top:16px;">
+    μ<sub>all</sub> =
+    <span class="frac"><span class="n">1</span><span class="d"><i>N</i><sub>train</sub> + <i>N</i><sub>test</sub></span></span>
+    <span style="font-size:1.5em;line-height:.9;">(</span>
+    <span>Σ<sub><i>i</i> ∈ Train</sub> <i>x<sub>i</sub></i></span>
+    <span>+</span>
+    <span class="fleak">Σ<sub><i>j</i> ∈ Test</sub> <i>x<sub>j</sub></i></span>
+    <span style="font-size:1.5em;line-height:.9;">)</span>
+  </div>
+  <svg viewBox="0 0 900 96" style="width:100%;max-width:880px;height:auto;margin:14px auto 0;display:block" role="img" aria-label="Вклад тестовых строк в параметр нормализации">
+    <g font-family="inherit">
+      <rect x="20" y="18" width="500" height="30" rx="7" fill="#e9edf1" stroke="#6b7280" stroke-width="1.5"/>
+      <rect x="520" y="18" width="240" height="30" rx="7" fill="#fee2e2" stroke="#e02d20" stroke-width="1.6"/>
+      <text x="270" y="39" font-size="12.5" font-weight="800" fill="#374151" text-anchor="middle">строки Train</text>
+      <text x="640" y="39" font-size="12.5" font-weight="800" fill="#b91c1c" text-anchor="middle">строки Test</text>
+      <path d="M640 52 V68 H280" fill="none" stroke="#e02d20" stroke-width="1.7" marker-end="url(#arwr)"/>
+      <text x="450" y="90" font-size="12.5" font-weight="800" fill="#b91c1c" text-anchor="middle">каждое значение в Train теперь содержит кусочек информации о значениях из теста</text>
+    </g>
+  </svg>
+</div>
+</div>
+
+
+<!-- 14 PIPELINE CODE -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Блок 2 · тип 3 · код</p>
+  <h2>Pipeline вызывает fit() только на Train</h2>
+  <div class="codebox" style="margin-top:8px;">
+    <div class="codebar"><span>Как правильно в коде</span></div>
+    <div class="code">from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
+from sklearn.ensemble import RandomForestClassifier
+
+<span class="cm"># Pipeline гарантирует, что fit() для StandardScaler вызван ТОЛЬКО на Train</span>
+pipeline = <span class="fn">Pipeline</span>([
+    (<span class="fn">'scaler'</span>, <span class="fn">StandardScaler</span>()),
+    (<span class="fn">'model'</span>, <span class="fn">RandomForestClassifier</span>())
+])
+<span class="good">pipeline.fit(X_train, y_train)</span> <span class="cm"># Безопасно</span></div>
+  </div>
+  <div class="note" style="max-width:940px;"><p>Внутри кросс-валидации pipeline пересобирает scaler на каждом фолде заново, поэтому фолд-валидация не видит статистику своего же теста. Ровно та же конструкция сохраняется целиком и разворачивается на сервере, где объект приходит по одному.</p></div>
+</div>
+</div>
+
+
+<!-- 15 TYPE 3 EX 1 -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Блок 2 · тип 3 · пример 1 из 2</p>
+  <h2>MinMax Scaling / Масштабирование</h2>
+  <p class="sub" style="margin-top:0;max-width:1060px;">Ты делаешь нормализацию <span class="mono">MinMaxScaler()</span>, чтобы перевести зарплаты в диапазон от 0 до 1. Твой единственный миллионер в базе оказался в тестовой выборке (его зарплата = $1 000 000).</p>
+  <svg viewBox="0 0 1000 250" style="width:100%;max-width:1000px;height:auto;margin:8px auto 0;display:block" role="img" aria-label="Диапазон нормализации при fit до сплита и после">
+    <g font-family="inherit">
+      <text x="14" y="26" font-size="12.5" font-weight="900" fill="#b91c1c">fit() до сплита: максимум взят из теста</text>
+      <line x1="60" y1="76" x2="940" y2="76" stroke="#c3c7cf" stroke-width="1.6"/>
+      <g stroke="#c3c7cf" stroke-width="1.4">
+        <line x1="60" y1="76" x2="60" y2="84"/><line x1="500" y1="76" x2="500" y2="84"/><line x1="940" y1="76" x2="940" y2="84"/>
+      </g>
+      <g font-size="11.5" font-weight="700" fill="#5a6069" text-anchor="middle">
+        <text x="60" y="100">0</text><text x="500" y="100">0.5</text><text x="940" y="100">1</text>
+      </g>
+      <g fill="#374151">
+        <circle cx="70" cy="60" r="6"/><circle cx="76" cy="60" r="6"/><circle cx="84" cy="60" r="6"/>
+        <circle cx="92" cy="60" r="6"/><circle cx="100" cy="60" r="6"/><circle cx="112" cy="60" r="6"/>
+      </g>
+      <circle cx="940" cy="60" r="8" fill="#3b6fb5"/>
+      <text x="150" y="48" font-size="12" font-weight="800" fill="#374151">все зарплаты Train сжаты в левый край</text>
+      <text x="940" y="44" font-size="12" font-weight="800" fill="#274d80" text-anchor="end">миллионер из Test = $1 000 000</text>
+      <path d="M700 60 H600" stroke="#e02d20" stroke-width="1.7" marker-end="url(#arwr)"/>
+      <text x="704" y="64" font-size="12" font-weight="800" fill="#b91c1c">масштаб задан тестовой строкой</text>
+
+      <line x1="14" y1="126" x2="986" y2="126" stroke="#eceef1" stroke-width="1.4"/>
+      <text x="14" y="154" font-size="12.5" font-weight="900" fill="#15803d">fit() после сплита: максимум взят из Train</text>
+      <line x1="60" y1="204" x2="940" y2="204" stroke="#c3c7cf" stroke-width="1.6"/>
+      <g stroke="#c3c7cf" stroke-width="1.4">
+        <line x1="60" y1="204" x2="60" y2="212"/><line x1="500" y1="204" x2="500" y2="212"/><line x1="940" y1="204" x2="940" y2="212"/>
+      </g>
+      <g font-size="11.5" font-weight="700" fill="#5a6069" text-anchor="middle">
+        <text x="60" y="228">0</text><text x="500" y="228">0.5</text><text x="940" y="228">1</text>
+      </g>
+      <g fill="#374151">
+        <circle cx="120" cy="188" r="6"/><circle cx="260" cy="188" r="6"/><circle cx="430" cy="188" r="6"/>
+        <circle cx="620" cy="188" r="6"/><circle cx="790" cy="188" r="6"/><circle cx="940" cy="188" r="6"/>
+      </g>
+      <text x="440" y="172" font-size="12" font-weight="800" fill="#15803d" text-anchor="middle">зарплаты Train занимают весь диапазон, различия между людьми сохранились</text>
+    </g>
+  </svg>
+  <div class="note"><p><b class="mk r">Почему это утечка.</b> Если сделать <span class="mono">fit()</span> до сплита, скейлер узнает, что максимум = $1 000 000, и сожмет все зарплаты в Train с учетом этого миллионера. Обучающая выборка «узнала» максимум из будущего теста.</p></div>
+</div>
+</div>
+
+
+<!-- 16 TYPE 3 EX 2 -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Блок 2 · тип 3 · пример 2 из 2</p>
+  <h2>SimpleImputer / Заполнение пропусков</h2>
+  <p class="sub" style="margin-top:0;max-width:1060px;">В колонке Возраст есть пропуски (NaN). Пропуски заполняют средним значением (<span class="mono">strategy='mean'</span>), посчитанным по всей базе.</p>
+  <svg viewBox="0 0 1000 244" style="width:100%;max-width:1000px;height:auto;margin:8px auto 0;display:block" role="img" aria-label="Среднее по всей базе смещено пожилыми людьми из теста">
+    <g font-family="inherit">
+      <line x1="60" y1="172" x2="950" y2="172" stroke="#c3c7cf" stroke-width="1.6" marker-end="url(#arw)"/>
+      <text x="930" y="196" font-size="12" font-weight="700" fill="#5a6069" text-anchor="end">Возраст</text>
+      <path d="M110 172 C 190 60, 300 60, 380 172 Z" fill="#e9edf1" stroke="#6b7280" stroke-width="1.7"/>
+      <text x="245" y="96" font-size="12.5" font-weight="800" fill="#374151" text-anchor="middle">Train</text>
+      <path d="M560 172 C 650 66, 780 66, 870 172 Z" fill="#d3e4f8" stroke="#3b6fb5" stroke-width="1.7"/>
+      <text x="715" y="100" font-size="12.5" font-weight="800" fill="#274d80" text-anchor="middle">Test</text>
+      <text x="715" y="120" font-size="11.5" font-weight="700" fill="#274d80" text-anchor="middle">преобладают пожилые</text>
+
+      <line x1="245" y1="52" x2="245" y2="172" stroke="#6b7280" stroke-width="1.4" stroke-dasharray="5 4"/>
+      <text x="245" y="44" font-size="11.5" font-weight="800" fill="#374151" text-anchor="middle">μ по Train</text>
+      <line x1="470" y1="52" x2="470" y2="172" stroke="#e02d20" stroke-width="2"/>
+      <text x="470" y="44" font-size="12" font-weight="900" fill="#b91c1c" text-anchor="middle">μ по всей базе</text>
+      <path d="M258 34 H452" stroke="#e02d20" stroke-width="1.7" marker-end="url(#arwr)"/>
+      <text x="356" y="26" font-size="11.5" font-weight="800" fill="#b91c1c" text-anchor="middle">среднее смещено вверх</text>
+
+      <rect x="120" y="196" width="250" height="34" rx="8" fill="#fee2e2" stroke="#e02d20" stroke-width="1.6"/>
+      <text x="245" y="218" font-size="12.5" font-weight="800" fill="#b91c1c" text-anchor="middle">NaN в Train заполнены этим μ</text>
+      <path d="M456 186 C 400 200, 380 206, 372 212" fill="none" stroke="#e02d20" stroke-width="1.7" marker-end="url(#arwr)"/>
+    </g>
+  </svg>
+  <div class="note"><p><b class="mk r alt">Почему это утечка.</b> Если в тестовой выборке преобладают пожилые люди, средний возраст всей базы сместится вверх. Заполняя пропуски в Train этим сдвинутым средним, вы передаете данные о возрасте людей из Test.</p></div>
+</div>
+</div>
+
+
+<!-- T4 DIVIDER -->
+<div class="slide gdiv typdiv">
+<div class="sc">
+  <p class="lvkick">Блок 2 · Тип 4 из 12</p>
+  <div class="tnum">04</div>
+  <h1>Global Target Encoding</h1>
+  <div class="tru">Категориальные утечки</div>
+  <p class="tline">Категория закодирована средним Y, посчитанным по всей таблице.</p>
+  <div class="tprog"><i class="done"></i><i class="done"></i><i class="done"></i><i class="now"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+</div>
+</div>
+
+
+<!-- 17 TYPE 4 SUT -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Блок 2 · тип 4 · суть</p>
+  <h2>Global Target Encoding (Категориальные утечки)</h2>
+  <p class="sub" style="margin-top:0;max-width:1060px;">Замена категорий (города, бренды) средним значением целевой переменной Y, посчитанным по всей таблице.</p>
+  <svg viewBox="0 0 1000 216" style="width:100%;max-width:1000px;height:auto;margin:10px auto 0;display:block" role="img" aria-label="Средний Y по всей таблице подставляется в признак">
+    <g font-family="inherit">
+      <rect x="20" y="26" width="300" height="46" rx="10" fill="#e9edf1" stroke="#6b7280" stroke-width="1.6"/>
+      <text x="170" y="55" font-size="13" font-weight="800" fill="#374151" text-anchor="middle">Y строк Train</text>
+      <rect x="20" y="86" width="300" height="46" rx="10" fill="#fee2e2" stroke="#e02d20" stroke-width="1.8"/>
+      <text x="170" y="115" font-size="13" font-weight="800" fill="#b91c1c" text-anchor="middle">Y строк Test</text>
+      <path d="M320 49 H408 V72" fill="none" stroke="#6b7280" stroke-width="1.6" marker-end="url(#arw)"/>
+      <path d="M320 109 H408 V88" fill="none" stroke="#e02d20" stroke-width="1.8" marker-end="url(#arwr)"/>
+      <rect x="418" y="58" width="230" height="44" rx="10" fill="#fff" stroke="#e02d20" stroke-width="1.7"/>
+      <text x="533" y="85" font-size="13" font-weight="800" fill="#b91c1c" text-anchor="middle">средний Y по всей таблице</text>
+      <line x1="648" y1="80" x2="694" y2="80" stroke="#c3c7cf" stroke-width="1.7" marker-end="url(#arw)"/>
+      <rect x="698" y="58" width="282" height="44" rx="10" fill="#fee2e2" stroke="#e02d20" stroke-width="1.8"/>
+      <text x="839" y="85" font-size="13" font-weight="800" fill="#b91c1c" text-anchor="middle">число подставлено в признак</text>
+      <line x1="20" y1="152" x2="980" y2="152" stroke="#eceef1" stroke-width="1.4"/>
+      <text x="500" y="176" font-size="13" font-weight="700" fill="#2b2f36" text-anchor="middle">Модель получает в качестве входа величину, в расчёте которой участвовали ответы тестовых строк.</text>
+      <text x="500" y="198" font-size="13" font-weight="700" fill="#2b2f36" text-anchor="middle">Формально в таблице лежит число, фактически там лежит усреднённый ответ.</text>
+    </g>
+  </svg>
+  <div class="note"><p><b class="mk g">Как защититься.</b> Использовать Out-Of-Fold (OOF) Target Encoding или встроенные механизмы CatBoost, где счетчики считаются только по прошлым строкам.</p></div>
+</div>
+</div>
+
+
+<!-- 18 TYPE 4 EX 1 -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Блок 2 · тип 4 · пример 1 из 2</p>
+  <h2>Target Encoding по всей базе</h2>
+  <p class="sub" style="margin-top:0;max-width:1060px;">Категория Город = «Ташкент». В базе 10 человек из Ташкента (5 в Train, 5 в Test). Мы считаем средний Y для Ташкента по всем 10 людям и подставляем полученное число 0.8 в фичу.</p>
+  <svg viewBox="0 0 1000 226" style="width:100%;max-width:1000px;height:auto;margin:8px auto 0;display:block" role="img" aria-label="Средний Y по десяти людям из Ташкента">
+    <g font-family="inherit">
+      <text x="70" y="30" font-size="12.5" font-weight="800" fill="#374151">5 человек в Train</text>
+      <text x="560" y="30" font-size="12.5" font-weight="800" fill="#b91c1c">5 человек в Test</text>
+      <g>
+        <rect x="70" y="42" width="76" height="52" rx="9" fill="#e9edf1" stroke="#6b7280" stroke-width="1.5"/>
+        <rect x="156" y="42" width="76" height="52" rx="9" fill="#e9edf1" stroke="#6b7280" stroke-width="1.5"/>
+        <rect x="242" y="42" width="76" height="52" rx="9" fill="#e9edf1" stroke="#6b7280" stroke-width="1.5"/>
+        <rect x="328" y="42" width="76" height="52" rx="9" fill="#e9edf1" stroke="#6b7280" stroke-width="1.5"/>
+        <rect x="414" y="42" width="76" height="52" rx="9" fill="#e9edf1" stroke="#6b7280" stroke-width="1.5"/>
+      </g>
+      <g>
+        <rect x="560" y="42" width="76" height="52" rx="9" fill="#fee2e2" stroke="#e02d20" stroke-width="1.6"/>
+        <rect x="646" y="42" width="76" height="52" rx="9" fill="#fee2e2" stroke="#e02d20" stroke-width="1.6"/>
+        <rect x="732" y="42" width="76" height="52" rx="9" fill="#fee2e2" stroke="#e02d20" stroke-width="1.6"/>
+        <rect x="818" y="42" width="76" height="52" rx="9" fill="#fee2e2" stroke="#e02d20" stroke-width="1.6"/>
+        <rect x="904" y="42" width="76" height="52" rx="9" fill="#fee2e2" stroke="#e02d20" stroke-width="1.6"/>
+      </g>
+      <g font-size="12" font-weight="800" text-anchor="middle">
+        <text x="108" y="74" fill="#374151">Y</text><text x="194" y="74" fill="#374151">Y</text><text x="280" y="74" fill="#374151">Y</text>
+        <text x="366" y="74" fill="#374151">Y</text><text x="452" y="74" fill="#374151">Y</text>
+        <text x="598" y="74" fill="#b91c1c">Y</text><text x="684" y="74" fill="#b91c1c">Y</text><text x="770" y="74" fill="#b91c1c">Y</text>
+        <text x="856" y="74" fill="#b91c1c">Y</text><text x="942" y="74" fill="#b91c1c">Y</text>
+      </g>
+      <path d="M280 98 V124 H500" fill="none" stroke="#6b7280" stroke-width="1.6"/>
+      <path d="M770 98 V124 H500" fill="none" stroke="#e02d20" stroke-width="1.8"/>
+      <line x1="500" y1="124" x2="500" y2="146" stroke="#e02d20" stroke-width="1.8" marker-end="url(#arwr)"/>
+      <rect x="366" y="150" width="268" height="42" rx="10" fill="#fee2e2" stroke="#e02d20" stroke-width="1.8"/>
+      <text x="500" y="177" font-size="15" font-weight="900" fill="#b91c1c" text-anchor="middle">city_target_enc = 0.8</text>
+      <text x="500" y="214" font-size="12.5" font-weight="800" fill="#b91c1c" text-anchor="middle">половина этого числа собрана из ответов, которые модель должна угадать</text>
+    </g>
+  </svg>
+  <div class="note"><p><b class="mk r">Почему это утечка.</b> Модель получает в качестве признака число, в расчете которого напрямую участвовали ответы Y для тестовой выборки.</p></div>
+</div>
+</div>
+
+
+<!-- 19 TYPE 4 EX 2 -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Блок 2 · тип 4 · пример 2 из 2</p>
+  <h2>Vocabulary Leakage в NLP</h2>
+  <p class="sub" style="margin-top:0;max-width:1060px;">Классификация отзывов, построение словаря TF-IDF или CountVectorizer. <span class="mono">fit()</span> векторизатора вызывается на всем корпусе текстов.</p>
+  <svg viewBox="0 0 1000 220" style="width:100%;max-width:1000px;height:auto;margin:8px auto 0;display:block" role="img" aria-label="Словарь векторизатора собран по всему корпусу">
+    <g font-family="inherit">
+      <rect x="20" y="30" width="230" height="52" rx="10" fill="#e9edf1" stroke="#6b7280" stroke-width="1.6"/>
+      <text x="135" y="52" font-size="12.5" font-weight="800" fill="#374151" text-anchor="middle">отзывы Train</text>
+      <text x="135" y="70" font-size="11.5" font-weight="700" fill="#374151" text-anchor="middle">частые и редкие слова</text>
+      <rect x="20" y="94" width="230" height="52" rx="10" fill="#fee2e2" stroke="#e02d20" stroke-width="1.7"/>
+      <text x="135" y="116" font-size="12.5" font-weight="800" fill="#b91c1c" text-anchor="middle">отзывы Test</text>
+      <text x="135" y="134" font-size="11.5" font-weight="700" fill="#b91c1c" text-anchor="middle">свои редкие слова</text>
+
+      <path d="M250 56 H330 V80" fill="none" stroke="#6b7280" stroke-width="1.6" marker-end="url(#arw)"/>
+      <path d="M250 120 H330 V98" fill="none" stroke="#e02d20" stroke-width="1.8" marker-end="url(#arwr)"/>
+      <rect x="340" y="64" width="196" height="48" rx="10" fill="#fff" stroke="#e02d20" stroke-width="1.7"/>
+      <text x="438" y="93" font-size="13" font-weight="800" fill="#b91c1c" text-anchor="middle">vectorizer.fit(корпус)</text>
+      <line x1="536" y1="88" x2="580" y2="88" stroke="#c3c7cf" stroke-width="1.7" marker-end="url(#arw)"/>
+
+      <rect x="588" y="30" width="392" height="116" rx="12" fill="#fff" stroke="#dfe2e8" stroke-width="1.6"/>
+      <text x="784" y="52" font-size="12.5" font-weight="900" fill="#2b2f36" text-anchor="middle">Словарь и веса idf</text>
+      <g font-size="11.5" font-weight="700">
+        <rect x="606" y="64" width="118" height="24" rx="6" fill="#f0f2f6" stroke="#dfe2e8"/>
+        <text x="665" y="80" fill="#374151" text-anchor="middle">доставка</text>
+        <rect x="734" y="64" width="118" height="24" rx="6" fill="#f0f2f6" stroke="#dfe2e8"/>
+        <text x="793" y="80" fill="#374151" text-anchor="middle">качество</text>
+        <rect x="862" y="64" width="102" height="24" rx="6" fill="#f0f2f6" stroke="#dfe2e8"/>
+        <text x="913" y="80" fill="#374151" text-anchor="middle">цена</text>
+        <rect x="606" y="96" width="164" height="24" rx="6" fill="#fee2e2" stroke="#e02d20"/>
+        <text x="688" y="112" fill="#b91c1c" text-anchor="middle">слово только из Test</text>
+        <rect x="780" y="96" width="184" height="24" rx="6" fill="#fee2e2" stroke="#e02d20"/>
+        <text x="872" y="112" fill="#b91c1c" text-anchor="middle">частота посчитана с Test</text>
+      </g>
+      <text x="784" y="138" font-size="11.5" font-weight="700" fill="#b91c1c" text-anchor="middle">структура и вес редких слов известны до обучения</text>
+
+      <line x1="20" y1="166" x2="980" y2="166" stroke="#eceef1" stroke-width="1.4"/>
+      <text x="500" y="192" font-size="13" font-weight="700" fill="#2b2f36" text-anchor="middle">В проде словарь фиксирован заранее, и новое редкое слово модель видит впервые.</text>
+      <text x="500" y="212" font-size="13" font-weight="700" fill="#2b2f36" text-anchor="middle">Офлайн-оценка такого случая не проверяла ни разу.</text>
+    </g>
+  </svg>
+  <div class="note"><p><b class="mk r alt">Почему это утечка.</b> Редкие слова и их частоты из тестовых отзывов попадают в словарь векторизатора. Модель знает структуру и вес редких слов из теста еще до обучения.</p></div>
+</div>
+</div>
+
+
+<!-- 20 Q: BLOCK 2 CHECK -->
+<div class="slide qslide">
+<div class="sc">
+  <p class="eyebrow">Вопрос</p>
+  <p class="qbig">Пайплайн собирают из четырёх шагов: <span class="mono">обучение модели</span>, <span class="c-green">train_test_split</span>, <span class="mono">fit scaler</span>, <span class="mono">fit imputer</span>.<br>В каком порядке они должны идти и почему три из них нельзя выполнять до сплита?</p>
+</div>
+</div>
+
+
+<!-- 20b A: BLOCK 2 -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Ответ</p>
+  <h2 style="text-align:center;max-width:1060px;">Сначала split, всё остальное только на train-части</h2>
+  <svg viewBox="0 0 1000 92" style="width:100%;max-width:980px;height:auto;margin:16px auto 0;display:block" role="img" aria-label="Правильный порядок четырёх шагов">
+    <g font-family="inherit">
+      <g stroke="#1a9d4a" stroke-width="1.8" marker-end="url(#arwg)">
+        <line x1="212" y1="34" x2="248" y2="34"/><line x1="448" y1="34" x2="484" y2="34"/><line x1="686" y1="34" x2="722" y2="34"/>
+      </g>
+      <rect x="16" y="14" width="196" height="40" rx="9" fill="#e7f5ec" stroke="#1a9d4a" stroke-width="1.7"/>
+      <rect x="248" y="14" width="200" height="40" rx="9" fill="#f5f6f8" stroke="#dfe2e8" stroke-width="1.5"/>
+      <rect x="484" y="14" width="202" height="40" rx="9" fill="#f5f6f8" stroke="#dfe2e8" stroke-width="1.5"/>
+      <rect x="722" y="14" width="262" height="40" rx="9" fill="#f5f6f8" stroke="#dfe2e8" stroke-width="1.5"/>
+      <g font-size="13" font-weight="800" text-anchor="middle">
+        <text x="114" y="39" fill="#15803d">train_test_split</text>
+        <text x="348" y="39" fill="#2b2f36">fit imputer на train</text>
+        <text x="585" y="39" fill="#2b2f36">fit scaler на train</text>
+        <text x="853" y="39" fill="#2b2f36">обучение модели</text>
+      </g>
+      <text x="500" y="82" font-size="12.5" font-weight="700" fill="#5a6069" text-anchor="middle">всё, кроме split, обёрнуто в один Pipeline и на тест применяется только transform</text>
+    </g>
+  </svg>
+  <p class="sub" style="text-align:center;margin:12px auto 0;max-width:1000px;">Split идёт первым, потому что imputer, scaler и любая статистика (μ, σ, min, max), посчитанные вместе с тестовыми строками, переносят их распределение в обучение. Тест получает готовые параметры через transform и в их расчёте не участвует.</p>
+</div>
+</div>
+
+
+<!-- 21 BLOCK 3 DIVIDER -->
+<div class="slide gdiv">
+<div class="sc">
+  <p class="lvkick">Блок 3 · типы 5-7</p>
+  <h1>Space-Time Leakage</h1>
+  <div class="ten">Временная и географическая связность</div>
+  <p class="tline">Строки в таблице не независимы: они упорядочены во времени и расположены рядом в пространстве. Случайное деление разрывает этот порядок и раскладывает соседей по обе стороны от границы.</p>
+  <div class="ltypes">
+    <span>5. Look-Ahead Bias (Временные утечки)</span>
+    <span>6. Rolling Windows Overlap (Скользящие окна)</span>
+    <span>7. Spatial Leakage (Пространственная утечка)</span>
+  </div>
+  <div class="tprog"><i class="done"></i><i class="done"></i><i class="now"></i><i></i><i></i></div>
+</div>
+</div>
+
+
+<!-- T5 DIVIDER -->
+<div class="slide gdiv typdiv">
+<div class="sc">
+  <p class="lvkick">Блок 3 · Тип 5 из 12</p>
+  <div class="tnum">05</div>
+  <h1>Look-Ahead Bias</h1>
+  <div class="tru">Временные утечки</div>
+  <p class="tline">Данные из времени T₁ попали в решение, принимаемое в T₀, где T₁ больше T₀.</p>
+  <div class="tprog"><i class="done"></i><i class="done"></i><i class="done"></i><i class="done"></i><i class="now"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+</div>
+</div>
+
+
+<!-- 22 TIME SPLIT VIS -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Блок 3 · тип 5 · визуализация</p>
+  <h2>Случайный K-Fold и TimeSeriesSplit на одних данных</h2>
+  <p class="sub" style="margin-top:0;max-width:1060px;">Если в данных есть время, обычный случайный K-Fold категорически запрещён.</p>
+  <svg viewBox="0 0 1000 312" style="width:100%;max-width:1040px;height:auto;margin:10px auto 0;display:block" role="img" aria-label="Случайное деление ряда и деление по времени">
+    <g font-family="inherit">
+      <text x="20" y="28" font-size="13" font-weight="900" fill="#b91c1c">НЕВЕРНО: случайный K-Fold для времени</text>
+      <clipPath id="clip1"><rect x="20" y="42" width="960" height="52" rx="10"/></clipPath>
+      <g clip-path="url(#clip1)">
+        <rect x="20" y="42" width="192" height="52" fill="#e9edf1"/>
+        <rect x="212" y="42" width="192" height="52" fill="#d3e4f8"/>
+        <rect x="404" y="42" width="192" height="52" fill="#e9edf1"/>
+        <rect x="596" y="42" width="192" height="52" fill="#d3e4f8"/>
+        <rect x="788" y="42" width="192" height="52" fill="#e9edf1"/>
+        <g stroke="#fff" stroke-width="2">
+          <line x1="212" y1="42" x2="212" y2="94"/><line x1="404" y1="42" x2="404" y2="94"/>
+          <line x1="596" y1="42" x2="596" y2="94"/><line x1="788" y1="42" x2="788" y2="94"/>
+        </g>
+      </g>
+      <rect x="20" y="42" width="960" height="52" rx="10" fill="none" stroke="#e02d20" stroke-width="1.8"/>
+      <g font-size="13" font-weight="800" text-anchor="middle">
+        <text x="116" y="74" fill="#374151">Train</text>
+        <text x="308" y="74" fill="#274d80">Test</text>
+        <text x="500" y="74" fill="#374151">Train</text>
+        <text x="692" y="74" fill="#274d80">Test</text>
+        <text x="884" y="74" fill="#374151">Train</text>
+      </g>
+      <path d="M692 104 C 600 132, 420 132, 320 108" fill="none" stroke="#e02d20" stroke-width="1.7" stroke-dasharray="5 4" marker-end="url(#arwr)"/>
+      <text x="500" y="146" font-size="13" font-weight="800" fill="#b91c1c" text-anchor="middle">Модель учит будущее, чтобы угадать прошлое</text>
+
+      <line x1="20" y1="166" x2="980" y2="166" stroke="#eceef1" stroke-width="1.4"/>
+
+      <text x="20" y="198" font-size="13" font-weight="900" fill="#15803d">ВЕРНО: TimeSeriesSplit / Cut-Off</text>
+      <clipPath id="clip2"><rect x="20" y="212" width="960" height="52" rx="10"/></clipPath>
+      <g clip-path="url(#clip2)">
+        <rect x="20" y="212" width="672" height="52" fill="#e9edf1"/>
+        <rect x="692" y="212" width="288" height="52" fill="#d3e4f8"/>
+        <line x1="692" y1="212" x2="692" y2="264" stroke="#1a9d4a" stroke-width="2.6"/>
+      </g>
+      <rect x="20" y="212" width="960" height="52" rx="10" fill="none" stroke="#1a9d4a" stroke-width="1.8"/>
+      <text x="356" y="244" font-size="13" font-weight="800" fill="#374151" text-anchor="middle">Train (2024 - 2025)</text>
+      <text x="836" y="244" font-size="13" font-weight="800" fill="#274d80" text-anchor="middle">Test (2026)</text>
+      <line x1="20" y1="282" x2="960" y2="282" stroke="#1a9d4a" stroke-width="1.8" marker-end="url(#arwg)"/>
+      <text x="500" y="304" font-size="12.5" font-weight="800" fill="#15803d" text-anchor="middle">строгая стрела времени</text>
+    </g>
+  </svg>
+</div>
+</div>
+
+
+<!-- 23 TYPE 5 SUT -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Блок 3 · тип 5 · суть</p>
+  <h2>Look-Ahead Bias (Временные утечки)</h2>
+  <p class="sub" style="margin-top:0;max-width:1060px;">Использование данных из времени T₁ для обучения модели, которая принимает решение во времени T₀ (где T₁ &gt; T₀).</p>
+  <svg viewBox="0 0 960 176" style="width:100%;max-width:940px;height:auto;margin:12px auto 0;display:block" role="img" aria-label="Данные из будущего попадают в решение прошлого">
+    <g font-family="inherit">
+      <line x1="60" y1="102" x2="912" y2="102" stroke="#c3c7cf" stroke-width="2" marker-end="url(#arw)"/>
+      <circle cx="260" cy="102" r="10" fill="#16171a"/>
+      <circle cx="700" cy="102" r="10" fill="#e02d20"/>
+      <g font-size="13" text-anchor="middle">
+        <text x="260" y="132" font-weight="900" fill="#16171a">T₀</text>
+        <text x="260" y="152" font-weight="700" fill="#5a6069">модель принимает решение</text>
+        <text x="700" y="132" font-weight="900" fill="#b91c1c">T₁</text>
+        <text x="700" y="152" font-weight="700" fill="#b91c1c">данные появляются в системе</text>
+      </g>
+      <path d="M700 78 C 600 40, 360 40, 268 76" fill="none" stroke="#e02d20" stroke-width="2" stroke-dasharray="6 5" marker-end="url(#arwr)"/>
+      <text x="484" y="34" font-size="13.5" font-weight="900" fill="#b91c1c" text-anchor="middle">признак идёт назад по времени</text>
+      <text x="484" y="172" font-size="12.5" font-weight="700" fill="#2b2f36" text-anchor="middle">В обучении такой признак заполнен у каждой строки, в проде в момент T₀ его ячейка пуста.</text>
+    </g>
+  </svg>
+</div>
+</div>
+
+
+<!-- 24 TYPE 5 EX 1 -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Блок 3 · тип 5 · пример 1 из 2</p>
+  <h2>Кредитный скоринг в банках</h2>
+  <p class="sub" style="margin-top:0;max-width:1060px;">Клиент подает заявку на кредит 10 марта, нужно оценить его надежность. В фичи берется колонка <span class="mono">доход_за_март</span>.</p>
+  <svg viewBox="0 0 1000 214" style="width:100%;max-width:1000px;height:auto;margin:8px auto 0;display:block" role="img" aria-label="Март: заявка 10 числа, выписка появляется 31 числа">
+    <g font-family="inherit">
+      <rect x="30" y="60" width="930" height="44" rx="10" fill="#f8f9fb" stroke="#dfe2e8" stroke-width="1.5"/>
+      <g stroke="#e6e8ee" stroke-width="1">
+        <line x1="330" y1="60" x2="330" y2="104"/><line x1="630" y1="60" x2="630" y2="104"/>
+      </g>
+      <path d="M330 61 h619 a10 10 0 0 1 10 10 v22 a10 10 0 0 1 -10 10 h-619 z" fill="url(#hatchr)" opacity=".65"/>
+      <line x1="330" y1="52" x2="330" y2="112" stroke="#16171a" stroke-width="2.6"/>
+      <line x1="959" y1="52" x2="959" y2="112" stroke="#e02d20" stroke-width="2.6"/>
+      <text x="46" y="88" font-size="12.5" font-weight="700" fill="#5a6069">1 марта</text>
+      <text x="330" y="40" font-size="13" font-weight="900" fill="#16171a" text-anchor="middle">10 марта</text>
+      <text x="330" y="132" font-size="12.5" font-weight="800" fill="#16171a" text-anchor="middle">заявка подана, модель принимает решение</text>
+      <text x="959" y="40" font-size="13" font-weight="900" fill="#b91c1c" text-anchor="end">31 марта</text>
+      <text x="959" y="132" font-size="12.5" font-weight="800" fill="#b91c1c" text-anchor="end">выписка по зарплате появляется в базе</text>
+      <path d="M340 158 H949" stroke="#e02d20" stroke-width="2" fill="none"/>
+      <path d="M340 158 v-9 M949 158 v-9" stroke="#e02d20" stroke-width="2"/>
+      <text x="630" y="180" font-size="13.5" font-weight="900" fill="#b91c1c" text-anchor="middle">21 день, которого модель на самом деле не видела</text>
+      <text x="630" y="204" font-size="12.5" font-weight="700" fill="#2b2f36" text-anchor="middle">Значение колонки доход_за_март содержит зарплату, полученную уже после решения по заявке.</text>
+    </g>
+  </svg>
+  <div class="note"><p><b class="mk r">Почему это утечка.</b> 10 марта месяц еще не закончился. Выписка по зарплате за весь март появится в базе только 31 марта. На момент 10 марта этих данных не существует.</p></div>
+</div>
+</div>
+
+
+<!-- 25 TYPE 5 EX 2 -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Блок 3 · тип 5 · пример 2 из 2</p>
+  <h2>Финансовый трейдинг / Прогноз акций</h2>
+  <p class="sub" style="margin-top:0;max-width:1060px;">Предсказываем цену акции на завтрашнее утро. В качестве фичи взята <span class="mono">волатильность_за_неделю</span>, где недельный интервал посчитан от понедельника до воскресенья, а предсказание делается на среду.</p>
+  <svg viewBox="0 0 1000 216" style="width:100%;max-width:1000px;height:auto;margin:10px auto 0;display:block" role="img" aria-label="Недельное окно волатильности и момент прогноза в среду">
+    <g font-family="inherit">
+      <clipPath id="clipw"><rect x="30" y="56" width="938" height="54" rx="10"/></clipPath>
+      <g clip-path="url(#clipw)">
+        <rect x="30" y="56" width="938" height="54" fill="#f8f9fb"/>
+        <rect x="432" y="56" width="268" height="54" fill="#fee2e2"/>
+        <rect x="700" y="56" width="268" height="54" fill="#fdeeed"/>
+        <g stroke="#e6e8ee" stroke-width="1.2">
+          <line x1="164" y1="56" x2="164" y2="110"/><line x1="298" y1="56" x2="298" y2="110"/>
+          <line x1="432" y1="56" x2="432" y2="110"/><line x1="566" y1="56" x2="566" y2="110"/>
+          <line x1="700" y1="56" x2="700" y2="110"/><line x1="834" y1="56" x2="834" y2="110"/>
+        </g>
+      </g>
+      <rect x="30" y="56" width="938" height="54" rx="10" fill="none" stroke="#dfe2e8" stroke-width="1.6"/>
+      <g font-size="13" font-weight="800" text-anchor="middle" fill="#2b2f36">
+        <text x="97" y="89">Пн</text><text x="231" y="89">Вт</text><text x="365" y="89">Ср</text>
+        <text x="499" y="89" fill="#b91c1c">Чт</text><text x="633" y="89" fill="#b91c1c">Пт</text>
+        <text x="767" y="89" fill="#b91c1c">Сб</text><text x="901" y="89" fill="#b91c1c">Вс</text>
+      </g>
+      <path d="M30 40 H968" stroke="#6b7280" stroke-width="2" fill="none"/>
+      <path d="M30 40 v9 M968 40 v9" stroke="#6b7280" stroke-width="2"/>
+      <text x="499" y="30" font-size="12.5" font-weight="800" fill="#374151" text-anchor="middle">окно признака волатильность_за_неделю</text>
+      <line x1="365" y1="118" x2="365" y2="144" stroke="#16171a" stroke-width="2" marker-end="url(#arw)"/>
+      <text x="365" y="164" font-size="13" font-weight="900" fill="#16171a" text-anchor="middle">прогноз делается здесь</text>
+      <path d="M432 128 H700" stroke="#e02d20" stroke-width="2" fill="none"/>
+      <path d="M432 128 v-8 M700 128 v-8" stroke="#e02d20" stroke-width="2"/>
+      <text x="700" y="164" font-size="13" font-weight="900" fill="#b91c1c">четверг и пятница уже вошли в расчёт</text>
+      <line x1="30" y1="186" x2="968" y2="186" stroke="#eceef1" stroke-width="1.4"/>
+      <text x="499" y="210" font-size="12.5" font-weight="700" fill="#2b2f36" text-anchor="middle">Окно признака обязано заканчиваться в момент прогноза, а не на календарной границе недели.</text>
+    </g>
+  </svg>
+  <div class="note"><p><b class="mk r alt">Почему это утечка.</b> Четверг и пятница уже вошли в расчет волатильности.</p></div>
+</div>
+</div>
+
+
+<!-- T6 DIVIDER -->
+<div class="slide gdiv typdiv">
+<div class="sc">
+  <p class="lvkick">Блок 3 · Тип 6 из 12</p>
+  <div class="tnum">06</div>
+  <h1>Rolling Windows Overlap</h1>
+  <div class="tru">Скользящие окна</div>
+  <p class="tline">Окно агрегации захватывает дни после точки отсечки T₀.</p>
+  <div class="tprog"><i class="done"></i><i class="done"></i><i class="done"></i><i class="done"></i><i class="done"></i><i class="now"></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+</div>
+</div>
+
+
+<!-- 26 TYPE 6 SUT -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Блок 3 · тип 6 · суть</p>
+  <h2>Rolling Windows Overlap (Скользящие окна)</h2>
+  <p class="sub" style="margin-top:0;max-width:1060px;">При генерации агрегатных признаков (суммы, средние за N дней) окно агрегации случайно захватывает дни после точки отсечки T₀.</p>
+  <svg viewBox="0 0 1000 248" style="width:100%;max-width:1000px;height:auto;margin:10px auto 0;display:block" role="img" aria-label="Окно агрегации, заходящее за точку отсечки, и корректное окно">
+    <g font-family="inherit">
+      <line x1="620" y1="20" x2="620" y2="212" stroke="#16171a" stroke-width="2.4" stroke-dasharray="7 5"/>
+      <text x="620" y="232" font-size="13" font-weight="900" fill="#16171a" text-anchor="middle">T₀ точка отсечки, здесь принимается решение</text>
+
+      <text x="30" y="46" font-size="12.5" font-weight="900" fill="#b91c1c">окно съехало вперёд</text>
+      <rect x="180" y="56" width="440" height="44" rx="9" fill="#e9edf1" stroke="#6b7280" stroke-width="1.5"/>
+      <rect x="620" y="56" width="230" height="44" rx="9" fill="url(#hatchr)" stroke="#e02d20" stroke-width="1.8"/>
+      <text x="400" y="84" font-size="12.5" font-weight="800" fill="#374151" text-anchor="middle">дни до T₀</text>
+      <text x="735" y="84" font-size="12.5" font-weight="900" fill="#b91c1c" text-anchor="middle">дни после T₀</text>
+      <text x="866" y="84" font-size="12.5" font-weight="800" fill="#b91c1c">попали в агрегат</text>
+
+      <line x1="30" y1="128" x2="970" y2="128" stroke="#eceef1" stroke-width="1.4"/>
+
+      <text x="30" y="164" font-size="12.5" font-weight="900" fill="#15803d">окно закрыто на T₀</text>
+      <rect x="180" y="174" width="440" height="44" rx="9" fill="#e7f5ec" stroke="#1a9d4a" stroke-width="1.8"/>
+      <text x="400" y="202" font-size="12.5" font-weight="800" fill="#15803d" text-anchor="middle">только дни до T₀</text>
+      <text x="640" y="202" font-size="12.5" font-weight="800" fill="#15803d">агрегат воспроизводим в проде</text>
+    </g>
+  </svg>
+  <div class="note"><p>Признак выглядит корректно по названию: «за 30 дней». Ошибка спрятана в дате запуска скрипта, который эти 30 дней отсчитывал.</p></div>
+</div>
+</div>
+
+
+<!-- 27 TYPE 6 EX 1 -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Блок 3 · тип 6 · пример 1 из 2</p>
+  <h2>Ритейл / Отток покупателей</h2>
+  <p class="sub" style="margin-top:0;max-width:1060px;">Точка отсечки T₀ = 10 июня, предсказываем отток. Признак <span class="mono">сумма_покупок_за_30_дней</span> сгенерирован скриптом, который запустили 15 июня и отсчитали 30 дней назад (с 15 мая по 15 июня).</p>
+  <svg viewBox="0 0 1000 218" style="width:100%;max-width:1000px;height:auto;margin:8px auto 0;display:block" role="img" aria-label="Окно с 15 мая по 15 июня против точки отсечки 10 июня">
+    <g font-family="inherit">
+      <line x1="40" y1="150" x2="960" y2="150" stroke="#c3c7cf" stroke-width="1.8"/>
+      <g stroke="#c3c7cf" stroke-width="1.4">
+        <line x1="120" y1="150" x2="120" y2="158"/><line x1="700" y1="150" x2="700" y2="158"/><line x1="880" y1="150" x2="880" y2="158"/>
+      </g>
+      <g font-size="12.5" font-weight="700" fill="#5a6069" text-anchor="middle">
+        <text x="120" y="176">15 мая</text><text x="700" y="176">10 июня</text><text x="880" y="176">15 июня</text>
+      </g>
+      <clipPath id="clipret"><rect x="120" y="70" width="760" height="46" rx="9"/></clipPath>
+      <g clip-path="url(#clipret)">
+        <rect x="120" y="70" width="580" height="46" fill="#e9edf1"/>
+        <rect x="700" y="70" width="180" height="46" fill="url(#hatchr)"/>
+      </g>
+      <rect x="120" y="70" width="760" height="46" rx="9" fill="none" stroke="#6b7280" stroke-width="1.6"/>
+      <text x="410" y="99" font-size="12.5" font-weight="800" fill="#374151" text-anchor="middle">окно признака: 30 дней назад от даты запуска скрипта</text>
+      <line x1="700" y1="52" x2="700" y2="150" stroke="#16171a" stroke-width="2.4" stroke-dasharray="7 5"/>
+      <text x="700" y="42" font-size="13" font-weight="900" fill="#16171a" text-anchor="middle">T₀, дата принятия решения</text>
+      <path d="M700 130 H880" stroke="#e02d20" stroke-width="2.2" fill="none"/>
+      <path d="M700 130 v-8 M880 130 v-8" stroke="#e02d20" stroke-width="2.2"/>
+      <text x="790" y="204" font-size="13.5" font-weight="900" fill="#b91c1c" text-anchor="middle">11-15 июня: 5 дней уже после даты решения</text>
+    </g>
+  </svg>
+  <div class="note"><p><b class="mk r">Почему это утечка.</b> В окно попали 5 дней (11-15 июня), происходившие уже после даты принятия решения.</p></div>
+</div>
+</div>
+
+
+<!-- 28 TYPE 6 EX 2 -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Блок 3 · тип 6 · пример 2 из 2</p>
+  <h2>Телеком / Смена тарифа</h2>
+  <p class="sub" style="margin-top:0;max-width:1060px;">Модель предсказывает, сменит ли пользователь тариф 1-го числа месяца. Фича <span class="mono">объем_скачанного_трафика</span> берется из таблицы биллинга за текущий месяц целиком.</p>
+  <svg viewBox="0 0 1000 222" style="width:100%;max-width:1000px;height:auto;margin:8px auto 0;display:block" role="img" aria-label="Биллинг за месяц целиком и момент смены тарифа">
+    <g font-family="inherit">
+      <text x="40" y="34" font-size="12.5" font-weight="800" fill="#374151">таблица биллинга за текущий месяц целиком</text>
+      <clipPath id="clipbil"><rect x="40" y="46" width="920" height="52" rx="10"/></clipPath>
+      <g clip-path="url(#clipbil)">
+        <rect x="40" y="46" width="70" height="52" fill="#e9edf1"/>
+        <rect x="110" y="46" width="850" height="52" fill="url(#hatchr)"/>
+      </g>
+      <rect x="40" y="46" width="920" height="52" rx="10" fill="none" stroke="#6b7280" stroke-width="1.6"/>
+      <line x1="110" y1="42" x2="110" y2="140" stroke="#16171a" stroke-width="2.4"/>
+      <text x="114" y="136" font-size="13" font-weight="900" fill="#16171a">1-е число: пользователь меняет тариф</text>
+      <text x="540" y="78" font-size="13" font-weight="900" fill="#b91c1c" text-anchor="middle">байты, потраченные уже на новом тарифе</text>
+      <text x="540" y="126" font-size="12.5" font-weight="700" fill="#b91c1c" text-anchor="middle">объём трафика после смены тарифа доступен только задним числом</text>
+      <line x1="40" y1="152" x2="960" y2="152" stroke="#eceef1" stroke-width="1.4"/>
+      <rect x="40" y="166" width="440" height="44" rx="10" fill="#fee2e2" stroke="#e02d20" stroke-width="1.7"/>
+      <text x="260" y="194" font-size="12.5" font-weight="800" fill="#b91c1c" text-anchor="middle">агрегат по календарному месяцу</text>
+      <rect x="520" y="166" width="440" height="44" rx="10" fill="#e7f5ec" stroke="#1a9d4a" stroke-width="1.7"/>
+      <text x="740" y="194" font-size="12.5" font-weight="800" fill="#15803d" text-anchor="middle">агрегат по дням строго до 1-го числа</text>
+      <line x1="482" y1="188" x2="514" y2="188" stroke="#c3c7cf" stroke-width="1.7" marker-end="url(#arw)"/>
+    </g>
+  </svg>
+  <div class="note"><p><b class="mk r alt">Почему это утечка.</b> В объем трафика вошли байты, потраченные пользователем уже на новом тарифе после 1-го числа.</p></div>
+</div>
+</div>
+
+
+<!-- T7 DIVIDER -->
+<div class="slide gdiv typdiv">
+<div class="sc">
+  <p class="lvkick">Блок 3 · Тип 7 из 12</p>
+  <div class="tnum">07</div>
+  <h1>Spatial Leakage</h1>
+  <div class="tru">Пространственная утечка</div>
+  <p class="tline">Географически близкие объекты попали и в train, и в test.</p>
+  <div class="tprog"><i class="done"></i><i class="done"></i><i class="done"></i><i class="done"></i><i class="done"></i><i class="done"></i><i class="now"></i><i></i><i></i><i></i><i></i><i></i></div>
+</div>
+</div>
+
+
+<!-- 29 TYPE 7 SUT -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Блок 3 · тип 7 · суть</p>
+  <h2>Spatial Leakage (Пространственная утечка)</h2>
+  <p class="sub" style="margin-top:0;max-width:1060px;">Географически близкие объекты очень похожи (Закон Тоблера). Если соседние точки попадают в Train и Test, модель просто срисовывает значения.</p>
+  <svg viewBox="0 0 1000 250" style="width:100%;max-width:1000px;height:auto;margin:8px auto 0;display:block" role="img" aria-label="Случайное деление точек на карте и деление по блокам">
+    <g font-family="inherit">
+      <text x="30" y="26" font-size="12.5" font-weight="900" fill="#b91c1c">случайное деление точек</text>
+      <rect x="30" y="38" width="420" height="180" rx="12" fill="#fafbfc" stroke="#dfe2e8" stroke-width="1.5"/>
+      <g>
+        <circle cx="92" cy="82" r="8" fill="#6b7280"/><circle cx="112" cy="98" r="8" fill="#3b6fb5"/>
+        <circle cx="176" cy="70" r="8" fill="#3b6fb5"/><circle cx="196" cy="88" r="8" fill="#6b7280"/>
+        <circle cx="268" cy="76" r="8" fill="#6b7280"/><circle cx="288" cy="94" r="8" fill="#3b6fb5"/>
+        <circle cx="352" cy="82" r="8" fill="#3b6fb5"/><circle cx="372" cy="100" r="8" fill="#6b7280"/>
+        <circle cx="100" cy="158" r="8" fill="#3b6fb5"/><circle cx="120" cy="176" r="8" fill="#6b7280"/>
+        <circle cx="200" cy="152" r="8" fill="#6b7280"/><circle cx="220" cy="170" r="8" fill="#3b6fb5"/>
+        <circle cx="300" cy="160" r="8" fill="#3b6fb5"/><circle cx="320" cy="178" r="8" fill="#6b7280"/>
+        <circle cx="380" cy="154" r="8" fill="#6b7280"/><circle cx="400" cy="172" r="8" fill="#3b6fb5"/>
+      </g>
+      <g stroke="#e02d20" stroke-width="1.6">
+        <line x1="98" y1="88" x2="106" y2="92"/><line x1="182" y1="76" x2="190" y2="82"/>
+        <line x1="274" y1="82" x2="282" y2="88"/><line x1="358" y1="88" x2="366" y2="94"/>
+        <line x1="106" y1="164" x2="114" y2="170"/><line x1="206" y1="158" x2="214" y2="164"/>
+        <line x1="306" y1="166" x2="314" y2="172"/><line x1="386" y1="160" x2="394" y2="166"/>
+      </g>
+      <text x="240" y="206" font-size="12.5" font-weight="800" fill="#b91c1c" text-anchor="middle">каждая тестовая точка имеет соседа в Train</text>
+
+      <text x="550" y="26" font-size="12.5" font-weight="900" fill="#15803d">деление по блокам карты</text>
+      <rect x="550" y="38" width="420" height="180" rx="12" fill="#fafbfc" stroke="#dfe2e8" stroke-width="1.5"/>
+      <rect x="550" y="38" width="252" height="180" fill="#e9edf1"/>
+      <rect x="802" y="38" width="168" height="180" fill="#d3e4f8"/>
+      <rect x="550" y="38" width="420" height="180" rx="12" fill="none" stroke="#1a9d4a" stroke-width="1.8"/>
+      <line x1="802" y1="38" x2="802" y2="218" stroke="#1a9d4a" stroke-width="2.4"/>
+      <g fill="#6b7280">
+        <circle cx="612" cy="82" r="8"/><circle cx="632" cy="98" r="8"/><circle cx="696" cy="70" r="8"/><circle cx="716" cy="88" r="8"/>
+        <circle cx="620" cy="158" r="8"/><circle cx="640" cy="176" r="8"/><circle cx="720" cy="152" r="8"/><circle cx="740" cy="170" r="8"/>
+      </g>
+      <g fill="#3b6fb5">
+        <circle cx="852" cy="76" r="8"/><circle cx="872" cy="94" r="8"/><circle cx="920" cy="82" r="8"/>
+        <circle cx="860" cy="160" r="8"/><circle cx="880" cy="178" r="8"/><circle cx="930" cy="166" r="8"/>
+      </g>
+      <text x="676" y="206" font-size="12.5" font-weight="800" fill="#374151" text-anchor="middle">Train</text>
+      <text x="886" y="206" font-size="12.5" font-weight="800" fill="#274d80" text-anchor="middle">Test</text>
+      <text x="500" y="242" font-size="12.5" font-weight="700" fill="#2b2f36" text-anchor="middle">Модель проверяется на территории, которую она во время обучения не видела ни в одной строке.</text>
+    </g>
+  </svg>
+</div>
+</div>
+
+
+<!-- 30 TYPE 7 EX 1 -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Блок 3 · тип 7 · пример 1 из 2</p>
+  <h2>Оценка стоимости квартир</h2>
+  <p class="sub" style="margin-top:0;max-width:1060px;">Предсказание цены недвижимости по координатам и характеристикам. В датасете 10 квартир из одной и той же новостройки. При случайном сплите 8 попали в Train, 2 в Test.</p>
+  <svg viewBox="0 0 1000 226" style="width:100%;max-width:1000px;height:auto;margin:8px auto 0;display:block" role="img" aria-label="Десять квартир одного дома разделены между train и test">
+    <g font-family="inherit">
+      <rect x="60" y="24" width="300" height="180" rx="10" fill="#f8f9fb" stroke="#c3c7cf" stroke-width="1.8"/>
+      <text x="210" y="18" font-size="12.5" font-weight="900" fill="#2b2f36" text-anchor="middle">одна новостройка, 10 квартир</text>
+      <g>
+        <rect x="82" y="44" width="58" height="34" rx="5" fill="#e9edf1" stroke="#6b7280" stroke-width="1.4"/>
+        <rect x="152" y="44" width="58" height="34" rx="5" fill="#e9edf1" stroke="#6b7280" stroke-width="1.4"/>
+        <rect x="222" y="44" width="58" height="34" rx="5" fill="#d3e4f8" stroke="#3b6fb5" stroke-width="1.8"/>
+        <rect x="292" y="44" width="46" height="34" rx="5" fill="#e9edf1" stroke="#6b7280" stroke-width="1.4"/>
+        <rect x="82" y="92" width="58" height="34" rx="5" fill="#e9edf1" stroke="#6b7280" stroke-width="1.4"/>
+        <rect x="152" y="92" width="58" height="34" rx="5" fill="#d3e4f8" stroke="#3b6fb5" stroke-width="1.8"/>
+        <rect x="222" y="92" width="58" height="34" rx="5" fill="#e9edf1" stroke="#6b7280" stroke-width="1.4"/>
+        <rect x="292" y="92" width="46" height="34" rx="5" fill="#e9edf1" stroke="#6b7280" stroke-width="1.4"/>
+        <rect x="82" y="140" width="58" height="34" rx="5" fill="#e9edf1" stroke="#6b7280" stroke-width="1.4"/>
+        <rect x="152" y="140" width="58" height="34" rx="5" fill="#e9edf1" stroke="#6b7280" stroke-width="1.4"/>
+      </g>
+      <text x="210" y="196" font-size="12" font-weight="700" fill="#5a6069" text-anchor="middle">серые в Train, синие в Test</text>
+
+      <path d="M370 114 H430" stroke="#c3c7cf" stroke-width="1.7" marker-end="url(#arw)"/>
+      <rect x="440" y="52" width="240" height="56" rx="10" fill="#e9edf1" stroke="#6b7280" stroke-width="1.6"/>
+      <text x="560" y="76" font-size="12.5" font-weight="800" fill="#374151" text-anchor="middle">8 квартир в Train</text>
+      <text x="560" y="96" font-size="11.5" font-weight="700" fill="#374151" text-anchor="middle">цена квадратного метра этого дома</text>
+      <rect x="440" y="122" width="240" height="56" rx="10" fill="#d3e4f8" stroke="#3b6fb5" stroke-width="1.6"/>
+      <text x="560" y="146" font-size="12.5" font-weight="800" fill="#274d80" text-anchor="middle">2 квартиры в Test</text>
+      <text x="560" y="166" font-size="11.5" font-weight="700" fill="#274d80" text-anchor="middle">та же цена квадратного метра</text>
+      <path d="M690 80 C 730 80, 730 150, 690 150" fill="none" stroke="#e02d20" stroke-width="1.8"/>
+      <text x="760" y="108" font-size="13" font-weight="900" fill="#b91c1c">ответ переносится</text>
+      <text x="760" y="128" font-size="13" font-weight="900" fill="#b91c1c">напрямую</text>
+      <text x="760" y="164" font-size="12" font-weight="700" fill="#2b2f36">площадь и этаж модель</text>
+      <text x="760" y="182" font-size="12" font-weight="700" fill="#2b2f36">анализировать не стала</text>
+    </g>
+  </svg>
+  <div class="note"><p><b class="mk r">Почему это утечка.</b> Модель не научилась анализировать площадь и этаж, она просто запомнила среднюю цену квадратного метра этого дома и применила её к тесту.</p></div>
+</div>
+</div>
+
+
+<!-- 31 TYPE 7 EX 2 -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Блок 3 · тип 7 · пример 2 из 2</p>
+  <h2>Агротех / Снимки полей со спутника</h2>
+  <p class="sub" style="margin-top:0;max-width:1060px;">Прогноз урожайности по пикселям спутникового снимка. Случайное разбиение пикселей одного и того же поля между Train и Test.</p>
+  <svg viewBox="0 0 1000 234" style="width:100%;max-width:1000px;height:auto;margin:8px auto 0;display:block" role="img" aria-label="Случайное и блочное разбиение пикселей поля">
+    <g font-family="inherit">
+      <text x="30" y="26" font-size="12.5" font-weight="900" fill="#b91c1c">пиксели поделены случайно</text>
+      <g>
+        <rect x="30" y="40" width="36" height="36" fill="#e9edf1" stroke="#fff"/><rect x="66" y="40" width="36" height="36" fill="#d3e4f8" stroke="#fff"/>
+        <rect x="102" y="40" width="36" height="36" fill="#e9edf1" stroke="#fff"/><rect x="138" y="40" width="36" height="36" fill="#e9edf1" stroke="#fff"/>
+        <rect x="174" y="40" width="36" height="36" fill="#d3e4f8" stroke="#fff"/><rect x="210" y="40" width="36" height="36" fill="#e9edf1" stroke="#fff"/>
+        <rect x="246" y="40" width="36" height="36" fill="#e9edf1" stroke="#fff"/><rect x="282" y="40" width="36" height="36" fill="#d3e4f8" stroke="#fff"/>
+        <rect x="30" y="76" width="36" height="36" fill="#d3e4f8" stroke="#fff"/><rect x="66" y="76" width="36" height="36" fill="#e9edf1" stroke="#fff"/>
+        <rect x="102" y="76" width="36" height="36" fill="#e9edf1" stroke="#fff"/><rect x="138" y="76" width="36" height="36" fill="#d3e4f8" stroke="#fff"/>
+        <rect x="174" y="76" width="36" height="36" fill="#e9edf1" stroke="#fff"/><rect x="210" y="76" width="36" height="36" fill="#d3e4f8" stroke="#fff"/>
+        <rect x="246" y="76" width="36" height="36" fill="#e9edf1" stroke="#fff"/><rect x="282" y="76" width="36" height="36" fill="#e9edf1" stroke="#fff"/>
+        <rect x="30" y="112" width="36" height="36" fill="#e9edf1" stroke="#fff"/><rect x="66" y="112" width="36" height="36" fill="#d3e4f8" stroke="#fff"/>
+        <rect x="102" y="112" width="36" height="36" fill="#d3e4f8" stroke="#fff"/><rect x="138" y="112" width="36" height="36" fill="#e9edf1" stroke="#fff"/>
+        <rect x="174" y="112" width="36" height="36" fill="#e9edf1" stroke="#fff"/><rect x="210" y="112" width="36" height="36" fill="#e9edf1" stroke="#fff"/>
+        <rect x="246" y="112" width="36" height="36" fill="#d3e4f8" stroke="#fff"/><rect x="282" y="112" width="36" height="36" fill="#e9edf1" stroke="#fff"/>
+      </g>
+      <rect x="30" y="40" width="288" height="108" fill="none" stroke="#e02d20" stroke-width="1.8"/>
+      <text x="174" y="170" font-size="12" font-weight="700" fill="#b91c1c" text-anchor="middle">соседний пиксель из Train стоит вплотную</text>
+
+      <rect x="360" y="56" width="250" height="76" rx="10" fill="#fff" stroke="#e02d20" stroke-width="1.7"/>
+      <text x="485" y="80" font-size="12.5" font-weight="800" fill="#b91c1c" text-anchor="middle">у соседей одинаковые</text>
+      <text x="485" y="100" font-size="12.5" font-weight="800" fill="#b91c1c" text-anchor="middle">освещённость, влажность</text>
+      <text x="485" y="120" font-size="12.5" font-weight="800" fill="#b91c1c" text-anchor="middle">и тип почвы</text>
+
+      <text x="672" y="26" font-size="12.5" font-weight="900" fill="#15803d">поля целиком в одну часть</text>
+      <g>
+        <rect x="672" y="40" width="144" height="108" fill="#e9edf1"/>
+        <rect x="816" y="40" width="144" height="108" fill="#d3e4f8"/>
+        <g stroke="#fff" stroke-width="1.6">
+          <line x1="708" y1="40" x2="708" y2="148"/><line x1="744" y1="40" x2="744" y2="148"/><line x1="780" y1="40" x2="780" y2="148"/>
+          <line x1="852" y1="40" x2="852" y2="148"/><line x1="888" y1="40" x2="888" y2="148"/><line x1="924" y1="40" x2="924" y2="148"/>
+          <line x1="672" y1="76" x2="960" y2="76"/><line x1="672" y1="112" x2="960" y2="112"/>
+        </g>
+      </g>
+      <rect x="672" y="40" width="288" height="108" fill="none" stroke="#1a9d4a" stroke-width="1.8"/>
+      <line x1="816" y1="40" x2="816" y2="148" stroke="#1a9d4a" stroke-width="2.6"/>
+      <text x="744" y="170" font-size="12.5" font-weight="800" fill="#374151" text-anchor="middle">поле в Train</text>
+      <text x="888" y="170" font-size="12.5" font-weight="800" fill="#274d80" text-anchor="middle">другое поле в Test</text>
+      <line x1="30" y1="192" x2="960" y2="192" stroke="#eceef1" stroke-width="1.4"/>
+      <text x="495" y="218" font-size="12.5" font-weight="700" fill="#2b2f36" text-anchor="middle">Оценка на новом поле показывает, умеет ли модель работать со спектром, а не с памятью о соседях.</text>
+    </g>
+  </svg>
+  <div class="note"><p><b class="mk r alt">Почему это утечка.</b> Соседние пиксели имеют одинаковую освещенность, влажность и тип почвы. Модель копирует соседний пиксель вместо анализа спектра.</p></div>
+</div>
+</div>
+
+
+<!-- 32 BLOCK 4 DIVIDER -->
+<div class="slide gdiv">
+<div class="sc">
+  <p class="lvkick">Блок 4 · типы 8-9</p>
+  <h1>Entity &amp; Structural Leakage</h1>
+  <div class="ten">Зависимости объектов и структуры</div>
+  <p class="tline">Строка в таблице не равна объекту реального мира. Один пациент, один мошенник, один пользователь порождают десятки строк, и случайное деление раскладывает их по обе стороны границы.</p>
+  <div class="ltypes">
+    <span>8. Group Leakage (Утечка по сущности)</span>
+    <span>9. Graph &amp; Link Leakage (Графовые утечки)</span>
+  </div>
+  <div class="tprog"><i class="done"></i><i class="done"></i><i class="done"></i><i class="now"></i><i></i></div>
+</div>
+</div>
+
+
+<!-- T8 DIVIDER -->
+<div class="slide gdiv typdiv">
+<div class="sc">
+  <p class="lvkick">Блок 4 · Тип 8 из 12</p>
+  <div class="tnum">08</div>
+  <h1>Group Leakage</h1>
+  <div class="tru">Утечка по сущности</div>
+  <p class="tline">Записи одного объекта оказались одновременно в train и в test.</p>
+  <div class="tprog"><i class="done"></i><i class="done"></i><i class="done"></i><i class="done"></i><i class="done"></i><i class="done"></i><i class="done"></i><i class="now"></i><i></i><i></i><i></i><i></i></div>
+</div>
+</div>
+
+
+<!-- 33 GROUP LEAKAGE VIS -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Блок 4 · тип 8 · визуализация</p>
+  <h2>Пациент №42 в Train и в Test одновременно</h2>
+  <p class="sub" style="margin-top:0;max-width:1060px;">Проблема возникает, когда один и тот же реальный объект порождает несколько строк в базе. Пациент №42 имеет 5 снимков в базе.</p>
+  <svg viewBox="0 0 1000 300" style="width:100%;max-width:1040px;height:auto;margin:8px auto 0;display:block" role="img" aria-label="Случайное деление снимков одного пациента и деление по группам">
+    <g font-family="inherit">
+      <rect x="6" y="6" width="482" height="288" rx="14" fill="#fffafa" stroke="#e02d20" stroke-width="1.8"/>
+      <text x="247" y="32" font-size="13.5" font-weight="900" fill="#b91c1c" text-anchor="middle">Случайный Split</text>
+      <text x="247" y="50" font-size="12" font-weight="700" fill="#b91c1c" text-anchor="middle">ошибка</text>
+      <text x="34" y="80" font-size="12.5" font-weight="800" fill="#374151">Train</text>
+      <g>
+        <rect x="90" y="62" width="118" height="30" rx="7" fill="#e9edf1" stroke="#6b7280" stroke-width="1.4"/>
+        <rect x="216" y="62" width="118" height="30" rx="7" fill="#e9edf1" stroke="#6b7280" stroke-width="1.4"/>
+        <rect x="342" y="62" width="118" height="30" rx="7" fill="#e9edf1" stroke="#6b7280" stroke-width="1.4"/>
+      </g>
+      <g font-size="12" font-weight="700" fill="#374151" text-anchor="middle">
+        <text x="149" y="82">Снимок 1</text><text x="275" y="82">Снимок 2</text><text x="401" y="82">Снимок 4</text>
+      </g>
+      <text x="34" y="126" font-size="12.5" font-weight="800" fill="#274d80">Test</text>
+      <g>
+        <rect x="90" y="108" width="118" height="30" rx="7" fill="#d3e4f8" stroke="#3b6fb5" stroke-width="1.4"/>
+        <rect x="216" y="108" width="118" height="30" rx="7" fill="#d3e4f8" stroke="#3b6fb5" stroke-width="1.4"/>
+      </g>
+      <g font-size="12" font-weight="700" fill="#274d80" text-anchor="middle">
+        <text x="149" y="128">Снимок 3</text><text x="275" y="128">Снимок 5</text>
+      </g>
+      <rect x="34" y="156" width="426" height="34" rx="8" fill="#fee2e2" stroke="#e02d20" stroke-width="1.6"/>
+      <text x="247" y="178" font-size="12.5" font-weight="800" fill="#b91c1c" text-anchor="middle">это снимки одного человека, пациента №42</text>
+      <text x="247" y="214" font-size="12.5" font-weight="800" fill="#b91c1c" text-anchor="middle">Модель заучила рёбра и ткани пациента №42</text>
+      <text x="247" y="238" font-size="14" font-weight="900" fill="#b91c1c" text-anchor="middle">100% accuracy: узнала знакомого пациента</text>
+      <text x="247" y="270" font-size="12" font-weight="700" fill="#2b2f36" text-anchor="middle">Оценка отвечает на вопрос «узнаёт ли модель этого человека»,</text>
+      <text x="247" y="286" font-size="12" font-weight="700" fill="#2b2f36" text-anchor="middle">а не на вопрос «видит ли она патологию».</text>
+
+      <rect x="512" y="6" width="482" height="288" rx="14" fill="#fafdfb" stroke="#1a9d4a" stroke-width="1.8"/>
+      <text x="753" y="32" font-size="13.5" font-weight="900" fill="#15803d" text-anchor="middle">GroupKFold Split</text>
+      <text x="753" y="50" font-size="12" font-weight="700" fill="#15803d" text-anchor="middle">правильно</text>
+      <text x="540" y="80" font-size="12.5" font-weight="800" fill="#374151">Train</text>
+      <g>
+        <rect x="596" y="62" width="118" height="30" rx="7" fill="#e9edf1" stroke="#6b7280" stroke-width="1.4"/>
+        <rect x="722" y="62" width="118" height="30" rx="7" fill="#e9edf1" stroke="#6b7280" stroke-width="1.4"/>
+        <rect x="848" y="62" width="118" height="30" rx="7" fill="#e9edf1" stroke="#6b7280" stroke-width="1.4"/>
+      </g>
+      <g font-size="12" font-weight="700" fill="#374151" text-anchor="middle">
+        <text x="655" y="82">Пациент №1</text><text x="781" y="82">Пациент №2</text><text x="907" y="82">Пациент №3</text>
+      </g>
+      <text x="540" y="126" font-size="12.5" font-weight="800" fill="#274d80">Test</text>
+      <rect x="596" y="108" width="370" height="30" rx="7" fill="#d3e4f8" stroke="#3b6fb5" stroke-width="1.4"/>
+      <text x="781" y="128" font-size="12" font-weight="700" fill="#274d80" text-anchor="middle">Пациент №42, все 5 снимков в одной части</text>
+      <rect x="540" y="156" width="426" height="34" rx="8" fill="#e7f5ec" stroke="#1a9d4a" stroke-width="1.6"/>
+      <text x="753" y="178" font-size="12.5" font-weight="800" fill="#15803d" text-anchor="middle">ни один снимок пациента №42 не был в обучении</text>
+      <text x="753" y="220" font-size="14" font-weight="900" fill="#15803d" text-anchor="middle">Честная проверка на новом человеке</text>
+      <text x="753" y="256" font-size="12" font-weight="700" fill="#2b2f36" text-anchor="middle">Метрика падает, и это её настоящее значение:</text>
+      <text x="753" y="274" font-size="12" font-weight="700" fill="#2b2f36" text-anchor="middle">именно столько модель покажет в клинике.</text>
+    </g>
+  </svg>
+</div>
+</div>
+
+
+<!-- 34 GROUP LEAKAGE SUT + CODE -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Блок 4 · тип 8 · суть и код</p>
+  <h2>Group Leakage (Утечка по сущности)</h2>
+  <p class="sub" style="margin-top:0;max-width:1060px;">Записи, принадлежащие одному и тому же человеку, устройству или машине, оказываются одновременно и в Train, и в Test.</p>
+  <div class="codebox" style="margin-top:6px;">
+    <div class="codebar"><span>Как защититься в коде</span></div>
+    <div class="code">from sklearn.model_selection import GroupKFold
+
+gkf = <span class="fn">GroupKFold</span>(n_splits=<span class="fn">5</span>)
+<span class="cm"># Все записи одного user_id гарантированно попадут ЛИБО в Train, ЛИБО в Test</span>
+for train_idx, test_idx in <span class="good">gkf.split(X, y, groups=df['user_id'])</span>:
+    ...</div>
+  </div>
+  <div class="note" style="max-width:940px;"><p>Колонка групп это идентификатор реального объекта: пациент, клиент, устройство, продавец, автомобиль. Если такой колонки в выгрузке нет, её надо запросить у владельца данных до того, как считать первую метрику.</p></div>
+</div>
+</div>
+
+
+<!-- 35 TYPE 8 EX 1 -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Блок 4 · тип 8 · пример 1 из 2</p>
+  <h2>Компьютерное зрение в медицине</h2>
+  <p class="sub" style="margin-top:0;max-width:1060px;">Распознавание патологии легких по рентгену. У каждого из 100 пациентов сделано по 10 снимков, снимки случайным образом перемешаны.</p>
+  <svg viewBox="0 0 1000 214" style="width:100%;max-width:1000px;height:auto;margin:8px auto 0;display:block" role="img" aria-label="Сто пациентов по десять снимков перемешаны между train и test">
+    <g font-family="inherit">
+      <rect x="30" y="30" width="230" height="88" rx="12" fill="#f8f9fb" stroke="#dfe2e8" stroke-width="1.6"/>
+      <text x="145" y="60" font-size="14" font-weight="900" fill="#2b2f36" text-anchor="middle">100 пациентов</text>
+      <text x="145" y="84" font-size="13" font-weight="800" fill="#2b2f36" text-anchor="middle">по 10 снимков</text>
+      <text x="145" y="106" font-size="12" font-weight="700" fill="#5a6069" text-anchor="middle">снимки перемешаны случайно</text>
+      <line x1="260" y1="74" x2="310" y2="74" stroke="#e02d20" stroke-width="1.8" marker-end="url(#arwr)"/>
+      <rect x="320" y="30" width="300" height="88" rx="12" fill="#fee2e2" stroke="#e02d20" stroke-width="1.8"/>
+      <text x="470" y="56" font-size="12.5" font-weight="800" fill="#b91c1c" text-anchor="middle">что модель запоминает</text>
+      <text x="470" y="78" font-size="12.5" font-weight="700" fill="#b91c1c" text-anchor="middle">уникальную форму костей,</text>
+      <text x="470" y="98" font-size="12.5" font-weight="700" fill="#b91c1c" text-anchor="middle">плотность тканей и родинки</text>
+      <line x1="620" y1="74" x2="670" y2="74" stroke="#c3c7cf" stroke-width="1.8" marker-end="url(#arw)"/>
+      <rect x="680" y="30" width="290" height="88" rx="12" fill="#fff" stroke="#dfe2e8" stroke-width="1.6"/>
+      <text x="825" y="56" font-size="12.5" font-weight="800" fill="#2b2f36" text-anchor="middle">на тесте узнаёт знакомого пациента</text>
+      <text x="825" y="82" font-size="12.5" font-weight="900" fill="#b91c1c" text-anchor="middle">при приходе нового человека</text>
+      <text x="825" y="102" font-size="12.5" font-weight="900" fill="#b91c1c" text-anchor="middle">выдаст ошибку</text>
+      <line x1="30" y1="140" x2="970" y2="140" stroke="#eceef1" stroke-width="1.4"/>
+      <text x="500" y="166" font-size="13" font-weight="700" fill="#2b2f36" text-anchor="middle">В клинике модель всегда работает с человеком, которого не видела ни на одном снимке.</text>
+      <text x="500" y="190" font-size="13" font-weight="700" fill="#2b2f36" text-anchor="middle">Оценка должна воспроизводить именно эту ситуацию, поэтому делить надо по пациентам.</text>
+    </g>
+  </svg>
+  <div class="note"><p><b class="mk r">Почему это утечка.</b> Модель запоминает уникальную форму костей, плотность тканей и родинки конкретного человека. На тесте она узнает «знакомого пациента», но при приходе нового человека в клинику выдаст ошибку.</p></div>
+</div>
+</div>
+
+
+<!-- 36 TYPE 8 EX 2 -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Блок 4 · тип 8 · пример 2 из 2</p>
+  <h2>Антифрод / Мошеннические транзакции</h2>
+  <p class="sub" style="margin-top:0;max-width:1060px;">Детекция взлома аккаунтов. В базе 50 транзакций одного мошенника, 40 попали в Train, 10 в Test.</p>
+  <svg viewBox="0 0 1000 224" style="width:100%;max-width:1000px;height:auto;margin:8px auto 0;display:block" role="img" aria-label="Пятьдесят транзакций одного мошенника разделены сорок на десять">
+    <g font-family="inherit">
+      <text x="30" y="28" font-size="12.5" font-weight="800" fill="#2b2f36">50 транзакций одного мошенника</text>
+      <clipPath id="cliptx"><rect x="30" y="40" width="940" height="44" rx="10"/></clipPath>
+      <g clip-path="url(#cliptx)">
+        <rect x="30" y="40" width="752" height="44" fill="#e9edf1"/>
+        <rect x="782" y="40" width="188" height="44" fill="#d3e4f8"/>
+        <line x1="782" y1="40" x2="782" y2="84" stroke="#e02d20" stroke-width="2.4"/>
+      </g>
+      <rect x="30" y="40" width="940" height="44" rx="10" fill="none" stroke="#6b7280" stroke-width="1.6"/>
+      <text x="406" y="68" font-size="13" font-weight="800" fill="#374151" text-anchor="middle">40 транзакций в Train</text>
+      <text x="876" y="68" font-size="13" font-weight="800" fill="#274d80" text-anchor="middle">10 в Test</text>
+
+      <rect x="30" y="106" width="450" height="82" rx="12" fill="#fee2e2" stroke="#e02d20" stroke-width="1.8"/>
+      <text x="255" y="132" font-size="12.5" font-weight="900" fill="#b91c1c" text-anchor="middle">что модель выучила</text>
+      <text x="255" y="154" font-size="12.5" font-weight="700" fill="#b91c1c" text-anchor="middle">IP-адрес, разрешение экрана,</text>
+      <text x="255" y="174" font-size="12.5" font-weight="700" fill="#b91c1c" text-anchor="middle">специфический почерк одного мошенника</text>
+
+      <line x1="486" y1="147" x2="524" y2="147" stroke="#c3c7cf" stroke-width="1.8" marker-end="url(#arw)"/>
+
+      <rect x="530" y="106" width="440" height="82" rx="12" fill="#e7f5ec" stroke="#1a9d4a" stroke-width="1.8"/>
+      <text x="750" y="132" font-size="12.5" font-weight="900" fill="#15803d" text-anchor="middle">чему она должна была научиться</text>
+      <text x="750" y="154" font-size="12.5" font-weight="700" fill="#15803d" text-anchor="middle">искать общие аномалии фрода,</text>
+      <text x="750" y="174" font-size="12.5" font-weight="700" fill="#15803d" text-anchor="middle">которые повторяются у разных мошенников</text>
+
+      <text x="500" y="214" font-size="12.5" font-weight="700" fill="#2b2f36" text-anchor="middle">Новый мошенник придёт с другого IP и с другим устройством, и выученный почерк не сработает.</text>
+    </g>
+  </svg>
+  <div class="note"><p><b class="mk r alt">Почему это утечка.</b> Модель запоминает IP-адрес, разрешение экрана или специфический почерк конкретного мошенника, вместо того чтобы научиться искать общие аномалии фрода.</p></div>
+</div>
+</div>
+
+
+<!-- T9 DIVIDER -->
+<div class="slide gdiv typdiv">
+<div class="sc">
+  <p class="lvkick">Блок 4 · Тип 9 из 12</p>
+  <div class="tnum">09</div>
+  <h1>Graph &amp; Link Leakage</h1>
+  <div class="tru">Графовые утечки</div>
+  <p class="tline">Будущие рёбра графа задействованы при генерации эмбеддингов для train.</p>
+  <div class="tprog"><i class="done"></i><i class="done"></i><i class="done"></i><i class="done"></i><i class="done"></i><i class="done"></i><i class="done"></i><i class="done"></i><i class="now"></i><i></i><i></i><i></i></div>
+</div>
+</div>
+
+
+<!-- 37 TYPE 9 SUT -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Блок 4 · тип 9 · суть</p>
+  <h2>Graph &amp; Link Leakage (Графовые утечки)</h2>
+  <p class="sub" style="margin-top:0;max-width:1060px;">В рекомендательных системах или графовых нейросетях (GNN) связи (ребра графа), которые нужно предсказать в будущем, задействуются при генерации эмбеддингов для Train.</p>
+  <svg viewBox="0 0 1000 238" style="width:100%;max-width:1000px;height:auto;margin:8px auto 0;display:block" role="img" aria-label="Граф с тестовыми рёбрами внутри и граф на момент прогноза">
+    <g font-family="inherit">
+      <text x="250" y="26" font-size="12.5" font-weight="900" fill="#b91c1c" text-anchor="middle">граф построен по всей истории</text>
+      <rect x="40" y="38" width="420" height="150" rx="12" fill="#fffafa" stroke="#e02d20" stroke-width="1.7"/>
+      <g stroke="#c3c7cf" stroke-width="1.6">
+        <line x1="120" y1="86" x2="230" y2="118"/><line x1="230" y1="118" x2="352" y2="76"/>
+        <line x1="120" y1="86" x2="140" y2="156"/><line x1="140" y1="156" x2="230" y2="118"/>
+        <line x1="230" y1="118" x2="360" y2="158"/>
+      </g>
+      <g stroke="#e02d20" stroke-width="2.2" stroke-dasharray="6 4">
+        <line x1="352" y1="76" x2="360" y2="158"/><line x1="140" y1="156" x2="352" y2="76"/>
+      </g>
+      <g fill="#8a8f9a"><circle cx="120" cy="86" r="9"/><circle cx="352" cy="76" r="9"/><circle cx="140" cy="156" r="9"/><circle cx="360" cy="158" r="9"/></g>
+      <circle cx="230" cy="118" r="11" fill="#16171a"/>
+      <text x="250" y="212" font-size="12.5" font-weight="800" fill="#b91c1c" text-anchor="middle">пунктиром показаны связи из тестового периода</text>
+      <text x="250" y="232" font-size="12.5" font-weight="700" fill="#b91c1c" text-anchor="middle">они уже участвовали в расчёте векторов</text>
+
+      <text x="750" y="26" font-size="12.5" font-weight="900" fill="#15803d" text-anchor="middle">граф на момент прогноза</text>
+      <rect x="540" y="38" width="420" height="150" rx="12" fill="#fafdfb" stroke="#1a9d4a" stroke-width="1.7"/>
+      <g stroke="#c3c7cf" stroke-width="1.6">
+        <line x1="620" y1="86" x2="730" y2="118"/><line x1="730" y1="118" x2="852" y2="76"/>
+        <line x1="620" y1="86" x2="640" y2="156"/><line x1="640" y1="156" x2="730" y2="118"/>
+        <line x1="730" y1="118" x2="860" y2="158"/>
+      </g>
+      <g fill="#8a8f9a"><circle cx="620" cy="86" r="9"/><circle cx="852" cy="76" r="9"/><circle cx="640" cy="156" r="9"/><circle cx="860" cy="158" r="9"/></g>
+      <circle cx="730" cy="118" r="11" fill="#16171a"/>
+      <text x="750" y="212" font-size="12.5" font-weight="800" fill="#15803d" text-anchor="middle">будущих рёбер в графе нет</text>
+      <text x="750" y="232" font-size="12.5" font-weight="700" fill="#15803d" text-anchor="middle">эмбеддинги посчитаны только по прошлому</text>
+    </g>
+  </svg>
+</div>
+</div>
+
+
+<!-- 38 TYPE 9 EX 1 -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Блок 4 · тип 9 · пример 1 из 2</p>
+  <h2>Рекомендательные системы</h2>
+  <p class="sub" style="margin-top:0;max-width:1060px;">Граф взаимодействия «Пользователь, Товар». Построение единого графа покупок по всей истории, включая тестовый период, перед генерацией векторов (Node2Vec / LightGCN).</p>
+  <svg viewBox="0 0 1000 218" style="width:100%;max-width:1000px;height:auto;margin:8px auto 0;display:block" role="img" aria-label="Вектор пользователя содержит связь с будущей покупкой">
+    <g font-family="inherit">
+      <circle cx="110" cy="106" r="26" fill="#16171a"/>
+      <text x="110" y="112" font-size="12" font-weight="800" fill="#fff" text-anchor="middle">user</text>
+      <g stroke="#c3c7cf" stroke-width="1.8">
+        <line x1="136" y1="94" x2="252" y2="58"/><line x1="136" y1="106" x2="252" y2="106"/>
+      </g>
+      <line x1="136" y1="120" x2="252" y2="158" stroke="#e02d20" stroke-width="2.4" stroke-dasharray="6 4"/>
+      <g>
+        <rect x="256" y="40" width="150" height="36" rx="8" fill="#f0f2f6" stroke="#dfe2e8" stroke-width="1.4"/>
+        <rect x="256" y="88" width="150" height="36" rx="8" fill="#f0f2f6" stroke="#dfe2e8" stroke-width="1.4"/>
+        <rect x="256" y="140" width="150" height="36" rx="8" fill="#fee2e2" stroke="#e02d20" stroke-width="1.8"/>
+      </g>
+      <g font-size="12" font-weight="700" text-anchor="middle">
+        <text x="331" y="63" fill="#374151">товар из прошлого</text>
+        <text x="331" y="111" fill="#374151">товар из прошлого</text>
+        <text x="331" y="163" fill="#b91c1c">товар из теста</text>
+      </g>
+      <line x1="412" y1="106" x2="452" y2="106" stroke="#c3c7cf" stroke-width="1.8" marker-end="url(#arw)"/>
+      <rect x="460" y="76" width="220" height="60" rx="10" fill="#fff" stroke="#e02d20" stroke-width="1.7"/>
+      <text x="570" y="102" font-size="12.5" font-weight="800" fill="#b91c1c" text-anchor="middle">Node2Vec / LightGCN</text>
+      <text x="570" y="122" font-size="12" font-weight="700" fill="#b91c1c" text-anchor="middle">генерация векторов</text>
+      <line x1="686" y1="106" x2="726" y2="106" stroke="#c3c7cf" stroke-width="1.8" marker-end="url(#arw)"/>
+      <rect x="734" y="66" width="236" height="80" rx="10" fill="#fee2e2" stroke="#e02d20" stroke-width="1.8"/>
+      <text x="852" y="94" font-size="12.5" font-weight="900" fill="#b91c1c" text-anchor="middle">вектор пользователя</text>
+      <text x="852" y="116" font-size="12" font-weight="700" fill="#b91c1c" text-anchor="middle">содержит связь с товаром,</text>
+      <text x="852" y="134" font-size="12" font-weight="700" fill="#b91c1c" text-anchor="middle">который он купит только в тесте</text>
+      <text x="500" y="204" font-size="12.5" font-weight="700" fill="#2b2f36" text-anchor="middle">Метрика рекомендаций выглядит отличной, потому что ответ уже вшит в геометрию векторов.</text>
+    </g>
+  </svg>
+  <div class="note"><p><b class="mk r">Почему это утечка.</b> Вектор пользователя уже содержит в себе математическую связь с товарами, которые он купит только в тесте.</p></div>
+</div>
+</div>
+
+
+<!-- 39 TYPE 9 EX 2 -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Блок 4 · тип 9 · пример 2 из 2</p>
+  <h2>Социальные сети / Link Prediction</h2>
+  <p class="sub" style="margin-top:0;max-width:1060px;">Предсказание, подпишется ли пользователь A на пользователя B. Расчет графовых метрик (PageRank, Eigenvector Centrality) на полном графе друзей.</p>
+  <svg viewBox="0 0 1000 226" style="width:100%;max-width:1000px;height:auto;margin:8px auto 0;display:block" role="img" aria-label="Метрики центральности посчитаны с учётом искомой связи">
+    <g font-family="inherit">
+      <rect x="40" y="26" width="460" height="170" rx="12" fill="#fffafa" stroke="#e02d20" stroke-width="1.7"/>
+      <g stroke="#c3c7cf" stroke-width="1.6">
+        <line x1="140" y1="72" x2="220" y2="112"/><line x1="220" y1="112" x2="150" y2="164"/>
+        <line x1="220" y1="112" x2="330" y2="72"/><line x1="330" y1="72" x2="410" y2="120"/>
+        <line x1="410" y1="120" x2="336" y2="164"/><line x1="336" y1="164" x2="220" y2="112"/>
+      </g>
+      <line x1="140" y1="72" x2="410" y2="120" stroke="#e02d20" stroke-width="2.6" stroke-dasharray="7 5"/>
+      <g fill="#8a8f9a"><circle cx="220" cy="112" r="9"/><circle cx="150" cy="164" r="9"/><circle cx="330" cy="72" r="9"/><circle cx="336" cy="164" r="9"/></g>
+      <circle cx="140" cy="72" r="13" fill="#16171a"/>
+      <text x="140" y="52" font-size="13" font-weight="900" fill="#16171a" text-anchor="middle">A</text>
+      <circle cx="410" cy="120" r="13" fill="#16171a"/>
+      <text x="432" y="124" font-size="13" font-weight="900" fill="#16171a">B</text>
+      <text x="278" y="46" font-size="12.5" font-weight="900" fill="#b91c1c" text-anchor="middle">связь, которую надо предсказать</text>
+      <text x="270" y="216" font-size="12.5" font-weight="800" fill="#b91c1c" text-anchor="middle">эта связь уже стоит в графе, по которому считали PageRank</text>
+
+      <rect x="540" y="26" width="430" height="80" rx="12" fill="#fee2e2" stroke="#e02d20" stroke-width="1.8"/>
+      <text x="755" y="54" font-size="12.5" font-weight="900" fill="#b91c1c" text-anchor="middle">PageRank и Eigenvector Centrality</text>
+      <text x="755" y="76" font-size="12.5" font-weight="700" fill="#b91c1c" text-anchor="middle">пересчитаны с учётом тех связей,</text>
+      <text x="755" y="94" font-size="12.5" font-weight="700" fill="#b91c1c" text-anchor="middle">которые модель только должна угадать</text>
+      <rect x="540" y="118" width="430" height="78" rx="12" fill="#e7f5ec" stroke="#1a9d4a" stroke-width="1.8"/>
+      <text x="755" y="146" font-size="12.5" font-weight="900" fill="#15803d" text-anchor="middle">как считать честно</text>
+      <text x="755" y="168" font-size="12.5" font-weight="700" fill="#15803d" text-anchor="middle">метрики центральности берутся с графа,</text>
+      <text x="755" y="186" font-size="12.5" font-weight="700" fill="#15803d" text-anchor="middle">обрезанного по дате прогноза</text>
+    </g>
+  </svg>
+  <div class="note"><p><b class="mk r alt">Почему это утечка.</b> Метрики центральности узлов пересчитаны с учетом тех связей, которые модель только должна угадать.</p></div>
+</div>
+</div>
+
+
+<!-- 40 Q: BLOCK 4 CHECK -->
+<div class="slide qslide">
+<div class="sc">
+  <p class="eyebrow">Вопрос</p>
+  <p class="qbig">Голосового ассистента учат распознавать команду. От каждого из <span class="c-red">50 дикторов по 20 записей</span>, деление случайное. На тесте точность 98%, на новых людях падает.<br>Какой это тип, что запомнила модель и как делить данные?</p>
+</div>
+</div>
+
+
+<!-- 40b A: BLOCK 4 -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Ответ</p>
+  <h2 style="text-align:center;max-width:1060px;">Групповая утечка, делить по диктору через GroupKFold</h2>
+  <svg viewBox="0 0 1000 96" style="width:100%;max-width:940px;height:auto;margin:16px auto 0;display:block" role="img" aria-label="Записи одного диктора уходят целиком в одну часть">
+    <g font-family="inherit">
+      <rect x="16" y="16" width="300" height="52" rx="10" fill="#fee2e2" stroke="#e02d20" stroke-width="1.7"/>
+      <text x="166" y="40" font-size="12.5" font-weight="800" fill="#b91c1c" text-anchor="middle">случайно: записи диктора</text>
+      <text x="166" y="58" font-size="12.5" font-weight="800" fill="#b91c1c" text-anchor="middle">и в train, и в test</text>
+      <line x1="316" y1="42" x2="360" y2="42" stroke="#c3c7cf" stroke-width="1.8" marker-end="url(#arw)"/>
+      <rect x="368" y="16" width="300" height="52" rx="10" fill="#fff" stroke="#e02d20" stroke-width="1.6"/>
+      <text x="518" y="40" font-size="12.5" font-weight="800" fill="#b91c1c" text-anchor="middle">модель учит тембр и манеру</text>
+      <text x="518" y="58" font-size="12.5" font-weight="800" fill="#b91c1c" text-anchor="middle">человека, а не команду</text>
+      <line x1="668" y1="42" x2="712" y2="42" stroke="#c3c7cf" stroke-width="1.8" marker-end="url(#arw)"/>
+      <rect x="720" y="16" width="264" height="52" rx="10" fill="#e7f5ec" stroke="#1a9d4a" stroke-width="1.7"/>
+      <text x="852" y="40" font-size="12.5" font-weight="800" fill="#15803d" text-anchor="middle">GroupKFold</text>
+      <text x="852" y="58" font-size="12" font-weight="700" fill="#15803d" text-anchor="middle">groups=speaker_id</text>
+    </g>
+  </svg>
+  <p class="sub" style="text-align:center;margin:12px auto 0;max-width:1000px;">Записи одного человека попали и в train, и в test, поэтому модель запомнила голос конкретных дикторов. На новом человеке этого якоря нет, и точность падает. Если все записи одного speaker_id уходят целиком в одну часть, голос из теста модель впервые слышит на проверке.</p>
+</div>
+</div>
+
+
+<!-- 41 BLOCK 5 DIVIDER -->
+<div class="slide gdiv">
+<div class="sc">
+  <p class="lvkick">Блок 5 · типы 10-12</p>
+  <h1>Process &amp; Systemic Leakage</h1>
+  <div class="ten">Мета-утечки и MLOps</div>
+  <p class="tline">Колонки честные, pipeline на месте, деление правильное. Утечка появляется в том, как построена работа над моделью: где стоит отбор признаков, сколько раз открывали тест, чем и где собирали данные.</p>
+  <div class="ltypes">
+    <span>10. Feature Selection (Предварительный отбор признаков)</span>
+    <span>11. Validation Overfitting (Переобучение на валидации)</span>
+    <span>12. Hardware &amp; Data Collection (Системные артефакты)</span>
+  </div>
+  <div class="tprog"><i class="done"></i><i class="done"></i><i class="done"></i><i class="done"></i><i class="now"></i></div>
+</div>
+</div>
+
+
+<!-- T10 DIVIDER -->
+<div class="slide gdiv typdiv">
+<div class="sc">
+  <p class="lvkick">Блок 5 · Тип 10 из 12</p>
+  <div class="tnum">10</div>
+  <h1>Feature Selection</h1>
+  <div class="tru">Предварительный отбор признаков</div>
+  <p class="tline">Отбор фичей выполнен на всех данных до деления на фолды.</p>
+  <div class="tprog"><i class="done"></i><i class="done"></i><i class="done"></i><i class="done"></i><i class="done"></i><i class="done"></i><i class="done"></i><i class="done"></i><i class="done"></i><i class="now"></i><i></i><i></i></div>
+</div>
+</div>
+
+
+<!-- 42 TYPE 10 SUT -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Блок 5 · тип 10 · суть</p>
+  <h2>Feature Selection (Предварительный отбор признаков)</h2>
+  <p class="sub" style="margin-top:0;max-width:1060px;">Отбор наиболее важных фичей (по корреляции, p-value или Feature Importance) выполняется на всех имеющихся данных до запуска разделения на фолды.</p>
+  <svg viewBox="0 0 1000 250" style="width:100%;max-width:1000px;height:auto;margin:8px auto 0;display:block" role="img" aria-label="Отбор признаков до и внутри кросс-валидации">
+    <g font-family="inherit">
+      <text x="30" y="26" font-size="12.5" font-weight="900" fill="#b91c1c">отбор до деления на фолды</text>
+      <rect x="30" y="38" width="200" height="40" rx="9" fill="#f0f2f6" stroke="#c3c7cf" stroke-width="1.5"/>
+      <text x="130" y="63" font-size="12.5" font-weight="800" fill="#2b2f36" text-anchor="middle">все данные, все фичи</text>
+      <line x1="230" y1="58" x2="272" y2="58" stroke="#e02d20" stroke-width="1.7" marker-end="url(#arwr)"/>
+      <rect x="280" y="38" width="230" height="40" rx="9" fill="#fee2e2" stroke="#e02d20" stroke-width="1.8"/>
+      <text x="395" y="63" font-size="12.5" font-weight="800" fill="#b91c1c" text-anchor="middle">отбор фичей смотрит на весь Y</text>
+      <line x1="510" y1="58" x2="552" y2="58" stroke="#c3c7cf" stroke-width="1.7" marker-end="url(#arw)"/>
+      <rect x="560" y="38" width="170" height="40" rx="9" fill="#f0f2f6" stroke="#c3c7cf" stroke-width="1.5"/>
+      <text x="645" y="63" font-size="12.5" font-weight="800" fill="#2b2f36" text-anchor="middle">K-Fold</text>
+      <line x1="730" y1="58" x2="772" y2="58" stroke="#c3c7cf" stroke-width="1.7" marker-end="url(#arw)"/>
+      <rect x="780" y="38" width="190" height="40" rx="9" fill="#fee2e2" stroke="#e02d20" stroke-width="1.8"/>
+      <text x="875" y="63" font-size="12.5" font-weight="800" fill="#b91c1c" text-anchor="middle">завышенная оценка</text>
+      <text x="500" y="102" font-size="12.5" font-weight="700" fill="#b91c1c" text-anchor="middle">каждый фолд проверяется набором фичей, который уже видел его собственные ответы</text>
+
+      <line x1="30" y1="122" x2="970" y2="122" stroke="#eceef1" stroke-width="1.4"/>
+
+      <text x="30" y="154" font-size="12.5" font-weight="900" fill="#15803d">отбор внутри фолда</text>
+      <rect x="30" y="166" width="200" height="40" rx="9" fill="#f0f2f6" stroke="#c3c7cf" stroke-width="1.5"/>
+      <text x="130" y="191" font-size="12.5" font-weight="800" fill="#2b2f36" text-anchor="middle">все данные, все фичи</text>
+      <line x1="230" y1="186" x2="272" y2="186" stroke="#1a9d4a" stroke-width="1.7" marker-end="url(#arwg)"/>
+      <rect x="280" y="166" width="170" height="40" rx="9" fill="#f0f2f6" stroke="#c3c7cf" stroke-width="1.5"/>
+      <text x="365" y="191" font-size="12.5" font-weight="800" fill="#2b2f36" text-anchor="middle">K-Fold</text>
+      <line x1="450" y1="186" x2="492" y2="186" stroke="#1a9d4a" stroke-width="1.7" marker-end="url(#arwg)"/>
+      <rect x="500" y="166" width="270" height="40" rx="9" fill="#e7f5ec" stroke="#1a9d4a" stroke-width="1.8"/>
+      <text x="635" y="191" font-size="12.5" font-weight="800" fill="#15803d" text-anchor="middle">отбор фичей на train-части фолда</text>
+      <line x1="770" y1="186" x2="812" y2="186" stroke="#1a9d4a" stroke-width="1.7" marker-end="url(#arwg)"/>
+      <rect x="820" y="166" width="150" height="40" rx="9" fill="#e7f5ec" stroke="#1a9d4a" stroke-width="1.8"/>
+      <text x="895" y="191" font-size="12.5" font-weight="800" fill="#15803d" text-anchor="middle">честная оценка</text>
+      <text x="500" y="234" font-size="12.5" font-weight="700" fill="#2b2f36" text-anchor="middle">Отбор признаков это обучаемый шаг, поэтому он живёт внутри pipeline вместе со скейлером и импутером.</text>
+    </g>
+  </svg>
+</div>
+</div>
+
+
+<!-- 43 TYPE 10 EX 1 -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Блок 5 · тип 10 · пример 1 из 2</p>
+  <h2>Отбор по корреляции Пирсона</h2>
+  <p class="sub" style="margin-top:0;max-width:1060px;">У вас датасет из 10 000 генов (фичей) и 100 пациентов. Вы находите Top-50 генов, имеющих наибольшую корреляцию с раком на всех 100 пациентах, затем запускаете K-Fold на этих 50 генах.</p>
+  <svg viewBox="0 0 1000 248" style="width:100%;max-width:1000px;height:auto;margin:8px auto 0;display:block" role="img" aria-label="Отбор пятидесяти генов по всем пациентам и падение метрики на новом датасете">
+    <g font-family="inherit">
+      <rect x="30" y="34" width="200" height="52" rx="10" fill="#f0f2f6" stroke="#c3c7cf" stroke-width="1.5"/>
+      <text x="130" y="58" font-size="13.5" font-weight="900" fill="#2b2f36" text-anchor="middle">10 000 генов</text>
+      <text x="130" y="77" font-size="12" font-weight="700" fill="#5a6069" text-anchor="middle">100 пациентов</text>
+      <line x1="230" y1="60" x2="272" y2="60" stroke="#e02d20" stroke-width="1.8" marker-end="url(#arwr)"/>
+      <rect x="280" y="34" width="250" height="52" rx="10" fill="#fee2e2" stroke="#e02d20" stroke-width="1.8"/>
+      <text x="405" y="58" font-size="12.5" font-weight="900" fill="#b91c1c" text-anchor="middle">корреляция с раком</text>
+      <text x="405" y="77" font-size="12" font-weight="700" fill="#b91c1c" text-anchor="middle">посчитана на всех 100 пациентах</text>
+      <line x1="530" y1="60" x2="572" y2="60" stroke="#c3c7cf" stroke-width="1.8" marker-end="url(#arw)"/>
+      <rect x="580" y="34" width="170" height="52" rx="10" fill="#f0f2f6" stroke="#c3c7cf" stroke-width="1.5"/>
+      <text x="665" y="66" font-size="13.5" font-weight="900" fill="#2b2f36" text-anchor="middle">Top-50 генов</text>
+      <text x="770" y="52" font-size="12" font-weight="800" fill="#b91c1c">часть из них попала в Top-50</text>
+      <text x="770" y="70" font-size="12" font-weight="800" fill="#b91c1c">случайно, на тестовых пациентах</text>
+
+      <line x1="60" y1="200" x2="940" y2="200" stroke="#c3c7cf" stroke-width="1.5"/>
+      <g text-anchor="middle">
+        <rect x="240" y="118" width="150" height="82" fill="#e04a3c"/>
+        <rect x="610" y="157" width="150" height="43" fill="#9aa1ab"/>
+        <text x="315" y="110" font-size="16" font-weight="900" fill="#b91c1c">95%</text>
+        <text x="685" y="149" font-size="16" font-weight="900" fill="#5a6069">50%</text>
+        <text x="315" y="220" font-size="12.5" font-weight="800" fill="#5a6069">метрика на валидации</text>
+        <text x="685" y="220" font-size="12.5" font-weight="800" fill="#5a6069">на новом датасете</text>
+        <text x="685" y="236" font-size="11.5" font-weight="700" fill="#5a6069">случайное угадывание</text>
+      </g>
+    </g>
+  </svg>
+  <div class="note"><p><b class="mk r">Почему это утечка.</b> В эти 50 генов вошли те, которые случайно скоррелировали с Y на тестовых пациентах. Метрика на валидации будет 95%, а на новом датасете 50% (случайное угадывание).</p></div>
+</div>
+</div>
+
+
+<!-- 44 TYPE 10 EX 2 -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Блок 5 · тип 10 · пример 2 из 2</p>
+  <h2>Recursive Feature Elimination / RFE</h2>
+  <p class="sub" style="margin-top:0;max-width:1060px;">Использование алгоритма RFE для постепенного удаления слабых фичей. RFE запускается один раз в самом начале скрипта на всей таблице.</p>
+  <svg viewBox="0 0 1000 200" style="width:100%;max-width:1000px;height:auto;margin:10px auto 0;display:block" role="img" aria-label="Итеративное удаление признаков на всей таблице">
+    <g font-family="inherit">
+      <rect x="30" y="46" width="180" height="46" rx="10" fill="#fee2e2" stroke="#e02d20" stroke-width="1.8"/>
+      <text x="120" y="68" font-size="12.5" font-weight="900" fill="#b91c1c" text-anchor="middle">RFE на всей таблице</text>
+      <text x="120" y="86" font-size="11.5" font-weight="700" fill="#b91c1c" text-anchor="middle">запуск один раз</text>
+      <g stroke="#e02d20" stroke-width="1.7" marker-end="url(#arwr)">
+        <line x1="210" y1="69" x2="248" y2="69"/><line x1="400" y1="69" x2="438" y2="69"/><line x1="590" y1="69" x2="628" y2="69"/>
+      </g>
+      <rect x="256" y="46" width="144" height="46" rx="10" fill="#f0f2f6" stroke="#c3c7cf" stroke-width="1.5"/>
+      <text x="328" y="74" font-size="12.5" font-weight="800" fill="#2b2f36" text-anchor="middle">удалили слабые</text>
+      <rect x="446" y="46" width="144" height="46" rx="10" fill="#f0f2f6" stroke="#c3c7cf" stroke-width="1.5"/>
+      <text x="518" y="74" font-size="12.5" font-weight="800" fill="#2b2f36" text-anchor="middle">удалили ещё</text>
+      <rect x="636" y="46" width="184" height="46" rx="10" fill="#f0f2f6" stroke="#c3c7cf" stroke-width="1.5"/>
+      <text x="728" y="74" font-size="12.5" font-weight="800" fill="#2b2f36" text-anchor="middle">финальный набор фичей</text>
+      <path d="M120 100 V132 H728 V100" fill="none" stroke="#e02d20" stroke-width="1.8" stroke-dasharray="6 4"/>
+      <text x="424" y="152" font-size="13" font-weight="900" fill="#b91c1c" text-anchor="middle">на каждом шаге алгоритм смотрел на ответы всей таблицы, включая тест</text>
+      <rect x="840" y="46" width="130" height="46" rx="10" fill="#e7f5ec" stroke="#1a9d4a" stroke-width="1.8"/>
+      <text x="905" y="68" font-size="12" font-weight="800" fill="#15803d" text-anchor="middle">RFE внутри</text>
+      <text x="905" y="85" font-size="12" font-weight="800" fill="#15803d" text-anchor="middle">каждого фолда</text>
+      <text x="424" y="182" font-size="12.5" font-weight="700" fill="#2b2f36" text-anchor="middle">Правильный вариант справа: отбор повторяется заново на train-части каждого фолда.</text>
+    </g>
+  </svg>
+  <div class="note"><p><b class="mk r alt">Почему это утечка.</b> Процесс отбора фичей «увидел» весь датасет.</p></div>
+</div>
+</div>
+
+
+<!-- T11 DIVIDER -->
+<div class="slide gdiv typdiv">
+<div class="sc">
+  <p class="lvkick">Блок 5 · Тип 11 из 12</p>
+  <div class="tnum">11</div>
+  <h1>Validation Overfitting</h1>
+  <div class="tru">Переобучение на валидации</div>
+  <p class="tline">Частый подбор под один и тот же валидационный сет выучивает его шум.</p>
+  <div class="tprog"><i class="done"></i><i class="done"></i><i class="done"></i><i class="done"></i><i class="done"></i><i class="done"></i><i class="done"></i><i class="done"></i><i class="done"></i><i class="done"></i><i class="now"></i><i></i></div>
+</div>
+</div>
+
+
+<!-- 45 TYPE 11 SUT -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Блок 5 · тип 11 · суть</p>
+  <h2>Validation Overfitting (Переобучение на валидации)</h2>
+  <p class="sub" style="margin-top:0;max-width:1060px;">Слишком частый подбор гиперпараметров под один и тот же тестовый или валидационный сет приводит к тому, что модель выучивает шум этого конкретного сета.</p>
+  <svg viewBox="0 0 1000 226" style="width:100%;max-width:1000px;height:auto;margin:10px auto 0;display:block" role="img" aria-label="Повторные попытки на одном валидационном наборе">
+    <g font-family="inherit">
+      <rect x="330" y="150" width="340" height="52" rx="10" fill="#d3e4f8" stroke="#3b6fb5" stroke-width="1.8"/>
+      <text x="500" y="182" font-size="13.5" font-weight="900" fill="#274d80" text-anchor="middle">один и тот же Validation Set</text>
+      <g stroke="#e02d20" stroke-width="1.7" fill="none">
+        <path d="M330 150 C 250 110, 250 60, 340 44" marker-end="url(#arwr)"/>
+        <path d="M420 150 C 380 106, 400 58, 470 44" marker-end="url(#arwr)"/>
+        <path d="M580 150 C 620 106, 600 58, 530 44" marker-end="url(#arwr)"/>
+        <path d="M670 150 C 750 110, 750 60, 660 44" marker-end="url(#arwr)"/>
+      </g>
+      <rect x="330" y="16" width="340" height="30" rx="8" fill="#fee2e2" stroke="#e02d20" stroke-width="1.7"/>
+      <text x="500" y="36" font-size="13" font-weight="900" fill="#b91c1c" text-anchor="middle">попытка за попыткой</text>
+      <text x="150" y="80" font-size="12.5" font-weight="800" fill="#b91c1c" text-anchor="middle">каждая новая попытка</text>
+      <text x="150" y="100" font-size="12.5" font-weight="800" fill="#b91c1c" text-anchor="middle">видит результат предыдущей</text>
+      <text x="850" y="80" font-size="12.5" font-weight="800" fill="#b91c1c" text-anchor="middle">информация из валидации</text>
+      <text x="850" y="100" font-size="12.5" font-weight="800" fill="#b91c1c" text-anchor="middle">перетекает в выбор модели</text>
+      <text x="500" y="222" font-size="12.5" font-weight="700" fill="#2b2f36" text-anchor="middle">Данные не менялись ни разу, а оценка на них перестала быть независимой уже после десятого прогона.</text>
+    </g>
+  </svg>
+</div>
+</div>
+
+
+<!-- 46 TYPE 11 EX 1 -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Блок 5 · тип 11 · пример 1 из 2</p>
+  <h2>Агрессивный Optuna / GridSearch</h2>
+  <p class="sub" style="margin-top:0;max-width:1060px;">Подбор гиперпараметров Gradient Boosting. Перебор 10 000 комбинаций параметров (<span class="mono">max_depth</span>, <span class="mono">learning_rate</span>) с оценкой на одном фиксированном Validation Set.</p>
+  <svg viewBox="0 0 1000 250" style="width:100%;max-width:960px;height:auto;margin:8px auto 0;display:block" role="img" aria-label="Оценка на валидации растёт, качество на новых данных стоит на месте">
+    <g font-family="inherit">
+      <line x1="90" y1="30" x2="90" y2="200" stroke="#c3c7cf" stroke-width="1.5"/>
+      <line x1="90" y1="200" x2="940" y2="200" stroke="#c3c7cf" stroke-width="1.5"/>
+      <g stroke="#c3c7cf" stroke-width="1.3">
+        <line x1="90" y1="200" x2="82" y2="200"/><line x1="90" y1="115" x2="82" y2="115"/><line x1="90" y1="30" x2="82" y2="30"/>
+        <line x1="90" y1="200" x2="90" y2="208"/><line x1="515" y1="200" x2="515" y2="208"/><line x1="940" y1="200" x2="940" y2="208"/>
+      </g>
+      <g font-size="11.5" font-weight="700" fill="#5a6069">
+        <text x="74" y="204" text-anchor="end">низкая</text>
+        <text x="74" y="119" text-anchor="end">средняя</text>
+        <text x="74" y="34" text-anchor="end">высокая</text>
+        <text x="90" y="226" text-anchor="start">0</text>
+        <text x="515" y="226" text-anchor="middle">5 000</text>
+        <text x="940" y="226" text-anchor="end">10 000</text>
+      </g>
+      <text x="515" y="246" font-size="12" font-weight="800" fill="#5a6069" text-anchor="middle">число перебранных комбинаций</text>
+      <path d="M90 160 C 300 96, 560 62, 940 44" fill="none" stroke="#e02d20" stroke-width="2.6"/>
+      <path d="M90 162 C 300 156, 560 152, 940 156" fill="none" stroke="#3b6fb5" stroke-width="2.6" stroke-dasharray="7 5"/>
+      <text x="700" y="34" font-size="12.5" font-weight="800" fill="#b91c1c">оценка на Validation Set</text>
+      <text x="700" y="180" font-size="12.5" font-weight="800" fill="#274d80">качество на новых данных</text>
+      <text x="480" y="98" font-size="12.5" font-weight="800" fill="#b91c1c">разрыв растёт с каждой сотней попыток</text>
+    </g>
+  </svg>
+  <div class="note"><p><b class="mk r">Почему это утечка.</b> Из 10 000 попыток Optuna гарантированно найдет ту комбинацию параметров, которая случайно идеально подстроена под шум и выбросы вашей валидации.</p></div>
+  <div class="note"><p>Форма кривых на схеме показывает направление процесса, конкретные значения зависят от задачи и данных.</p></div>
+</div>
+</div>
+
+
+<!-- 47 TYPE 11 EX 2 -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Блок 5 · тип 11 · пример 2 из 2</p>
+  <h2>Early Stopping на тесте</h2>
+  <p class="sub" style="margin-top:0;max-width:1060px;">Обучение нейросети на 100 эпох. Остановка обучения (Early Stopping) в момент, когда ошибка (Loss) минимальна на тестовой выборке.</p>
+  <svg viewBox="0 0 1000 250" style="width:100%;max-width:960px;height:auto;margin:8px auto 0;display:block" role="img" aria-label="Кривые ошибки и точка остановки по тесту">
+    <g font-family="inherit">
+      <line x1="90" y1="26" x2="90" y2="200" stroke="#c3c7cf" stroke-width="1.5"/>
+      <line x1="90" y1="200" x2="940" y2="200" stroke="#c3c7cf" stroke-width="1.5"/>
+      <g stroke="#c3c7cf" stroke-width="1.3">
+        <line x1="90" y1="200" x2="82" y2="200"/><line x1="90" y1="113" x2="82" y2="113"/><line x1="90" y1="26" x2="82" y2="26"/>
+        <line x1="90" y1="200" x2="90" y2="208"/><line x1="515" y1="200" x2="515" y2="208"/><line x1="940" y1="200" x2="940" y2="208"/>
+      </g>
+      <g font-size="11.5" font-weight="700" fill="#5a6069">
+        <text x="74" y="204" text-anchor="end">низкая</text>
+        <text x="74" y="117" text-anchor="end">средняя</text>
+        <text x="74" y="30" text-anchor="end">высокая</text>
+        <text x="90" y="226" text-anchor="start">0</text>
+        <text x="515" y="226" text-anchor="middle">50</text>
+        <text x="940" y="226" text-anchor="end">100</text>
+      </g>
+      <text x="515" y="246" font-size="12" font-weight="800" fill="#5a6069" text-anchor="middle">эпоха обучения</text>
+      <text x="26" y="118" font-size="12" font-weight="800" fill="#5a6069" transform="rotate(-90 26 118)" text-anchor="middle">Loss</text>
+      <path d="M90 46 C 260 130, 420 170, 940 188" fill="none" stroke="#6b7280" stroke-width="2.4"/>
+      <path d="M90 52 C 280 120, 420 128, 560 130 C 720 132, 840 108, 940 78" fill="none" stroke="#3b6fb5" stroke-width="2.6"/>
+      <line x1="560" y1="36" x2="560" y2="200" stroke="#e02d20" stroke-width="2.2" stroke-dasharray="7 5"/>
+      <circle cx="560" cy="130" r="7" fill="#e02d20"/>
+      <text x="560" y="28" font-size="12.5" font-weight="900" fill="#b91c1c" text-anchor="middle">здесь обучение остановили</text>
+      <text x="300" y="72" font-size="12.5" font-weight="800" fill="#374151">Loss на train</text>
+      <text x="700" y="152" font-size="12.5" font-weight="800" fill="#274d80">Loss на тестовой выборке</text>
+      <text x="392" y="188" font-size="12.5" font-weight="800" fill="#b91c1c" text-anchor="middle">минимум найден по тесту</text>
+    </g>
+  </svg>
+  <div class="note"><p><b class="mk r alt">Почему это утечка.</b> Тестовая выборка напрямую управляет моментом остановки обучения, выступая регулятором.</p></div>
+</div>
+</div>
+
+
+<!-- T12 DIVIDER -->
+<div class="slide gdiv typdiv">
+<div class="sc">
+  <p class="lvkick">Блок 5 · Тип 12 из 12</p>
+  <div class="tnum">12</div>
+  <h1>Hardware &amp; Data Collection</h1>
+  <div class="tru">Системные артефакты</div>
+  <p class="tline">Классы Y собраны разным оборудованием, софтом или форматом файлов.</p>
+  <div class="tprog"><i class="done"></i><i class="done"></i><i class="done"></i><i class="done"></i><i class="done"></i><i class="done"></i><i class="done"></i><i class="done"></i><i class="done"></i><i class="done"></i><i class="done"></i><i class="now"></i></div>
+</div>
+</div>
+
+
+<!-- 48 TYPE 12 SUT -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Блок 5 · тип 12 · суть</p>
+  <h2>Hardware &amp; Data Collection Leakage (Системные артефакты)</h2>
+  <p class="sub" style="margin-top:0;max-width:1060px;">Различия в техническом оборудовании, софте или форматах файлов при сборе данных для разных классов Y.</p>
+  <svg viewBox="0 0 1000 210" style="width:100%;max-width:1000px;height:auto;margin:10px auto 0;display:block" role="img" aria-label="Разные источники сбора для разных классов">
+    <g font-family="inherit">
+      <rect x="30" y="30" width="260" height="56" rx="10" fill="#f0f2f6" stroke="#c3c7cf" stroke-width="1.5"/>
+      <text x="160" y="54" font-size="12.5" font-weight="800" fill="#2b2f36" text-anchor="middle">класс Y = 0</text>
+      <text x="160" y="74" font-size="12" font-weight="700" fill="#5a6069" text-anchor="middle">собран одним способом</text>
+      <rect x="30" y="106" width="260" height="56" rx="10" fill="#f0f2f6" stroke="#c3c7cf" stroke-width="1.5"/>
+      <text x="160" y="130" font-size="12.5" font-weight="800" fill="#2b2f36" text-anchor="middle">класс Y = 1</text>
+      <text x="160" y="150" font-size="12" font-weight="700" fill="#5a6069" text-anchor="middle">собран другим способом</text>
+      <line x1="290" y1="58" x2="342" y2="58" stroke="#c3c7cf" stroke-width="1.7" marker-end="url(#arw)"/>
+      <line x1="290" y1="134" x2="342" y2="134" stroke="#c3c7cf" stroke-width="1.7" marker-end="url(#arw)"/>
+      <rect x="350" y="30" width="300" height="132" rx="12" fill="#fee2e2" stroke="#e02d20" stroke-width="1.8"/>
+      <text x="500" y="72" font-size="13" font-weight="900" fill="#b91c1c" text-anchor="middle">в данных появился признак,</text>
+      <text x="500" y="94" font-size="13" font-weight="900" fill="#b91c1c" text-anchor="middle">который отличает не классы,</text>
+      <text x="500" y="116" font-size="13" font-weight="900" fill="#b91c1c" text-anchor="middle">а способ сбора</text>
+      <line x1="650" y1="96" x2="702" y2="96" stroke="#e02d20" stroke-width="1.7" marker-end="url(#arwr)"/>
+      <rect x="710" y="66" width="260" height="60" rx="10" fill="#fff" stroke="#e02d20" stroke-width="1.7"/>
+      <text x="840" y="92" font-size="12.5" font-weight="800" fill="#b91c1c" text-anchor="middle">модель учит источник данных</text>
+      <text x="840" y="112" font-size="12.5" font-weight="800" fill="#b91c1c" text-anchor="middle">вместо самого явления</text>
+      <text x="500" y="192" font-size="12.5" font-weight="700" fill="#2b2f36" text-anchor="middle">Такую утечку не видно ни в списке колонок, ни в коде: она живёт в том, как физически собирали выборку.</text>
+    </g>
+  </svg>
+</div>
+</div>
+
+
+<!-- 49 TYPE 12 EX 1 -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Блок 5 · тип 12 · пример 1 из 2</p>
+  <h2>Разные аппараты сканирования</h2>
+  <p class="sub" style="margin-top:0;max-width:1060px;">Обучение модели распознаванию рака по снимкам кожи. Фотографии здоровых людей делали в обычной поликлинике на смартфон, фотографии опухолей делали в спец-онкоцентре на профессиональный дерматоскоп.</p>
+  <svg viewBox="0 0 1000 218" style="width:100%;max-width:1000px;height:auto;margin:8px auto 0;display:block" role="img" aria-label="Здоровые сняты на смартфон, опухоли на дерматоскоп">
+    <g font-family="inherit">
+      <rect x="30" y="26" width="420" height="104" rx="12" fill="#f8f9fb" stroke="#dfe2e8" stroke-width="1.6"/>
+      <text x="240" y="52" font-size="13" font-weight="900" fill="#2b2f36" text-anchor="middle">здоровые люди</text>
+      <text x="240" y="76" font-size="12.5" font-weight="700" fill="#5a6069" text-anchor="middle">обычная поликлиника, смартфон</text>
+      <rect x="120" y="88" width="110" height="28" rx="7" fill="#f0f2f6" stroke="#c3c7cf" stroke-width="1.4"/>
+      <text x="175" y="107" font-size="12" font-weight="800" fill="#374151" text-anchor="middle">формат .jpg</text>
+      <rect x="242" y="88" width="130" height="28" rx="7" fill="#f0f2f6" stroke="#c3c7cf" stroke-width="1.4"/>
+      <text x="307" y="107" font-size="12" font-weight="800" fill="#374151" text-anchor="middle">низкое разрешение</text>
+
+      <rect x="550" y="26" width="420" height="104" rx="12" fill="#f8f9fb" stroke="#dfe2e8" stroke-width="1.6"/>
+      <text x="760" y="52" font-size="13" font-weight="900" fill="#2b2f36" text-anchor="middle">опухоли</text>
+      <text x="760" y="76" font-size="12.5" font-weight="700" fill="#5a6069" text-anchor="middle">спец-онкоцентр, дерматоскоп</text>
+      <rect x="640" y="88" width="110" height="28" rx="7" fill="#f0f2f6" stroke="#c3c7cf" stroke-width="1.4"/>
+      <text x="695" y="107" font-size="12" font-weight="800" fill="#374151" text-anchor="middle">формат .png</text>
+      <rect x="762" y="88" width="130" height="28" rx="7" fill="#f0f2f6" stroke="#c3c7cf" stroke-width="1.4"/>
+      <text x="827" y="107" font-size="12" font-weight="800" fill="#374151" text-anchor="middle">высокое разрешение</text>
+
+      <path d="M240 134 V158 H500" fill="none" stroke="#e02d20" stroke-width="1.8"/>
+      <path d="M760 134 V158 H500" fill="none" stroke="#e02d20" stroke-width="1.8"/>
+      <line x1="500" y1="158" x2="500" y2="172" stroke="#e02d20" stroke-width="1.8" marker-end="url(#arwr)"/>
+      <rect x="270" y="176" width="460" height="36" rx="9" fill="#fee2e2" stroke="#e02d20" stroke-width="1.8"/>
+      <text x="500" y="200" font-size="13" font-weight="900" fill="#b91c1c" text-anchor="middle">нейросеть различает формат сжатия и разрешение</text>
+    </g>
+  </svg>
+  <div class="note"><p><b class="mk r">Почему это утечка.</b> Нейросеть учится отличать формат сжатия файла и разрешение снимка, а не рак кожи.</p></div>
+</div>
+</div>
+
+
+<!-- 50 TYPE 12 EX 2 -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Блок 5 · тип 12 · пример 2 из 2</p>
+  <h2>Часовые пояса в базах данных</h2>
+  <p class="sub" style="margin-top:0;max-width:1060px;">Детекция спам-регистраций на сайте. Обычные пользователи регистрировались через веб-форму, а спам-боты атаковали API, и сервер логировал эти запросы в другом часовом поясе.</p>
+  <svg viewBox="0 0 1000 236" style="width:100%;max-width:1000px;height:auto;margin:8px auto 0;display:block" role="img" aria-label="Сдвиг пяти часов в колонке created_at">
+    <g font-family="inherit">
+      <line x1="70" y1="176" x2="950" y2="176" stroke="#c3c7cf" stroke-width="1.6"/>
+      <g stroke="#c3c7cf" stroke-width="1.3">
+        <line x1="70" y1="176" x2="70" y2="184"/><line x1="510" y1="176" x2="510" y2="184"/><line x1="950" y1="176" x2="950" y2="184"/>
+      </g>
+      <g font-size="11.5" font-weight="700" fill="#5a6069" text-anchor="middle">
+        <text x="70" y="200">00:00</text><text x="510" y="200">12:00</text><text x="950" y="200">24:00</text>
+      </g>
+      <text x="510" y="222" font-size="12" font-weight="800" fill="#5a6069" text-anchor="middle">значение колонки created_at</text>
+      <path d="M540 176 C 620 60, 760 60, 840 176 Z" fill="#e9edf1" stroke="#6b7280" stroke-width="1.7"/>
+      <text x="690" y="98" font-size="12.5" font-weight="800" fill="#374151" text-anchor="middle">люди, веб-форма</text>
+      <text x="690" y="118" font-size="12" font-weight="700" fill="#374151" text-anchor="middle">время в UTC+5</text>
+      <path d="M240 176 C 320 60, 460 60, 540 176 Z" fill="#fee2e2" stroke="#e02d20" stroke-width="1.7"/>
+      <text x="390" y="98" font-size="12.5" font-weight="800" fill="#b91c1c" text-anchor="middle">боты, API</text>
+      <text x="390" y="118" font-size="12" font-weight="700" fill="#b91c1c" text-anchor="middle">сервер логирует в UTC+0</text>
+      <path d="M390 46 H690" stroke="#e02d20" stroke-width="2" fill="none"/>
+      <path d="M390 46 v8 M690 46 v8" stroke="#e02d20" stroke-width="2"/>
+      <text x="540" y="36" font-size="13.5" font-weight="900" fill="#b91c1c" text-anchor="middle">сдвиг 5 часов</text>
+      <line x1="540" y1="176" x2="540" y2="150" stroke="#e02d20" stroke-width="1.5" stroke-dasharray="4 4"/>
+      <path d="M536 154 H240" fill="none" stroke="#e02d20" stroke-width="1.4" stroke-dasharray="4 4"/>
+      <text x="232" y="150" font-size="12.5" font-weight="800" fill="#b91c1c" text-anchor="end">модель делит классы</text>
+      <text x="232" y="168" font-size="12.5" font-weight="800" fill="#b91c1c" text-anchor="end">по одной этой границе</text>
+    </g>
+  </svg>
+  <div class="note"><p><b class="mk r alt">Почему это утечка.</b> Модель находит 5-часовой сдвиг в колонке <span class="mono">created_at</span> и использует его как главный признак спама.</p></div>
+</div>
+</div>
+
+
+<!-- 51 CHECKLIST -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Шпаргалка</p>
+  <h2>Итоговый чек-лист для защиты от Data Leakage</h2>
+  <div class="result" style="max-width:1140px;margin-top:8px">
+    <table>
+      <thead><tr><th>№</th><th class="wrap">Правило защиты</th><th class="wrap">Какую утечку предотвращает</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td class="wrap"><b>Split First.</b> Делать <span class="mono">train_test_split</span> самым первым шагом в коде</td><td class="wrap">Preprocessing Leakage, MinMax/Standard Scaling contamination</td></tr>
+        <tr><td>2</td><td class="wrap"><b>Use Pipelines.</b> Все трансформации оборачивать в <span class="mono">sklearn.pipeline.Pipeline</span></td><td class="wrap">Feature selection &amp; Imputation Leakage</td></tr>
+        <tr><td>3</td><td class="wrap"><b>Time Cut-Off.</b> Для временных данных использовать <span class="mono">TimeSeriesSplit</span></td><td class="wrap">Look-Ahead Bias, Time Travel</td></tr>
+        <tr><td>4</td><td class="wrap"><b>Group Control.</b> При наличии нескольких записей одного объекта применять <span class="mono">GroupKFold</span></td><td class="wrap">Patient / Entity / Group Leakage</td></tr>
+        <tr><td>5</td><td class="wrap"><b>Holdout Set.</b> Иметь запрятанный тестовый сет, который открывается 1 раз в конце</td><td class="wrap">Validation Overfitting, Optuna leakage</td></tr>
+        <tr><td>6</td><td class="wrap"><b>Sanity Check.</b> ROC-AUC &gt; 0.98 на реальной задаче это сигнал искать ошибку</td><td class="wrap">Target &amp; Proxy Leakage</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="note" style="max-width:1140px;"><p>Первые пять правил ставятся в код один раз и работают дальше сами. Шестое правило работает только у человека: метрику выше отраслевой нормы надо проверять, а не показывать руководству.</p></div>
+</div>
+</div>
+
+
+<!-- 52 SELF CHECK -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Проверь себя</p>
+  <ol class="stag" style="max-width:1060px;text-align:left;font-size:clamp(12px,1.3vw,17px);line-height:1.5;color:#2b2f36;padding-left:26px;margin-top:8px;">
+    <li style="margin-bottom:10px">В обучающих данных банка есть колонка <span class="mono">причина_закрытия_счета</span>, а у ушедших клиентов <span class="mono">avg_monthly_fee = 0</span>. Какое правило выучит модель и почему на действующих клиентах оно не сработает?</li>
+    <li style="margin-bottom:10px"><span class="mono">MinMaxScaler()</span> обучен до сплита, и единственный миллионер попал в тестовую выборку. Что именно «узнала» обучающая выборка и какой одной строкой архитектуры это чинится?</li>
+    <li style="margin-bottom:10px">Признак <span class="mono">сумма_покупок_за_30_дней</span> сгенерирован скриптом, запущенным 15 июня, при точке отсечки 10 июня. Сколько дней попало в окно после даты решения и к какому типу относится ошибка?</li>
+    <li style="margin-bottom:10px">В базе 50 транзакций одного мошенника, 40 в Train и 10 в Test. Что запомнит модель вместо общих аномалий фрода и какой сплиттер это предотвращает?</li>
+    <li style="margin-bottom:10px">Top-50 генов из 10 000 отобраны по корреляции с раком на всех 100 пациентах. Почему на валидации будет 95%, а на новом датасете 50%, и куда надо перенести шаг отбора?</li>
+    <li style="margin-bottom:10px">Модель детекции спама показала ROC-AUC 0.99. По какому пункту чек-листа это проверяют в первую очередь и что искать в колонке <span class="mono">created_at</span>?</li>
+  </ol>
+</div>
+</div>
+
+
+<!-- 53 HOMEWORK -->
+<div class="slide">
+<div class="sc">
+  <p class="eyebrow">Домашнее задание</p>
+  <h2>К следующему занятию</h2>
+  <ul class="facts checks stag">
+    <li><b>Разбор по чек-листу.</b> Взять свой последний проект или учебный датасет и пройти по шести правилам защиты, письменно отметить, какие пункты нарушены и чем это грозит в проде.</li>
+    <li><b>Переписать препроцессинг.</b> Найти или написать скрипт, где <span class="mono">StandardScaler</span> и <span class="mono">SimpleImputer</span> вызываются до <span class="mono">train_test_split</span>, и перевести его на <span class="mono">sklearn.pipeline.Pipeline</span>.</li>
+    <li><b>Классификация примеров.</b> Для трёх ситуаций из этого занятия указать блок, название типа утечки и способ проверки. Для каждой сформулировать вопрос, который надо задать владельцу процесса.</li>
+    <li><b>Свой случай.</b> Описать одну ситуацию из практики, где метрика на валидации была заметно выше результата на новых данных, и назвать тип утечки, который это объясняет.</li>
+  </ul>
+</div>
+</div>
+
+
+</div>
+<div class="ind"><span id="cur">1</span> / <span id="tot"></span></div>
+<div class="hint">← → space</div>
+<script>
+const slides=document.querySelectorAll('.slide');
+let cur=0;
+document.getElementById('tot').textContent=slides.length;
+function go(n){
+  slides[cur].classList.remove('active');
+  cur=(n+slides.length)%slides.length;
+  slides[cur].classList.add('active');
+  const sc=slides[cur].querySelector('.sc');
+  if(sc){sc.style.animation='none';void sc.offsetWidth;sc.style.animation='';}
+  slides[cur].querySelectorAll('.rise').forEach(el=>{
+    el.style.animation='none';void el.offsetWidth;el.style.animation='';
+  });
+  document.getElementById('cur').textContent=cur+1;
+  document.getElementById('prog').style.width=((cur+1)/slides.length*100)+'%';
+}
+document.addEventListener('keydown',e=>{
+  if(e.key==='ArrowRight'||e.key===' '){e.preventDefault();go(cur+1);}
+  if(e.key==='ArrowLeft'){e.preventDefault();go(cur-1);}
+});
+let tx=0;
+document.addEventListener('touchstart',e=>{tx=e.touches[0].clientX;},{passive:true});
+document.addEventListener('touchend',e=>{const dx=e.changedTouches[0].clientX-tx;if(Math.abs(dx)>40)go(cur+(dx<0?1:-1));},{passive:true});
+(function(){
+  const host=document.getElementById('bgdots');
+  if(!host)return;
+  const colors=['#0064d6','#e02d20','#1a9d4a','#e0820a','#7c3aed'];
+  for(let i=0;i<26;i++){
+    const d=document.createElement('i');
+    const s=6+Math.random()*14;
+    d.style.width=d.style.height=s+'px';
+    d.style.left=Math.random()*100+'%';
+    d.style.top=Math.random()*100+'%';
+    d.style.background=colors[i%colors.length];
+    d.style.setProperty('--dx',(Math.random()*60-30)+'px');
+    d.style.setProperty('--dy',(Math.random()*60-30)+'px');
+    d.style.animationDuration=(7+Math.random()*9)+'s';
+    host.appendChild(d);
+  }
+})();
+const h=parseInt((location.hash||'').slice(1));
+go(h>=1&&h<=slides.length?h-1:0);
+</script>
+</body>
+</html>
