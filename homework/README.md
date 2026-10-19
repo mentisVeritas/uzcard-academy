@@ -7,7 +7,7 @@
 |----|------|---------|-------|-----------|-------------|
 | 1 | [Аналитика транзакций UZCARD](hw01_transactions/) | 02.06.2026 | 3 / 3 попытки | **6 / 6** ✅ | [`lessons/week01-python-basics/`](../lessons/week01-python-basics/) |
 | 2 | [Сервис курсов валют (ООП + Web/API)](hw02_currency_service/) | 05.06.2026 | 1 / 3 | **6 / 6** ✅ | [`lessons/week02-uzcard-currency/`](../lessons/week02-uzcard-currency/) |
-| 3 | [Анализ данных сервиса такси](hw03_taxi/) | 26.06.2026 | 1 / 3 | **10 / 10** ✅ | ноутбука с решением локально не было — тут стартер и данные |
+| 3 | [Анализ данных сервиса такси](hw03_taxi/) | 26.06.2026 | 1 / 3 | **10 / 10** ✅ | [`homework/hw03_taxi/week03_pandas_taxi_solution.ipynb`](hw03_taxi/week03_pandas_taxi_solution.ipynb) |
 | 4 | [Кредитный скоринг (таргет)](hw04_credit_scoring/) | 06.08.2026 | 1 / 3 | **3 / 3** + ручная проверка ⏳ | [`projects/credit_scoring/`](../projects/credit_scoring/) |
 | 5 | [Отток клиентов](hw05_churn/) | 13.08.2026 | **не сдано** ⚠️ | — | [`projects/customer_churn/`](../projects/customer_churn/) |
 | 6 | [Типология клиентской базы (unsupervised)](hw06_segments/) | 21.08.2026 | **не сдано** ⚠️ | — | [`projects/customer_segments/`](../projects/customer_segments/) |

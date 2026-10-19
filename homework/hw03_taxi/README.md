@@ -8,16 +8,23 @@ NumPy и pandas: чистка данных, объединение таблиц,
 
 | Файл | Что это |
 |------|---------|
-| [`week03_pandas_taxi.ipynb`](week03_pandas_taxi.ipynb) | ноутбук-стартер |
-| [`hw3_trips.csv`](hw3_trips.csv) | поездки (~5 000 строк) |
+| [`week03_pandas_taxi_solution.ipynb`](week03_pandas_taxi_solution.ipynb) | **решение** с выводами и графиками, все 10 ответов совпадают с принятыми |
+| [`week03_pandas_taxi.ipynb`](week03_pandas_taxi.ipynb) | ноутбук-стартер (без изменений) |
+| [`hw3_trips.csv`](hw3_trips.csv) | поездки (5 080 строк, из них 80 полных дублей) |
 | [`hw3_drivers.csv`](hw3_drivers.csv) | водители (300 строк) |
 | [`starter_original.zip`](starter_original.zip) | исходный архив с платформы |
 
-Ваш решённый ноутбук локально не найден — ответы ниже взяты с платформы.
-
 ```bash
-uv run jupyter notebook homework/hw03_taxi/week03_pandas_taxi.ipynb
+uv run jupyter notebook homework/hw03_taxi/week03_pandas_taxi_solution.ipynb
 ```
+
+### Ловушки в данных
+
+- 80 полных дублей строк — удалить до всех расчётов.
+- `status` в разном регистре (`completed` / `Completed` / `COMPLETED`) → `.str.lower()`.
+- `fare_uzs` — текст с пробелами (`"10 800"`) и 862 пропуска → `str.replace(" ", "")` + `pd.to_numeric`.
+- Есть статус `canceled` (одна «l»). В Q7 считается только `cancelled`: 10 %; если добавить `canceled`, вышло бы 12 % — неверно.
+- Отрицательная и нулевая дистанция, пропуски `duration_min` — отфильтровать в Q8 и Q10.
 
 ## Вопросы и ваши ответы
 
